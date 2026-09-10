@@ -151,32 +151,44 @@ Due nel 2027 (primavera e autunno), quattro nel 2028. Sono anche il contenuto de
 
 ## 3.2 Motore 2 — La piattaforma (piccola, stabile, selettiva)
 
-### Le quattro porte
+### Le quattro porte: una domanda per gradino
 
-| | Gratis | Spinta | Club Aurya | Pro |
+Ogni gradino risponde a una domanda diversa dell'operatore. Se la domanda non è la sua, quel gradino non fa per lui: è così che si capisce perché pagare di più o di meno.
+
+| | **Gratis** | **Spinta** | **Club Aurya** | **Pro** |
 |---|---|---|---|---|
+| **La domanda** | «Posso lavorare?» | «Ho un ritiro da riempire» | «Voglio persone e lavoro, tutto l'anno» | «Voglio la mia voce, il mio racconto, e qualcuno accanto» |
 | **Prezzo** | 0, per sempre | 19 € per un ritiro | 49 €/anno | 119 €/anno (o 12/mese) |
-| **Per chi** | tutti | chi fa un ritiro l'anno | chi vuole la fila tutto l'anno | chi vuole la voce e il tempo di Valentina |
-| Profilo nella directory, listino, richieste, calendario, clienti, recensioni, pagina link | ✓ | ✓ | ✓ | ✓ |
-| Eventi e ritiri con caparra via bonifico o con Stripe | ✓ | ✓ | ✓ | ✓ |
-| **Il ritiro in «Ritiri ed esperienze»** (il marketplace, per data, coi filtri) | ✓ | ✓ | ✓ | ✓ |
-| Commissioni Aurya | **nessuna** | nessuna | nessuna | nessuna |
-| **In prima fila**: la selezione in cima al marketplace e le selezioni di stagione | – | quel ritiro | tutti | tutti |
-| **Nella Lettera**: l'email agli iscritti del Cerchio della tua zona e dei tuoi temi | – | quel ritiro | tutti | tutti |
-| Un post su Instagram per ritiro (max uno al mese) | – | quel ritiro | ✓ | ✓ |
+| **Per chi** | tutti | chi fa un ritiro l'anno | chi vive di ritiri, eventi e clienti nuovi | chi vuole crescere come professionista, non solo riempire |
+| Gli strumenti: profilo nella directory, listino, richieste, calendario, clienti, recensioni, pagina link, eventi e ritiri con caparra | ✓ | ✓ | ✓ | ✓ |
+| Il ritiro nel marketplace «Ritiri ed esperienze» | ✓ | ✓ | ✓ | ✓ |
+| Commissioni Aurya | nessuna | nessuna | nessuna | nessuna |
+| **La prima fila**: selezione in cima, la Lettera agli iscritti della tua zona e dei tuoi temi, un post su Instagram | – | per quel ritiro | per tutti i tuoi ritiri, tutto l'anno | per tutti, con precedenza |
+| **La rete che lavora**: sei tra chi chiamiamo, pagato, per i team building, i ritiri Aurya, le regie in partnership | – | – | ✓ | ✓ con priorità |
 | Badge e precedenza nella directory della tua zona | – | – | ✓ | ✓ |
-| Crea Studio: componi e pubblichi meditazioni con la tua voce | – | – | – | ✓ |
-| Il racconto (intervista): per chi pubblica il profilo, gratis per sempre ai primi 50 | ✓ in coda | ✓ | ✓ | ✓ con precedenza + una pagina nel Magazine |
+| **Il racconto** (la tua storia scritta da noi) | i fondatori (primi 50): l'intervista completa, gratis per sempre. Dopo: lo scrivi tu | – | il racconto breve dal questionario (scritto da noi, sul profilo) | l'intervista completa con Valentina, il badge Verificato, una pagina nel Magazine |
+| **Crea Studio**: componi e pubblichi meditazioni con la tua voce; le tue tracce nella libreria a pagamento, con una quota sugli ascolti (dal 2028) | – | – | – | ✓ |
+| **«Il tuo primo ritiro»**: 45 minuti l'anno con Valentina o Davide su programma, prezzo, struttura, promozione | – | – | – | ✓ |
 | Assistenza | email automatiche | email | risposta in 2 giorni | WhatsApp con Valentina |
-| Team, quando servirà | – | – | – | ✓ |
+| Team (collaboratori) | – | – | – | ✓ |
 
-**Il marketplace è gratis per tutti** perché un marketplace vuoto non vende niente a nessuno, e i ritiri gratuiti sono il contenuto che lo fa esistere. Si paga la **promozione** (la fila in cima, l'email, il post), non la presenza.
+**Perché uno sale al Club.** Perché il Club porta due cose che nessuno strumento porta: **persone** (la fila, tutto l'anno) e **lavoro** (i team building e i ritiri Aurya pagano gli operatori, e li scegliamo tra chi è nel Club). Un team building da 400 € di compenso ripaga otto anni di Club. È anche la regola che ci conviene: chi ha investito 49 € è chi risponde, si presenta, porta persone.
 
-**Perché questi prezzi.** Annuali, non mensili: il prezzo di un weekend, pagato una volta; un canone mensile da 4-9 € si disdice al primo mese vuoto. Il Club a 49 sta come un Linktree Starter (54 €/anno), sotto il registro ROOI (80 €), nella fascia «sotto 100 €/anno» dei gestionali per freelance, e a un decimo di quello che Treatwell prende su un solo cliente nuovo da 200 €. Il Pro a 119 è un terzo di Momoyoga (348) e la metà di Fresha (239): nel 2028 può salire a 149. La Spinta a 19 è la porta piccola: chi la compra due volte ha quasi pagato un Club, e il passaggio glielo propone il prodotto. Se preferisci 99 per il Pro, cambia il seed, non il modello; sotto 99 no.
+**Perché uno sale al Pro.** Perché il Pro non riempie un ritiro: costruisce un professionista. La voce (Crea Studio, e dal 2028 una quota sugli ascolti delle sue meditazioni nella libreria), il racconto completo con la pagina nel Magazine (che da solo, a parte, vale 190 €), tre quarti d'ora con noi sul suo primo ritiro, WhatsApp, e la priorità quando la rete lavora. La differenza fra 49 e 119 è la differenza fra «mi porti persone» e «lavoriamo insieme».
 
-**Sostenibile per l'operatore?** Il Club è 4 € al mese; la Spinta il prezzo di un aperitivo per un ritiro da 2.000 € di incassi: una sola iscritta la ripaga dieci volte.
+**Perché la Spinta esiste.** Per chi non vuole abbonarsi e ha un ritiro adesso: 19 €, quel ritiro in prima fila. Chi la compra due volte ha quasi pagato un Club, e il prodotto glielo dice.
 
-**Sostenibile per noi?** Da solo no, mai. È il canone che paga server, email e strumenti, e il filtro che tiene la rete pulita: chi paga 49 € pubblica, risponde, porta persone. Costo marginale zero: scala senza lavoro a mano, e i prezzi possono salire nel 2028 senza uscire dalla fascia bassa.
+**Il racconto, chiarito.** L'intervista completa è il motore della rete e resta gratis per sempre ai primi cinquanta (piano di agosto). Dopo i cinquanta non è più gratis per tutti: costa a Valentina tre-quattro ore. Il Gratis scrive da sé; il Club ha il racconto breve (un questionario, quarantacinque minuti di lavoro nostro); il Pro ha l'intervista completa; chi la vuole senza abbonarsi la paga a parte, 190 €. Così il racconto è un vantaggio che cresce col gradino invece di comparire ovunque.
+
+**Cosa NON promettiamo, per non incasinarci.** Nessuna esclusiva di zona (siamo una rete, non un franchising). Nessun «illimitato»: la prima fila ha un post al mese per operatore, la rete che lavora chiama chi è adatto al lavoro, i 45 minuti sono una volta l'anno. Ogni vantaggio ha un tetto scritto, così si mantiene.
+
+**Il marketplace è gratis per tutti** perché un marketplace vuoto non vende niente a nessuno, e i ritiri gratuiti sono il contenuto che lo fa esistere. Si paga la **promozione**, non la presenza.
+
+**Perché questi prezzi.** Annuali, non mensili: il prezzo di un weekend, pagato una volta; un canone mensile da 4-9 € si disdice al primo mese vuoto. Il Club a 49 sta come un Linktree Starter (54 €/anno), sotto il registro ROOI (80 €), nella fascia «sotto 100 €/anno» dei gestionali per freelance, e a un decimo di quello che Treatwell prende su un solo cliente nuovo da 200 €. Il Pro a 119 vale meno del solo racconto completo a parte (190), e sta a un terzo di Momoyoga (348): nel 2028 può salire a 149. Se preferisci 99 per il Pro, cambia il seed, non il modello; sotto 99 no.
+
+**Sostenibile per l'operatore?** Il Club è 4 € al mese; la Spinta il prezzo di un aperitivo per un ritiro da 2.000 € di incassi.
+
+**Sostenibile per noi?** Da solo no, mai: è il canone che paga server, email e strumenti, e il filtro che tiene la rete pulita. Il costo del Club per noi è quasi zero (il racconto breve: 45 minuti una volta; il post: 15 minuti). Il costo del Pro è vero ma piccolo: intervista 3-4 ore una volta, i 45 minuti l'anno, WhatsApp; con 30 Pro sono 5 ore a settimana di Valentina nel primo anno, poi meno.
 
 ### La caparra: bonifico prima, Stripe se vuoi
 
@@ -353,8 +365,8 @@ Decisioni del 2028, sui numeri: il modello «nuovo cliente»; i prezzi (Club 59,
 | Prodotto | Prezzo | Costi diretti | Netto | Ore di lavoro |
 |---|---|---|---|---|
 | Spinta | 19 € | Stripe 0,55 | 18 € | 0 (il post: 15 min di Valentina) |
-| Club | 49 €/anno | Stripe 1,4 | 47 € | 0,5 h/anno (post) |
-| Pro | 119 €/anno | Stripe 2,7 | 116 € | 2-3 h/anno (WhatsApp, racconto) |
+| Club | 49 €/anno | Stripe 1,4 | 47 € | 1,5 h il primo anno (racconto breve 45 min + post), 0,5 h dopo |
+| Pro | 119 €/anno | Stripe 2,7 | 116 € | 6-8 h il primo anno (intervista 3-4 h, 45 min sul primo ritiro, WhatsApp), 2-3 h dopo |
 | Regia leggera | 290 € | 0 | 290 € | 15 h |
 | Regia completa (14 partecipanti) | 690 + 320 | 0 | 1.010 € | 25 h |
 | Team building giornata (20 persone) | 3.000 € | 1.600-1.800 | ≈ 1.300 € | 12 h in due + 1 operatore |
@@ -495,8 +507,8 @@ Regola: **ogni settimana una cosa che resta**. I servizi si accettano solo se st
 | 1 | Zero commissioni Aurya sulla piattaforma, sempre; Stripe strumento, mai obbligo | **deciso dal founder (10/9)** |
 | 2 | Il bonifico con caparra è la strada principale; Aurya fuori dal flusso del denaro | **deciso dal founder (10/9)** |
 | 3 | Il marketplace è gratis per tutti i ritiri pubblicati; si paga la promozione | da confermare |
-| 4 | Quattro porte: Gratis / Spinta 19 / Club 49 / Pro 119 (mensile 12), annuali | da confermare (99 per il Pro accettabile, non meno) |
-| 5 | L'intervista resta di chi pubblica il profilo, gratis per sempre ai primi 50; il Pro ha solo la precedenza | da confermare |
+| 4 | Quattro porte con una domanda per gradino: Gratis (lavorare) / Spinta 19 (un ritiro) / Club 49 (persone e lavoro dalla rete) / Pro 119 (la voce, il racconto, noi accanto) | da confermare (99 per il Pro accettabile, non meno) |
+| 5 | Il racconto cresce col gradino: intervista completa gratis per sempre ai primi 50; poi Gratis scrive da sé, Club racconto breve, Pro intervista completa + Magazine, a parte 190 € | da confermare |
 | 6 | Fondatori: venti, Club gratis 2027, Pro bloccato (o cinquanta: un numero) | da confermare |
 | 7 | I servizi partono ora: regia pilota a 145, preventivo all'azienda, pagina aziende | da confermare |
 | 8 | Il primo ritiro Aurya in primavera 2027 alla Masseria | da confermare |
@@ -520,11 +532,12 @@ Regola: **ogni settimana una cosa che resta**. I servizi si accettano solo se st
 | Solo abbonamento obbligatorio | un canone d'ingresso uccide il funnel con 12 operatori |
 | Pay-per-lead | litigi su «era un lead vero?»; conta i contatti, non i clienti |
 | Pay-to-rank | contro il criterio invisibile; le recensioni furiose delle piattaforme di ritiri |
-| L'intervista solo nel Pro | è il motore della rete: toglierla al Gratis spegne la rete |
+| L'intervista uguale per tutti i gradini | non spiegava perché pagare di più; ora cresce col gradino (fondatori gratis, Club breve, Pro completa, a parte 190) |
+| Esclusive di zona | siamo una rete, non un franchising; e non si mantengono |
 
 # Appendice B — Il glossario
 
-**Il Cerchio**: l'iscrizione di chi cerca (email confermata, città, raggio, interessi); riceve le meditazioni riservate, i ritiri in anteprima nella zona, la Lettera. **La fila**: le persone del Cerchio che hanno chiesto un tema in una zona. **La prima fila**: la selezione in cima al marketplace, la Lettera per zona, il post; è ciò che Spinta e Club comprano. **La Spinta**: 19 € una tantum per mettere un ritiro in prima fila. **La selezione**: due volte l'anno, i ritiri scelti spediti al Cerchio (15 gennaio, settembre). **La regia**: il servizio di organizzazione di un ritiro per un operatore. **I cancelli**: i tre numeri pubblici (300 iscritti, 10 ritiri, 1.000 visite) che accendono il Club. **I fondatori**: i primi venti operatori con profilo pubblicato entro il 31/10/2026. **Il racconto**: l'intervista scritta da noi, con il badge «Verificato Aurya».
+**Il Cerchio**: l'iscrizione di chi cerca (email confermata, città, raggio, interessi); riceve le meditazioni riservate, i ritiri in anteprima nella zona, la Lettera. **La fila**: le persone del Cerchio che hanno chiesto un tema in una zona. **La prima fila**: la selezione in cima al marketplace, la Lettera per zona, il post; è ciò che Spinta e Club comprano. **La Spinta**: 19 € una tantum per mettere un ritiro in prima fila. **La selezione**: due volte l'anno, i ritiri scelti spediti al Cerchio (15 gennaio, settembre). **La regia**: il servizio di organizzazione di un ritiro per un operatore. **I cancelli**: i tre numeri pubblici (300 iscritti, 10 ritiri, 1.000 visite) che accendono il Club. **I fondatori**: i primi venti operatori con profilo pubblicato entro il 31/10/2026. **Il racconto**: la storia dell'operatore scritta da noi; breve (dal questionario, Club) o completa (l'intervista con Valentina, badge «Verificato Aurya», pagina nel Magazine: fondatori e Pro, o 190 € a parte). **La rete che lavora**: i membri del Club e del Pro tra cui scegliamo, pagandoli, chi conduce i team building, i ritiri Aurya e le regie in partnership.
 
 # Appendice C — Le fonti del mercato
 
