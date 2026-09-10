@@ -498,8 +498,8 @@ _BRAND_PAGES = {
         "title": "Trovami il mio ritiro | Ritiri ed esperienze olistiche vicino a te | Aurya",
         "description": ("Dicci cosa cerchi e dove: ti avvisiamo quando troviamo "
                         "un ritiro adatto a te, vicino a dove vuoi andare. Subito "
-                        "le meditazioni riservate; il 15 gennaio 2027 la "
-                        "selezione dei ritiri di primavera."),
+                        "le meditazioni riservate, poi ritiri ed esperienze "
+                        "pensati sui tuoi interessi."),
         "image": "/media/hero-destination.webp",
     },
     "per-operatori": {

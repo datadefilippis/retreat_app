@@ -206,7 +206,11 @@ class TestRb4LaPortaDiChiCerca:
         tr = json.loads(PRELAUNCH.read_text())["tr"]
         assert tr["cta"] == "Trovami il mio ritiro" and "ritiro" in tr["title"].lower()
         assert tr["d1w"] == "Subito" and "meditazioni" in tr["d1t"].lower()
-        assert "15 gennaio 2027" in tr["d3w"] and "primavera 2027" in tr["d3t"]
+        # founder 10/9 sera: niente data («non voglio vincolarmi»); il terzo
+        # tempo e' il vantaggio: ritiri ed esperienze sui suoi interessi
+        assert "15 gennaio" not in json.dumps(tr), "la landing non promette piu' una data"
+        assert "interessi" in tr["d3b"] and "preferenze" in tr["d3b"]
+        assert tr["d2t"] == "La Lettera di Aurya"
         testo = " ".join(str(v) for v in tr.values()).lower()
         for cadenza in ("ogni due settimane", "ogni settimana", "ogni mese", "al lancio"):
             assert cadenza not in testo, f"cadenza o promessa vecchia: «{cadenza}»"
@@ -219,7 +223,8 @@ class TestRb4LaPortaDiChiCerca:
         from services.identita import CORPI, corpo_cerca_ritiro
         assert "cerca-ritiro" in CORPI
         corpo = corpo_cerca_ritiro()
-        for frase in ("C’è un ritiro che ti sta aspettando.", "Cosa succede dopo, detto prima.", "15 gennaio 2027", "Persone, non annunci."):
+        # founder 10/9 sera: niente data nel corpo, il vantaggio al suo posto
+        for frase in ("C’è un ritiro che ti sta aspettando.", "Cosa succede dopo, detto prima.", "pensati per te", "Persone, non annunci."):
             assert frase in corpo, frase
         assert "al lancio" not in corpo.lower()
 

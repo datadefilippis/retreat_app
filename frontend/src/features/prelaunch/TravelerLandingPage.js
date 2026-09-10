@@ -72,7 +72,7 @@ function SchedaForm({ t, id, context, titolo }) {
         context={context === 'hero' ? 'cerca-ritiro' : 'cerca-ritiro_fondo'}
         ctaLabel={t('tr.cta', { defaultValue: 'Trovami il mio ritiro' })}
         consentText={t('tr.consent', { defaultValue: 'Acconsento a ricevere le email del Cerchio di Aurya, con ritiri ed esperienze selezionati in base alle mie preferenze.' })}
-        thanksBody={t('tr.thanksDoi', { defaultValue: 'Quasi dentro: apri la tua casella e conferma. Appena confermi si aprono le meditazioni riservate, e il 15 gennaio 2027 ricevi la selezione dei ritiri di primavera scelta per te.' })}
+        thanksBody={t('tr.thanksDoi', { defaultValue: 'Quasi dentro: apri la tua casella e conferma. Appena confermi si aprono le meditazioni riservate, e da lì in poi ricevi ritiri ed esperienze pensati sui tuoi interessi e le tue preferenze.' })}
       />
       <p className="mt-4 text-xs leading-relaxed text-foreground/60">
         {t('tr.trust', { defaultValue: 'Una conferma via email, poi sei dentro. Gratis e puoi cancellarti con un clic.' })}
@@ -91,7 +91,7 @@ export default function TravelerLandingPage() {
 
   useSeoMeta({
     title: t('tr.seoTitle', { defaultValue: 'Trovami il mio ritiro | Ritiri ed esperienze olistiche vicino a te | Aurya' }),
-    description: t('tr.seoDesc', { defaultValue: 'Dicci cosa cerchi e dove: ti avvisiamo quando troviamo un ritiro adatto a te, vicino a dove vuoi andare. Subito le meditazioni riservate; il 15 gennaio 2027 la selezione dei ritiri di primavera.' }),
+    description: t('tr.seoDesc', { defaultValue: 'Dicci cosa cerchi e dove: ti avvisiamo quando troviamo un ritiro adatto a te, vicino a dove vuoi andare. Subito le meditazioni riservate, poi ritiri ed esperienze pensati sui tuoi interessi.' }),
     canonicalPath: '/cerca-ritiro',
   });
 
@@ -106,17 +106,18 @@ export default function TravelerLandingPage() {
     },
     {
       Icon: Mail,
-      when: t('tr.d2w', { defaultValue: 'Quando vale la pena' }),
-      label: t('tr.l2', { defaultValue: 'La Lettera di Aurya' }),
-      title: t('tr.d2t', { defaultValue: 'La Lettera' }),
-      body: t('tr.d2b', { defaultValue: 'Una pratica raccontata bene, una persona della rete da conoscere e i ritiri da scoprire in anteprima.' }),
+      when: t('tr.d2w', { defaultValue: 'Ogni tanto' }),
+      label: t('tr.l2', { defaultValue: 'La Lettera di Aurya, con pratiche e persone della rete' }),
+      title: t('tr.d2t', { defaultValue: 'La Lettera di Aurya' }),
+      body: t('tr.d2b', { defaultValue: 'Un’email, solo quando vale la pena: una pratica raccontata bene, una persona della rete da conoscere, i ritiri da scoprire in anteprima.' }),
     },
     {
       Icon: CalendarHeart,
-      when: t('tr.d3w', { defaultValue: '15 gennaio 2027' }),
-      label: t('tr.l3', { defaultValue: 'La selezione dei ritiri di primavera 2027' }),
-      title: t('tr.d3t', { defaultValue: 'La selezione dei ritiri di primavera 2027' }),
-      body: t('tr.d3b', { defaultValue: 'Il 15 gennaio ti presenteremo i ritiri selezionati in base a ciò che ci hai raccontato: chi li conduce, il luogo, il prezzo e la caparra.' }),
+      // founder 10/9 sera: niente data («non voglio vincolarmi»), il vantaggio
+      when: t('tr.d3w', { defaultValue: 'Quando c’è quello giusto' }),
+      label: t('tr.l3', { defaultValue: 'Ritiri ed esperienze olistiche pensati sui tuoi interessi' }),
+      title: t('tr.d3t', { defaultValue: 'Ritiri ed esperienze pensati per te' }),
+      body: t('tr.d3b', { defaultValue: 'Ti proponiamo ritiri ed esperienze olistiche scelti in base ai tuoi interessi e alle tue preferenze: chi li conduce, il luogo, il prezzo e la caparra.' }),
     },
   ];
 
