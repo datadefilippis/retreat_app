@@ -588,13 +588,18 @@ export default function EventLandingPage() {
   // dati del ritiro + JSON-LD Event (schema.org) per i rich results.
   const seoProduct = data?.product;
   const seoOcc = data?.occurrence;
+  // SEO-R (10/9/2026): lo stesso titolo della shell (nome · dove · quando |
+  // Aurya) e una descrizione che dice cosa, dove, quando e chi conduce
+  const quandoSeo = seoOcc?.start_at
+    ? new Date(seoOcc.start_at).toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' }) : '';
+  const doveSeo = seoOcc?.city || seoOcc?.region || 'Italia';
   useSeoMeta({
     title: seoProduct
-      ? `${seoProduct.name}${seoOcc?.city ? ` · ${seoOcc.city}` : ''} · prenota online`
+      ? `${seoProduct.name} · ${doveSeo}${quandoSeo ? ` · ${quandoSeo}` : ''} | Aurya`
       : undefined,
-    description: seoProduct?.description
+    description: (seoProduct?.description && String(seoProduct.description).length >= 60)
       ? String(seoProduct.description).slice(0, 155)
-      : (seoProduct ? `Prenota ${seoProduct.name}: date, prezzi e disponibilità in tempo reale.` : undefined),
+      : (seoProduct ? `Ritiro a ${doveSeo}${quandoSeo ? `, dal ${quandoSeo}` : ''}.${data?.organizer?.name ? ` Lo conduce ${data.organizer.name}.` : ''} Chi conduce, il programma e come si prenota su Aurya.` : undefined),
     image: seoOcc?.cover_image_url || seoProduct?.image_url || undefined,
     canonicalPath: `/e/${orgSlug}/${slug}`,
     // S1 — array JSON-LD: Event + FAQPage (le FAQ del ritiro sono già

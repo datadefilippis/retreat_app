@@ -428,12 +428,28 @@ export default function OperatorProfilePage() {
   }, [data, navState]);
 
   const rs = data?.reviews_stats;
+  // SEO-R (10/9/2026): lo stesso titolo della shell (routers/seo_shell
+  // _meta_operator): nome · discipline a citta' | Aurya. Le discipline sono
+  // le parole chiave dell'olistico; «ritiri a» era falso per chi non ne fa.
+  const discSeo = (data?.disciplines || []).map(disciplineLabel).filter(Boolean);
+  const titoloSeo = (() => {
+    if (!data?.name) return undefined;
+    const prova = (n) => {
+      const d = discSeo.slice(0, n).join(', ');
+      if (d && data.city) return `${data.name} · ${d} a ${data.city} | Aurya`;
+      if (d) return `${data.name} · ${d} | Aurya`;
+      if (data.city) return `${data.name} · operatore olistico a ${data.city} | Aurya`;
+      return `${data.name} · operatore olistico su Aurya`;
+    };
+    let t = prova(3);
+    for (const n of [2, 1]) if (t.length > 68) t = prova(n);
+    return t;
+  })();
   useSeoMeta({
-    title: data?.name
-      ? `${data.name}${data.city ? ` · ritiri a ${data.city}` : ''} · profilo professionista`
-      : undefined,
+    title: titoloSeo,
     description: (data?.tagline || data?.bio)
-      ? String(data.tagline || data.bio).slice(0, 155) : undefined,
+      ? String(data.tagline || data.bio).slice(0, 155)
+      : (data?.name ? `${data.name}: ${(discSeo.slice(0, 4).join(', ') || 'pratiche olistiche').toLowerCase()}${data.city ? ` a ${data.city}` : ''}. Servizi con prezzo, ritiri e recensioni verificate su Aurya.` : undefined),
     image: data?.cover_url || data?.logo_url || undefined,
     canonicalPath: `/o/${org_slug}`,
     // SEO1 — LocalBusiness geo-taggato allineato allo shell: address + geo

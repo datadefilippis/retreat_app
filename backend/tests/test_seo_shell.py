@@ -133,7 +133,8 @@ class TestNetworkPhaseRT5:
         professionisti, con lo stesso title della SPA."""
         monkeypatch.setenv("SITE_PHASE", "network")
         meta = await shell._meta_operators_index()
-        assert meta["title"] == "Professionisti del benessere in Italia | Aurya"
+        # SEO-R (10/9/2026): «operatori olistici» e' la parola che la gente cerca
+        assert meta["title"] == "Operatori olistici e professionisti del benessere in Italia | Aurya"
         assert "rete aurya |" not in meta["title"].lower()
         # le varianti /operatori/{cat} mostrano un sottoinsieme della
         # stessa lista: canonical sulla radice

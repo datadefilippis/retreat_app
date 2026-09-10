@@ -182,7 +182,7 @@ async def build_core() -> str:
                     {"is_sample": {"$ne": True}, "is_active": {"$ne": False},
                      "exclude_from_listings": {"$ne": True},
                      "public_slug": {"$nin": [None, ""]}}):
-                urls.append(_url(f"{base}/esplora-operatori", priority="0.9"))
+                pass   # SEO-R (10/9/2026): /esplora-operatori e' un 301 → /operatori (gia' in sitemap)
             from services.seo_listing import listable_retreats
             if await listable_retreats():
                 urls.append(_url(f"{base}/esperienze", priority="0.9"))   # RE (10/9): la pagina vera

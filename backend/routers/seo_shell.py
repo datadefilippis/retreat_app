@@ -485,9 +485,10 @@ _BRAND_PAGES = {
                         "cerchi. Con la rete Aurya di professionisti del benessere e di "
                         "strutture, condotti da persone vere. Prezzo pattuito su quello "
                         "che volete. Risposta entro due giorni lavorativi."),
+        "image": "/media/aurya-hero-poster.jpg",
     },
     "cerca-ritiro": {
-        "title": "Trovami il mio ritiro | Ritiri ed esperienze olistiche vicino a te | Aurya",
+        "title": "Trovami il mio ritiro | Ritiri olistici vicino a te | Aurya",
         "description": ("Dicci cosa cerchi e dove: ti avvisiamo quando troviamo "
                         "un ritiro adatto a te, vicino a dove vuoi andare. Subito "
                         "le meditazioni riservate, poi ritiri ed esperienze "
@@ -508,6 +509,7 @@ _BRAND_PAGES = {
         "description": ("Da dove nasce Aurya, cosa vogliamo costruire e chi "
                         "siamo. La rete degli operatori olistici in Italia, "
                         "raccontata con onestà."),
+        "image": "/media/aurya-hero-poster.jpg",
     },
     # OF3 — la cadenza dichiarata era in tre versioni diverse (qui
     # "ogni due settimane", sulla landing "ogni tanto", nel modulo del
@@ -518,12 +520,13 @@ _BRAND_PAGES = {
     # stesso title della SPA (NewsletterLandingPage), la pila di valore
     # vera (meditazioni riservate, anteprime, la Lettera).
     "newsletter": {
-        "title": ("Il Cerchio di Aurya | Meditazioni riservate, ritiri in "
-                  "anteprima, una lettera quando vale"),
+        # SEO-R (10/9/2026): entro i ~60 caratteri che Google mostra
+        "title": "Il Cerchio di Aurya | Meditazioni gratuite e ritiri in anteprima",
         "description": ("Entra nel Cerchio di Aurya: meditazioni riservate "
                         "gratuite, ritiri ed esperienze olistiche in "
                         "anteprima nella tua zona e la Lettera, ogni due "
                         "settimane. Ti cancelli con un clic."),
+        "image": "/media/hero-destination.webp",
     },
     # OF3 — tre bugie in due righe: la pagina non si chiama piu' cosi'
     # ("Per i professionisti del benessere"), non usa mai la parola
@@ -549,6 +552,7 @@ _BRAND_PAGES = {
         "description": ("Siamo Valentina e Davide. Perché abbiamo "
                         "costruito Aurya, come lavoriamo e cosa vogliamo "
                         "che diventi nei prossimi dieci anni."),
+        "image": "/media/chisiamo-aurya.jpg",
     },
     # ES2 (25/8) — DUE PAGINE PUBBLICHE CHE ERANO MUTE. Trovate
     # censendo gli URL che rispondono 200: /meditazioni e' linkata dal
@@ -562,6 +566,7 @@ _BRAND_PAGES = {
         "description": ("Sessioni sonore composte dai professionisti della "
                         "rete Aurya, per dormire, meditare, rilassarsi. "
                         "L'ascolto è riservato a chi fa parte del cerchio."),
+        "image": "/media/hp-sound.jpg",
     },
     "costi": {
         # P1 (10/9/2026): zero commissioni, i piani del 2027 scritti da oggi
@@ -570,6 +575,7 @@ _BRAND_PAGES = {
                         "ritiri e clienti non si pagano. Fino al 31 "
                         "dicembre 2026 nessun costo, nemmeno sulle "
                         "prenotazioni. Poi scegli tu."),
+        "image": "/media/hero-organizer.webp",
     },
     "come-funziona": {
         "title": "Come funziona Aurya: prenota ritiri olistici con caparra e pagamento diretto",
@@ -1480,6 +1486,39 @@ async def _meta_event(org_slug: str, occ_slug: str) -> Optional[dict]:
     desc = (prod.get("description") or "")[:300]
     image = _abs_image(occ.get("cover_image_url")
                        or (prod.get("images") or [None])[0])
+    # SEO-R (10/9/2026): la descrizione condivisa dice cosa, dove, quando,
+    # chi conduce e quanto costa — mai «Ritiro a X. Prenota su Aurya.»;
+    # e se il ritiro non ha una foto, l'anteprima usa la copertina di chi
+    # lo organizza (mai il logo generico quando c'e' di meglio).
+    _cat_label = None
+    try:
+        from models.retreat_taxonomy import RETREAT_CATEGORIES
+        _cat_label = RETREAT_CATEGORIES.get(prod.get("category") or "")
+    except Exception:   # noqa: BLE001
+        _cat_label = None
+    _prezzo = occ.get("price_override")
+    if _prezzo is None:
+        _prezzo = prod.get("unit_price") if prod.get("unit_price") is not None else prod.get("price")
+    if len(desc) < 60:
+        pezzi = [f"{('Ritiro di ' + _cat_label.lower()) if _cat_label else 'Ritiro'} a {where}"
+                 + (f", dal {when}" if when else "") + "."]
+        if org_name:
+            pezzi.append(f"Lo conduce {org_name}.")
+        if _prezzo:
+            try:
+                pezzi.append(f"Da {int(float(_prezzo))} €, posti limitati.")
+            except (TypeError, ValueError):
+                pass
+        pezzi.append("Chi conduce, il programma e come si prenota su Aurya.")
+        desc = (desc + " " if desc else "") + " ".join(pezzi)
+    if not image:
+        try:
+            from database import organizations_collection as _orgs
+            _o = await _orgs.find_one({"id": prod.get("organization_id")},
+                                      {"_id": 0, "public_profile.cover_url": 1})
+            image = _abs_image(((_o or {}).get("public_profile") or {}).get("cover_url"))
+        except Exception:   # noqa: BLE001
+            image = None
     canonical = f"{base}/e/{org_slug}/{occ_slug}"
 
     # SEO1 — location strutturata (PostalAddress + GeoCoordinates) e Offer:
@@ -1525,7 +1564,8 @@ async def _meta_event(org_slug: str, occ_slug: str) -> Optional[dict]:
     cat = prod.get("category")
     crumbs = sx.breadcrumb([
         ("Aurya", f"{base}/"),
-        *([(cat.replace("-", " ").title(), f"{base}/ritiri/{cat}")] if cat else []),
+        ("Ritiri ed esperienze", f"{base}/esperienze"),
+        *([(cat.replace("-", " ").title(), f"{base}/esperienze/{cat}")] if cat else []),
         (prod["name"], canonical),
     ])
     return {
@@ -1557,6 +1597,12 @@ def _articles_index_html(titolo: str, docs: list, base: str) -> str:
 # Una riga vera per categoria, cosi' l'hub non e' solo un elenco.
 _CATEGORIE_INTRO = {
     "ayurveda": "I tre dosha, l'alimentazione dei sei sapori e i trattamenti: l'Ayurveda raccontato da chi lo pratica.",
+    # TX (10/9/2026): le categorie entrate con la tassonomia unica
+    "astrologia": "Astrologia, tarocchi evolutivi e mappe natali: strumenti di lettura, non di previsione.",
+    "costellazioni": "Costellazioni familiari: cosa succede in un cerchio, chi le conduce, cosa aspettarsi.",
+    "crescita": "Crescita personale: counseling, coaching olistico e percorsi che cambiano qualcosa davvero.",
+    "reiki": "Reiki e pratiche energetiche: cosa sono, cosa non promettono, come si sceglie un operatore.",
+    "tantra": "Tantra e relazioni: il lavoro sul corpo e sull'intimità, spiegato senza equivoci.",
     "aziendale": "Benessere in azienda: ritiri, giornate e programmi per i team, senza le parole vuote.",
     "breathwork": "Tecniche di respiro, cosa aspettarsi da una sessione e come scegliere chi la guida.",
     "cammini": "Camminare come pratica: cammini, natura e ritiri in movimento.",
@@ -2026,7 +2072,8 @@ async def _meta_esplora_operatori(categoria: Optional[str] = None) -> dict:
     # SR1 — la directory vive su /operatori: canonico unico anche per
     # chi arriva ancora da /esplora-operatori (la SPA rimanda)
     canonical = f"{base}/operatori"
-    titolo = "Professionisti del benessere in Italia | Aurya"
+    # SEO-R (10/9/2026): «operatori olistici» e' la parola che la gente cerca
+    titolo = "Operatori olistici e professionisti del benessere in Italia | Aurya"
     descr = ("Scopri i professionisti del benessere su Aurya: pratiche, "
              "discipline e percorsi, raccontati uno a uno.")
 
@@ -2123,7 +2170,7 @@ async def _meta_esperienze(categoria: Optional[str] = None,
              + '<p><a href="/operatori">I professionisti</a> · '
                '<a href="/blog">Il Magazine</a></p></div>')
     return {
-        "title": "Ritiri ed esperienze in programma | Aurya",
+        "title": "Ritiri ed esperienze olistiche in programma | Aurya",
         "description": ("I ritiri e le esperienze olistiche dei professionisti "
                         "della rete Aurya, per data: yoga, meditazione, respiro, "
                         "suono, cammini. Ogni scheda dice chi conduce, dove, "
@@ -2131,7 +2178,7 @@ async def _meta_esperienze(categoria: Optional[str] = None,
                         "bonifico."),
         "canonical": canonical,
         "hreflang": _hub_hreflang(canonical),
-        "image": f"{base}/og-cover.jpg",
+        "image": f"{base}/media/hero-blog.webp",   # la copertina della pagina
         "content_html": corpo,
         "noindex": quanti == 0,
     }
@@ -2287,10 +2334,29 @@ async def _meta_operator(org_slug: str) -> Optional[dict]:
 
     # Title local-oriented: "{nome} · ritiri a {città} | Aurya" cattura la
     # query di brand+luogo dell'operatore.
-    title = f"{name} · ritiri a {city} | Aurya" if city \
-        else f"{name} · professionista su Aurya"
-    desc = bio or (f"Ritiri ed esperienze di {name}"
-                   + (f" a {city}" if city else "") + " su Aurya.")
+    # SEO-R (10/9/2026 sera, founder: «gli operatori olistici devono essere
+    # indicizzati con parole chiave dell'olistico»): il titolo dice le
+    # DISCIPLINE e la citta' («Giulia Serra · Reiki, Meditazione a Ostuni»),
+    # non «ritiri a», che era falso per chi non ne organizza. Lo stesso
+    # titolo lo mette il client (OperatorProfilePage): un documento solo.
+    from models.disciplines import DISCIPLINES
+    _disc = [DISCIPLINES[d] for d in (profile.get("disciplines") or []) if d in DISCIPLINES]
+    def _titolo(n):
+        d = ", ".join(_disc[:n])
+        if d and city:
+            return f"{name} · {d} a {city} | Aurya"
+        if d:
+            return f"{name} · {d} | Aurya"
+        if city:
+            return f"{name} · operatore olistico a {city} | Aurya"
+        return f"{name} · operatore olistico su Aurya"
+    title = _titolo(3)
+    for n in (2, 1):
+        if len(title) > 68:
+            title = _titolo(n)
+    desc = bio or (f"{name}: {', '.join(_disc[:4]).lower() or 'pratiche olistiche'}"
+                   + (f" a {city}" if city else "")
+                   + ". Servizi con prezzo, ritiri e recensioni verificate su Aurya.")
     crumbs = sx.breadcrumb([("Aurya", f"{base}/"),
                             ("Professionisti", f"{base}/operatori"),
                             (name, canonical)])
@@ -2502,6 +2568,10 @@ async def resolve_meta(path: str) -> Optional[dict]:
     # senza slug NON e' una pagina: 404 (nginx la ferma prima in prod,
     # qui vale per il dev e per le guardie)
     if head in reg.get("solo_con_slug", []) and len(parts) == 1:
+        return None
+    # SEO-R (10/9/2026): /strutture e /struttura sono PRENOTATI (SR fase 0),
+    # non pagine: rispondevano con il guscio della home, senza canonica
+    if head in ("strutture", "struttura"):
         return None
     # RE (10/9/2026): /esperienze e' il calendario; /ritiri ed
     # /esplora-ritiri rimandano li' (nginx 301), la shell serve lo stesso

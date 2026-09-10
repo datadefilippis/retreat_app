@@ -226,7 +226,7 @@ class TestRb4LaPortaDiChiCerca:
 
     def test_la_shell_e_il_corpo_dicono_la_porta(self):
         shell = SHELL.read_text()
-        assert "Trovami il mio ritiro | Ritiri ed esperienze olistiche vicino a te | Aurya" in shell
+        assert "Trovami il mio ritiro | Ritiri olistici vicino a te | Aurya" in shell   # SEO-R: titolo entro ~60
         assert '"cerca-ritiro": "WebPage"' in shell
         from services.identita import CORPI, corpo_cerca_ritiro
         assert "cerca-ritiro" in CORPI
@@ -1055,3 +1055,37 @@ class TestSiSoloItalianoNelWizard:
         for morto in ("trName", "trDescription", "trLong"):
             assert morto not in wiz, morto
         assert "translations: (() =>" not in wiz
+
+
+class TestSeoRIlConsolidamento:
+    """SEO-R (10/9/2026 sera, founder): «operatori e ritiri indicizzati con
+    le parole dell'olistico; quando si condivide un link deve apparire
+    un'anteprima e una descrizione appropriata, non a caso»."""
+
+    def test_il_profilo_dice_le_discipline_e_la_citta(self):
+        shell = (BACKEND_DIR / "routers" / "seo_shell.py").read_text()
+        corpo = shell[shell.index("async def _meta_operator("):shell.index("async def _meta_link_page")]
+        assert "from models.disciplines import DISCIPLINES" in corpo
+        assert 'f"{name} · {d} a {city} | Aurya"' in corpo and "ritiri a {city}" not in corpo
+        assert "recensioni verificate su Aurya" in corpo
+        client = (FE / "features" / "storefront" / "OperatorProfilePage.js").read_text()
+        assert "`${data.name} · ${d} a ${data.city} | Aurya`" in client and "profilo professionista`" not in client
+
+    def test_la_landing_del_ritiro_ha_descrizione_e_anteprima_vere(self):
+        shell = (BACKEND_DIR / "routers" / "seo_shell.py").read_text()
+        corpo = shell[shell.index("async def _meta_event("):shell.index("async def _meta_product(")]
+        assert "Lo conduce {org_name}" in corpo and "public_profile.cover_url" in corpo
+        assert 'f"{base}/esperienze/{cat}"' in corpo and '/ritiri/{cat}' not in corpo
+        client = (FE / "features" / "storefront" / "EventLandingPage.js").read_text()
+        assert "| Aurya`" in client and "· prenota online`" not in client
+
+    def test_le_pagine_cardine_hanno_la_loro_anteprima(self):
+        shell = (BACKEND_DIR / "routers" / "seo_shell.py").read_text()
+        blocco = shell[shell.index("_BRAND_PAGES = {"):shell.index("def _meta_brand_page")]
+        for chiave in ("newsletter", "meditazioni", "chi-siamo", "manifesto", "aziende", "costi", "cerca-ritiro", "entra-nella-rete"):
+            i = blocco.index(f'    "{chiave}": {{')
+            assert '"image": "/media/' in blocco[i:blocco.index("\n    },", i)], f"{chiave} senza immagine di anteprima"
+        assert "Operatori olistici e professionisti del benessere in Italia | Aurya" in shell
+        assert 'if head in ("strutture", "struttura"):' in shell
+        seo = (BACKEND_DIR / "routers" / "seo.py").read_text()
+        assert 'urls.append(_url(f"{base}/esplora-operatori"' not in seo, "un 301 non si dichiara in sitemap"
