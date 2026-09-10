@@ -204,6 +204,8 @@ async def lifespan(app: FastAPI):
         await migrate_cerchio_alert_esplicito_v1()   # FV5: l'avviso ritiri solo a chi l'ha chiesto
         from services.migrazioni_cerchio import migrate_vie_femminile_v1
         await migrate_vie_femminile_v1()   # TX: la via «cerchi» diventa «femminile»
+        from services.migrazioni_cerchio import migrate_sequenze_bonifica_v1
+        await migrate_sequenze_bonifica_v1()   # DEPLOY 10/9: niente «evento» vecchio a chi era gia' dentro
     except Exception as e:
         logging.error(f"Failed to run zero commissioni migration: {e}")
     # One-time migration: trial only on Core plan

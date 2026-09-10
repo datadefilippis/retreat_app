@@ -64,3 +64,46 @@ async def migrate_vie_femminile_v1() -> None:
         n += 1
     await migrations.insert_one({"_id": "vie_femminile_v1", "applied_at": datetime.now(timezone.utc), "aggiornati": n})
     logger.info("migrate_vie_femminile_v1: %s iscritti con «cerchi» → «femminile»", n)
+
+
+async def migrate_sequenze_bonifica_v1() -> None:
+    """DEPLOY (10/9/2026 notte, founder: «assicuriamoci che nulla bugghi
+    negli utenti che gia' sono registrati»). Le sequenze (FV2) nascono
+    con questo deploy: in produzione nessuna organizzazione ha marcature
+    `sequenza.*`. Al primo giro il motore troverebbe operatori entrati in
+    agosto, gia' online da settimane, e manderebbe loro «La tua pagina e'
+    online» (passo-evento, vale entro 60 giorni dalla registrazione) e a
+    noi il «g2» di gente che Valentina ha gia' seguito a mano. Qui, UNA
+    volta, si marcano come «saltato pre-sequenze» il g2 di tutti e il
+    profilo_online di chi e' gia' online. Restano vivi, per chi e' nella
+    finestra, i passi che hanno ancora senso: np5/np10/np15 (pagina non
+    ancora online) e r14 (online, nessun ritiro). Il Cerchio non serve:
+    il benvenuto vale 0-2 giorni dalla conferma, e chi era confermato
+    prima resta fuori dalla finestra."""
+    from database import db
+    from services.sequenze import stato_operatore, _FILTRO_ORG, _PROIEZIONE_ORG
+    migrations = db["migrations"]
+    if await migrations.find_one({"_id": "sequenze_bonifica_v1"}):
+        return
+    now = datetime.now(timezone.utc)
+    marca = f"saltato pre-sequenze {now.isoformat()}"
+    g2 = online = 0
+    async for org in db.organizations.find(_FILTRO_ORG, _PROIEZIONE_ORG):
+        seq = org.get("sequenza") or {}
+        aggiorna = {}
+        if not seq.get("g2"):
+            aggiorna["sequenza.g2"] = marca
+            g2 += 1
+        if not seq.get("profilo_online"):
+            try:
+                stato = await stato_operatore(org)
+            except Exception:  # noqa: BLE001 — un'org rotta non ferma la bonifica
+                stato = {}
+            if stato.get("online"):
+                aggiorna["sequenza.profilo_online"] = marca
+                online += 1
+        if aggiorna:
+            await db.organizations.update_one({"id": org["id"]}, {"$set": aggiorna})
+    await migrations.insert_one({"_id": "sequenze_bonifica_v1", "applied_at": now,
+                                 "g2_saltati": g2, "profilo_online_saltati": online})
+    logger.info("migrate_sequenze_bonifica_v1: g2 saltato a %s org, profilo_online a %s gia' online", g2, online)

@@ -339,7 +339,7 @@ class TestP3MarketplaceApertoAPrimaFila:
     def test_il_listing_elenca_anche_i_ritiri_su_richiesta(self):
         src = (BACKEND_DIR / "routers" / "public.py").read_text()
         i = src.index("async def list_public_retreats(")
-        corpo = src[i:i + 12000]
+        corpo = src[i:i + 16000]   # DEPLOY 10/9 notte: la lista e' cresciuta (regola unica)
         assert '"transaction_mode": {"$in": ["direct", "request"]}' in corpo
         assert '"transaction_mode": "direct",' not in corpo, "GT1b non filtra piu' i ritiri su richiesta"
         assert '"booking": prod.get("transaction_mode") or "direct",' in corpo
@@ -372,8 +372,8 @@ class TestP3MarketplaceApertoAPrimaFila:
         # RE-ter: nel filtro solo le categorie con ritiri, col conteggio
         pub = (BACKEND_DIR / "routers" / "public.py").read_text()
         corpo = pub[pub.index("async def list_public_retreats("):pub.index("def _haversine_km(")]
-        assert '"categories": RETREAT_CATEGORIES' not in corpo and "await _categorie_con_ritiri()" in corpo
-        assert "async def _categorie_con_ritiri()" in pub
+        assert '"categories": RETREAT_CATEGORIES' not in corpo and "await _categorie_con_ritiri(preview)" in corpo
+        assert "async def _categorie_con_ritiri(preview: int = 1)" in pub
         assert "info?.count ? ` (${info.count})` : ''" in page
         assert "MarketplaceValueSections" not in page, "niente sezioni ridondanti sotto l'elenco (founder)"
 
@@ -702,7 +702,15 @@ class TestFv2LeSequenze:
         cerchio = (FE / "lib" / "cerchio.js").read_text()
         assert "wantsExperiences = null" in cerchio and "typeof wantsExperiences === 'boolean'" in cerchio
         assert (BACKEND_DIR / "services" / "migrazioni_cerchio.py").exists()
-        assert "migrate_cerchio_alert_esplicito_v1()" in (BACKEND_DIR / "server.py").read_text()
+        server = (BACKEND_DIR / "server.py").read_text()
+        assert "migrate_cerchio_alert_esplicito_v1()" in server
+        # DEPLOY 10/9 notte: le sequenze nascono col deploy; chi era gia'
+        # dentro non riceve un «evento» vecchio (profilo_online) ne' fa
+        # scattare il g2 a noi. La bonifica gira PRIMA del primo sweep.
+        assert "migrate_sequenze_bonifica_v1()" in server
+        mig = (BACKEND_DIR / "services" / "migrazioni_cerchio.py").read_text()
+        assert 'saltato pre-sequenze' in mig and '"sequenza.profilo_online"' in mig and '"sequenza.g2"' in mig
+        assert '"sequenza.np5"' not in mig, "np5/np10/np15 e r14 restano vivi per chi e' nella finestra"
 
     def test_il_cliente_risponde_all_operatore_non_ad_aurya(self):
         """FV7 (10/9 sera, founder): le email che il cliente riceve a nome
@@ -1070,6 +1078,38 @@ class TestSiSoloItalianoNelWizard:
         for morto in ("trName", "trDescription", "trLong"):
             assert morto not in wiz, morto
         assert "translations: (() =>" not in wiz
+
+
+class TestDeployUnaRegolaPerIRitiri:
+    """DEPLOY 10/9/2026 notte: sulla copia di produzione il filtro diceva
+    «Yoga (1)» e la lista era vuota — i due ritiri veri sono «su richiesta»
+    e la regola di luglio pretendeva Stripe pronto per tutti. Una regola
+    sola, in un posto, per lista, filtro, destinazioni ed elenco SEO."""
+
+    def test_la_regola_vive_in_un_posto(self):
+        pub = (BACKEND_DIR / "routers" / "public.py").read_text()
+        assert pub.count("def _ritiro_listabile(") == 1
+        assert pub.count("_ritiro_listabile(") >= 4
+        seo = (BACKEND_DIR / "services" / "seo_listing.py").read_text()
+        assert "from routers.public import _ritiro_listabile" in seo
+        assert '"transaction_mode": {"$in": ["direct", "request"]}' in seo
+        assert 'oid not in pay_ready' not in seo, "l'elenco SEO non pretende piu' Stripe per i ritiri su richiesta"
+
+    def test_su_richiesta_senza_stripe_e_listabile_online_no(self):
+        from routers.public import _ritiro_listabile
+        from core import prelaunch as _pl
+        vero = _pl.prelaunch_mode
+        try:
+            _pl.prelaunch_mode = lambda: False
+            import routers.public as _p
+            _p.prelaunch_mode = None  # non usato: la funzione importa a runtime
+            richiesta = {"organization_id": "o1", "transaction_mode": "request"}
+            online = {"organization_id": "o1", "transaction_mode": "direct"}
+            assert _ritiro_listabile(richiesta, set(), set(), preview=1)
+            assert not _ritiro_listabile(online, set(), set(), preview=1)
+            assert _ritiro_listabile(online, {"o1"}, set(), preview=1)
+        finally:
+            _pl.prelaunch_mode = vero
 
 
 class TestSeoRIlConsolidamento:

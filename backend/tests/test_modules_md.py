@@ -257,8 +257,12 @@ class TestCalendarListingGt1b:
     PUB_SRC = (BACKEND_DIR / "routers" / "public.py").read_text()
 
     def test_listing_query_filters_direct_mode(self):
-        """La query prodotti del listing pretende transaction_mode=direct."""
-        assert '"transaction_mode": "direct"' in self.PUB_SRC
+        """GT1b (luglio) pretendeva transaction_mode=direct. DEPLOY 10/9/2026
+        notte: si listano direct E request, e chi decide e' _ritiro_listabile
+        (online con pagamenti pronti OPPURE su richiesta)."""
+        assert '"transaction_mode": {"$in": ["direct", "request"]}' in self.PUB_SRC
+        assert '"transaction_mode": "direct"' not in self.PUB_SRC
+        assert "def _ritiro_listabile(" in self.PUB_SRC
 
     def test_listing_gated_on_payment_readiness(self):
         """Le org senza payment connection attiva+pronta spariscono dal

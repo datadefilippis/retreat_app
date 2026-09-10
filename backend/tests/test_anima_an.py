@@ -477,12 +477,13 @@ class TestDs2Polish:
 
     def test_destinations_promise_only_listable(self):
         """I conteggi di /public/destinations applicano lo STESSO gate
-        GT1b del calendario: direct + org pubblica + pagamenti pronti."""
+        del calendario (DEPLOY 10/9 notte, _ritiro_listabile): org pubblica
+        + (online con pagamenti pronti OPPURE su richiesta)."""
         src = (BACKEND_DIR / "routers" / "public.py").read_text()
         idx = src.index("async def public_destinations_index")
-        body = src[idx:idx + 3000]
-        assert '"transaction_mode": "direct"' in body
-        assert "pay_ready" in body
+        body = src[idx:idx + 3400]
+        assert '"transaction_mode": {"$in": ["direct", "request"]}' in body
+        assert "pay_ready" in body and "_ritiro_listabile(" in body
         assert "listable_products" in body
 
     def test_cover_has_brand_signature_and_geometry(self):

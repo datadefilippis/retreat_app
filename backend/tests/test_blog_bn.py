@@ -89,8 +89,10 @@ class TestBlogFunnelBN1:
     def test_leadform_compact_is_email_only(self):
         # la variante compact salta i campi profilazione del traveler
         assert "compact ? null : isOperator ?" in self.LEADFORM
-        # LT1 — il nome e' governato da showName (default: via se compact)
-        assert "const withName = showName === null ? !compact" in self.LEADFORM
+        # LT1 — il nome e' governato da showName (default: via se compact);
+        # US (10/9/2026 notte, founder): in ogni form del Cerchio (subscribe)
+        # il nome c'e' sempre, sopra l'email, facoltativo
+        assert "const withName = subscribe ? true : (showName === null ? !compact" in self.LEADFORM
 
     def test_cta_tracks_blog_context(self):
         assert "blog_${category}" in self.CTA

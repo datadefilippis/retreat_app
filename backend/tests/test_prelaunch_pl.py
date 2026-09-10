@@ -101,15 +101,21 @@ def test_public_listings_gate_samples_behind_flag():
     """PL8 — specchio esatto: flag OFF = solo contenuti VERI (sample
     nascosti); flag ON = SOLO campioni (i veri non compaiono)."""
     src = _src("routers/public.py")
-    # retreats: in prelaunch il gate diventa SOLO sample (niente |=)
-    assert "if prelaunch_mode():" in src
-    assert "pay_ready = set(sample_orgs)" in src
+    # retreats: in prelaunch (senza preview) il gate resta SOLO sample.
+    # DEPLOY 10/9/2026 notte: la regola vive in UN posto, _ritiro_listabile
+    # (online con pagamenti pronti OPPURE su richiesta), usata da lista,
+    # filtro categorie, destinazioni ed elenco SEO.
+    assert "def _ritiro_listabile(" in src
+    regola = src[src.index("def _ritiro_listabile("):src.index("async def _categorie_con_ritiri")]
+    assert "if prelaunch_mode() and not preview:" in regola and "return oid in sample_orgs" in regola
+    assert 'prod.get("transaction_mode") == "request" or oid in pay_ready' in regola
     assert "pay_ready |= sample_orgs" not in src, \
         "regressione: i ritiri veri comparirebbero in pre-lancio"
     # operatori: specchio sample <=> prelaunch
     assert "if _is_sample != _prelaunch:" in src
-    # destinazioni ed esperienze: stessi confini
-    assert "allowed_orgs = public_orgs & pay_ready" in src
+    # destinazioni ed esperienze: stessi confini (la stessa funzione)
+    assert src.count("_ritiro_listabile(") >= 4, "lista, categorie, destinazioni: una regola sola"
+    assert "allowed_orgs = public_orgs & pay_ready" not in src
     # entrambi marcano l'item come sample per il frontend (sfocatura)
     assert '"sample"' in src
 

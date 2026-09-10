@@ -3436,7 +3436,26 @@ async def pay_by_token(token: str):
 
 # ── Fase 5 (retreat) — calendario pubblico cross-organizzatore ───────────────
 
-async def _categorie_con_ritiri() -> dict:
+def _ritiro_listabile(prod: dict, pay_ready: set, sample_orgs: set, preview: int) -> bool:
+    """UNA regola per «questo ritiro si puo' listare» (DEPLOY 10/9/2026
+    notte). Prima c'erano tre perimetri (lista, filtro categorie, elenco
+    SEO/destinazioni) e non coincidevano: in produzione il filtro diceva
+    «Yoga (1)» e la lista era vuota, perche' i due ritiri veri sono «su
+    richiesta» (chiedi un posto, bonifico) e la regola GT1b di luglio
+    pretendeva Stripe attivo per tutti. Col modello del 10/9 (zero
+    commissioni, Stripe = strumento, prenotazione su richiesta sempre
+    possibile) un ritiro e' listabile se ha una pagina raggiungibile e
+    si puo' prenotare in QUALCHE modo: online con pagamenti pronti,
+    oppure su richiesta. In pre-lancio senza preview restano solo i
+    campioni (PL8: specchio esatto)."""
+    from core.prelaunch import prelaunch_mode
+    oid = prod.get("organization_id")
+    if prelaunch_mode() and not preview:
+        return oid in sample_orgs
+    return prod.get("transaction_mode") == "request" or oid in pay_ready
+
+
+async def _categorie_con_ritiri(preview: int = 1) -> dict:
     """RE-ter (10/9/2026 sera, founder): nel filtro compaiono SOLO le
     categorie che hanno almeno un ritiro futuro pubblicato, col numero
     accanto. Prima il filtro mostrava tutta la tassonomia e chi sceglieva
@@ -3448,29 +3467,47 @@ async def _categorie_con_ritiri() -> dict:
     now_iso = _dt.now(_tz.utc).isoformat()
     occs = await event_occurrences_collection.find(
         {"status": "published", "start_at": {"$gte": now_iso[:16]}},
-        {"_id": 0, "product_id": 1}).to_list(2000)
+        {"_id": 0, "product_id": 1, "slug": 1}).to_list(2000)
     if not occs:
         return {}
-    from database import organizations_collection
+    from database import (organizations_collection, stores_collection,
+                          payment_connections_collection)
     per_prodotto: dict = {}
     for o in occs:
-        per_prodotto[o["product_id"]] = per_prodotto.get(o["product_id"], 0) + 1
+        if o.get("slug"):                        # senza landing raggiungibile non si lista
+            per_prodotto[o["product_id"]] = per_prodotto.get(o["product_id"], 0) + 1
     prodotti = await products_collection.find(
         {"id": {"$in": list(per_prodotto)}, "is_active": True, "is_published": True,
          "item_type": "event_ticket", "transaction_mode": {"$in": ["direct", "request"]}},
-        {"_id": 0, "id": 1, "category": 1, "organization_id": 1}).to_list(2000)
-    # lo stesso perimetro della lista: solo org con la pagina pubblica,
-    # attive, non escluse, non campioni (un'edizione che la lista non
-    # mostra non deve contare)
-    org_ok = {o["id"] async for o in organizations_collection.find(
-        {"id": {"$in": list({p.get("organization_id") for p in prodotti})},
-         "public_slug": {"$nin": [None, ""]}, "is_active": {"$ne": False},
-         "exclude_from_listings": {"$ne": True}, "is_sample": {"$ne": True}},
+        {"_id": 0, "id": 1, "category": 1, "organization_id": 1, "transaction_mode": 1}).to_list(2000)
+    org_ids = list({p.get("organization_id") for p in prodotti})
+    # DEPLOY 10/9 notte — la stessa superficie pubblica della lista (store
+    # pubblicato oppure public_slug con vetrina pubblicata; attiva, non
+    # esclusa) e la stessa regola _ritiro_listabile: un'edizione che la
+    # lista non mostra non deve contare.
+    org_ok: set = set()
+    async for s in stores_collection.find(
+            {"organization_id": {"$in": org_ids}, "is_published": True,
+             "is_active": True, "visibility": "public"}, {"_id": 0, "organization_id": 1}):
+        org_ok.add(s["organization_id"])
+    async for o in organizations_collection.find(
+            {"id": {"$in": org_ids}, "public_slug": {"$nin": [None, ""]},
+             "store_settings.is_storefront_published": True}, {"_id": 0, "id": 1}):
+        org_ok.add(o["id"])
+    esclusi = {o["id"] async for o in organizations_collection.find(
+        {"id": {"$in": org_ids}, "$or": [{"is_active": False}, {"exclude_from_listings": True}]},
         {"_id": 0, "id": 1})}
+    org_ok -= esclusi
+    sample_orgs = {o["id"] async for o in organizations_collection.find(
+        {"id": {"$in": org_ids}, "is_sample": True}, {"_id": 0, "id": 1})}
+    pay_ready = {pc["organization_id"] async for pc in payment_connections_collection.find(
+        {"organization_id": {"$in": org_ids}, "status": "active", "runtime_status": "ready"},
+        {"_id": 0, "organization_id": 1})}
     conteggi: dict = {}
     # una categoria conta le EDIZIONI future (cio' che si vede nella lista)
     for p in prodotti:
-        if p.get("category") and p.get("organization_id") in org_ok:
+        if p.get("category") and p.get("organization_id") in org_ok \
+                and _ritiro_listabile(p, pay_ready, sample_orgs, preview):
             conteggi[p["category"]] = conteggi.get(p["category"], 0) + per_prodotto.get(p["id"], 0)
     return {k: {"label": v, "count": conteggi[k]}
             for k, v in RETREAT_CATEGORIES.items() if conteggi.get(k)}
@@ -3549,7 +3586,7 @@ async def list_public_retreats(
     ).sort("start_at", 1).limit(500)
     occs = await cursor.to_list(500)
     if not occs:
-        return {"items": [], "total": 0, "categories": await _categorie_con_ritiri()}
+        return {"items": [], "total": 0, "categories": await _categorie_con_ritiri(preview)}
 
     # prodotti (categoria + prezzo + nome) — solo vendibili.
     # GT1b (luglio) elencava SOLO i ritiri prenotabili online con Stripe
@@ -3628,15 +3665,13 @@ async def list_public_retreats(
     # così la directory non è vuota (mostrate sfocate e non prenotabili
     # lato frontend). A flag spento: comportamento identico a oggi.
     from core.prelaunch import prelaunch_mode
-    if prelaunch_mode() and not preview:
-        # PL8 — vetrina di pre-lancio: SOLO i campioni. I ritiri VERI
-        # restano nascosti finche' il lancio non apre: niente mix
-        # reale/finto e nessuna prenotazione prematura in vetrina.
-        # Con preview=1 (rotta /esplora-ritiri non linkata) il gate si
-        # bypassa e vale il perimetro marketplace (GT1b pieno).
-        pay_ready = set(sample_orgs)
-    org_slug = {oid: s for oid, s in org_slug.items() if oid in pay_ready}
-
+    # PL8 — vetrina di pre-lancio senza preview: SOLO i campioni. Niente
+    # mix reale/finto. DEPLOY 10/9 notte: la regola (campioni in
+    # pre-lancio; altrimenti online con pagamenti pronti OPPURE su
+    # richiesta) vive in _ritiro_listabile, condivisa con filtro
+    # categorie, destinazioni ed elenco SEO. Prima `org_slug` veniva
+    # filtrato su pay_ready e i ritiri «su richiesta» senza Stripe
+    # sparivano dalla lista (in produzione: 2 su 2).
     items = []
     for occ in occs:
         prod = prod_by_id.get(occ["product_id"])
@@ -3645,6 +3680,8 @@ async def list_public_retreats(
         slug_org = org_slug.get(prod["organization_id"])
         if not slug_org or not occ.get("slug"):
             continue   # senza landing raggiungibile non si lista
+        if not _ritiro_listabile(prod, pay_ready, sample_orgs, preview):
+            continue
         price_from = occ.get("price_override") or prod.get("unit_price")
         if price_max is not None and price_from is not None and price_from > price_max:
             continue
@@ -3809,8 +3846,8 @@ async def public_destinations_index():
     product_ids = list({o.get("product_id") for o in occs if o.get("product_id")})
     prods = await products_collection.find(
         {"id": {"$in": product_ids}, "is_active": True, "is_published": True,
-         "item_type": "event_ticket", "transaction_mode": "direct"},
-        {"_id": 0, "id": 1, "organization_id": 1},
+         "item_type": "event_ticket", "transaction_mode": {"$in": ["direct", "request"]}},
+        {"_id": 0, "id": 1, "organization_id": 1, "transaction_mode": 1},
     ).to_list(2000)
     org_ids = list({p["organization_id"] for p in prods})
 
@@ -3835,18 +3872,18 @@ async def public_destinations_index():
 
     # PL8 — in pre-lancio le destinazioni derivano SOLO dai campioni
     # (stessa regola del calendario: la vetrina mostra solo sample).
-    from core.prelaunch import prelaunch_mode
-    if prelaunch_mode():
-        allowed_orgs: set = set()
-        async for o in organizations_collection.find(
-                {"id": {"$in": org_ids}, "is_sample": True},
-                {"_id": 0, "id": 1}):
-            allowed_orgs.add(o["id"])
-    else:
-        allowed_orgs = public_orgs & pay_ready
+    # DEPLOY 10/9 notte — la stessa regola della lista (_ritiro_listabile):
+    # in pre-lancio solo i campioni; altrimenti online con pagamenti
+    # pronti OPPURE su richiesta, sempre con superficie pubblica.
+    sample_orgs: set = set()
+    async for o in organizations_collection.find(
+            {"id": {"$in": org_ids}, "is_sample": True},
+            {"_id": 0, "id": 1}):
+        sample_orgs.add(o["id"])
 
     listable_products = {p["id"] for p in prods
-                         if p["organization_id"] in allowed_orgs}
+                         if p["organization_id"] in public_orgs
+                         and _ritiro_listabile(p, pay_ready, sample_orgs, preview=0)}
     occs = [o for o in occs if o.get("product_id") in listable_products]
 
     counts: dict = {}

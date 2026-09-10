@@ -1389,7 +1389,9 @@ class TestAnteprimaMarketplace:
         assert "_prelaunch = prelaunch_mode() and not preview" in op
         rt = src.split("async def list_public_retreats")[1] \
                 .split("def _haversine_km")[0]
-        assert "if prelaunch_mode() and not preview:" in rt
+        # DEPLOY 10/9 notte: il gate di pre-lancio vive in _ritiro_listabile
+        assert "_ritiro_listabile(prod, pay_ready, sample_orgs, preview)" in rt
+        assert "if prelaunch_mode() and not preview:" in src.split("def _ritiro_listabile(")[1].split("async def")[0]
         r = requests.get(f"{BASE_URL}/api/public/operators",
                          params={"preview": 1}, timeout=10)
         assert r.status_code == 200
@@ -1408,8 +1410,9 @@ class TestAnteprimaMarketplace:
         mostrano solo campioni (sample=True) e le guardie PL8 restano
         scritte come prima."""
         src = (BACKEND_DIR / "routers" / "public.py").read_text()
-        # le guardie PL8 esistenti (test_prelaunch_pl) restano intatte
-        assert "pay_ready = set(sample_orgs)" in src
+        # le guardie PL8 esistenti (test_prelaunch_pl) restano intatte:
+        # DEPLOY 10/9 notte, la regola e' _ritiro_listabile
+        assert "return oid in sample_orgs" in src
         assert "if _is_sample != _prelaunch:" in src
         cfg = requests.get(f"{BASE_URL}/api/public/site-config",
                            timeout=10).json()

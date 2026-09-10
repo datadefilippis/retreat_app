@@ -45,14 +45,18 @@ async def listable_retreats(*, category: Optional[str] = None,
         return []
 
     product_ids = list({o["product_id"] for o in occs if o.get("product_id")})
+    # DEPLOY 10/9/2026 notte — la stessa regola della lista pubblica
+    # (routers.public._ritiro_listabile): online con pagamenti pronti
+    # OPPURE su richiesta. GT1b (luglio) pretendeva Stripe per tutti.
     prod_query: Dict[str, Any] = {
         "id": {"$in": product_ids}, "is_active": True, "is_published": True,
-        "item_type": "event_ticket", "transaction_mode": "direct"}
+        "item_type": "event_ticket", "transaction_mode": {"$in": ["direct", "request"]}}
     if category:
         prod_query["category"] = category
     prods = await products_collection.find(
         prod_query,
-        {"_id": 0, "id": 1, "name": 1, "organization_id": 1, "unit_price": 1},
+        {"_id": 0, "id": 1, "name": 1, "organization_id": 1, "unit_price": 1,
+         "transaction_mode": 1},
     ).to_list(1000)
     prod_by_id = {p["id"]: p for p in prods}
     org_ids = list({p["organization_id"] for p in prods})
@@ -85,10 +89,11 @@ async def listable_retreats(*, category: Optional[str] = None,
         if not prod:
             continue
         oid = prod["organization_id"]
-        if oid not in public_orgs or oid not in pay_ready:
+        from routers.public import _ritiro_listabile
+        if oid not in public_orgs or not _ritiro_listabile(prod, pay_ready, set(), preview=1):
             continue
         slug = org_slug.get(oid)
-        if not slug:
+        if not slug or not occ.get("slug"):
             continue
         items.append({
             "name": prod["name"],
