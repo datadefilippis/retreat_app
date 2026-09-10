@@ -32,12 +32,19 @@ async def ids_fondatori() -> set:
     che la data venisse scritta (network_member_since assente) conta per
     primo. La fonte del badge «Fondatore» sul profilo pubblico."""
     righe = await organizations_collection.find(
-        {"network_member": True, "is_sample": {"$ne": True}, "is_active": {"$ne": False}},
-        {"_id": 0, "id": 1, "network_member_since": 1},
+        {"$or": [{"network_member": True}, {"fondatore_forzato": True}],
+         "is_sample": {"$ne": True}, "is_active": {"$ne": False}},
+        {"_id": 0, "id": 1, "network_member_since": 1, "fondatore_forzato": 1},
     ).to_list(500)
-    righe = [r for r in righe if (r.get("network_member_since") or "")[:10] <= SCADENZA.isoformat()]
-    righe.sort(key=lambda r: r.get("network_member_since") or "")
-    return {r["id"] for r in righe[:TETTO]}
+    # BD (10/9/2026): dal pannello si forza (sempre dentro) o si esclude
+    # (mai dentro); gli altri riempiono i posti restanti per data.
+    forzati = {r["id"] for r in righe if r.get("fondatore_forzato") is True}
+    naturali = [r for r in righe
+                if r.get("fondatore_forzato") is None
+                and (r.get("network_member_since") or "")[:10] <= SCADENZA.isoformat()]
+    naturali.sort(key=lambda r: r.get("network_member_since") or "")
+    posti = max(0, TETTO - len(forzati))
+    return forzati | {r["id"] for r in naturali[:posti]}
 
 
 async def conteggio() -> dict:

@@ -29,6 +29,9 @@ export const adminAPI = {
 
   setNetworkMember: (orgId, member) =>
     api.put(`/admin/organizations/${orgId}/network-member`, { member }).then((r) => r.data),
+  // BD (10/9/2026) — i badge dal pannello: { featured: bool } e/o { fondatore: true|false|null }
+  setBadges: (orgId, payload) =>
+    api.put(`/admin/organizations/${orgId}/badges`, payload).then((r) => r.data),
 
   // RO (30/8) — il lucchetto della directory (exclude_from_listings, XL1)
   setDirectoryListed: (orgId, listed) =>

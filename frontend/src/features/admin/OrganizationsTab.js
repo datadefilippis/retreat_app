@@ -239,6 +239,33 @@ const OrganizationsTab = () => {
     } catch { toast.error('Operazione non riuscita'); }
   };
 
+  // BD (10/9/2026, founder) — «In evidenza» e «Fondatore» dal pannello.
+  // Fondatore gira in tre stati: calcolato (primi 20) → forzato → escluso.
+  const handleToggleFeatured = async (org) => {
+    const key = `${org.id}_featured`;
+    setAction(key, true);
+    try {
+      await adminAPI.setBadges(org.id, { featured: !org.directory_featured });
+      toast.success(!org.directory_featured
+        ? `"${org.name}" in evidenza` : `"${org.name}" non piu' in evidenza`);
+      fetchOrgs();
+    } catch { toast.error('Operazione non riuscita'); }
+    finally { setAction(key, false); }
+  };
+  const handleCycleFondatore = async (org) => {
+    const next = org.fondatore_forzato === true ? false : org.fondatore_forzato === false ? null : true;
+    const key = `${org.id}_fondatore`;
+    setAction(key, true);
+    try {
+      await adminAPI.setBadges(org.id, { fondatore: next });
+      toast.success(next === true ? `"${org.name}" fondatore (forzato)`
+        : next === false ? `"${org.name}" escluso dai fondatori`
+          : `"${org.name}" fondatore calcolato dai primi 20`);
+      fetchOrgs();
+    } catch { toast.error('Operazione non riuscita'); }
+    finally { setAction(key, false); }
+  };
+
   const handleToggleNetwork = async (org) => {
     const next = !org.network_member;
     const key = `${org.id}_network`;
@@ -680,6 +707,28 @@ const OrganizationsTab = () => {
                             title="Membro della rete Aurya"
                           >
                             {org.network_member ? '✓ Rete' : 'Rete'}
+                          </Button>
+                          {/* BD (10/9) — i badge dal pannello */}
+                          <Button
+                            variant={org.directory_featured ? 'default' : 'outline'}
+                            size="sm"
+                            onClick={() => handleToggleFeatured(org)}
+                            disabled={actionLoading[`${org.id}_featured`]}
+                            title="Badge «In evidenza» sul profilo e precedenza nelle liste"
+                            data-testid="org-toggle-featured"
+                          >
+                            {org.directory_featured ? '✦ In evidenza' : 'Evidenza'}
+                          </Button>
+                          <Button
+                            variant={org.fondatore_forzato === true ? 'default' : 'outline'}
+                            size="sm"
+                            onClick={() => handleCycleFondatore(org)}
+                            disabled={actionLoading[`${org.id}_fondatore`]}
+                            title="Fondatore: calcolato dai primi 20 → forzato → escluso"
+                            data-testid="org-cycle-fondatore"
+                          >
+                            {org.fondatore_forzato === true ? '✓ Fondatore'
+                              : org.fondatore_forzato === false ? '✗ Fondatore' : 'Fondatore: auto'}
                           </Button>
                           {/* RO (30/8) — il lucchetto della directory:
                               governa la presenza nelle liste pubbliche

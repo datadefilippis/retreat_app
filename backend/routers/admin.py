@@ -132,6 +132,8 @@ def _org_summary(doc: dict, *, profile_published: bool = False,
             (doc.get("public_profile") or {}).get("interview_verified_at")),
         # RO (30/8) — lo specchietto della regia
         directory_listed=not bool(doc.get("exclude_from_listings")),
+        directory_featured=bool(doc.get("directory_featured")),
+        fondatore_forzato=doc.get("fondatore_forzato"),
         profile_published=profile_published,
         admin_email=admin_email,
         profile_slug=profile_slug,
@@ -480,6 +482,37 @@ async def set_network_member(
     if result.matched_count == 0:
         raise HTTPException(status_code=404, detail="Organization not found")
     return {"org_id": org_id, "network_member": member}
+
+
+@router.put(
+    "/organizations/{org_id}/badges",
+    summary="BD — i badge dal pannello: In evidenza, Fondatore forzato/escluso",
+)
+async def set_badges(
+    org_id: str,
+    body: dict = Body(...),
+    current_user: dict = Depends(require_system_admin),
+):
+    """Founder (10/9/2026): «Verificato, Fondatore e In evidenza si
+    governano dal pannello». Verificato resta la tab Interviste (la
+    verita' dell'intervista); qui: `featured` (bool → directory_featured,
+    il badge «In evidenza» e la precedenza nelle liste) e `fondatore`
+    (True = forzato, False = escluso, None = calcolato dai primi 20)."""
+    from database import organizations_collection
+    updates = {}
+    if "featured" in body:
+        updates["directory_featured"] = bool(body["featured"])
+    if "fondatore" in body:
+        v = body["fondatore"]
+        if v not in (True, False, None):
+            raise HTTPException(status_code=422, detail="fondatore: true, false o null")
+        updates["fondatore_forzato"] = v
+    if not updates:
+        raise HTTPException(status_code=422, detail="Niente da cambiare")
+    result = await organizations_collection.update_one({"id": org_id}, {"$set": updates})
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Organization not found")
+    return {"org_id": org_id, **updates}
 
 
 @router.put(

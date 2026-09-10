@@ -543,7 +543,7 @@ class TestRb9StrisciaEFondatore:
 
     def test_il_badge_fondatore_viene_dal_backend(self):
         fon = (BACKEND_DIR / "routers" / "fondatori.py").read_text()
-        assert "async def ids_fondatori()" in fon and "righe[:TETTO]" in fon
+        assert "async def ids_fondatori()" in fon and "naturali[:posti]" in fon   # BD: forzati + naturali
         assert "SCADENZA.isoformat()" in fon
         pub = (BACKEND_DIR / "routers" / "public.py").read_text()
         assert '"fondatore": org_id in await _ids_fondatori(),' in pub
@@ -551,3 +551,32 @@ class TestRb9StrisciaEFondatore:
         assert 'data-testid="founder-badge"' in hdr and "data.fondatore" in hdr
         assert hdr.index('data-testid="verified-badge-slot"') < hdr.index('data-testid="founder-badge"'), \
             "Verificato Aurya resta il primo badge"
+
+
+class TestCodaBadgeERecensioni:
+    """Coda del founder (10/9 sera): i badge si governano dal pannello
+    system admin (In evidenza, Fondatore forzato/escluso; Verificato
+    resta la tab Interviste); le recensioni nel profilo sono un blocco
+    in evidenza che al clic scorre alla sezione."""
+
+    def test_i_badge_dal_pannello(self):
+        adm = (BACKEND_DIR / "routers" / "admin.py").read_text()
+        assert '"/organizations/{org_id}/badges"' in adm
+        assert 'updates["directory_featured"] = bool(body["featured"])' in adm
+        assert 'updates["fondatore_forzato"] = v' in adm
+        assert "directory_featured=bool(doc.get(\"directory_featured\"))" in adm
+        fon = (BACKEND_DIR / "routers" / "fondatori.py").read_text()
+        assert 'r.get("fondatore_forzato") is True' in fon and "posti = max(0, TETTO - len(forzati))" in fon
+        tab = (FE / "features" / "admin" / "OrganizationsTab.js").read_text()
+        assert 'data-testid="org-toggle-featured"' in tab and 'data-testid="org-cycle-fondatore"' in tab
+        assert "adminAPI.setBadges(" in tab
+        assert "setBadges:" in (FE / "api" / "admin.js").read_text()
+
+    def test_le_recensioni_sono_un_blocco_in_evidenza_che_scorre(self):
+        hdr = (FE / "features" / "storefront" / "components" / "OperatorIdentityHeader.jsx").read_text()
+        assert 'data-testid="reviews-cta"' in hdr
+        assert "document.getElementById('recensioni')" in hdr and "scrollIntoView" in hdr
+        assert "#recensioni" in hdr, "dalla pagina intervista porta al profilo"
+        assert "Ancora nessuna: scrivi la prima" in hdr, "anche a zero recensioni la voce c'e'"
+        page = (FE / "features" / "storefront" / "OperatorProfilePage.js").read_text()
+        assert 'id="recensioni"' in page and "scroll-mt-20" in page

@@ -17,7 +17,7 @@
  */
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Flower2, MapPin } from 'lucide-react';
+import { ChevronDown, Flower2, MapPin } from 'lucide-react';
 import VerifiedAuryaBadge from '../../../components/VerifiedAuryaBadge';
 // DI — label discipline (specchio di models/disciplines.py)
 import { disciplineLabel } from '../../../lib/disciplines';
@@ -108,11 +108,6 @@ export default function OperatorIdentityHeader({ data, t }) {
                 ✦ {t('landings:calendar.featured', { defaultValue: 'In evidenza' })}
               </span>
             )}
-            {rs?.count > 0 && (
-              <span className="rounded-full bg-gray-100 text-gray-700 px-2.5 py-1 text-[11px] font-medium">
-                ★ {rs.avg} · {t('landings:reviews.countShort', { count: rs.count, defaultValue: '{{count}} recensioni' })}
-              </span>
-            )}
             {/* 30/8 (founder): «su Aurya dal» = member_since, mai
                 founded_year (sarebbe una bugia) */}
             {data.member_since && (
@@ -127,6 +122,30 @@ export default function OperatorIdentityHeader({ data, t }) {
               </span>
             )}
           </div>
+          {/* RV7 (founder 10/9) — le recensioni in evidenza: un blocco
+              proprio, non una pillola fra le altre; al clic scorre alla
+              sezione #recensioni (sul profilo) o ci porta (dall'intervista) */}
+          <button type="button" data-testid="reviews-cta"
+                  onClick={() => {
+                    const el = document.getElementById('recensioni');
+                    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    else if (data.org_slug) window.location.assign(`/o/${data.org_slug}#recensioni`);
+                  }}
+                  aria-label={rs?.count > 0 ? `${rs.avg} su 5, ${rs.count} recensioni: leggile` : 'Recensioni: scrivi la prima'}
+                  className="mt-4 inline-flex items-center gap-3 rounded-2xl border border-[#c9b37e]/70 bg-[#fbf7ee] px-4 py-2.5 text-left shadow-sm transition-shadow hover:shadow-md">
+            <span className="text-2xl leading-none text-[#c9a24d]" aria-hidden>★</span>
+            <span className="flex flex-col">
+              <span className="font-display text-lg leading-tight text-foreground">
+                {rs?.count > 0 ? `${rs.avg} su 5` : t('landings:reviews.title', { defaultValue: 'Recensioni' })}
+              </span>
+              <span className="text-xs text-muted-foreground">
+                {rs?.count > 0
+                  ? `${t('landings:reviews.countShort', { count: rs.count, defaultValue: '{{count}} recensioni' })} · leggile`
+                  : 'Ancora nessuna: scrivi la prima'}
+              </span>
+            </span>
+            <ChevronDown className="h-4 w-4 text-muted-foreground" aria-hidden />
+          </button>
           {/* DI (founder 14/8) — le discipline dichiarate: sono identità,
               quindi stanno qui (IG5: prima vivevano nell'aside, che su
               mobile le mostrava lontano dal nome). Chip nel verde del

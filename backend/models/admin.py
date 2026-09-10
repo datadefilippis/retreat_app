@@ -46,6 +46,11 @@ class OrgSummary(BaseModel):
     # admin_email = il recapito del titolare, per riconoscere l'org.
     directory_listed: bool = True
     profile_published: bool = False
+    # BD (10/9/2026, founder): i badge si governano dal pannello.
+    # «In evidenza» = directory_featured; «Fondatore» e' calcolato
+    # (routers/fondatori) ma si puo' forzare (True) o escludere (False).
+    directory_featured: bool = False
+    fondatore_forzato: Optional[bool] = None
     admin_email: Optional[str] = None
     # slug del profilo pubblico, SOLO se pubblicato (link /o/{slug}
     # sempre valido; da non pubblicato il pubblico fa 404)
