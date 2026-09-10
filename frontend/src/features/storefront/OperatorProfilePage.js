@@ -26,6 +26,10 @@ import MiniCalendario from './components/MiniCalendario';
 // (CheckoutForm/OrderSummary/useCheckoutForm, zero fork di logica).
 import InlineServiceCheckout from './components/checkout/InlineServiceCheckout';
 // DI — le chip discipline vivono nella testata (OperatorIdentityHeader)
+// HOTFIX 10/9/2026 notte — SEO-R usava disciplineLabel nel titolo senza
+// importarla: in produzione ogni profilo /o/{slug} cadeva nell'ErrorBoundary
+// (ReferenceError). Il build CRA con CI=false lo lascia passare come warning.
+import { disciplineLabel } from '../../lib/disciplines';
 
 function fmtPrice(n) {
   if (n == null) return null;
