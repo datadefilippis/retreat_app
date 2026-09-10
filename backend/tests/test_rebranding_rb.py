@@ -695,4 +695,7 @@ class TestP4IlCatalogoDel2027:
                   "retreat_pro_racconto", "retreat_pro_whatsapp", "retreat_founding_badge"):
             assert it["features"].get(k), k
         src = (FE / "features" / "prelaunch" / "PricingPage.js").read_text()
-        assert "PRICING_2027 = { spinta: 19, club: 49, pro: 119, pro_monthly: 12 }" in src
+        assert "PRICING_2027 = { spinta: 19, club: 49, pro: 119 }" in src
+        pricing = (BACKEND_DIR / "services" / "seed_pricing.py").read_text()
+        assert "async def migrate_stripe_prezzi_2027_v1" in pricing and 'startswith("sk_live_")' in pricing
+        assert "price_1UE819RL6JKSLFw8BZRkQlLX" in pricing and "price_1UE81ZRL6JKSLFw8H0XyEHbD" in pricing

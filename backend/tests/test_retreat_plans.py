@@ -143,7 +143,7 @@ class TestKillList:
 class TestPricingPositioning:
     def test_free_costs_zero_pro_costs_29(self):
         assert _plan("retreat_free")["price_monthly"] == 0.0
-        assert _plan("retreat_pro")["price_monthly"] == 12.0   # P4: 12/mese, 119/anno
+        assert _plan("retreat_pro")["price_monthly"] == 0.0   # P4-bis: solo annuale, 119/anno
 
     def test_free_is_baseline_not_checkout_target(self):
         free = _plan("retreat_free")
@@ -173,7 +173,7 @@ class TestRetreatBusinessModel:
         # il canone tiene tutto il transato.
         pro = _plan("retreat_pro")
         assert pro["transaction_fee_percent"] == 0.0
-        assert pro["price_monthly"] == 12.0
+        assert pro["price_monthly"] == 0.0 and pro["intervals"] == ["year"]
         assert pro["price_yearly"] == 119.0
         assert pro["is_self_serve"] is True
         # P1: la commissione zero e' di tutti, non un vantaggio del Pro
@@ -559,7 +559,7 @@ class TestAbPrezziCoerenti:
         /costi (PRICING_2027) e della landing."""
         from services.seed_commercial_plans import RETREAT_COMMERCIAL_PLANS, VENDITA_PIANI_DAL
         pro = self._pro()
-        assert pro["price_monthly"] == 12.0 and pro["price_yearly"] == 119.0
+        assert pro["price_yearly"] == 119.0 and pro["intervals"] == ["year"]   # solo annuale
         club = next(p for p in RETREAT_COMMERCIAL_PLANS if p["slug"] == "retreat_club")
         assert club["price_yearly"] == 49.0 and club["intervals"] == ["year"]
         assert VENDITA_PIANI_DAL == "2027-01-01"
@@ -575,9 +575,9 @@ class TestAbPrezziCoerenti:
         import re
         src = (self.FRONTEND / "src" / "features" / "prelaunch"
                / "PricingPage.js").read_text()
-        m = re.search(r"PRICING_2027 = \{ spinta: (\d+), club: (\d+), pro: (\d+), pro_monthly: (\d+) \}", src)
+        m = re.search(r"PRICING_2027 = \{ spinta: (\d+), club: (\d+), pro: (\d+) \}", src)
         assert m, "PRICING_2027 non trovato nella pagina /costi"
-        assert tuple(map(int, m.groups())) == (19, 49, 119, 12)
+        assert tuple(map(int, m.groups())) == (19, 49, 119)   # P4-bis: niente mensile
         assert "AURYA_FEE = 0" in src
         free = next(p for p in __import__(
             "services.seed_commercial_plans",

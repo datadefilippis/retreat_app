@@ -198,6 +198,8 @@ async def lifespan(app: FastAPI):
         from services.seed_pricing import migrate_zero_commissioni_v1, migrate_catalogo_2027_v1
         await migrate_zero_commissioni_v1()
         await migrate_catalogo_2027_v1()   # P4: il catalogo del 2027, vendita dal 1/1/2027
+        from services.seed_pricing import migrate_stripe_prezzi_2027_v1
+        await migrate_stripe_prezzi_2027_v1()   # P4-bis: Pro solo annuale + price id live
     except Exception as e:
         logging.error(f"Failed to run zero commissioni migration: {e}")
     # One-time migration: trial only on Core plan

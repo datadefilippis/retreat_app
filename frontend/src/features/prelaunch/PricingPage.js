@@ -29,7 +29,8 @@ import { Section, DisplayTitle, Lede } from '../../components/editorial';
 
 /* I prezzi dal 1° gennaio 2027 — devono combaciare col piano di
    business (docs/AURYA_PIANO_BUSINESS_2026-09.md) e, da gennaio, col seed. */
-export const PRICING_2027 = { spinta: 19, club: 49, pro: 119, pro_monthly: 12 };
+// founder 10/9 sera: il Pro e' solo annuale (in Stripe non esiste il mensile)
+export const PRICING_2027 = { spinta: 19, club: 49, pro: 119 };
 /* La commissione di Aurya, oggi e per sempre. La guardia la confronta col seed. */
 export const AURYA_FEE = 0;
 
@@ -153,7 +154,7 @@ export default function PricingPage() {
             <Scheda testid="plan-club" domanda="Voglio persone e lavoro, tutto l’anno" nome="Club Aurya" evidenza
                     prezzo={`${PRICING_2027.club} € l’anno`} sotto="Quattro euro al mese, pagati una volta." voci={CLUB} />
             <Scheda testid="plan-pro" domanda="La mia voce, il mio racconto, qualcuno accanto" nome="Pro"
-                    prezzo={`${PRICING_2027.pro} € l’anno`} sotto={`oppure ${PRICING_2027.pro_monthly} € al mese.`} voci={PRO} />
+                    prezzo={`${PRICING_2027.pro} € l’anno`} sotto="Dieci euro al mese, pagati una volta." voci={PRO} />
           </div>
         </div>
 

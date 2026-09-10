@@ -1179,6 +1179,45 @@ async def migrate_catalogo_2027_v1() -> None:
     logger.info("migrate_catalogo_2027_v1: done")
 
 
+# I prezzi LIVE creati dal founder in Stripe (10/9/2026 sera). Non sono
+# segreti; valgono solo con la chiave live: in locale (test) non si toccano.
+STRIPE_PREZZI_2027_LIVE = {
+    "retreat_club": {"stripe_price_id_yearly": "price_1UE819RL6JKSLFw8BZRkQlLX"},
+    "retreat_pro": {"stripe_price_id_yearly": "price_1UE81ZRL6JKSLFw8H0XyEHbD"},
+}
+
+
+async def migrate_stripe_prezzi_2027_v1() -> None:
+    """P4-bis (founder, 10/9/2026 sera): il Pro e' SOLO annuale (in Stripe
+    esiste il prezzo annuale, non il mensile) e i prezzi live del Club
+    (49/anno) e del Pro (119/anno) entrano nel catalogo. I price id si
+    scrivono solo se la chiave Stripe e' live: in locale il catalogo
+    resta senza prezzi e il checkout (chiuso fino al 2027) non li vede.
+    Flag-gated, idempotente."""
+    import os
+    from database import db
+
+    migrations = db["migrations"]
+    if await migrations.find_one({"_id": "stripe_prezzi_2027_v1"}):
+        return
+    logger.info("migrate_stripe_prezzi_2027_v1: applying...")
+    await db["commercial_plans"].update_one(
+        {"slug": "retreat_pro"},
+        {"$set": {"price_monthly": 0.0, "intervals": ["year"], "stripe_price_id_monthly": None}})
+    live = os.environ.get("STRIPE_SECRET_KEY", "").startswith("sk_live_")
+    if live:
+        for slug, campi in STRIPE_PREZZI_2027_LIVE.items():
+            await db["commercial_plans"].update_one({"slug": slug}, {"$set": campi})
+            logger.info("  - %s: price id live impostati", slug)
+    else:
+        logger.info("  - chiave Stripe non live: price id NON scritti (locale/test)")
+    await migrations.insert_one({
+        "_id": "stripe_prezzi_2027_v1",
+        "applied_at": __import__("datetime").datetime.now(__import__("datetime").timezone.utc),
+    })
+    logger.info("migrate_stripe_prezzi_2027_v1: done")
+
+
 async def migrate_zero_commissioni_v1() -> None:
     """P1 (founder, 10/9/2026, piano di business) — AURYA NON PRENDE
     COMMISSIONI, MAI. Il 5% del Gratis sugli incassi online e' uscito:

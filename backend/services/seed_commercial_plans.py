@@ -354,7 +354,7 @@ ADDON_PLANS: List[dict] = [
 # P4 (10/9/2026, piano di business §3.2, founder: «impostiamoli gia'
 # correttamente e consolidiamo la monetizzazione»). La scala: Gratis per
 # sempre (gli strumenti), Club 49 €/anno (la fila: prima fila, Lettera
-# per zona, lavoro dalla rete), Pro 119 €/anno o 12 €/mese (la voce:
+# per zona, lavoro dalla rete), Pro 119 €/anno, solo annuale (la voce:
 # Crea Studio, racconto completo, WhatsApp). La VENDITA si accende il
 # 1° gennaio 2027 (available_from): fino ad allora i piani si vedono e
 # non si comprano. Il Pro da 19/190 di agosto e' stato ritirato prima di
@@ -435,8 +435,9 @@ RETREAT_COMMERCIAL_PLANS: List[dict] = [
         "name": "Pro",
         "description": "Tutto il Club, più la tua voce e noi accanto: Crea Studio, il racconto completo con la pagina nel Magazine, assistenza diretta su WhatsApp.",
         "tagline": "La mia voce, il mio racconto, qualcuno accanto",
-        "price_monthly": 12.0,
+        "price_monthly": 0.0,           # founder 10/9 sera: il Pro e' solo annuale (in Stripe non c'e' il mensile)
         "price_yearly": 119.0,
+        "intervals": ["year"],
         "available_from": VENDITA_PIANI_DAL,
         "currency": "EUR",
         "trial_days": 0,
