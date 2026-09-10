@@ -131,9 +131,12 @@ class TestNw3Admin:
         assert "detail.newsletter?.source" in src
 
     def test_leads_tab_has_subscriber_list(self):
-        src = (FRONTEND_SRC / "features" / "admin" / "LeadsTab.js").read_text()
-        assert "nl-admin-subscribers" in src
-        assert "listSubscribers" in src
+        """SA-R (10/9/2026 sera): la lista iscritti vive in IscrittiTab (pagina
+        Iscritti al Cerchio); LeadsTab tiene solo i lead delle landing."""
+        src = (FRONTEND_SRC / "features" / "admin" / "IscrittiTab.js").read_text()
+        assert 'data-testid="iscritti-riga"' in src and "/admin/subscribers" in src
+        leads = (FRONTEND_SRC / "features" / "admin" / "LeadsTab.js").read_text()
+        assert "listSubscribers" not in leads, "niente doppioni: un posto solo per gli iscritti"
 
 
 class TestNw4CheckoutCircuit:

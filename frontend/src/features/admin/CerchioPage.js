@@ -8,14 +8,16 @@
  * contatti veri ma non sono iscritti al Cerchio.
  */
 import React from 'react';
-import { Users, Inbox } from 'lucide-react';
+import { Users, Inbox, Mail } from 'lucide-react';
 import AdminPageShell from './AdminPageShell';
 import IscrittiTab from './IscrittiTab';
 import LeadsTab from './LeadsTab';
+import SequenzeTab from './SequenzeTab';
 
 const TABS = [
   { value: 'iscritti', label: 'Iscritti', icon: Users, element: <IscrittiTab /> },
   { value: 'contatti', label: 'Contatti dalle landing', icon: Inbox, element: <LeadsTab /> },
+  { value: 'email', label: 'Email automatiche', icon: Mail, element: <SequenzeTab /> },
 ];
 
 export default function CerchioPage() {

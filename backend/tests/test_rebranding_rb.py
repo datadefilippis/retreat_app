@@ -702,9 +702,14 @@ class TestFv2LeSequenze:
         assert '@router.get("/sequenze/anteprima")' in ap and '@router.get("/sequenze/passi")' in ap
         assert "require_system_admin" in ap[ap.index("async def sequenze_anteprima"):]
         assert '"sequenze_30g": sequenze' in ap
-        tab = (FE / "features" / "admin" / "PlatformOverviewTab.js").read_text()
+        # SA-R: l'anteprima e' il tab «Email automatiche» di Iscritti al Cerchio, con la prova
+        tab = (FE / "features" / "admin" / "SequenzeTab.js").read_text()
         assert 'data-testid="sequenze-anteprima"' in tab and "srcDoc={reso.html}" in tab
-        assert 'data-testid="numeri-lunedi-sequenze"' in tab
+        assert "/admin/platform/sequenze/prova" in tab and 'data-testid="seq-prova"' in tab
+        assert '@router.post("/sequenze/prova")' in ap and "[PROVA]" in ap
+        assert "<SequenzeTab />" in (FE / "features" / "admin" / "CerchioPage.js").read_text()
+        assert "SequenzeAnteprima" not in (FE / "features" / "admin" / "PlatformOverviewTab.js").read_text()
+        assert 'data-testid="numeri-lunedi-sequenze"' in (FE / "features" / "admin" / "PlatformOverviewTab.js").read_text()
 
 
 class TestRb9StrisciaEFondatore:

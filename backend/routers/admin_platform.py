@@ -11,6 +11,7 @@ import time
 from typing import Any, Dict, Optional
 
 from fastapi import APIRouter, Depends, Query
+from pydantic import BaseModel, Field
 
 from auth import require_system_admin
 
@@ -881,3 +882,34 @@ async def ordini_piattaforma(
     operatori = [{"id": k, "nome": v} for k, v in sorted(nomi.items(), key=lambda kv: kv[1].lower())]
     return {"items": items, "per_operatore": list(per_op.values()), "operatori": operatori,
             "generated_at": now.isoformat()}
+
+
+class ProvaSequenza(BaseModel):
+    pubblico: str = Field(max_length=20)
+    passo: str = Field(max_length=30)
+    email: Optional[str] = Field(default=None, max_length=200)   # come la vedrebbe (destinatario vero)
+    a: str = Field(max_length=200)                                # a chi mandare la prova
+
+
+@router.post("/sequenze/prova")
+async def sequenze_prova(payload: ProvaSequenza, current_user: dict = Depends(require_system_admin)) -> Dict[str, Any]:
+    """SA-R (10/9/2026 sera, founder: «vedere le email in anteprima e poterle
+    mandare»): la stessa email dell'anteprima, spedita SOLO all'indirizzo
+    scritto (di norma il proprio), con [PROVA] nell'oggetto. Non marca
+    nessuna sequenza."""
+    import re as _re
+    from fastapi import HTTPException
+    from services.email_service import send_email
+    from services.email_sequenze import risposte_a
+    from services.sequenze import anteprima
+    a = (payload.a or "").strip().lower()
+    if not _re.match(r"^[^@\s]+@[^@\s]+\.[^@\s]+$", a):
+        raise HTTPException(status_code=400, detail="Indirizzo della prova non valido")
+    try:
+        reso = await anteprima(payload.pubblico, payload.passo, payload.email or None)
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc))
+    if not reso.get("oggetto"):
+        return {"inviata": False, "nota": reso.get("nota")}
+    ok = send_email(a, f"[PROVA] {reso['oggetto']}", reso["html"], reply_to=risposte_a(), bypass_gate=True)
+    return {"inviata": True, "a": a, "oggetto": reso["oggetto"], "consegnata": bool(ok)}
