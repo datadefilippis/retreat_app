@@ -669,6 +669,27 @@ class TestFv2LeSequenze:
         assert (BACKEND_DIR / "services" / "migrazioni_cerchio.py").exists()
         assert "migrate_cerchio_alert_esplicito_v1()" in (BACKEND_DIR / "server.py").read_text()
 
+    def test_il_cliente_risponde_all_operatore_non_ad_aurya(self):
+        """FV7 (10/9 sera, founder): le email che il cliente riceve a nome
+        dell'operatore (richiesta, conferma, biglietto, promemoria,
+        prenotazione) rispondono all'operatore anche quando non ha
+        impostato un indirizzo di risposta: contatto, notifiche, account.
+        Mai il default di piattaforma (aurya.life@gmail.com) su quelle."""
+        oes = (BACKEND_DIR / "services" / "order_email_service.py").read_text()
+        assert "async def contatto_operatore(" in oes
+        assert oes.count("await contatto_operatore(") == 2, "entrambe le vie di _load_store_context"
+        corpo = oes[oes.index("async def contatto_operatore"):oes.index("async def _load_store_context")]
+        assert '("reply_to_email", "contact_email", "notification_email")' in corpo
+        assert '"role": "admin"' in corpo, "ultima risorsa: l'account dell'operatore"
+        assert "CASELLA_AURYA" not in corpo and "REPLY_TO_DEFAULT" not in corpo
+        es = (BACKEND_DIR / "services" / "email_service.py").read_text()
+        assert 'store.get("reply_to_email") or await contatto_operatore(org_id, store)' in es
+        assert "reply_to=(customer_email or None)" in oes, "l'operatore risponde al cliente, non ad Aurya"
+        # chi usa il contesto passa il suo reply_to (non lascia il default)
+        for f in ("payment_email_service.py", "event_email_service.py"):
+            src = (BACKEND_DIR / "services" / f).read_text()
+            assert 'reply_to=ctx["reply_to"]' in src, f
+
     def test_l_anteprima_nel_pannello_e_i_numeri(self):
         ap = (BACKEND_DIR / "routers" / "admin_platform.py").read_text()
         assert '@router.get("/sequenze/anteprima")' in ap and '@router.get("/sequenze/passi")' in ap

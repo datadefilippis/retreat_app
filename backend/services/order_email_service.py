@@ -25,6 +25,25 @@ logger = logging.getLogger(__name__)
 
 # ── Helpers ──────────────────────────────────────────────────────────────────
 
+async def contatto_operatore(org_id: str, *impostazioni: Optional[dict]) -> Optional[str]:
+    """FV7 (10/9/2026 sera, founder: «se il cliente risponde alla conferma,
+    l'email arriva all'operatore?»). Dove risponde il cliente quando
+    l'operatore NON ha impostato un indirizzo di risposta: il contatto
+    pubblico, poi l'indirizzo delle notifiche, poi l'account
+    dell'operatore. Mai la casella di Aurya: e' il suo cliente. Le
+    impostazioni si passano in ordine di priorita' (negozio, org)."""
+    for imp in impostazioni:
+        for campo in ("reply_to_email", "contact_email", "notification_email"):
+            v = ((imp or {}).get(campo) or "").strip()
+            if v:
+                return v
+    from database import users_collection
+    u = await users_collection.find_one(
+        {"organization_id": org_id, "role": "admin", "is_active": {"$ne": False}},
+        {"_id": 0, "email": 1}, sort=[("created_at", 1)])
+    return (u or {}).get("email") or None
+
+
 async def _load_store_context(
     org_id: str,
     *,
@@ -70,13 +89,13 @@ async def _load_store_context(
         store_doc = await stores_collection.find_one(
             {"id": store_id, "organization_id": org_id},
             {"_id": 0, "name": 1, "sender_display_name": 1,
-             "reply_to_email": 1, "notification_email": 1},
+             "reply_to_email": 1, "notification_email": 1, "contact_email": 1},
         )
     elif store_slug:
         store_doc = await stores_collection.find_one(
             {"slug": store_slug, "organization_id": org_id},
             {"_id": 0, "name": 1, "sender_display_name": 1,
-             "reply_to_email": 1, "notification_email": 1},
+             "reply_to_email": 1, "notification_email": 1, "contact_email": 1},
         )
 
     # Per-store wins when present, with org-level legacy as the
@@ -96,6 +115,7 @@ async def _load_store_context(
         reply_to = (
             store_doc.get("reply_to_email")
             or legacy.get("reply_to_email")
+            or await contatto_operatore(org_id, store_doc, legacy)   # FV7
         )
         notification_email = (
             store_doc.get("notification_email")
@@ -114,7 +134,9 @@ async def _load_store_context(
         "store_name": legacy.get("display_name") or org_name,
         "notification_email": legacy.get("notification_email"),
         "sender_name": legacy.get("sender_display_name") or SMTP_FROM_NAME,
-        "reply_to": legacy.get("reply_to_email"),
+        # FV7 — senza indirizzo di risposta impostato, il cliente risponde
+        # comunque all'operatore (contatto, notifiche, account)
+        "reply_to": legacy.get("reply_to_email") or await contatto_operatore(org_id, legacy),
     }
 
 
@@ -1023,7 +1045,9 @@ async def notify_merchant_new_order(
         subject = _t("order_merchant_subject", locale, customer_name=customer_name)
 
         for recipient in recipients:
-            ok = send_email(recipient, subject, html, sender_name=ctx["sender_name"])
+            # FV7 — l'operatore che risponde a «nuovo ordine» scrive al cliente
+            ok = send_email(recipient, subject, html, sender_name=ctx["sender_name"],
+                            reply_to=(customer_email or None))
             if ok:
                 logger.info("order_email: merchant_new sent to=%s order=%s", recipient, order_ref)
 

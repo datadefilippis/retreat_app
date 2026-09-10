@@ -2155,7 +2155,9 @@ async def send_reservation_confirmation_email(
     store = (org.get("store_settings") or {})
     store_name = store.get("display_name") or org.get("name") or "Store"
     sender_name = store.get("sender_display_name") or SMTP_FROM_NAME
-    reply_to = store.get("reply_to_email")
+    # FV7 — il cliente risponde all'operatore anche senza reply_to impostato
+    from services.order_email_service import contatto_operatore
+    reply_to = store.get("reply_to_email") or await contatto_operatore(org_id, store)
 
     token = reservation.get("access_token") or ""
     landing_url = f"{APP_URL}/rsv/{token}" if token else APP_URL
