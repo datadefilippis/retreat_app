@@ -271,18 +271,17 @@ def _hub_hreflang(canonical: str) -> dict:
 # e sostituisce: l'utente vede la home viva, il crawler legge questa.
 _HOME_COPY = {
     "heroTitle": "Il benessere inizia dalle persone.",
-    "heroP1": ("Trovare il professionista giusto, comprendere una pratica "
-               "o scegliere un’esperienza non dovrebbe essere una "
-               "questione di fortuna."),
-    # RB1 (10/9/2026) — le due porte al posto dei capoversi «orientarsi»
+    # RB1 (10/9/2026) — le due porte; testi del founder (10/9 sera)
+    "heroP1": "Trova il professionista, il percorso o il ritiro giusto per te.",
     "doorSeekTitle": "Cerchi un ritiro o un percorso?",
-    "doorSeekText": ("Dicci cosa cerchi e dove. Ti avvisiamo quando c’è, "
-                     "vicino a te. Intanto ascolti le meditazioni riservate."),
-    "doorSeekCta": "Trovami il mio ritiro",
+    "doorSeekText": ("Dicci <b>cosa cerchi e dove</b>. Ti avvisiamo quando "
+                     "troviamo l’esperienza giusta per te."),
+    "doorSeekCta": "Trova il mio ritiro",
     "doorOpTitle": "Sei un operatore olistico?",
-    "doorOpText": ("Profilo pubblico, prenotazioni, eventi e ritiri con "
-                   "caparra, un link solo. Gratis per sempre, senza commissioni."),
-    "doorOpCta": "Apri il tuo spazio",
+    "doorOpText": ("Crea il tuo <b>spazio professionale su Aurya</b>: profilo, "
+                   "servizi, prenotazioni, eventi e ritiri. <b>Gratis per sempre, "
+                   "senza commissioni.</b>"),
+    "doorOpCta": "Crea il tuo spazio",
     "findTitle": ("Un luogo dove conoscere, confrontare e scegliere "
                   "con consapevolezza"),
     "findP1": "Il benessere non è fatto solo di discipline.",

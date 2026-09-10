@@ -99,7 +99,7 @@
  */
 import { trackEvent } from '../../lib/analytics';   // RB13 — eventi per porta
 import React, { useEffect, useState } from 'react';
-import { useTranslation } from 'react-i18next';
+import { Trans, useTranslation } from 'react-i18next';
 import { ChevronDown } from 'lucide-react';
 import api from '../../api/client';
 import MarketplaceShell from '../storefront/components/MarketplaceShell';
@@ -332,7 +332,7 @@ export default function NetworkHomePage() {
                 contrasto proprio dove serve tutto quello che c'e' */}
             <Lede size="lead" tone="inherit"
                   className="mx-auto mt-6 max-w-[46ch] text-hero-shadow sm:mt-8">
-              {t('nwHome.heroP1', { defaultValue: "Trovare il professionista giusto, comprendere una pratica o scegliere un’esperienza non dovrebbe essere una questione di fortuna." })}
+              {t('nwHome.heroP1', { defaultValue: "Trova il professionista, il percorso o il ritiro giusto per te." })}
             </Lede>
             {/* RB1 — LE DUE PORTE. Il filo d'oro dice che comincia un
                 secondo movimento: la domanda «chi sei?». Due schede
@@ -351,12 +351,14 @@ export default function NetworkHomePage() {
                   {t('nwHome.doorSeekTitle', { defaultValue: "Cerchi un ritiro o un percorso?" })}
                 </DisplayTitle>
                 <Lede size="body" tone="inherit" className="mt-3 max-w-[38ch] text-hero-shadow opacity-90">
-                  {t('nwHome.doorSeekText', { defaultValue: "Dicci cosa cerchi e dove. Ti avvisiamo quando c’è, vicino a te. Intanto ascolti le meditazioni riservate." })}
+                  {/* founder 10/9 sera: il grassetto e' suo (<b> nel locale) */}
+                  <Trans i18nKey="nwHome.doorSeekText" ns="landings" components={{ b: <strong className="font-semibold" /> }}
+                         defaults="Dicci <b>cosa cerchi e dove</b>. Ti avvisiamo quando troviamo l’esperienza giusta per te." />
                 </Lede>
                 <div className="mt-auto pt-6">
                   <EditorialCta to={`${CERCA_PATH}?porta=home`} variant="solid" tone="dark" data-testid="hp-door-seek-cta"
                                 onClick={() => trackEvent('porta', { porta: 'cerca', da: 'home' })}>
-                    {t('nwHome.doorSeekCta', { defaultValue: "Trovami il mio ritiro" })}
+                    {t('nwHome.doorSeekCta', { defaultValue: "Trova il mio ritiro" })}
                   </EditorialCta>
                 </div>
               </div>
@@ -367,12 +369,13 @@ export default function NetworkHomePage() {
                   {t('nwHome.doorOpTitle', { defaultValue: "Sei un operatore olistico?" })}
                 </DisplayTitle>
                 <Lede size="body" tone="inherit" className="mt-3 max-w-[38ch] text-hero-shadow opacity-90">
-                  {t('nwHome.doorOpText', { defaultValue: "Profilo pubblico, prenotazioni, eventi e ritiri con caparra, un link solo. Gratis per sempre, senza commissioni." })}
+                  <Trans i18nKey="nwHome.doorOpText" ns="landings" components={{ b: <strong className="font-semibold" /> }}
+                         defaults="Crea il tuo <b>spazio professionale su Aurya</b>: profilo, servizi, prenotazioni, eventi e ritiri. <b>Gratis per sempre, senza commissioni.</b>" />
                 </Lede>
                 <div className="mt-auto pt-6">
                   <EditorialCta to={`${OPERATORI_PATH}?porta=home`} variant="solid" tone="dark" data-testid="hp-door-op-cta"
                                 onClick={() => trackEvent('porta', { porta: 'operatore', da: 'home' })}>
-                    {t('nwHome.doorOpCta', { defaultValue: "Apri il tuo spazio" })}
+                    {t('nwHome.doorOpCta', { defaultValue: "Crea il tuo spazio" })}
                   </EditorialCta>
                 </div>
               </div>
@@ -383,7 +386,7 @@ export default function NetworkHomePage() {
             <p className="mt-7 text-sm text-hero-shadow opacity-90 sm:mt-8">
               {t('nwHome.heroOr', { defaultValue: "Oppure" })}{' '}
               <EditorialCta to={NETWORK_PATH} variant="quiet" tone="dark" data-testid="hp-hero-cta">
-                {t('nwHome.heroCta', { defaultValue: "Scopri i professionisti" })}
+                {t('nwHome.heroCta', { defaultValue: "Scopri gli operatori" })}
               </EditorialCta>
             </p>
           </div>

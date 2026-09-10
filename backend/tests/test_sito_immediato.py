@@ -103,7 +103,8 @@ class TestSr1Directory:
         pros = home[home.index('data-testid="hp-pros"'):home.index('data-testid="hp-letter"')]
         assert "nwHome.prosP4" not in pros and "hp-pros-cta-alt" not in pros
         it = json.loads((FE / "locales" / "it" / "landings.json").read_text())["nwHome"]
-        assert it["heroCta"] == "Scopri i professionisti"
+        # founder 10/9 sera: la terza via dice «Scopri gli operatori» (testo suo)
+        assert it["heroCta"] == "Scopri gli operatori"
         assert "stiamo costruendo" not in it["pillarProText"].lower()
         # la shell SSR dice quello che dice la pagina
         shell = (BACKEND / "routers" / "seo_shell.py").read_text()

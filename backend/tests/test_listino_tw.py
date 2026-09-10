@@ -5699,8 +5699,9 @@ class TestHomeHp2:
         ai test: la guardia tiene solo le due frasi portanti dell'hero
         brand v3, quelle che definiscono la pagina."""
         src = self.HOME.read_text()
+        # founder 10/9 sera: il sottotitolo dell'hero e' «Trova il professionista…»
         for frase in ("Il benessere inizia dalle persone.",
-                      "non dovrebbe essere una questione di fortuna"):
+                      "Trova il professionista, il percorso o il ritiro giusto per te."):
             assert frase in src, f"copy portante mancante: {frase[:50]}…"
 
     def test_hp2_gerarchia_titoli(self):

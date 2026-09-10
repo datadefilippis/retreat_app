@@ -58,12 +58,15 @@ class TestRb1LeDuePorteInHome:
     def test_il_copy_delle_porte_nomina_l_oggetto_e_l_offerta(self):
         it = json.loads(LOCALE.read_text())["nwHome"]
         assert "ritiro" in it["doorSeekTitle"].lower(), "la porta di chi cerca nomina l'oggetto"
-        assert it["doorSeekCta"] == "Trovami il mio ritiro"
-        assert "meditazioni" in it["doorSeekText"], "la ricompensa immediata e' detta"
+        # founder 10/9 sera: i testi del primo schermo sono i suoi, parola per parola
+        assert it["doorSeekCta"] == "Trova il mio ritiro"
+        assert "<b>cosa cerchi e dove</b>" in it["doorSeekText"] and "esperienza giusta" in it["doorSeekText"]
         assert it["doorOpTitle"] == "Sei un operatore olistico?", "lessico: all'operatore si dice operatore olistico"
-        for parola in ("prenotazioni", "ritiri", "caparra", "senza commissioni"):   # P1: zero commissioni
+        for parola in ("profilo", "servizi", "prenotazioni", "eventi e ritiri", "<b>Gratis per sempre, senza commissioni.</b>"):
             assert parola in it["doorOpText"], f"l'offerta in chiaro nomina: {parola}"
-        assert it["doorOpCta"] == "Apri il tuo spazio"
+        assert it["doorOpCta"] == "Crea il tuo spazio"
+        assert it["heroP1"] == "Trova il professionista, il percorso o il ritiro giusto per te."
+        assert it["heroCta"] == "Scopri gli operatori"
 
     def test_l_hero_non_descrive_piu_un_processo(self):
         src = HOME.read_text()
@@ -231,7 +234,9 @@ class TestRb6Rb7HeaderEPotature:
         assert "defaultValue: 'Apri il tuo spazio'" in shell
         it = json.loads(LOCALE.read_text())
         assert it["marketplace"]["forProfessionals"] == "Apri il tuo spazio"
-        assert it["nwHome"]["doorOpCta"] == it["marketplace"]["forProfessionals"], "header e porta dicono lo stesso gesto"
+        # founder 10/9 sera: la porta in home dice «Crea il tuo spazio» (testo
+        # suo); l'header resta «Apri il tuo spazio» finche' non decide anche li'
+        assert it["nwHome"]["doorOpCta"] == "Crea il tuo spazio"
 
     def test_manifesto_e_chi_siamo_senza_anti_urgenza(self):
         it = json.loads(LOCALE.read_text())
