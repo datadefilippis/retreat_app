@@ -66,9 +66,9 @@ import {
     arrivano da fuori (/entra-nella-rete#presentati dalla home) */
 const FORM_ANCHOR = '#presentati';
 
-/** un profilo VERO da mostrare come prova: listino, recensioni, un
-    evento in programma. E' la prova che nessun elenco puo' dare. */
-const PROOF_PROFILE = '/o/selva-viva-di-olisticamente-silvia';
+/** la prova (founder 10/9 sera): la directory con TUTTI gli operatori
+    gia' dentro, non un profilo solo. */
+const PROOF_PROFILE = '/operatori';
 
 const HERO_PHOTO = '/media/hero-organizer.webp';
 const FOUNDERS_PHOTO = '/media/chisiamo-aurya.jpg';
@@ -247,12 +247,14 @@ export default function OperatorLandingPage() {
                           className="text-[1.6rem] leading-[1.18] sm:text-[2rem] lg:text-[2.3rem]">
               {t('opPro.heroP4', { defaultValue: "È già disponibile." })}
             </DisplayTitle>
-            <Lede size="lead" className="mt-6">{t('opPro.heroP5', { defaultValue: "Guarda un profilo vero: servizi, recensioni e un ritiro in programma, tutto sulla stessa pagina." })}</Lede>
+            <Lede size="lead" className="mt-6">{t('opPro.heroP5', { defaultValue: "Guarda i profili degli operatori già dentro: servizi, recensioni e ritiri in programma, tutto sulla stessa pagina." })}</Lede>
+            {/* founder 10/9 sera: UN bottone pieno (apri il tuo spazio), la prova
+                come voce discreta verso la directory di tutti gli operatori */}
             <div className="mt-9 flex flex-col items-start gap-5 sm:flex-row sm:items-center sm:gap-8">
-              <EditorialCta to={PROOF_PROFILE} variant="solid" data-testid="ol-hero-cta-alt">
-                {t('opPro.ctaProof', { defaultValue: "Guarda un profilo vero" })}
+              <EditorialCta href={FORM_ANCHOR} onClick={scrollToForm} variant="solid" data-testid="ol-hero-cta">{ctaOpen}</EditorialCta>
+              <EditorialCta to={PROOF_PROFILE} variant="quiet" data-testid="ol-hero-cta-alt">
+                {t('opPro.ctaProof', { defaultValue: "Guarda i profili degli operatori" })}
               </EditorialCta>
-              <EditorialCta href={FORM_ANCHOR} onClick={scrollToForm} variant="quiet" data-testid="ol-hero-cta">{ctaOpen}</EditorialCta>
             </div>
           </Section>
         </section>
