@@ -43,10 +43,12 @@ class TestBrandFoundationsAn1:
     def test_home_mounts_value_sections(self):
         """La home racconta l'anima: come funziona / perche' Aurya /
         CTA organizzatori — ma solo senza filtri attivi."""
+        # RE-ter (10/9/2026 sera, founder): le sezioni «come funziona /
+        # perche' Aurya» sotto l'elenco dei ritiri sono ridondanti: via dal
+        # calendario. Il componente resta (HowItWorks, home).
         page = (FRONTEND_SRC / "features" / "storefront"
                 / "RetreatsCalendarPage.js").read_text()
-        assert "MarketplaceValueSections" in page
-        assert "!anyFilter" in page
+        assert "MarketplaceValueSections" not in page
         comp = (FRONTEND_SRC / "features" / "storefront" / "components"
                 / "MarketplaceValueSections.jsx").read_text()
         for key in ("brandHome.howTitle", "brandHome.whyTitle",
@@ -373,7 +375,7 @@ class TestDsBrandGlow:
         # pattern poster+video vive nel componente e nella home della rete
         page = (FRONTEND_SRC / "features" / "storefront"
                 / "RetreatsCalendarPage.js").read_text()
-        assert "<HeroVideo" not in page and "aurya-hero-poster.jpg" in page
+        assert "<HeroVideo" not in page and "hero-blog.webp" in page
         assert "text-hero-shadow" in page            # leggibilita' sulla foto
         hv = (FRONTEND_SRC / "components" / "HeroVideo.jsx").read_text()
         assert "poster" in hv and "prefers-reduced-motion" in hv.replace("reduced-motion", "prefers-reduced-motion")

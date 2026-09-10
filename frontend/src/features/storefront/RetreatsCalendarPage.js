@@ -20,7 +20,6 @@ import api from '../../api/client';
 import GeoSearchBar from './components/GeoSearchBar';
 import MarketplaceShell from './components/MarketplaceShell';
 import Redacted from '../prelaunch/Redacted';
-import MarketplaceValueSections from './components/MarketplaceValueSections';
 // G3 — vista mappa lazy (Leaflet caricato solo quando serve)
 const RetreatsMapView = React.lazy(() => import('./components/RetreatsMapView'));
 
@@ -183,7 +182,8 @@ export default function RetreatsCalendarPage() {
   // shell (routers/seo_shell._meta_category): "Ritiri di {cat} in {regione}",
   // separatore | (mai em-dash), niente "in Italia" (regola brand no-geografia
   // imposta — la location arriva SOLO quando c'è davvero una regione).
-  const catLabel = category ? (data?.categories?.[category] || category) : '';
+  // RE-ter: data.categories = {chiave: {label, count}} SOLO con ritiri
+  const catLabel = category ? (data?.categories?.[category]?.label || t(`landings:categories.${category}`, { defaultValue: category })) : '';
   const seoHeading = (() => {
     const bits = ['Ritiri'];
     if (catLabel) bits.push('di ' + catLabel);
@@ -230,8 +230,11 @@ export default function RetreatsCalendarPage() {
           discreto; niente video, niente chip nel cielo: i filtri stanno
           nella barra sotto, come nella directory dei professionisti. */}
       <header className="relative text-white overflow-hidden" data-testid="esp-hero">
-        <img aria-hidden src="/media/aurya-hero-poster.jpg" alt="" fetchpriority="high"
-             className="absolute inset-0 w-full h-full object-cover object-[50%_40%]" />
+        {/* founder 10/9 sera: una copertina DIVERSA da quella della home
+            (il tramonto sul mare del video), o le due pagine sembrano la
+            stessa. Il sole nelle mani: gia' in repo, non usata come hero. */}
+        <img aria-hidden src="/media/hero-blog.webp" alt="" fetchpriority="high"
+             className="absolute inset-0 w-full h-full object-cover object-[70%_50%]" />
         <div aria-hidden className="absolute inset-0 pointer-events-none bg-gradient-to-r from-[#14231d]/90 via-[#14231d]/65 to-[#14231d]/35" />
         <div className="relative max-w-6xl mx-auto px-4 pt-12 pb-8 md:pt-16 md:pb-12">
           <nav aria-label="breadcrumb" className="text-xs text-white/70 mb-3">
@@ -306,9 +309,14 @@ export default function RetreatsCalendarPage() {
               className="flex-none w-44 lg:w-52 rounded-full border border-gray-300 bg-white px-3.5 py-1.5 text-sm text-gray-700 focus:border-primary focus:outline-none"
             >
               <option value="">{t('landings:calendar.allCategories')}</option>
-              {categories.map(([key, label]) => (
-                <option key={key} value={key}>{t(`landings:categories.${key}`, { defaultValue: label })}</option>
+              {categories.map(([key, info]) => (
+                <option key={key} value={key}>
+                  {t(`landings:categories.${key}`, { defaultValue: info?.label || key })}{info?.count ? ` (${info.count})` : ''}
+                </option>
               ))}
+              {category && !categories.some(([k]) => k === category) && (
+                <option value={category}>{catLabel}</option>
+              )}
             </select>
             <input
               type="month"
@@ -591,7 +599,6 @@ export default function RetreatsCalendarPage() {
 
       {/* AN1 — l'anima di Aurya: come funziona / perché / organizzatori.
           Solo sulla home "pulita": chi sta filtrando non va interrotto. */}
-      {!anyFilter && view !== 'mappa' && <MarketplaceValueSections />}
     </div>
     </MarketplaceShell>
   );

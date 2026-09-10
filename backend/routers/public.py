@@ -3436,6 +3436,46 @@ async def pay_by_token(token: str):
 
 # ── Fase 5 (retreat) — calendario pubblico cross-organizzatore ───────────────
 
+async def _categorie_con_ritiri() -> dict:
+    """RE-ter (10/9/2026 sera, founder): nel filtro compaiono SOLO le
+    categorie che hanno almeno un ritiro futuro pubblicato, col numero
+    accanto. Prima il filtro mostrava tutta la tassonomia e chi sceglieva
+    una categoria vuota trovava una pagina vuota. Ritorna
+    {chiave: {"label", "count"}} nell'ordine della tassonomia."""
+    from datetime import datetime as _dt, timezone as _tz
+    from database import event_occurrences_collection, products_collection
+    from models.retreat_taxonomy import RETREAT_CATEGORIES
+    now_iso = _dt.now(_tz.utc).isoformat()
+    occs = await event_occurrences_collection.find(
+        {"status": "published", "start_at": {"$gte": now_iso[:16]}},
+        {"_id": 0, "product_id": 1}).to_list(2000)
+    if not occs:
+        return {}
+    from database import organizations_collection
+    per_prodotto: dict = {}
+    for o in occs:
+        per_prodotto[o["product_id"]] = per_prodotto.get(o["product_id"], 0) + 1
+    prodotti = await products_collection.find(
+        {"id": {"$in": list(per_prodotto)}, "is_active": True, "is_published": True,
+         "item_type": "event_ticket", "transaction_mode": {"$in": ["direct", "request"]}},
+        {"_id": 0, "id": 1, "category": 1, "organization_id": 1}).to_list(2000)
+    # lo stesso perimetro della lista: solo org con la pagina pubblica,
+    # attive, non escluse, non campioni (un'edizione che la lista non
+    # mostra non deve contare)
+    org_ok = {o["id"] async for o in organizations_collection.find(
+        {"id": {"$in": list({p.get("organization_id") for p in prodotti})},
+         "public_slug": {"$nin": [None, ""]}, "is_active": {"$ne": False},
+         "exclude_from_listings": {"$ne": True}, "is_sample": {"$ne": True}},
+        {"_id": 0, "id": 1})}
+    conteggi: dict = {}
+    # una categoria conta le EDIZIONI future (cio' che si vede nella lista)
+    for p in prodotti:
+        if p.get("category") and p.get("organization_id") in org_ok:
+            conteggi[p["category"]] = conteggi.get(p["category"], 0) + per_prodotto.get(p["id"], 0)
+    return {k: {"label": v, "count": conteggi[k]}
+            for k, v in RETREAT_CATEGORIES.items() if conteggi.get(k)}
+
+
 @router.get("/retreats")
 async def list_public_retreats(
     request: Request = None,
@@ -3509,7 +3549,7 @@ async def list_public_retreats(
     ).sort("start_at", 1).limit(500)
     occs = await cursor.to_list(500)
     if not occs:
-        return {"items": [], "total": 0, "categories": RETREAT_CATEGORIES}
+        return {"items": [], "total": 0, "categories": await _categorie_con_ritiri()}
 
     # prodotti (categoria + prezzo + nome) — solo vendibili.
     # GT1b (luglio) elencava SOLO i ritiri prenotabili online con Stripe
@@ -3685,7 +3725,8 @@ async def list_public_retreats(
     return {
         "items": page_items,
         "total": total,
-        "categories": RETREAT_CATEGORIES,
+        # RE-ter: solo le categorie con ritiri, col conteggio (mai un filtro vuoto)
+        "categories": await _categorie_con_ritiri(),
     }
 
 

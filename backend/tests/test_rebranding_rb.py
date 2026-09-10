@@ -354,10 +354,18 @@ class TestP3MarketplaceApertoAPrimaFila:
         assert "senza commissioni" in page and "I primi ritiri stanno arrivando." in page
         # RE-bis (10/9 sera, founder): lo stile della directory dei professionisti
         # — foto ferma con velatura, barra filtri sticky, schede 16/9
-        assert "HeroVideo" not in page and "aurya-hero-poster.jpg" in page
+        assert "HeroVideo" not in page and "aurya-hero-poster.jpg" not in page, "copertina diversa dalla home (founder)"
+        assert "/media/hero-blog.webp" in page
         assert 'data-testid="esp-search-bar"' in page and "GeoSearchBar" in page and 'fluid' in page
         assert 'data-testid="esp-f-categoria"' in page and 'data-testid="esp-f-mese"' in page
         assert "const basePath = '/esperienze';" in page
+        # RE-ter: nel filtro solo le categorie con ritiri, col conteggio
+        pub = (BACKEND_DIR / "routers" / "public.py").read_text()
+        corpo = pub[pub.index("async def list_public_retreats("):pub.index("def _haversine_km(")]
+        assert '"categories": RETREAT_CATEGORIES' not in corpo and "await _categorie_con_ritiri()" in corpo
+        assert "async def _categorie_con_ritiri()" in pub
+        assert "info?.count ? ` (${info.count})` : ''" in page
+        assert "MarketplaceValueSections" not in page, "niente sezioni ridondanti sotto l'elenco (founder)"
 
     def test_il_gate_e_i_rimandi(self):
         app = (FE / "App.js").read_text()
