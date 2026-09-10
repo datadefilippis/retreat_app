@@ -199,7 +199,8 @@ def _send_confirm_email(email: str, name: Optional[str], token: str,
             <p>Se non ti sei iscritto tu, ignora questa email: senza
             conferma non riceverai nulla.</p>
         """)
-        send_email(email, "Un clic e sei nel Cerchio di Aurya",
+        # FV3 (10/9 sera): «Benvenuto» in testa, la promessa e' la stessa
+        send_email(email, "Benvenuto nel Cerchio: un clic e sei dentro",
                    html, bypass_gate=True)
     except Exception as exc:                # noqa: BLE001
         logger.warning("subscriber confirm email failed for %s: %s",

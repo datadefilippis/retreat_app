@@ -172,10 +172,15 @@ async def numeri_del_lunedi(
     gmv = await gmv_aggregates()
     euro = {"ritiri_30g": round(sum(float(v.get("gmv") or 0) for v in gmv["by_channel_30d"].values()), 2)}
 
+    # 7. Le sequenze (FV2): quante email di ogni passo sono partite in 30 giorni
+    from services.sequenze import conta_invii
+    sequenze = await conta_invii(d30)
+
     payload = {"cerchio": {"confermati": confermati, "con_citta": con_citta,
                            "con_ritiri": con_ritiri, "nuovi_7g": nuovi_7g, "porte_30g": porte},
                "ritiri": ritiri, "visite": visite, "operatori": operatori,
-               "richieste": richieste, "euro": euro, "generated_at": iso(now)}
+               "richieste": richieste, "euro": euro, "sequenze_30g": sequenze,
+               "generated_at": iso(now)}
     _cache["lunedi"] = (time.monotonic(), payload)
     return payload
 
@@ -788,3 +793,29 @@ async def platform_user_detail(
         },
         "generated_at": utc_now().isoformat(),
     }
+
+
+# ── Le sequenze: i passi e l'anteprima (FV4, 10/9/2026 sera) ─────────────────
+# Il founder deve poter LEGGERE ogni email prima che parta, per un
+# destinatario vero. Stesso codice che invia, niente invio, niente
+# marcatura.
+
+@router.get("/sequenze/passi")
+async def sequenze_passi(current_user: dict = Depends(require_system_admin)) -> Dict[str, Any]:
+    from services.sequenze import elenco_passi
+    return {"pubblici": elenco_passi()}
+
+
+@router.get("/sequenze/anteprima")
+async def sequenze_anteprima(
+    pubblico: str = Query(..., max_length=20),
+    passo: str = Query(..., max_length=30),
+    email: Optional[str] = Query(default=None, max_length=200),
+    current_user: dict = Depends(require_system_admin),
+) -> Dict[str, Any]:
+    from fastapi import HTTPException
+    from services.sequenze import anteprima
+    try:
+        return await anteprima(pubblico, passo, email)
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc))

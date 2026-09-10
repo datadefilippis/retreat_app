@@ -1155,22 +1155,24 @@ async def _cerchio_reminder_job() -> None:
             raise
 
 
-# ── La sequenza dopo la registrazione (RB8, 10/9/2026) ──────────────────────
-# Ogni 6 ore: ai professionisti nella finestra di un passo (g2 a
-# Valentina, g7 profilo, g14 primo ritiro, g30 come va) UNA email
-# (services/sequenza_operatore.py). Si marca prima di inviare.
+# ── Le sequenze (RB8 10/9/2026 → FV2 10/9 sera) ─────────────────────────────
+# Ogni 6 ore, un motore per due pubblici (services/sequenze.py): ai
+# professionisti nella finestra di un passo (g2 a Valentina, pagina
+# online, 5/10/15 senza pagina, 14 senza ritiro, 30 come va) e agli
+# iscritti confermati del Cerchio (1 sei dentro, 3 una meditazione, 10
+# vicino a te, 30 come va) UNA email. Si marca prima di inviare.
 
-async def _sequenza_operatore_job() -> None:
+async def _sequenze_job() -> None:
     interval_seconds = 6 * 3600
     await asyncio.sleep(_INITIAL_DELAY_SECONDS + 240)
     while True:
         try:
-            from services.sequenza_operatore import run_sequenza_sweep
-            await run_sequenza_sweep()
+            from services.sequenze import run_sequenze_sweep
+            await run_sequenze_sweep()
         except asyncio.CancelledError:
             raise
         except Exception as exc:
-            logger.error("background_service: sequenza operatore error: %s", exc, exc_info=True)
+            logger.error("background_service: sequenze error: %s", exc, exc_info=True)
         try:
             await asyncio.sleep(interval_seconds)
         except asyncio.CancelledError:
@@ -1202,8 +1204,8 @@ def start() -> List[asyncio.Task]:
         asyncio.create_task(_addon_consistency_audit_job(), name="addon_consistency_audit_job"),
         # CN2 — il promemoria del Cerchio ai non confermati
         asyncio.create_task(_cerchio_reminder_job(), name="cerchio_reminder_job"),
-        # RB8 — la sequenza dopo la registrazione del professionista
-        asyncio.create_task(_sequenza_operatore_job(), name="sequenza_operatore_job"),
+        # RB8/FV2 — le sequenze: professionisti e Cerchio
+        asyncio.create_task(_sequenze_job(), name="sequenze_job"),
     ]
     return tasks
 

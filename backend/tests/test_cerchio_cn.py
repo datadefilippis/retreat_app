@@ -73,7 +73,8 @@ class TestCn2DoppioOptIn:
         src = (BACKEND / "routers" / "subscribers.py").read_text()
         i = src.index("def _send_confirm_email")
         corpo = src[i:src.index("def _send_access_email")]
-        assert "Un clic e sei nel Cerchio di Aurya" in corpo
+        # FV3 (10/9/2026 sera): l'oggetto dice benvenuto, la promessa resta
+        assert "Benvenuto nel Cerchio: un clic e sei dentro" in corpo
         assert "meditazioni riservate" in corpo and "anteprima" in corpo and "Lettera" in corpo
         assert "Entro nel Cerchio" in corpo
         assert "lettera di Aurya</strong>" not in corpo

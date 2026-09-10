@@ -515,49 +515,122 @@ class TestP13AuryaPerLeAziendeEChiediLaRegia:
         assert 'data-testid="strutture-richiesta-tipo"' in admin and "team_building" in admin
 
 
-class TestRb8LaSequenzaDopoLaRegistrazione:
-    """RB8 (10/9/2026, piano di rebranding onda 2): dopo il benvenuto
-    quattro momenti con UNA azione ciascuno (g2 a Valentina, g7 profilo,
-    g14 primo ritiro, g30 come va), ognuno solo nella sua finestra, mai
-    due volte, mai un'urgenza."""
+class TestFv2LeSequenze:
+    """RB8 (10/9/2026) → FV2 (10/9 sera, audit del funnel): un motore
+    solo per due pubblici (services/sequenze.py), passi come dati,
+    testi in services/email_sequenze.py. Il founder: «se uno si e'
+    registrato ma non ha creato il profilo, dopo 5, 10, 15 giorni; e
+    tutte le email ben scritte, non casuali». Ogni passo solo nella sua
+    finestra, mai due volte, mai un'urgenza; il Cerchio dopo la conferma
+    riceve «Sei dentro», una meditazione, cosa c'e' vicino (o niente),
+    come va."""
 
     def test_i_passi_partono_solo_nella_loro_finestra(self):
         sys.path.insert(0, str(BACKEND_DIR))
-        from services.sequenza_operatore import passo_dovuto, PASSI, FINESTRA_GIORNI
-        assert [n for n, _ in PASSI] == ["g2", "g7", "g14", "g30"] and FINESTRA_GIORNI == 7
-        assert passo_dovuto(0) is None and passo_dovuto(1) is None
-        assert passo_dovuto(2) == "g2" and passo_dovuto(6) == "g2"
-        assert passo_dovuto(7) == "g7" and passo_dovuto(13) == "g7"
-        assert passo_dovuto(14) == "g14" and passo_dovuto(20) == "g14"
-        assert passo_dovuto(25) is None, "chi si e' registrato mesi fa non riceve tre email in un colpo"
-        assert passo_dovuto(30) == "g30" and passo_dovuto(36) == "g30" and passo_dovuto(37) is None
+        from services.sequenze import passi_dovuti, PASSI, passo_dovuto
+        assert [p.nome for p in PASSI["operatore"]] == ["g2", "profilo_online", "np5", "np10", "np15", "r14", "g30"]
+        assert [p.nome for p in PASSI["cerchio"]] == ["c1", "c3", "c10", "c30"]
+        nomi = lambda g, s, m={}: [p.nome for p in passi_dovuti("operatore", g, s, m)]   # noqa: E731
+        spento = {"online": False, "ritiro": False}
+        acceso = {"online": True, "ritiro": False}
+        assert nomi(0, spento) == [] and nomi(1, spento) == []
+        assert nomi(2, spento) == ["g2"] and nomi(4, spento) == ["g2"]
+        assert nomi(5, spento) == ["np5"] and nomi(9, spento) == ["np5"]
+        assert nomi(10, spento) == ["np10"] and nomi(15, spento) == ["np15"] and nomi(21, spento) == ["np15"]
+        assert nomi(25, spento) == [], "chi si e' registrato mesi fa non riceve tre email in un colpo"
+        assert nomi(30, spento) == ["g30"] and nomi(37, spento) == []
+        # la pagina online: l'evento, poi il primo ritiro, mai i «non online»
+        assert nomi(5, acceso) == ["profilo_online"]
+        assert nomi(5, acceso, {"profilo_online": "x"}) == []
+        assert nomi(14, acceso, {"profilo_online": "x"}) == ["r14"]
+        assert nomi(14, {"online": True, "ritiro": True}, {"profilo_online": "x"}) == []
+        # le marcature vecchie di RB8 valgono
+        assert nomi(7, spento, {"g7": "x"}) == []
+        assert passo_dovuto(2) == "g2" and passo_dovuto(30) == "g30" and passo_dovuto(25) is None
+        assert [p.nome for p in passi_dovuti("cerchio", 1, {}, {})] == ["c1"]
+        assert [p.nome for p in passi_dovuti("cerchio", 3, {}, {"c1": "x"})] == ["c3"]
+        assert [p.nome for p in passi_dovuti("cerchio", 12, {}, {})] == ["c10"]
+        assert passi_dovuti("cerchio", 20, {}, {}) == []
 
     def test_si_marca_prima_di_inviare_e_il_job_esiste(self):
-        src = (BACKEND_DIR / "services" / "sequenza_operatore.py").read_text()
-        assert src.index('{"$set": {f"sequenza.{passo}": now.isoformat()}}') < src.index("if _manda(passo, org")
+        src = (BACKEND_DIR / "services" / "sequenze.py").read_text()
+        for giro in ("_giro_operatore", "_giro_cerchio"):
+            corpo = src[src.index(f"async def {giro}"):]
+            corpo = corpo[:corpo.index("async def ", 10)]
+            assert corpo.index("await _marca(") < corpo.index("_manda(passo, ctx)"), giro
         assert '"is_sample": {"$ne": True}' in src and '"legacy_commerce": {"$ne": True}' in src
-        assert "reply_to=ADMIN_EMAIL" in src, "a g30 si risponde: legge Valentina"
-        for frase in ANTI_URGENZA + ("ultimi posti", "affrettati", "solo per oggi"):
-            assert frase not in src.lower(), frase
+        assert '"status": "confirmed", "consent": True' in src, "il Cerchio scrive solo ai confermati"
+        assert "saltato" in src, "un passo senza niente da dire si salta, non si manda vuoto"
         bg = (BACKEND_DIR / "services" / "background_service.py").read_text()
-        assert 'name="sequenza_operatore_job"' in bg
+        assert 'name="sequenze_job"' in bg and "sequenza_operatore" not in bg
+        assert not (BACKEND_DIR / "services" / "sequenza_operatore.py").exists()
 
-    def test_le_email_dicono_una_azione_e_le_parole_del_piano(self):
+    def test_le_email_sono_scritte_e_fanno_una_cosa(self):
         sys.path.insert(0, str(BACKEND_DIR))
-        from services.sequenza_operatore import _contenuto
-        org = {"id": "o1", "name": "Studio Prova"}
-        f = {"aperto": True, "tetto": 20, "rimasti": 17, "scadenza": "2026-10-31"}
-        _, c7 = _contenuto("g7", "Giulia Serra", org, {"online": False, "ritiro": False, "slug": None}, f)
-        assert "Ciao Giulia," in c7 and "Completa il profilo" in c7 and c7.count('class="btn"') == 1
-        _, c7b = _contenuto("g7", "", org, {"online": True, "ritiro": False, "slug": "giulia"}, f)
-        assert "/o/giulia" in c7b and "senza commissioni" in c7b
-        _, c14 = _contenuto("g14", "Giulia", org, {"online": True, "ritiro": False, "slug": "giulia"}, f)
-        assert "gratis e senza commissioni" in c14 and "bonifico" in c14 and "/events/new" in c14
-        _, c30 = _contenuto("g30", "Giulia", org, {"online": True, "ritiro": True, "slug": "giulia"}, f)
-        assert "Rispondi a questa email" in c30 and "cinquanta" in c30
-        assert "31/10/2026" in c30 and "Ne restano 17" in c30
-        _, c30b = _contenuto("g30", "Giulia", org, {"online": True, "ritiro": True, "slug": "giulia"}, {"aperto": False})
-        assert "fondatori" not in c30b, "chiuso il tetto, la parola sparisce"
+        from services import email_sequenze as T
+        testo = (BACKEND_DIR / "services" / "email_sequenze.py").read_text().lower()
+        for frase in ANTI_URGENZA + ("ultimi posti", "affrettati", "solo per oggi", "cordiali saluti"):
+            assert frase not in testo, frase
+        ctx = {"nome": "Giulia Serra", "email": "g@esempio.it", "org": {"name": "Studio"},
+               "stato": {"online": False, "ritiro": False, "slug": None, "iban": False},
+               "fondatori": {"aperto": True, "tetto": 20, "rimasti": 17, "scadenza": "2026-10-31"}}
+        oggetti = set()
+        for fn in (T.op_np5, T.op_np10, T.op_np15):
+            o, c = fn(ctx)
+            oggetti.add(o)
+            assert "Ciao Giulia," in c and c.count('class="btn"') == 1 and "/public-profile" in c
+            assert "Valentina" in c, "si risponde, e legge Valentina"
+        assert len(oggetti) == 3, "tre email diverse, non la stessa tre volte"
+        _, c15 = T.op_np15(ctx)
+        assert "ultima email" in c15 and "resta aperto" in c15 and "chiamami" in c15
+        ctx_on = {**ctx, "stato": {"online": True, "ritiro": False, "slug": "giulia", "iban": False}}
+        o, c = T.op_profilo_online(ctx_on)
+        assert "/o/giulia" in c and "Telegram" in c and "IBAN" in c
+        _, c_iban = T.op_profilo_online({**ctx_on, "stato": {**ctx_on["stato"], "iban": True}})
+        assert "IBAN" not in c_iban, "l'avvertenza sull'IBAN solo a chi non ce l'ha"
+        _, c14 = T.op_r14(ctx_on)
+        assert "senza commissioni" in c14 and "bonifico" in c14 and "/events/new" in c14
+        _, c30 = T.op_g30(ctx_on)
+        assert "Rispondi a questa email" in c30 and "31/10/2026" in c30 and "Ne restano 17" in c30
+        _, c30b = T.op_g30({**ctx_on, "fondatori": {"aperto": False}})
+        assert "fondatori" not in c30b
+        o2, c2 = T.op_g2_admin(ctx)
+        assert "WhatsApp" in c2 and "Studio" in o2
+
+    def test_il_cerchio_dopo_la_conferma(self):
+        sys.path.insert(0, str(BACKEND_DIR))
+        from services import email_sequenze as T
+        base = {"nome": "Giulia", "email": "g@esempio.it", "token": "tok", "citta": "", "interessi": ["yoga", "suono"],
+                "meditazione": None, "ritiri": [], "ritiri_in_zona": False, "professionisti": []}
+        o1, c1 = T.c1_sei_dentro(base)
+        assert o1.startswith("Sei dentro") and "/meditazioni" in c1 and "lo yoga e il suono" in c1
+        assert "la tua città" in c1 and "/newsletter/preferenze/tok" in c1, "senza citta' la chiede"
+        _, c1b = T.c1_sei_dentro({**base, "citta": "Bari"})
+        assert "sei a Bari" in c1b and "Una cosa sola ci manca" not in c1b
+        assert T.c3_meditazione(base) is None, "senza una traccia pubblicata niente email"
+        o3, c3 = T.c3_meditazione({**base, "meditazione": {"titolo": "Rinascita", "url": "https://aurya.life/frequenze/rinascita"}})
+        assert "Rinascita" in o3 and "/frequenze/rinascita" in c3 and c3.count('class="btn"') == 1
+        assert T.c10_vicino(base) is None, "niente ritiri e niente professionisti: si salta"
+        o10, c10 = T.c10_vicino({**base, "citta": "Bari", "ritiri_in_zona": True,
+                                 "ritiri": [{"title": "Respiro al mare", "url": "/e/studio/respiro", "start_at": "2026-10-03T09:00:00+00:00", "city": "Bari", "org_name": "Studio"}]})
+        assert "vicino a Bari" in o10 and "Respiro al mare" in c10 and "3 ottobre" in c10 and "/esperienze" in c10
+        o10b, c10b = T.c10_vicino({**base, "citta": "Bari", "professionisti": [{"nome": "Anna", "slug": "anna", "discipline": "yoga"}]})
+        assert "Bari" in o10b and "/o/anna" in c10b and "/operatori" in c10b
+        _, c30 = T.c30_come_va(base)
+        assert "cosa stai cercando" in c30 and "la tua città" in c30
+        for c in (c1, c3, c10, c30):
+            assert "/newsletter/preferenze/tok" in c, "ci si cancella da ogni email"
+        sub = (BACKEND_DIR / "routers" / "subscribers.py").read_text()
+        assert "Benvenuto nel Cerchio: un clic e sei dentro" in sub
+
+    def test_l_anteprima_nel_pannello_e_i_numeri(self):
+        ap = (BACKEND_DIR / "routers" / "admin_platform.py").read_text()
+        assert '@router.get("/sequenze/anteprima")' in ap and '@router.get("/sequenze/passi")' in ap
+        assert "require_system_admin" in ap[ap.index("async def sequenze_anteprima"):]
+        assert '"sequenze_30g": sequenze' in ap
+        tab = (FE / "features" / "admin" / "PlatformOverviewTab.js").read_text()
+        assert 'data-testid="sequenze-anteprima"' in tab and "srcDoc={reso.html}" in tab
+        assert 'data-testid="numeri-lunedi-sequenze"' in tab
 
 
 class TestRb9StrisciaEFondatore:

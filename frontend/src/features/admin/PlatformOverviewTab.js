@@ -41,6 +41,70 @@ function monthLabel(ym) {
   } catch { return ym; }
 }
 
+/* FV4 (10/9/2026 sera) — L'ANTEPRIMA DELLE SEQUENZE. Il founder legge
+   ogni email prima che parta, per un destinatario vero (email) o
+   fittizio. Stesso codice che invia; qui niente parte. */
+function SequenzeAnteprima() {
+  const [passi, setPassi] = useState(null);
+  const [pubblico, setPubblico] = useState('operatore');
+  const [passo, setPasso] = useState('np5');
+  const [email, setEmail] = useState('');
+  const [reso, setReso] = useState(null);
+  const [caricando, setCaricando] = useState(false);
+  useEffect(() => {
+    api.get('/admin/platform/sequenze/passi').then((r) => setPassi(r.data?.pubblici || null)).catch(() => setPassi({}));
+  }, []);
+  const mostra = async () => {
+    setCaricando(true);
+    try {
+      const r = await api.get('/admin/platform/sequenze/anteprima', { params: { pubblico, passo, email: email || undefined } });
+      setReso(r.data);
+    } catch (e) {
+      setReso({ nota: 'Anteprima non disponibile.' });
+    } finally { setCaricando(false); }
+  };
+  const elenco = (passi && passi[pubblico]) || [];
+  return (
+    <div data-testid="sequenze-anteprima" className="rounded-2xl border border-border bg-card p-4">
+      <p className="text-sm font-semibold text-foreground">Le email delle sequenze, in anteprima</p>
+      <p className="mt-1 text-xs text-muted-foreground">Scegli il pubblico e il passo; con un’email vera vedi l’email come la riceverebbe quella persona. Da qui non parte niente.</p>
+      <div className="mt-3 flex flex-wrap items-end gap-2">
+        <label className="text-xs">Pubblico
+          <select value={pubblico} onChange={(e) => { setPubblico(e.target.value); const primo = (passi?.[e.target.value] || [])[0]; if (primo) setPasso(primo.nome); }}
+                  className="mt-1 block rounded-md border border-border bg-background px-2 py-1 text-sm" data-testid="seq-pubblico">
+            <option value="operatore">operatore</option>
+            <option value="cerchio">cerchio</option>
+          </select>
+        </label>
+        <label className="text-xs">Passo
+          <select value={passo} onChange={(e) => setPasso(e.target.value)}
+                  className="mt-1 block rounded-md border border-border bg-background px-2 py-1 text-sm" data-testid="seq-passo">
+            {elenco.map((p) => <option key={p.nome} value={p.nome}>{p.nome}{p.giorno != null ? ` · giorno ${p.giorno}` : ' · evento'}{p.a === 'admin' ? ' · a noi' : ''}</option>)}
+          </select>
+        </label>
+        <label className="text-xs">Email (facoltativa)
+          <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="chi la riceverebbe"
+                 className="mt-1 block w-56 rounded-md border border-border bg-background px-2 py-1 text-sm" data-testid="seq-email" />
+        </label>
+        <Button size="sm" onClick={mostra} disabled={caricando} data-testid="seq-mostra">{caricando ? 'Carico…' : 'Mostra'}</Button>
+      </div>
+      {reso && (
+        <div className="mt-4">
+          {reso.oggetto ? (
+            <>
+              <p className="text-sm"><span className="text-muted-foreground">A:</span> {reso.destinatario}{reso.trovato ? '' : ' (destinatario fittizio)'}</p>
+              <p className="text-sm font-semibold" data-testid="seq-oggetto">{reso.oggetto}</p>
+              <iframe title="anteprima email" srcDoc={reso.html} className="mt-2 h-[560px] w-full rounded-md border border-border bg-white" />
+            </>
+          ) : (
+            <p className="text-sm text-muted-foreground" data-testid="seq-nota">{reso.nota || 'Niente da mostrare.'}</p>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function PlatformOverviewTab() {
   const [data, setData] = useState(null);
   const [mrr, setMrr] = useState(null);
@@ -121,7 +185,14 @@ export default function PlatformOverviewTab() {
             Porte degli ultimi 30 giorni: {Object.entries(lunedi.cerchio.porte_30g).sort((a, b) => b[1] - a[1]).map(([k, n]) => `${k} ${n}`).join(' · ')}
           </p>
         )}
+        {lunedi?.sequenze_30g && (
+          <p className="mt-2 text-xs text-muted-foreground" data-testid="numeri-lunedi-sequenze">
+            Email delle sequenze partite in 30 giorni: {Object.entries(lunedi.sequenze_30g).map(([pub, passi]) => `${pub} ${Object.entries(passi).map(([k, n]) => `${k} ${n}`).join(' ')}`).join(' · ')}
+          </p>
+        )}
       </div>
+
+      <SequenzeAnteprima />
 
       {/* Riga 1 — i miei soldi */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
