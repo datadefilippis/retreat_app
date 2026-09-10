@@ -172,6 +172,115 @@ Ogni gradino risponde a una domanda diversa dell'operatore. Se la domanda non è
 | Assistenza | email automatiche | email | risposta in 2 giorni | WhatsApp con Valentina |
 | Team (collaboratori) | – | – | – | ✓ |
 
+### La matrice dei vantaggi, riga per riga
+
+Ogni riga è un vantaggio solo, con il suo numero e il suo tetto. «✓» vuol dire senza limiti dichiarati; «–» vuol dire non incluso. La colonna «Dove lo vede» è la prova che il vantaggio è percepibile: se non si vede da nessuna parte, non esiste.
+
+**A. Gli strumenti (lavorare)**
+
+| Vantaggio | Gratis | Spinta | Club | Pro | Dove lo vede |
+|---|---|---|---|---|---|
+| Profilo pubblico nella directory dei professionisti, indicizzato | ✓ | ✓ | ✓ | ✓ | /o/nome, Google |
+| Listino servizi, senza limiti di voci | ✓ | ✓ | ✓ | ✓ | profilo, gestionale |
+| Richieste di appuntamento dal profilo, email all'operatore | ✓ | ✓ | ✓ | ✓ | email, Ordini |
+| Calendario che blocca gli orari occupati | ✓ | ✓ | ✓ | ✓ | Calendario |
+| Clienti, ordini, incassi segnati a mano | ✓ | ✓ | ✓ | ✓ | Clienti, Ordini, Incassi |
+| Recensioni verificate (codice dopo l'ordine) e risposta | ✓ | ✓ | ✓ | ✓ | profilo, Recensioni |
+| Pagina link per la bio di Instagram (/@nome) | ✓ | ✓ | ✓ | ✓ | /@nome |
+| Eventi e ritiri: scheda, posti, iscrizioni, promemoria automatici | ✓ | ✓ | ✓ | ✓ | Ritiri, scheda pubblica |
+| Caparra con bonifico: IBAN nelle impostazioni, email con le istruzioni a chi prenota, conferma con un clic, scadenza automatica | ✓ | ✓ | ✓ | ✓ | Ordini «in attesa della caparra» |
+| Prenotazione online con caparra via Stripe, se l'operatore lo collega | ✓ | ✓ | ✓ | ✓ | Impostazioni |
+| Commissioni Aurya | **0** | 0 | 0 | 0 | /costi, Incassi |
+| Ordine manuale (chi ti scrive su WhatsApp lo registri e ha il suo posto) | ✓ | ✓ | ✓ | ✓ | Ordini |
+| Collaboratori (team) con accessi propri | – | – | – | ✓ | Team |
+
+**B. La presenza (essere trovati)**
+
+| Vantaggio | Gratis | Spinta | Club | Pro | Dove lo vede |
+|---|---|---|---|---|---|
+| Il ritiro nel marketplace «Ritiri ed esperienze», per data, coi filtri | ✓ | ✓ | ✓ | ✓ | /esperienze |
+| **In prima fila**: nella fascia in cima al marketplace, sopra l'elenco per data | – | quel ritiro, fino alla data del ritiro | tutti i ritiri, tutto l'anno | tutti, primi tra i Club a parità di data | /esperienze, etichetta «in prima fila» sulla scheda |
+| Nella selezione di stagione (primavera, autunno): la pagina e l'email a tutto il Cerchio | – | quel ritiro, se la data cade nella stagione | tutti | tutti, primi | /esperienze/selezione, email |
+| Precedenza nella directory della propria zona (a parità di completezza del profilo) | – | – | ✓ | ✓, primi | /operatori?zona |
+| Badge sul profilo e sulla scheda dei ritiri | – | – | «Club Aurya» | «Pro» | profilo, schede |
+| Badge «Verificato Aurya» (nasce col racconto completo) | fondatori | – | – | ✓ | profilo |
+
+**C. La promozione (persone che arrivano)**
+
+| Vantaggio | Gratis | Spinta | Club | Pro | Dove lo vede |
+|---|---|---|---|---|---|
+| **L'invio nella Lettera**: email dedicata agli iscritti del Cerchio della zona del ritiro (raggio dell'iscritto) e dei suoi temi, con la scheda del ritiro | – | 1 invio per quel ritiro | 1 invio per ogni ritiro pubblicato (max 2 al mese per operatore) | come Club, max 3 al mese | cruscotto: «inviato a 312 persone in Puglia il 14/10», aperture, clic |
+| Un post su Instagram di Aurya con il ritiro (foto, testo, link) | – | 1 per quel ritiro | 1 per ritiro, max 1 al mese | 1 per ritiro, max 1 al mese, più una storia | il post, e il link nel cruscotto |
+| La menzione nella Lettera generale (la newsletter a tutto il Cerchio) | – | – | quando c'è spazio | sì, con precedenza | la Lettera |
+| Il contatore «N persone nel Cerchio vicino a te che hanno chiesto i tuoi temi» | ✓ (è l'innesco) | ✓ | ✓ | ✓ | wizard, cruscotto |
+| Il cruscotto della visibilità: visite al profilo e alle schede, da dove arrivano, aperture e clic delle Lettere | visite | + la sua Lettera | completo | completo | Visibilità |
+
+**D. Il lavoro dalla rete (soldi che arrivano)**
+
+| Vantaggio | Gratis | Spinta | Club | Pro | Dove lo vede |
+|---|---|---|---|---|---|
+| Nella lista di chi chiamiamo, pagato, per condurre i team building alla Masseria (300-400 € a giornata) | – | – | ✓ | ✓, chiamati per primi | email «sei nella rete che lavora», le chiamate |
+| Nella lista dei partner dei ritiri Aurya (400 € a ritiro + il nome sulla scheda) | – | – | ✓ | ✓, primi | idem |
+| Proposti come partner nelle regie in partnership (60% del netto all'operatore) | – | – | ✓ | ✓, primi | idem |
+| Le richieste di regia e di struttura degli operatori nella tua zona che cercano un partner | – | – | ✓ | ✓ | email |
+
+Il tetto qui è naturale: chiamiamo chi è adatto al lavoro (disciplina, zona, disponibilità), non tutti. Ma **solo** tra Club e Pro: è la regola scritta.
+
+**E. Il racconto (la fiducia)**
+
+| Vantaggio | Gratis | Spinta | Club | Pro | Dove lo vede |
+|---|---|---|---|---|---|
+| L'intervista completa con Valentina (una conversazione, 800 parole, foto, badge Verificato) | i primi 50, gratis per sempre; poi 190 € a parte | – | 190 € a parte | ✓ inclusa (entro 60 giorni) | profilo, sezione «La storia» |
+| Il racconto breve (questionario di 8 domande, 250 parole scritte da noi sul profilo) | – | – | ✓ (entro 30 giorni) | compreso nell'intervista | profilo |
+| Una pagina nel Magazine (l'intervista come articolo, indicizzata, linkata dalla home) | fondatori | – | – | ✓ | /blog, home |
+| La citazione in un articolo del Magazine sul tema della sua pratica (quando esce) | – | – | quando capita | con precedenza | /blog |
+
+**F. La voce (Aurya Sound)**
+
+| Vantaggio | Gratis | Spinta | Club | Pro | Dove lo vede |
+|---|---|---|---|---|---|
+| Ascolto di Calm, Ground, Respiro e della biblioteca | ✓ | ✓ | ✓ | ✓ | /sound |
+| Crea Studio: componi meditazioni con la tua voce, basi e frequenze | – | – | – | ✓ | /sound/studio |
+| Pubblicazione delle tue meditazioni con un link e condivisione per-contatto coi tuoi clienti | – | – | – | ✓ | /sound/crea |
+| Le tue meditazioni nella libreria a pagamento di Aurya, con una quota sugli ascolti | – | – | – | ✓ dal 2028 (quota da definire, indicativa 30%) | Incassi |
+
+**G. L'accompagnamento (qualcuno accanto)**
+
+| Vantaggio | Gratis | Spinta | Club | Pro | Dove lo vede |
+|---|---|---|---|---|---|
+| La sequenza di email dopo la registrazione (giorno 0, 7, 14, 30) | ✓ | ✓ | ✓ | ✓ | email |
+| Assistenza via email | entro 7 giorni | entro 7 giorni | entro 2 giorni lavorativi | entro 1 giorno | email |
+| WhatsApp con Valentina | – | – | – | ✓ (orari scritti) | WhatsApp |
+| «Il tuo primo ritiro»: 45 minuti con Valentina o Davide su programma, prezzo, struttura, promozione | – | – | – | 1 l'anno | calendario |
+| Sconto sulla regia leggera / completa | – | – | –10% | –20% | preventivo |
+
+**H. Prezzo e condizioni**
+
+| | Gratis | Spinta | Club | Pro |
+|---|---|---|---|---|
+| Prezzo | 0 | 19 € una tantum | 49 €/anno | 119 €/anno o 12 €/mese |
+| Rinnovo | – | – | annuale, avviso 30 giorni prima, disdici quando vuoi | idem |
+| Garanzia | – | se la Lettera non parte, rimborso | 30 giorni: se non ti serve, rimborso | 30 giorni |
+| Fondatori (primi 20) | | | gratis per il 2027 | prezzo bloccato per sempre |
+
+### Il valore c'è, ed è percepibile? La verifica, vantaggio per vantaggio
+
+| Vantaggio | Valore reale | Come si percepisce | Rischio | Il cancello onesto |
+|---|---|---|---|---|
+| Prima fila nel marketplace | la posizione in cima è ciò che BookRetreats vende al 20-30% | l'etichetta «in prima fila» sulla scheda; la scheda in cima | un marketplace con 5 ritiri: la prima fila vale poco | si vende (Spinta, Club) solo quando i ritiri in programma sono ≥ 10 |
+| L'invio nella Lettera per zona | un'email a persone che hanno chiesto un ritiro in quella zona: un contatto pagato costa 1-2 € su Instagram, qui ne arrivano centinaia | il cruscotto dice «inviato a N persone, X aperture, Y clic»; le richieste dicono «dalla Lettera» | N piccolo | l'invio si propone solo se N ≥ 50 nella zona; sotto, la Spinta non si vende e il Club lo dice |
+| Il post su Instagram | il nostro account e il suo | il post esiste, taggato | pochi follower nostri all'inizio | tetto di uno al mese; si dice il numero di follower |
+| La selezione di stagione | l'email a tutto il Cerchio, due volte l'anno | l'email, la pagina | Cerchio piccolo | si spedisce con ≥ 300 confermati |
+| Il lavoro dalla rete | 300-400 € a giornata: ripaga anni di Club | la chiamata, il compenso | pochi team building | si promette la lista, non il lavoro; il numero di lavori dell'anno è pubblico |
+| Il racconto breve | 250 parole scritte da noi sul profilo | sul profilo, entro 30 giorni | il nostro tempo | 45 minuti l'uno: 100 Club = 75 ore l'anno |
+| L'intervista completa | vale 190 € a parte | sul profilo e nel Magazine | 3-4 ore l'una | solo Pro e fondatori: 30 Pro = 100 ore l'anno |
+| Crea Studio e la quota | uno strumento che altrove non esiste in italiano | le sue meditazioni pubblicate e condivise | la libreria a pagamento non c'è ancora | la quota si promette «dal 2028», la pubblicazione da subito |
+| I 45 minuti | una consulenza vale 80-120 € | il calendario | il nostro tempo | 1 l'anno; 30 Pro = 22 ore |
+| WhatsApp | il canale che oggi diamo a tutti | risponde Valentina | saturazione | orari scritti; nel Gratis solo email |
+| Lo sconto sulla regia | 29-138 € | sul preventivo | – | – |
+
+Tre conclusioni. **Il valore percepibile sta nei numeri mostrati**: ogni vantaggio pagato deve avere una riga nel cruscotto («inviato a 312», «in prima fila fino al 20/1», «chiamato per 1 team building»); senza cruscotto il Club è una promessa. **Il Club regge solo con la fila**: per questo si vende coi cancelli, e prima si regala ai fondatori. **Il Pro costa tempo, e il tempo è messo a bilancio**: 30 Pro nel 2027 sono circa 5 ore a settimana di Valentina; oltre i 50 Pro il prezzo sale o l'intervista si sposta a 190 a parte.
+
 **Perché uno sale al Club.** Perché il Club porta due cose che nessuno strumento porta: **persone** (la fila, tutto l'anno) e **lavoro** (i team building e i ritiri Aurya pagano gli operatori, e li scegliamo tra chi è nel Club). Un team building da 400 € di compenso ripaga otto anni di Club. È anche la regola che ci conviene: chi ha investito 49 € è chi risponde, si presenta, porta persone.
 
 **Perché uno sale al Pro.** Perché il Pro non riempie un ritiro: costruisce un professionista. La voce (Crea Studio, e dal 2028 una quota sugli ascolti delle sue meditazioni nella libreria), il racconto completo con la pagina nel Magazine (che da solo, a parte, vale 190 €), tre quarti d'ora con noi sul suo primo ritiro, WhatsApp, e la priorità quando la rete lavora. La differenza fra 49 e 119 è la differenza fra «mi porti persone» e «lavoriamo insieme».
