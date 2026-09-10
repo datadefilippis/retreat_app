@@ -6,7 +6,7 @@ Tre tipi di richiesta, una macchina sola:
 - «team_building»: un'azienda chiede un team building o un ritiro
   aziendale su misura dalla pagina /aziende (P13, piano §3.1 B).
 Chi chiede riceve una ricevuta e un aggiornamento a ogni cambio di
-stato; la piattaforma (ADMIN_EMAIL) riceve ogni richiesta nuova con il
+stato; la piattaforma (CASELLA_AURYA, aurya.life@gmail.com) riceve ogni richiesta nuova con il
 link al pannello. Best-effort: un'email che non parte non blocca mai.
 """
 import logging
@@ -66,7 +66,9 @@ def _riassunto(r: dict) -> str:
 
 def avvisa_piattaforma_richiesta(r: dict) -> None:
     try:
-        from services.email_service import ADMIN_EMAIL, _wrap_template, send_email
+        # FV6 (10/9/2026 sera, founder): i moduli (regia, aziende, strutture)
+        # scrivono alla casella di Aurya, aurya.life@gmail.com
+        from services.email_service import CASELLA_AURYA, _wrap_template, send_email
         chi = r.get("organization_nome") or "Un professionista"
         tipo = _tipo(r)
         if tipo == "regia":
@@ -82,7 +84,7 @@ def avvisa_piattaforma_richiesta(r: dict) -> None:
                    f'<p><a href="{_base()}/admin/strutture?vista=richieste" style="display:inline-block;'
                    'background:#2f5e58;color:#fff;padding:10px 18px;border-radius:999px;'
                    'text-decoration:none">Apri le richieste</a></p>')
-        send_email(ADMIN_EMAIL, oggetto, _wrap_template(content, "it"), bypass_gate=True)
+        send_email(CASELLA_AURYA, oggetto, _wrap_template(content, "it"), bypass_gate=True)
     except Exception:   # noqa: BLE001
         logger.exception("richiesta: email alla piattaforma non inviata")
 

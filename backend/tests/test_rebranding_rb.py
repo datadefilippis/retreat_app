@@ -626,13 +626,30 @@ class TestFv2LeSequenze:
         subs = (BACKEND_DIR / "routers" / "subscribers.py").read_text()
         assert "Benvenuto nel Cerchio: un clic e sei dentro" in subs
 
-    def test_le_risposte_arrivano_a_una_casella_vera(self):
+    def test_le_risposte_e_i_moduli_arrivano_alla_casella_di_aurya(self):
+        """FV6 (10/9 sera, founder): Reply-To = aurya.life@gmail.com su OGNI
+        email (chi risponde al noreply arriva li'), il piede lo dice, e i
+        moduli verso di noi (regia, aziende, strutture, promemoria) scrivono
+        alla stessa casella."""
+        sys.path.insert(0, str(BACKEND_DIR))
+        import importlib, os
+        os.environ.pop("REPLY_TO_EMAIL", None); os.environ.pop("AURYA_INBOX_EMAIL", None)
+        import services.email_service as es
+        importlib.reload(es)
+        assert es.CASELLA_AURYA == "aurya.life@gmail.com" and es.REPLY_TO_DEFAULT == "aurya.life@gmail.com"
+        d = es._payload_brevo("a@b.it", "x", "<p>x</p>")
+        assert d["replyTo"] == {"email": "aurya.life@gmail.com"}, "anche senza reply_to esplicito"
+        assert es._payload_brevo("a@b.it", "x", "<p>x</p>", reply_to="op@studio.it")["replyTo"] == {"email": "op@studio.it"}
+        piede = es._wrap_template("<p>ciao</p>", "it")
+        assert "Per rispondere, scrivi a aurya.life@gmail.com" in piede and "non rispondere" not in piede
         seq = (BACKEND_DIR / "services" / "email_sequenze.py").read_text()
-        assert "def risposte_a()" in seq and 'os.environ.get("REPLY_TO_EMAIL")' in seq
-        assert "reply_to=risposte_a()" in seq
+        assert "def risposte_a()" in seq and "reply_to=risposte_a()" in seq
         motore = (BACKEND_DIR / "services" / "sequenze.py").read_text()
-        assert "reply_to=risposte" in motore
-        assert "REPLY_TO_EMAIL" in (BACKEND_DIR / ".env.example").read_text()
+        assert "send_email(CASELLA_AURYA, oggetto" in motore, "il promemoria a noi va alla casella"
+        strutture = (BACKEND_DIR / "services" / "strutture_email.py").read_text()
+        assert "send_email(CASELLA_AURYA, oggetto" in strutture, "regia, aziende e strutture scrivono alla casella"
+        assert "ADMIN_EMAIL" not in strutture[strutture.index("def avvisa_piattaforma_richiesta"):strutture.index("def ricevuta_operatore")]
+        assert "AURYA_INBOX_EMAIL" in (BACKEND_DIR / ".env.example").read_text()
 
     def test_l_iscrizione_ha_una_struttura_sola(self):
         """founder 10/9 sera: stessa struttura dell'iscrizione della landing

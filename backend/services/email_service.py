@@ -31,6 +31,13 @@ BREVO_API_KEY = os.environ.get("BREVO_API_KEY", "")
 from core.brand import BRAND_FROM_EMAIL, BRAND_FROM_NAME, BRAND_TAGLINE  # noqa: E402
 SMTP_FROM_EMAIL = os.environ.get("SMTP_FROM_EMAIL", BRAND_FROM_EMAIL)
 SMTP_FROM_NAME = os.environ.get("SMTP_FROM_NAME", BRAND_FROM_NAME)
+# FV6 (10/9/2026 sera, founder) — LA CASELLA DI AURYA: aurya.life@gmail.com.
+# Il mittente resta noreply@aurya.life, ma OGNI email della piattaforma
+# porta il Reply-To sulla casella (chi risponde al «noreply» arriva qui),
+# e il piede lo dice invece di «non rispondere». I moduli verso di noi
+# (regia, aziende, strutture, promemoria) scrivono qui.
+CASELLA_AURYA = (os.environ.get("AURYA_INBOX_EMAIL") or "aurya.life@gmail.com").strip()
+REPLY_TO_DEFAULT = (os.environ.get("REPLY_TO_EMAIL") or CASELLA_AURYA).strip()
 
 # APP_URL is the canonical admin/auth host. We re-export from url_builder
 # so legacy callers (`from services.email_service import APP_URL`) keep
@@ -1455,14 +1462,7 @@ def send_email(
                 type(e).__name__,
             )
 
-    data = {
-        "sender": {"name": sender_name or SMTP_FROM_NAME, "email": SMTP_FROM_EMAIL},
-        "to": [{"email": to_email}],
-        "subject": subject,
-        "htmlContent": html_body,
-    }
-    if reply_to:
-        data["replyTo"] = {"email": reply_to}
+    data = _payload_brevo(to_email, subject, html_body, reply_to=reply_to, sender_name=sender_name)
 
     payload = json.dumps(data).encode("utf-8")
 
@@ -1640,13 +1640,25 @@ _BASE_STYLE = """
 """
 
 
+def _payload_brevo(to_email: str, subject: str, html_body: str, *,
+                   reply_to: str = None, sender_name: str = None) -> dict:
+    """Il corpo della chiamata a Brevo. FV6: il Reply-To c'e' SEMPRE —
+    quello passato (es. l'operatore, per le email della sua vetrina) o
+    la casella di Aurya."""
+    return {
+        "sender": {"name": sender_name or SMTP_FROM_NAME, "email": SMTP_FROM_EMAIL},
+        "to": [{"email": to_email}],
+        "subject": subject,
+        "htmlContent": html_body,
+        "replyTo": {"email": reply_to or REPLY_TO_DEFAULT},
+    }
+
+
 def _wrap_template(content: str, locale: str = "it", *, reply_to: str = None, store_name: str = None) -> str:
     lang = locale if locale in SUPPORTED_LOCALES else "it"
-    # If reply_to is configured, don't say "do not reply" — say where to reply
-    if reply_to:
-        footer_line = _t("footer_reply_to", lang, email=reply_to)
-    else:
-        footer_line = _t("footer_auto", lang)
+    # FV6 — il piede dice sempre DOVE si risponde (mai «non rispondere»):
+    # la casella passata, o quella di Aurya, che e' anche il Reply-To
+    footer_line = _t("footer_reply_to", lang, email=reply_to or REPLY_TO_DEFAULT)
     # Header: store-branded when context available, platform-only otherwise.
     # Logo ufficiale (loto+sole, 13/7/2026) hostato sul dominio: risolve
     # appena il sito è deployato; il testo accanto copre il frattempo e

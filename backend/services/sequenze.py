@@ -229,7 +229,7 @@ _FILTRO_SUB = {"status": "confirmed", "consent": True}
 
 def _manda(passo: Passo, ctx: dict, dry_run: bool = False) -> Optional[bool]:
     """True inviata, False errore, None saltata (niente da dire)."""
-    from services.email_service import ADMIN_EMAIL, _wrap_template, send_email
+    from services.email_service import CASELLA_AURYA, _wrap_template, send_email
     try:
         reso = passo.template(ctx)
     except Exception as exc:  # noqa: BLE001
@@ -242,7 +242,8 @@ def _manda(passo: Passo, ctx: dict, dry_run: bool = False) -> Optional[bool]:
         return True
     try:
         if passo.a == _ADMIN:
-            return bool(send_email(ADMIN_EMAIL, oggetto, _wrap_template(corpo, "it"), bypass_gate=True))
+            # FV6 — «a noi» = la casella di Aurya
+            return bool(send_email(CASELLA_AURYA, oggetto, _wrap_template(corpo, "it"), bypass_gate=True))
         risposte = T.risposte_a()
         return bool(send_email(ctx["email"], oggetto,
                                _wrap_template(corpo, "it", reply_to=risposte),
@@ -404,7 +405,7 @@ _FITTIZI_SUB = {
 async def anteprima(pubblico: str, nome: str, email: Optional[str] = None) -> Dict[str, Any]:
     """L'email di un passo per un destinatario vero (per email) o, se
     non c'e', per uno fittizio. Non manda e non marca niente."""
-    from services.email_service import ADMIN_EMAIL, _wrap_template
+    from services.email_service import CASELLA_AURYA, _wrap_template
     passo = _passo(pubblico, nome)
     if not passo:
         raise ValueError("passo sconosciuto")
@@ -448,7 +449,7 @@ async def anteprima(pubblico: str, nome: str, email: Optional[str] = None) -> Di
     html = (_wrap_template(corpo, "it") if passo.a == _ADMIN
             else _wrap_template(corpo, "it", reply_to=T.risposte_a()))
     return {"pubblico": pubblico, "passo": nome, "trovato": trovato,
-            "destinatario": ADMIN_EMAIL if passo.a == _ADMIN else ctx["email"],
+            "destinatario": CASELLA_AURYA if passo.a == _ADMIN else ctx["email"],
             "oggetto": oggetto, "html": html, "nota": nota}
 
 

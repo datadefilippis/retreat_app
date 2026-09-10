@@ -15,8 +15,8 @@ dire: il motore allora salta il passo.
 
 DA CHI PARTONO E DOVE SI RISPONDE (domanda del founder, 10/9 sera):
 il mittente e' SMTP_FROM_EMAIL (in prod noreply@aurya.life, «Aurya»);
-ogni email che dice «rispondi» porta il Reply-To = risposte_a(), cioe'
-REPLY_TO_EMAIL se impostata nell'ambiente, altrimenti ADMIN_EMAIL. Il
+OGNI email porta il Reply-To = risposte_a() = aurya.life@gmail.com (FV6,
+founder; REPLY_TO_EMAIL se impostata). Il
 client di posta risponde al Reply-To, non al mittente: la risposta
 arriva nella casella vera, e il piede dell'email lo dice.
 
@@ -41,9 +41,10 @@ TELEGRAM_GRUPPO_URL = (os.environ.get("TELEGRAM_GRUPPO_URL") or "").strip()
 
 
 def risposte_a() -> str:
-    """La casella dove arrivano le risposte (Reply-To)."""
-    from services.email_service import ADMIN_EMAIL
-    return (os.environ.get("REPLY_TO_EMAIL") or "").strip() or ADMIN_EMAIL
+    """La casella dove arrivano le risposte (Reply-To): aurya.life@gmail.com
+    (FV6, founder), o REPLY_TO_EMAIL se impostata."""
+    from services.email_service import REPLY_TO_DEFAULT
+    return REPLY_TO_DEFAULT
 
 
 # Le quattordici vie della landing /cerca-ritiro, dette bene
