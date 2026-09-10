@@ -83,8 +83,9 @@ import {
 // Le categorie con una pagina /ritiri/{cat} prenotabile (tassonomia
 // ritiri): SOLO queste hanno la CTA "Vivi un ritiro", e solo in fase
 // marketplace. Le categorie editoriali (ritiri/energia/operatori) no.
-const BOOKABLE_CATS = new Set(['yoga', 'meditazione', 'detox', 'suono',
-  'massaggio', 'breathwork', 'cammini', 'femminile', 'aziendale']);
+const BOOKABLE_CATS = new Set(['yoga', 'meditazione', 'breathwork', 'suono', 'reiki',
+  'costellazioni', 'astrologia', 'ayurveda', 'tantra', 'detox', 'cammini', 'femminile',
+  'crescita', 'massaggio', 'aziendale']);   // TX (10/9/2026): = RETREAT_CATEGORIES
 
 /* OF1 — l'unica categoria del Magazine scritta PER chi lavora nel
    benessere, non per chi lo cerca (fiscalita', prezzo di un ritiro,

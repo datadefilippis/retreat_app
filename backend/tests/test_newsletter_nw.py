@@ -202,7 +202,7 @@ class TestNwLiveFlow:
                           json={"email": self.email, "name": "Guardia NW",
                                 "source": "newsletter",
                                 "wants_experiences": True,
-                                "interests": ["yoga", "cerchi", "sbagliato"],
+                                "interests": ["yoga", "femminile", "sbagliato"],
                                 "city": "Lecce", "travel": "anywhere",
                                 "consent": True}, timeout=10)
         if r.status_code == 429:
@@ -220,7 +220,7 @@ class TestNwLiveFlow:
         assert doc["source"] == "newsletter"
         assert doc["profile"]["city"] == "Lecce"
         assert doc["profile"]["travel"] == "anywhere"
-        assert doc["profile"]["interests"] == ["yoga", "cerchi"]
+        assert doc["profile"]["interests"] == ["yoga", "femminile"]
         assert doc["preferences"]["retreat_alert"]["enabled"] is True
 
         # token firmato col secret del SERVER, come fa bn2: niente
@@ -240,7 +240,7 @@ class TestNwLiveFlow:
         r = requests.get(
             f"{BASE_URL}/api/public/newsletter/preferences/{tok}", timeout=10)
         body = r.json()
-        assert body["interests"] == ["yoga", "cerchi"]
+        assert body["interests"] == ["yoga", "femminile"]
         assert body["city"] == "Lecce" and body["travel"] == "anywhere"
 
         r = requests.post(f"{BASE_URL}/api/public/newsletter/unsubscribe",

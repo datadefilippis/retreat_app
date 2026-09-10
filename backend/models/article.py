@@ -34,12 +34,8 @@ ARTICLE_EXTRA_CATEGORIES = {
     # sigle, quando serve un medico. E' il territorio del brand e
     # l'unico cluster il cui sbocco naturale e' la rete, non la lettera.
     "scegliere": "Scegliere e fidarsi",
-    # NA2 — l'ayurveda non entra sotto "massaggio" (che nella tassonomia
-    # dei ritiri e' bodywork) ne' sotto "energia": e' un sistema intero,
-    # con una diagnostica, una dietetica e una farmacopea sue. Stanza
-    # propria, aperta con due pezzi perche' una categoria con un
-    # articolo solo e' una stanza vuota.
-    "ayurveda": "Ayurveda",
+    # TX (10/9/2026): «ayurveda» e' entrata nella tassonomia dei ritiri:
+    # gli articoli restano nella stessa stanza (ARTICLE_CATEGORIES la include)
     # ED1 (piano espansione ago 2026) — la naturopatia e' un approccio
     # a se': non e' bodywork, non e' "energia", e ha in arrivo i suoi
     # vicini (aromaterapia, fitoterapia). Stanza propria come per

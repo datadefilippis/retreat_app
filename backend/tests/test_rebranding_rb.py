@@ -1003,3 +1003,43 @@ class TestFv8IlPercorsoSenzaVicoliCiechi:
         i18n = (FE / "i18n.js").read_text()
         for via in ("meditazioni", "frequenze", "newsletter", "entra-nella-rete", "accedi", "verify-email"):
             assert f"|{via}" in i18n, via
+
+
+class TestTxUnaTassonomiaSola:
+    """TX (10/9/2026 sera, founder: «le categorie dei ritiri sono complete
+    come quelle del profilo? serve integrazione»). Le vie di chi cerca
+    (EXPERIENCE_INTERESTS meno «misto») SONO le categorie dei ritiri;
+    ogni disciplina del profilo ha una casa fra le categorie; il wizard
+    legge la tassonomia vera e suggerisce quella coerente col profilo."""
+
+    def test_le_vie_sono_le_categorie(self):
+        sys.path.insert(0, str(BACKEND_DIR))
+        from models.retreat_taxonomy import RETREAT_CATEGORIES, DISCIPLINA_TO_CATEGORIA, categoria_suggerita
+        from routers.subscribers import EXPERIENCE_INTERESTS
+        from models.disciplines import DISCIPLINES
+        assert set(EXPERIENCE_INTERESTS) - {"misto"} <= set(RETREAT_CATEGORIES)
+        assert "cerchi" not in EXPERIENCE_INTERESTS and "femminile" in EXPERIENCE_INTERESTS
+        assert set(DISCIPLINA_TO_CATEGORIA) == set(DISCIPLINES), "ogni disciplina ha una casa"
+        assert set(DISCIPLINA_TO_CATEGORIA.values()) <= set(RETREAT_CATEGORIES)
+        assert categoria_suggerita(["shiatsu", "yoga"]) == "massaggio" and categoria_suggerita([]) is None
+
+    def test_il_wizard_legge_la_tassonomia_e_suggerisce(self):
+        wiz = (FE / "features" / "events" / "EventWizard.js").read_text()
+        assert "api.get('/products/taxonomies')" in wiz and "month: '1900-01'" not in wiz
+        assert "suggerita_event_ticket" in wiz and 'data-testid="wizard-categoria-suggerita"' in wiz
+        prod = (BACKEND_DIR / "routers" / "products.py").read_text()
+        assert '"suggerita_event_ticket": suggerita' in prod
+
+    def test_i_vocabolari_del_frontend_sono_allineati(self):
+        sys.path.insert(0, str(BACKEND_DIR))
+        from models.retreat_taxonomy import RETREAT_CATEGORIES
+        import json as _json
+        pref = (FE / "features" / "prelaunch" / "PreferenzeRitiri.jsx").read_text()
+        assert "women: 'femminile'" in pref and "'cerchi'" not in pref
+        blog = (FE / "features" / "storefront" / "BlogArticlePage.js").read_text()
+        for k in RETREAT_CATEGORIES:
+            assert f"'{k}'" in blog[blog.index("const BOOKABLE_CATS"):blog.index("]);", blog.index("const BOOKABLE_CATS"))], k
+        cats = _json.loads((FE / "locales" / "it" / "landings.json").read_text())["categories"]
+        for k in RETREAT_CATEGORIES:
+            assert k in cats, f"etichetta mancante per {k}"
+        assert "migrate_vie_femminile_v1()" in (BACKEND_DIR / "server.py").read_text()

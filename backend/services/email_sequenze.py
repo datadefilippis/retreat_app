@@ -52,7 +52,7 @@ ETICHETTE_VIE: Dict[str, str] = {
     "yoga": "lo yoga", "meditazione": "la meditazione", "breathwork": "il respiro",
     "suono": "il suono", "reiki": "il reiki", "costellazioni": "le costellazioni",
     "astrologia": "l'astrologia", "ayurveda": "l'ayurveda", "tantra": "il tantra",
-    "detox": "il detox", "cammini": "i cammini", "cerchi": "i cerchi",
+    "detox": "il detox", "cammini": "i cammini", "femminile": "i cerchi e il femminile",
     "crescita": "la crescita personale", "misto": "un po' di tutto",
 }
 

@@ -336,13 +336,25 @@ export default function EventWizard() {
         .catch(() => {}));
     return () => { mounted = false; };
   }, []);
-  // UX round 5/7 — tassonomia categorie dal backend (fonte unica)
+  // UX round 5/7 — tassonomia categorie dal backend (fonte unica).
+  // TX (10/9/2026): da /products/taxonomies, NON dal listing pubblico
+  // (che da RE-ter mostra solo le categorie con ritiri); porta anche la
+  // categoria suggerita dalle discipline del profilo.
   const [categoryOptions, setCategoryOptions] = useState({});
+  const [categoriaSuggerita, setCategoriaSuggerita] = useState(null);
   useEffect(() => {
     let mounted = true;
     import('../../api/client').then(({ default: api }) =>
-      api.get('/public/retreats', { params: { month: '1900-01' } })
-        .then(res => { if (mounted) setCategoryOptions(res.data?.categories || {}); })
+      api.get('/products/taxonomies')
+        .then(res => {
+          if (!mounted) return;
+          setCategoryOptions(res.data?.event_ticket || {});
+          const sug = res.data?.suggerita_event_ticket || null;
+          setCategoriaSuggerita(sug);
+          if (sug && !prefillRef.current?.product) {
+            setBase(prev => (prev.category ? prev : { ...prev, category: sug }));
+          }
+        })
         .catch(() => {}));
     return () => { mounted = false; };
   }, []);
@@ -1021,6 +1033,9 @@ export default function EventWizard() {
               </select>
               <p className="text-[11px] text-gray-400 mt-0.5">
                 {t('wizards.event.base.categoryHint', { defaultValue: 'Decide dove appare nel calendario pubblico dei ritiri.' })}
+                {categoriaSuggerita && base.category === categoriaSuggerita && (
+                  <span data-testid="wizard-categoria-suggerita"> {t('wizards.event.base.categorySuggested', { defaultValue: 'Suggerita dalle discipline del tuo profilo.' })}</span>
+                )}
               </p>
               {fieldError(errorsBase.category)}
             </div>

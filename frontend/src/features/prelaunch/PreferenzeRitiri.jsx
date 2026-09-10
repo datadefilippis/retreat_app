@@ -25,7 +25,7 @@ export const BASE_TO_EXP = {
   yoga: 'yoga', meditation: 'meditazione', breathwork: 'breathwork',
   sound: 'suono', reiki: 'reiki', constellations: 'costellazioni',
   astrology: 'astrologia', ayurveda: 'ayurveda', tantra: 'tantra',
-  detox: 'detox', nature: 'cammini', women: 'cerchi', growth: 'crescita',
+  detox: 'detox', nature: 'cammini', women: 'femminile', growth: 'crescita',
   mixed: 'misto',
 };
 export const EXP_TO_BASE = Object.fromEntries(Object.entries(BASE_TO_EXP).map(([b, e]) => [e, b]));

@@ -202,6 +202,8 @@ async def lifespan(app: FastAPI):
         await migrate_stripe_prezzi_2027_v1()   # P4-bis: Pro solo annuale + price id live
         from services.migrazioni_cerchio import migrate_cerchio_alert_esplicito_v1
         await migrate_cerchio_alert_esplicito_v1()   # FV5: l'avviso ritiri solo a chi l'ha chiesto
+        from services.migrazioni_cerchio import migrate_vie_femminile_v1
+        await migrate_vie_femminile_v1()   # TX: la via «cerchi» diventa «femminile»
     except Exception as e:
         logging.error(f"Failed to run zero commissioni migration: {e}")
     # One-time migration: trial only on Core plan

@@ -39,6 +39,9 @@ const ACTIVITIES = ['teacher', 'center', 'venue', 'organizer', 'therapist', 'oth
 const INTEREST_TO_TOPIC = {
   yoga: 'yoga', meditation: 'meditazione', breathwork: 'breathwork',
   sound: 'suono', detox: 'detox', nature: 'cammini', women: 'femminile',
+  // TX (10/9/2026): le sei vie nuove sono anche categorie del Magazine
+  reiki: 'reiki', constellations: 'costellazioni', astrology: 'astrologia',
+  ayurveda: 'ayurveda', tantra: 'tantra', growth: 'crescita',
 };
 // BN1 — compact: la variante da fine articolo (blog). Solo email +
 // consenso: nel flusso di lettura ogni campo in piu' e' attrito. La

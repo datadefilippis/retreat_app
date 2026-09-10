@@ -47,3 +47,20 @@ async def migrate_cerchio_alert_esplicito_v1() -> None:
         n += 1
     await migrations.insert_one({"_id": _FLAG, "applied_at": datetime.now(timezone.utc), "spenti": n})
     logger.info("migrate_cerchio_alert_esplicito_v1: avviso ritiri spento a %s iscritti mai interpellati", n)
+
+
+async def migrate_vie_femminile_v1() -> None:
+    """TX (10/9/2026): la via «cerchi» si chiama «femminile», come la
+    categoria dei ritiri. Una volta sola."""
+    from database import db
+    migrations = db["migrations"]
+    if await migrations.find_one({"_id": "vie_femminile_v1"}):
+        return
+    n = 0
+    async for sub in db.aurya_subscribers.find({"profile.interests": "cerchi"}, {"_id": 0, "email": 1, "profile.interests": 1}):
+        vie = [("femminile" if v == "cerchi" else v) for v in (sub.get("profile") or {}).get("interests", [])]
+        vie = list(dict.fromkeys(vie))
+        await db.aurya_subscribers.update_one({"email": sub["email"]}, {"$set": {"profile.interests": vie}})
+        n += 1
+    await migrations.insert_one({"_id": "vie_femminile_v1", "applied_at": datetime.now(timezone.utc), "aggiornati": n})
+    logger.info("migrate_vie_femminile_v1: %s iscritti con «cerchi» → «femminile»", n)

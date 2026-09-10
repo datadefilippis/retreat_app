@@ -55,6 +55,13 @@ CATEGORY_PALETTES = {
     "cammini":     ((72, 82, 52),  (150, 160, 110)),
     "femminile":   ((112, 62, 82), (190, 130, 150)),
     "aziendale":   ((62, 72, 82),  (130, 140, 150)),
+    # TX (10/9/2026) — le sei vie entrate nella tassonomia dei ritiri
+    "reiki":       ((78, 62, 108),  (152, 132, 190)),   # viola (era «energia»)
+    "costellazioni": ((66, 76, 92), (140, 150, 176)),   # grigio-azzurro, il cerchio
+    "astrologia":  ((44, 48, 84),   (120, 124, 186)),   # notte stellata
+    "ayurveda":    ((104, 66, 44),  (188, 132, 86)),    # rame e curcuma
+    "tantra":      ((122, 58, 70),  (200, 120, 130)),   # rosso caldo
+    "crescita":    ((70, 96, 56),   (150, 176, 110)),   # verde nuovo
 }
 _DEFAULT_PALETTE = ((55, 98, 84), (138, 116, 64))    # salvia + oro
 
@@ -71,7 +78,6 @@ EDITORIAL_PALETTES = {
     "scegliere": ((58, 70, 96),   (126, 142, 184)),   # blu notte: la
     # tonalita' piu' fredda del Magazine, perche' e' il cluster in cui
     # si ragiona invece di praticare.
-    "ayurveda":  ((104, 66, 44),   (188, 132, 86)),   # rame e curcuma
     "naturopatia": ((52, 74, 46),  (134, 162, 108)),  # muschio e felce:
     # verde piu' scuro e piu' freddo di cammini/detox, per non
     # confondersi coi vicini di scaffale.
@@ -230,6 +236,11 @@ CATEGORY_GEOMETRY = {
     "cammini": _geo_hexagram,
     "femminile": _geo_triple_moon,
     "aziendale": _geo_metatron,
+    # TX (10/9/2026) — le sei vie nuove (definite piu' sotto dove serve)
+    # (ogni categoria ha un segno SUO: mai il ripiego, mai due uguali —
+    # guardia SW4) — assegnate sotto, dove i segni sono definiti
+    "reiki": None, "costellazioni": None, "astrologia": None,
+    "ayurveda": None, "tantra": None, "crescita": None,
 }
 
 def _geo_crossroads(draw, cx, cy, R, color, w=3):
@@ -286,9 +297,67 @@ EDITORIAL_GEOMETRY = {
     "energia": _geo_rays,
     "operatori": _geo_square_in_circle,
     "scegliere": _geo_crossroads,
-    "ayurveda": _geo_three_doshas,
     "naturopatia": _geo_sprout,
 }
+
+
+def _geo_lemniscate(draw, cx, cy, R, color, w=3):
+    """Tantra — due cerchi che si toccano nel centro: l'incontro."""
+    _circle(draw, cx - R * 0.42, cy, R * 0.42, color, w)
+    _circle(draw, cx + R * 0.42, cy, R * 0.42, color, w)
+    _circle(draw, cx, cy, R * 0.08, color, w)
+
+
+def _geo_steps(draw, cx, cy, R, color, w=3):
+    """Crescita — tre archi che salgono, uno dentro l'altro."""
+    for k, r in enumerate((0.35, 0.65, 0.95)):
+        rr = R * r
+        draw.arc((cx - rr, cy - rr, cx + rr, cy + rr), start=200, end=340, fill=color, width=w)
+    _circle(draw, cx, cy - R * 0.05, R * 0.08, color, w)
+
+
+def _geo_orbits(draw, cx, cy, R, color, w=3):
+    """Reiki — tre orbite: ellissi ruotate di sessanta gradi attorno a un
+    centro, l'energia che gira intorno alle mani."""
+    for k in range(3):
+        a = math.radians(k * 60)
+        pts = []
+        for i in range(73):
+            t = math.radians(i * 5)
+            x, y = R * 0.95 * math.cos(t), R * 0.38 * math.sin(t)
+            pts.append((cx + x * math.cos(a) - y * math.sin(a), cy + x * math.sin(a) + y * math.cos(a)))
+        draw.line(pts, fill=color, width=w)
+    _circle(draw, cx, cy, R * 0.1, color, w)
+
+
+def _geo_constellation(draw, cx, cy, R, color, w=3):
+    """Costellazioni — sette punti legati da un filo: il sistema che si
+    rivela quando le persone prendono posto."""
+    punti = [(0.0, -0.9), (0.55, -0.5), (0.85, 0.15), (0.35, 0.75), (-0.45, 0.7), (-0.8, 0.05), (-0.4, -0.45)]
+    xy = [(cx + px * R, cy + py * R) for px, py in punti]
+    draw.line(xy + [xy[0]], fill=color, width=w)
+    draw.line([xy[1], xy[5]], fill=color, width=w)
+    for x, y in xy:
+        _circle(draw, x, y, R * 0.07, color, w)
+
+
+def _geo_star(draw, cx, cy, R, color, w=3):
+    """Astrologia — la stella a otto punte dentro il cerchio."""
+    _circle(draw, cx, cy, R, color, w)
+    pts = []
+    for i in range(16):
+        a = math.radians(i * 22.5 - 90)
+        r = R * (0.92 if i % 2 == 0 else 0.42)
+        pts.append((cx + r * math.cos(a), cy + r * math.sin(a)))
+    draw.line(pts + [pts[0]], fill=color, width=w)
+
+
+CATEGORY_GEOMETRY["reiki"] = _geo_orbits
+CATEGORY_GEOMETRY["costellazioni"] = _geo_constellation
+CATEGORY_GEOMETRY["astrologia"] = _geo_star
+CATEGORY_GEOMETRY["ayurveda"] = _geo_three_doshas
+CATEGORY_GEOMETRY["tantra"] = _geo_lemniscate
+CATEGORY_GEOMETRY["crescita"] = _geo_steps
 
 
 # Non tutti i segni si possono girare. La triplice luna si legge da

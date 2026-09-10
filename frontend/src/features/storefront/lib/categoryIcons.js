@@ -8,7 +8,7 @@ import React from 'react';
 import {
   Flower2, Brain, Leaf, AudioLines, HandHeart, Wind, Footprints, Moon,
   Users, Dumbbell, HeartPulse, GraduationCap, Home, Package,
-  CalendarDays, Sparkles,
+  CalendarDays, Sparkles, Orbit, Star, Sun, Heart, Sprout,
 } from 'lucide-react';
 
 // Chiavi backend (retreat_taxonomy) + alias legacy visti nei dati.
@@ -25,6 +25,13 @@ export const CATEGORY_ICON_MAP = {
   escursioni: [Footprints, '#a3b56a'], hiking: [Footprints, '#a3b56a'],
   femminile: [Moon, '#e598b4'],                  // luna rosa
   aziendale: [Users, '#9aa7b8'],                 // team
+  // TX (10/9/2026) — le sei vie entrate nella tassonomia dei ritiri
+  reiki: [Sparkles, '#b48fd9'],                  // energia
+  costellazioni: [Orbit, '#9db0d1'],             // il cerchio delle presenze
+  astrologia: [Star, '#c9c0e8'],                 // cielo
+  ayurveda: [Sun, '#d9a06a'],                    // curcuma
+  tantra: [Heart, '#d98a97'],                    // incontro
+  crescita: [Sprout, '#9ccf7a'],                 // germoglio
   fitness: [Dumbbell, '#d97f7f'],
   benessere: [HeartPulse, '#e0a3a3'], wellness: [HeartPulse, '#e0a3a3'],
 };

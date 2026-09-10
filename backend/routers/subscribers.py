@@ -48,9 +48,13 @@ ALERT_SCOPES = ("italy", "regions")
 # ritiri/esperienze): vocabolario suo, distinto dai topics editoriali
 # del Magazine. "misto" = mi va bene un po' di tutto.
 # founder 10/9 sera: quattordici vie, le stesse della landing /cerca-ritiro
+# TX (10/9/2026): le vie SONO le categorie dei ritiri (retreat_taxonomy)
+# piu' «misto»; «cerchi» e' diventata «femminile» (migrazione
+# migrate_vie_femminile_v1) cosi' la via di chi cerca e la categoria di
+# chi pubblica hanno la stessa chiave.
 EXPERIENCE_INTERESTS = ("yoga", "meditazione", "breathwork", "suono", "reiki",
                         "costellazioni", "astrologia", "ayurveda", "tantra",
-                        "detox", "cammini", "cerchi", "crescita", "misto")
+                        "detox", "cammini", "femminile", "crescita", "misto")
 # NW1 — raggio di viaggio: vicino a casa o ovunque.
 # near = nella mia zona; anywhere/italy = ovunque in Italia; abroad = anche
 # all'estero (la landing di luglio mandava italy/abroad e venivano scartati)

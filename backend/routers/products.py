@@ -281,8 +281,17 @@ async def create_product(
 async def get_product_taxonomies(current_user: dict = Depends(get_verified_user)):
     """V4 — le tassonomie categoria per tipo, per i dropdown dei wizard.
     Fonte unica: models/retreat_taxonomy (la stessa che valida)."""
-    from models.retreat_taxonomy import PRODUCT_TAXONOMIES, RETREAT_CATEGORIES
-    return {"event_ticket": RETREAT_CATEGORIES, **PRODUCT_TAXONOMIES}
+    from models.retreat_taxonomy import PRODUCT_TAXONOMIES, RETREAT_CATEGORIES, categoria_suggerita
+    # TX (10/9/2026): la categoria di ritiro coerente con le discipline del profilo
+    suggerita = None
+    try:
+        from repositories import organization_repository
+        org = await organization_repository.find_by_id(current_user["organization_id"]) or {}
+        suggerita = categoria_suggerita((org.get("public_profile") or {}).get("disciplines"))
+    except Exception:   # noqa: BLE001 — il suggerimento e' un aiuto, mai un errore
+        suggerita = None
+    return {"event_ticket": RETREAT_CATEGORIES, **PRODUCT_TAXONOMIES,
+            "suggerita_event_ticket": suggerita}
 
 
 @router.get("/{product_id}", response_model=ProductResponse)

@@ -31,7 +31,7 @@ const STATO_CLS = {
 const VIE = {
   yoga: 'Yoga', meditazione: 'Meditazione', breathwork: 'Respiro', suono: 'Suono', reiki: 'Reiki',
   costellazioni: 'Costellazioni', astrologia: 'Astrologia', ayurveda: 'Ayurveda', tantra: 'Tantra',
-  detox: 'Detox', cammini: 'Cammini', cerchi: 'Cerchi', crescita: 'Crescita', misto: 'Un po’ di tutto',
+  detox: 'Detox', cammini: 'Cammini', femminile: 'Cerchi & femminile', crescita: 'Crescita', misto: 'Un po’ di tutto',
 };
 const DOVE = { near: 'vicino a casa', italy: 'in Italia', anywhere: 'ovunque', abroad: 'anche all’estero' };
 const BUDGET = { under500: 'fino a 500 €', '500to1000': '500–1000 €', over1000: 'oltre 1000 €', flexible: 'flessibile' };

@@ -35,7 +35,10 @@ import LeadForm from './LeadForm';
 // RB12 (10/9/2026) — dal Magazine si arriva con ?tema=<categoria>: il
 // chip corrispondente parte acceso (vocabolario dei chip di LeadForm).
 const TEMA_TO_CHIP = { yoga: 'yoga', meditazione: 'meditation', breathwork: 'breathwork',
-  suono: 'sound', femminile: 'women', cammini: 'nature', detox: 'detox', massaggio: 'mixed' };
+  suono: 'sound', femminile: 'women', cammini: 'nature', detox: 'detox', massaggio: 'mixed',
+  // TX (10/9/2026): le categorie nuove del Magazine → il chip della via
+  reiki: 'reiki', costellazioni: 'constellations', astrologia: 'astrology',
+  ayurveda: 'ayurveda', tantra: 'tantra', crescita: 'growth' };
 function temaIniziale() {
   if (typeof window === 'undefined') return [];
   const tema = new URLSearchParams(window.location.search).get('tema');
