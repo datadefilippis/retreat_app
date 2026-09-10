@@ -1620,7 +1620,7 @@ class TestPrivilegioDelComporre:
         app = (FQ_DIR.parent.parent / "App.js").read_text()
         assert 'path="/admin/sound"' in app
         lay = (FQ_DIR.parent.parent / "components" / "Layout.js").read_text()
-        assert 'data-testid="nav-admin-sound"' in lay
+        assert "'nav-admin-sound'" in lay   # SA-R (10/9 sera): il menu System e' una lista di voci
 
     def test_la_lista_dice_CHI_c_e_dietro(self):
         """24/8, founder: «oltre al nome dell'account metti anche
