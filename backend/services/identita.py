@@ -402,8 +402,8 @@ def sezione_rete_llms(base: str, profili: List[Dict]) -> List[str]:
              "prenotano sessioni, eventi e ritiri quando il professionista li pubblica; "
              "le recensioni verificate arrivano solo da chi ha prenotato.", "",
              f"- [Tutti i professionisti]({base}/operatori)",
-             f"- [Entrare nella rete]({base}/entra-nella-rete): gratuito, con profilo "
-             "raccontato con cura e gestionale.", ""]
+             f"- [Entrare nella rete]({base}/entra-nella-rete): gratuito per sempre e "
+             "senza commissioni, con profilo pubblico, listino, prenotazioni, eventi e ritiri.", ""]
     for o in profili:
         pp = o.get("public_profile") or {}
         dove = ", ".join(x for x in (pp.get("city"), pp.get("region")) if x)

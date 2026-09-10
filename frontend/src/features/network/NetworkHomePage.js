@@ -365,7 +365,7 @@ export default function NetworkHomePage() {
                   {t('nwHome.doorOpTitle', { defaultValue: "Sei un operatore olistico?" })}
                 </DisplayTitle>
                 <Lede size="body" tone="inherit" className="mt-3 max-w-[38ch] text-hero-shadow opacity-90">
-                  {t('nwHome.doorOpText', { defaultValue: "Profilo pubblico, prenotazioni, eventi e ritiri con caparra, un link solo. Gratis fino al 31 dicembre 2026." })}
+                  {t('nwHome.doorOpText', { defaultValue: "Profilo pubblico, prenotazioni, eventi e ritiri con caparra, un link solo. Gratis per sempre, senza commissioni." })}
                 </Lede>
                 <div className="mt-auto pt-6">
                   <EditorialCta to={OPERATORI_PATH} variant="solid" tone="dark" data-testid="hp-door-op-cta">
@@ -727,7 +727,7 @@ export default function NetworkHomePage() {
                 Due porte: quella piena apre lo spazio, quella sottovoce
                 spiega come funziona. Lessico: operatori olistici. */}
             <Lede size="body" tone="inherit" className="mt-8">
-              {t('nwHome.prosOffer', { defaultValue: "Profilo pubblico, prenotazioni, eventi e ritiri con caparra, un link solo per Instagram. Gratis fino al 31 dicembre 2026." })}
+              {t('nwHome.prosOffer', { defaultValue: "Profilo pubblico, prenotazioni, eventi e ritiri con caparra, un link solo per Instagram. Gratis per sempre, senza commissioni." })}
             </Lede>
             <Lede size="body" tone="inherit" className="mt-3">
               {t('nwHome.prosFounders', { defaultValue: "I primi venti operatori olistici che pubblicano il profilo entro il 31 ottobre 2026 entrano da fondatori." })}

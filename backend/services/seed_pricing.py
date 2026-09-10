@@ -1139,6 +1139,39 @@ async def migrate_retreat_pro_features_md3() -> None:
         logger.info("MD3: retreat_customers_pro rimossa da %d piani", result.modified_count)
 
 
+async def migrate_zero_commissioni_v1() -> None:
+    """P1 (founder, 10/9/2026, piano di business) — AURYA NON PRENDE
+    COMMISSIONI, MAI. Il 5% del Gratis sugli incassi online e' uscito:
+    si aggirava (caparra piccola online, il resto a parte), obbligava a
+    Stripe chi non era pronto, ci metteva nel flusso del denaro. La fee
+    del piano la aggiorna il seed ($set a ogni avvio); qui si azzera
+    application_fee_percent (l'UNICO campo letto dal checkout) su TUTTE
+    le org, e si aggiornano descrizione e tagline del Gratis (campi
+    admin-protetti). Flag-gated, idempotente."""
+    from database import db
+
+    migrations = db["migrations"]
+    if await migrations.find_one({"_id": "zero_commissioni_v1"}):
+        return
+    logger.info("migrate_zero_commissioni_v1: applying...")
+    result = await db["organizations"].update_many(
+        {"application_fee_percent": {"$gt": 0}},
+        {"$set": {"application_fee_percent": 0.0}},
+    )
+    logger.info("  - application_fee_percent azzerata su %d org", result.modified_count)
+    await db["commercial_plans"].update_one(
+        {"slug": "retreat_free"},
+        {"$set": {"description": "Tutto per pubblicare e incassare i tuoi ritiri. Senza commissioni, mai.",
+                  "tagline": "Tutto incluso, senza commissioni",
+                  "transaction_fee_percent": 0.0}},
+    )
+    await migrations.insert_one({
+        "_id": "zero_commissioni_v1",
+        "applied_at": __import__("datetime").datetime.now(__import__("datetime").timezone.utc),
+    })
+    logger.info("migrate_zero_commissioni_v1: done")
+
+
 async def migrate_pro_price_19_v1() -> None:
     """AB1 (founder, 13/8/2026) — il piano Pro passa da 29 a 19 EUR/mese
     (annuale 190 = 10 mensilita', 2 mesi in regalo).

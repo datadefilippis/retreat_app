@@ -163,7 +163,9 @@ class TestRetreatBusinessModel:
     """
 
     def test_free_fee_5_percent(self):
-        assert _plan("retreat_free")["transaction_fee_percent"] == 5.0
+        # P1 (10/9/2026, piano di business): AURYA NON PRENDE COMMISSIONI —
+        # la fee del Gratis e' ZERO (era 5%); il nome del test resta per la storia
+        assert _plan("retreat_free")["transaction_fee_percent"] == 0.0
         assert _plan("retreat_free")["price_monthly"] == 0.0
 
     def test_pro_zero_fee_price_29(self):
@@ -559,23 +561,28 @@ class TestAbPrezziCoerenti:
         assert pro["price_yearly"] == pro["price_monthly"] * 10
 
     def test_pagina_costi_allineata_al_seed(self):
-        """PRICING nella pagina /costi == seed backend. Il free_fee
-        combacia con la fee del piano gratis (application fee 5%)."""
+        """P1 (10/9/2026, piano di business): AURYA NON PRENDE COMMISSIONI.
+        La pagina /costi timbra AURYA_FEE = 0 e la fee del Gratis nel seed
+        e' 0; i prezzi del 2027 (Spinta 19, Club 49, Pro 119/12) sono
+        timbrati in PRICING_2027 e combaciano col piano di business. Il
+        catalogo Pro resta 19/190 fino alla migrazione di gennaio (P4):
+        la pagina non lo mostra piu'."""
         import re
         src = (self.FRONTEND / "src" / "features" / "prelaunch"
                / "PricingPage.js").read_text()
-        m = re.search(r"PRICING = \{ pro_monthly: (\d+), "
-                      r"pro_yearly: (\d+), free_fee: (\d+) \}", src)
-        assert m, "PRICING non trovato nella pagina /costi"
-        pro = self._pro()
-        assert float(m.group(1)) == pro["price_monthly"]
-        assert float(m.group(2)) == pro["price_yearly"]
+        m = re.search(r"PRICING_2027 = \{ spinta: (\d+), club: (\d+), pro: (\d+), pro_monthly: (\d+) \}", src)
+        assert m, "PRICING_2027 non trovato nella pagina /costi"
+        assert tuple(map(int, m.groups())) == (19, 49, 119, 12)
+        assert "AURYA_FEE = 0" in src
         free = next(p for p in __import__(
             "services.seed_commercial_plans",
             fromlist=["RETREAT_COMMERCIAL_PLANS"]
         ).RETREAT_COMMERCIAL_PLANS if p["slug"] == "retreat_free")
-        assert float(m.group(3)) == float(
-            free.get("transaction_fee_percent") or 5.0)
+        assert float(free.get("transaction_fee_percent") or 0.0) == 0.0
+        import re as _re
+        visibile = _re.sub(r"/\*.*?\*/", "", src, flags=_re.DOTALL)
+        visibile = _re.sub(r"^\s*//.*$", "", visibile, flags=_re.MULTILINE)
+        assert "5%" not in visibile and "19 €/mese" not in visibile
 
     def test_faq_quanto_costa_con_link_ai_piani(self):
         """La FAQ della landing professionisti: tre punti e il rimando

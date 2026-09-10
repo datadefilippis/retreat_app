@@ -61,7 +61,7 @@ class TestRb1LeDuePorteInHome:
         assert it["doorSeekCta"] == "Trovami il mio ritiro"
         assert "meditazioni" in it["doorSeekText"], "la ricompensa immediata e' detta"
         assert it["doorOpTitle"] == "Sei un operatore olistico?", "lessico: all'operatore si dice operatore olistico"
-        for parola in ("prenotazioni", "ritiri", "caparra", "Gratis fino al 31 dicembre 2026"):
+        for parola in ("prenotazioni", "ritiri", "caparra", "senza commissioni"):   # P1: zero commissioni
             assert parola in it["doorOpText"], f"l'offerta in chiaro nomina: {parola}"
         assert it["doorOpCta"] == "Apri il tuo spazio"
 
@@ -128,7 +128,7 @@ class TestRb2LaLandingDellOperatore:
         assert op["heroTitle"] == "Il tuo spazio professionale, pronto oggi."
         for parola in ("prenotazione", "ritiri", "caparra", "Instagram"):
             assert parola in op["heroP1"], f"l'offerta in chiaro nomina: {parola}"
-        assert "31 dicembre 2026" in op["heroP3"], "il prezzo ha una data"
+        assert "31 dicembre 2026" in op["heroP3"] and "senza commissioni" in op["heroP3"], "il prezzo ha una data e la frase-marchio"
         assert "31 ottobre 2026" in op["nowP1"] and "venti" in op["nowP1"], "il patto fondatori ha tetto e data"
         assert op["ctaOpen"] == "Apri il tuo spazio"
         testo = " ".join(str(v) for v in op.values()).lower()
@@ -252,3 +252,50 @@ class TestRb6Rb7HeaderEPotature:
         assert "come-funziona" in reg["pubblica"] and reg["rimandi"]["come-funziona"] == "/manifesto"
         nginx = (REPO / "deploy" / "nginx" / "nginx.conf").read_text()
         assert "return 301 /manifesto" in nginx
+
+
+class TestP1LeParoleSuiSoldi:
+    """P1 (10/9/2026, piano di business): «Aurya non prende commissioni.
+    Mai.» ovunque si parla di soldi; i piani del 2027 scritti da oggi in
+    /costi (Spinta 19, Club 49, Pro 119) coi tre cancelli e la garanzia;
+    la fee del Gratis a zero nel seed e sulle org (migrazione flag-gated);
+    il banner «col Pro avresti risparmiato» spento a fee zero."""
+
+    COSTI = FE / "features" / "prelaunch" / "PricingPage.js"
+
+    def test_costi_dice_zero_commissioni_e_i_piani_del_2027(self):
+        src = re.sub(r"/\*.*?\*/", "", self.COSTI.read_text(), flags=re.DOTALL)
+        for frase in ("Aurya non prende commissioni. Mai.", "Gratis per sempre, senza commissioni",
+                      "I prezzi dal 1° gennaio 2027", 'testid="plan-spinta"', 'testid="plan-club"',
+                      "Il Club si accende quando la fila c’è.", "300 iscritti confermati", "10 ritiri", "1.000 visite",
+                      "I fondatori.", "Club regalato per tutto il 2027", "La garanzia.", "E Stripe?"):
+            assert frase in src, frase
+        assert "5%" not in src and "sugli incassi online" not in src.split("E Stripe?")[0].replace("senza commissioni", "")
+
+    def test_la_fee_e_zero_nel_seed_e_la_migrazione_esiste(self):
+        from services.seed_commercial_plans import RETREAT_COMMERCIAL_PLANS
+        for p in RETREAT_COMMERCIAL_PLANS:
+            assert float(p.get("transaction_fee_percent") or 0.0) == 0.0, f"{p['slug']}: fee {p.get('transaction_fee_percent')}"
+        seed = (BACKEND_DIR / "services" / "seed_pricing.py").read_text()
+        assert "async def migrate_zero_commissioni_v1" in seed and '"_id": "zero_commissioni_v1"' in seed
+        assert "migrate_zero_commissioni_v1()" in (BACKEND_DIR / "server.py").read_text()
+        cash = (BACKEND_DIR / "routers" / "cashflow.py").read_text()
+        assert "fee_saver = None if current_fee <= 0 else {" in cash
+
+    def test_la_frase_marchio_e_nelle_porte_e_nella_landing(self):
+        it = json.loads(LOCALE.read_text())["nwHome"]
+        assert "senza commissioni" in it["doorOpText"] and "senza commissioni" in it["prosOffer"]
+        op = json.loads(PRELAUNCH.read_text())["opPro"]
+        assert "non prende commissioni" in op["faq1b1"] and "Club regalato per tutto il 2027" in op["nowP2"]
+        assert "19 €" in op["faq1b3"] and "49 €" in op["faq1b3"] and "119 €" in op["faq1b3"]
+        sett = json.loads((FE / "locales" / "it" / "settings.json").read_text())["billing"]["retreat"]
+        assert "non prende commissioni" in sett["subtitle"]
+        llms = (BACKEND_DIR / "assets" / "llms.txt").read_text()
+        assert "senza commissioni" in llms and "commissione solo sulle prenotazioni" not in llms
+
+    def test_nessuna_data_di_scadenza_del_gratis_nelle_porte(self):
+        """«Gratis fino al 31 dicembre 2026» diceva che poi si paga: il
+        Gratis e' per sempre. La data resta solo per «nessun costo di
+        nessun tipo» (Spinta/Club/Pro dal 2027)."""
+        it = json.loads(LOCALE.read_text())["nwHome"]
+        assert "fino al 31 dicembre" not in it["doorOpText"].lower()

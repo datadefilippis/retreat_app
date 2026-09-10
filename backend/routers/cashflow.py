@@ -388,7 +388,9 @@ async def _build(org_id: str) -> Dict[str, Any]:
         pro = next((p for p in RETREAT_COMMERCIAL_PLANS
                     if p["slug"] == "retreat_pro"), None)
         if pro:
-            current_fee = float(org.get("application_fee_percent") or 5.0)
+            # P1 (10/9/2026): la fee e' ZERO per tutti — il banner «col Pro
+            # avresti risparmiato» non ha piu' senso e non deve comparire
+            current_fee = float(org.get("application_fee_percent") or 0.0)
             # NB: niente `or` qui — la fee Pro e' 0.0 (falsy) dal 16/7/2026
             _pf = pro.get("transaction_fee_percent")
             pro_fee = float(_pf) if _pf is not None else 0.0
@@ -396,7 +398,7 @@ async def _build(org_id: str) -> Dict[str, Any]:
             pro_price = float(_pp) if _pp is not None else 19.0
             volume = stripe_month_minor / 100.0
             saving = volume * (current_fee - pro_fee) / 100.0 - pro_price
-            fee_saver = {
+            fee_saver = None if current_fee <= 0 else {
                 "month": current_month,
                 "online_volume": round(volume, 2),
                 "current_fee_percent": current_fee,

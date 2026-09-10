@@ -339,10 +339,11 @@ ADDON_PLANS: List[dict] = [
 # I due piani della piattaforma ritiri. Modello di business (vedi
 # docs/BUSINESS_CONCEPT_RITIRI_2026-07.md §6, rivisto 16/7/2026): il piano
 # Gratis include TUTTO il funzionale (pubblicazione, prenotazioni, caparre,
-# partecipanti) ed è monetizzato con la fee transazionale
-# (application_fee_percent=5); il Pro a 19€/mese AZZERA la fee (decisione
-# founder 16/7/2026: chi paga il canone tiene tutto il transato) e aggiunge
-# evidenza/limiti estesi.
+# partecipanti). P1 (10/9/2026, piano di business): AURYA NON PRENDE
+# COMMISSIONI, MAI — la fee transazionale del Gratis (era 5%) e' ZERO per
+# tutti, e application_fee_percent viene azzerata sulle org esistenti da
+# migrate_zero_commissioni_v1. Si paga solo la promozione (Spinta, Club) e
+# la voce (Pro), con i prezzi del 2027 (P4, a gennaio).
 #
 # I moduli AFianco non pertinenti (AI, cashflow) puntano ai pricing plan
 # *_disabled (tutti i limiti a 0 → moduli invisibili nella UI). I piani
@@ -354,8 +355,8 @@ RETREAT_COMMERCIAL_PLANS: List[dict] = [
     {
         "slug": "retreat_free",
         "name": "Gratis",
-        "description": "Tutto per pubblicare e incassare i tuoi ritiri. Paghi solo quando incassi.",
-        "tagline": "Tutto incluso, paghi solo quando incassi",
+        "description": "Tutto per pubblicare e incassare i tuoi ritiri. Senza commissioni, mai.",
+        "tagline": "Tutto incluso, senza commissioni",
         "price_monthly": 0.0,
         "price_yearly": None,
         "currency": "EUR",
@@ -363,7 +364,7 @@ RETREAT_COMMERCIAL_PLANS: List[dict] = [
         "is_public": True,
         "is_self_serve": False,   # baseline al signup, non un target di checkout
         "sort_order": 10,
-        "transaction_fee_percent": 5.0,
+        "transaction_fee_percent": 0.0,   # P1 10/9/2026: zero commissioni, sempre
         "platform_limits": {"team_members": 2},
         "module_plans": {
             "cashflow_monitor": "cashflow_monitor_retreat",

@@ -6178,7 +6178,10 @@ class TestLandingOperatoriOl1:
             # RB2 (10/9/2026): il prezzo con la DATA fa parte dell'offerta
             # in chiaro («Gratis fino al 31 dicembre 2026»): non e' la
             # promessa nuda che abbassava il valore, e' un fatto datato.
-            assert re.search(r"faq1b|faq3", finestra) or "31 dicembre 2026" in finestra, \
+            # P1 (10/9/2026): «senza commissioni» e' la frase-marchio: il
+            # gratis detto insieme a lei e' l'offerta, non la promessa nuda
+            assert re.search(r"faq1b|faq3", finestra) or "31 dicembre 2026" in finestra \
+                or "senza commissioni" in finestra, \
                 f"'gratuito' fuori dalla FAQ nella landing: ...{finestra[-90:]}"
         for lang in self.LOCALES:
             blocco = self._locale(lang).get("opNw", {})

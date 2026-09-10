@@ -281,7 +281,7 @@ _HOME_COPY = {
     "doorSeekCta": "Trovami il mio ritiro",
     "doorOpTitle": "Sei un operatore olistico?",
     "doorOpText": ("Profilo pubblico, prenotazioni, eventi e ritiri con "
-                   "caparra, un link solo. Gratis fino al 31 dicembre 2026."),
+                   "caparra, un link solo. Gratis per sempre, senza commissioni."),
     "doorOpCta": "Apri il tuo spazio",
     "findTitle": ("Un luogo dove conoscere, confrontare e scegliere "
                   "con consapevolezza"),
@@ -315,8 +315,8 @@ _HOME_COPY = {
     "prosTitle": "Per chi dedica la propria vita al benessere degli altri.",
     # RB1 — l'offerta in chiaro e il patto fondatori
     "prosOffer": ("Profilo pubblico, prenotazioni, eventi e ritiri con "
-                  "caparra, un link solo per Instagram. Gratis fino al "
-                  "31 dicembre 2026."),
+                  "caparra, un link solo per Instagram. Gratis per sempre, "
+                  "senza commissioni."),
     "prosFounders": ("I primi venti operatori olistici che pubblicano il "
                      "profilo entro il 31 ottobre 2026 entrano da fondatori."),
     "prosCta2": "Apri il tuo spazio",
@@ -550,7 +550,8 @@ _BRAND_PAGES = {
                         "L'ascolto è riservato a chi fa parte del cerchio."),
     },
     "costi": {
-        "title": "Quanto costa Aurya | Piani e commissioni, per intero",
+        # P1 (10/9/2026): zero commissioni, i piani del 2027 scritti da oggi
+        "title": "Quanto costa Aurya | Gratis per sempre, senza commissioni",
         "description": ("La piattaforma è gratuita: profilo, listino, "
                         "ritiri e clienti non si pagano. Fino al 31 "
                         "dicembre 2026 nessun costo, nemmeno sulle "

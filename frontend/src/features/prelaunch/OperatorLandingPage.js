@@ -180,10 +180,10 @@ export default function OperatorLandingPage() {
       q: t('opPro.faq1q', { defaultValue: 'Quanto costa?' }),
       a: (
         <ul className="list-disc space-y-2 pl-5">
-          <li>{t('opPro.faq1b1', { defaultValue: 'L’utilizzo della piattaforma è sempre gratuito.' })}</li>
-          <li>{t('opPro.faq1b2', { defaultValue: 'Fino al 31 dicembre 2026 Aurya non ha alcun costo, nemmeno quando le prenotazioni arrivano tramite Aurya.' })}</li>
+          <li>{t('opPro.faq1b1', { defaultValue: 'L’utilizzo della piattaforma è sempre gratuito, e Aurya non prende commissioni: quello che incassi è tuo.' })}</li>
+          <li>{t('opPro.faq1b2', { defaultValue: 'Fino al 31 dicembre 2026 Aurya non ha alcun costo, di nessun tipo.' })}</li>
           <li>
-            {t('opPro.faq1b3', { defaultValue: 'Dopo quella data potrai scegliere tra due soluzioni, in base alle tue esigenze. ' })}
+            {t('opPro.faq1b3', { defaultValue: 'Dal 2027 si paga solo la prima fila: la Spinta per un ritiro (19 €) o il Club (49 € l’anno); il Pro (119 € l’anno) aggiunge la tua voce e noi accanto. I primi venti hanno il Club regalato per tutto il 2027. ' })}
             <Link to="/costi" className="font-semibold text-primary underline underline-offset-2">
               {t('opPro.faq1b3cta', { defaultValue: 'Guarda i piani e i costi' })}
             </Link>
@@ -265,7 +265,7 @@ export default function OperatorLandingPage() {
                     {t('opPro.heroP2', { defaultValue: 'Ci metti tempo, studio, esperienza, presenza. Online, tutto questo merita più di una scheda.' })}
                   </Lede>
                   <Lede size="body" tone="inherit" className="text-hero-shadow">
-                    {t('opPro.heroP3', { defaultValue: 'Gratis fino al 31 dicembre 2026, poi scegli tu.' })}
+                    {t('opPro.heroP3', { defaultValue: 'Gratis per sempre, senza commissioni. Fino al 31 dicembre 2026 non costa niente di niente.' })}
                   </Lede>
                 </div>
                 <div className="mt-9 sm:mt-10">
@@ -391,7 +391,7 @@ export default function OperatorLandingPage() {
             {t('opPro.nowP1', { defaultValue: 'I primi venti operatori olistici che pubblicano il profilo entro il 31 ottobre 2026 entrano come fondatori.' })}
           </Lede>
           <Lede size="body" className="mt-5">
-            {t('opPro.nowP2', { defaultValue: 'Badge permanente sul profilo, condizioni riservate quando arriveranno i piani, una pagina nel Magazine e un post su Instagram dedicati, la precedenza nella selezione dei ritiri di primavera 2027.' })}
+            {t('opPro.nowP2', { defaultValue: 'Il Club regalato per tutto il 2027 (la prima fila su ogni tuo ritiro, la Lettera alla tua zona, un post al mese), il badge permanente, il prezzo del Pro bloccato per sempre, la precedenza nella selezione dei ritiri di primavera 2027.' })}
           </Lede>
           <p className="mt-6 font-display text-[1.35rem] leading-snug text-foreground sm:text-[1.6rem]"
              data-testid="ol-fondatori-contatore">

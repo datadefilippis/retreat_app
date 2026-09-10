@@ -867,7 +867,7 @@
     "faq3q": "Cos'è l'account Aurya?",
     "faq3a": "Il tuo account personale, valido con tutti i professionisti: biglietti, storico delle esperienze e promemoria dei pagamenti, tutto in un posto solo.",
     "faq4q": "Quanto costa per chi organizza?",
-    "faq4a": "Entrare è gratis: profilo, vetrina e gestionale senza canone. Tratteniamo una piccola commissione solo sulle prenotazioni portate dal calendario pubblico. Se il cliente è tuo, non paghi nulla.",
+    "faq4a": "Entrare è gratis, per sempre, e Aurya non prende commissioni: profilo, gestionale, eventi e ritiri con la caparra sono tuoi. Si paga solo, se vuoi, la prima fila per un ritiro.",
     "cta": "Trova il tuo ritiro",
     "stepLabel": "Passo {{n}}"
   },
@@ -988,10 +988,10 @@
     "doorSeekText": "Dicci cosa cerchi e dove. Ti avvisiamo quando c’è, vicino a te. Intanto ascolti le meditazioni riservate.",
     "doorSeekCta": "Trovami il mio ritiro",
     "doorOpTitle": "Sei un operatore olistico?",
-    "doorOpText": "Profilo pubblico, prenotazioni, eventi e ritiri con caparra, un link solo. Gratis fino al 31 dicembre 2026.",
+    "doorOpText": "Profilo pubblico, prenotazioni, eventi e ritiri con caparra, un link solo. Gratis per sempre, senza commissioni.",
     "doorOpCta": "Apri il tuo spazio",
     "heroOr": "Oppure",
-    "prosOffer": "Profilo pubblico, prenotazioni, eventi e ritiri con caparra, un link solo per Instagram. Gratis fino al 31 dicembre 2026.",
+    "prosOffer": "Profilo pubblico, prenotazioni, eventi e ritiri con caparra, un link solo per Instagram. Gratis per sempre, senza commissioni.",
     "prosFounders": "I primi venti operatori olistici che pubblicano il profilo entro il 31 ottobre 2026 entrano da fondatori.",
     "prosCta2": "Apri il tuo spazio",
     "prosHow": "Come funziona"
