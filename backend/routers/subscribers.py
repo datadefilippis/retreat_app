@@ -142,6 +142,8 @@ class PreferencesPayload(BaseModel):
     interests: Optional[list[str]] = Field(default=None, max_length=10)
     city: Optional[str] = Field(default=None, max_length=120)
     travel: Optional[str] = Field(default=None, max_length=40)
+    # US (10/9/2026 notte) — il budget come ovunque (stesso blocco)
+    budget: Optional[str] = Field(default=None, max_length=40)
 
 
 def _decode_or_http(token: str) -> str:
@@ -619,6 +621,7 @@ async def get_preferences(token: str):
         "city": profile.get("city") or "",
         "travel": (profile.get("travel")
                    if profile.get("travel") in TRAVEL_OPTIONS else ""),
+        "budget": profile.get("budget") or "",
         "available_topics": list(subscriber_topics()),
         "available_regions": list(ITALIAN_REGIONS),
         "available_interests": list(EXPERIENCE_INTERESTS),
@@ -645,6 +648,8 @@ async def update_preferences(request: Request, payload: PreferencesPayload):
         doc_set["profile.city"] = payload.city.strip()[:120]
     if payload.travel is not None and payload.travel in TRAVEL_OPTIONS:
         doc_set["profile.travel"] = payload.travel
+    if payload.budget is not None:
+        doc_set["profile.budget"] = payload.budget.strip()[:40]
     await db.aurya_subscribers.update_one({"email": email}, {"$set": doc_set})
     from services.subscriber_brevo_sync import sync_subscriber_background
     sync_subscriber_background(email)     # BN6 — attributi aggiornati

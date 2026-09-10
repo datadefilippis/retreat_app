@@ -15,6 +15,7 @@
 import React, { useState } from 'react';
 import { prova, iscriviESblocca } from '../../lib/cerchio';
 import { PLATFORM_TOKEN_KEY } from '../../api/platformClient';
+import AvvisamiRitiri, { useAvvisamiRitiri } from '../prelaunch/AvvisamiRitiri';
 
 const servito = () => {
   try {
@@ -25,9 +26,13 @@ const servito = () => {
 
 export default function InvitoSound({ fonte, dove = '/sound', variante = 'scuro' }) {
   const [email, setEmail] = useState('');
+  const [nome, setNome] = useState('');
   const [consent, setConsent] = useState(false);
   const [invio, setInvio] = useState(false);
   const [stato, setStato] = useState('');   // '' | 'attesa' | 'dentro' | errore
+  // US (10/9 notte): il blocco «avvisami» condiviso, spento di default
+  // (un hook: sta PRIMA del return condizionale)
+  const avvisami = useAvvisamiRitiri(false);
 
   if (servito()) return null;               // la regola del silenzio
 
@@ -38,6 +43,8 @@ export default function InvitoSound({ fonte, dove = '/sound', variante = 'scuro'
     try {
       const esito = await iscriviESblocca({
         email, source: fonte || 'sound', returnTo: dove,
+        name: nome.trim() || undefined,
+        ritiri: avvisami.payload(),     // US: lo stesso blocco di /cerca-ritiro
       });
       setStato(esito === 'sbloccato' ? 'dentro' : 'attesa');
     } catch (err) {
@@ -67,6 +74,11 @@ export default function InvitoSound({ fonte, dove = '/sound', variante = 'scuro'
         tanto, e ti disiscrivi quando vuoi.
       </p>
       <form onSubmit={iscrivi}>
+        {/* US: il nome sopra l'email, facoltativo, come in ogni form del Cerchio */}
+        <input type="text" value={nome} maxLength={80} placeholder="il tuo nome (facoltativo)"
+          onChange={(e) => setNome(e.target.value)}
+          style={{ width: '100%', boxSizing: 'border-box', marginBottom: 8 }}
+          data-testid="invito-sound-nome" />
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
           <input type="email" required value={email}
             placeholder="la tua email"
@@ -77,10 +89,16 @@ export default function InvitoSound({ fonte, dove = '/sound', variante = 'scuro'
             {invio ? 'Un attimo…' : 'Iscrivimi'}
           </button>
         </div>
-        <label style={{ display: 'flex', gap: 8, alignItems: 'flex-start',
-                        fontSize: 12, marginTop: 8, cursor: 'pointer' }}>
+        <div style={{ marginTop: 8 }}>
+          <AvvisamiRitiri {...avvisami} accent={chiaro ? '#2f5749' : '#d6c49a'} scuro={!chiaro}
+                          testid="invito-sound-avvisami" />
+        </div>
+        <label style={{ display: 'flex', gap: 10, alignItems: 'flex-start', lineHeight: 1.45,
+                        fontSize: 13, marginTop: 10, cursor: 'pointer',
+                        color: chiaro ? undefined : 'var(--bone)' }}>
           <input type="checkbox" checked={consent}
-            onChange={(e) => setConsent(e.target.checked)} />
+            onChange={(e) => setConsent(e.target.checked)}
+            style={{ width: 18, height: 18, flex: 'none', marginTop: 1, accentColor: chiaro ? '#2f5749' : '#d6c49a' }} />
           <span>Acconsento a ricevere la newsletter; disiscrizione in
             un click. <a href="/privacy" target="_blank" rel="noreferrer">Privacy</a></span>
         </label>

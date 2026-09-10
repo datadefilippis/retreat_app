@@ -75,15 +75,19 @@ export async function sblocca(email) {
  * Gli errori del subscribe risalgono al chiamante (il copy e' suo).
  */
 export async function iscriviESblocca({ email, source, returnTo,
-  wantsExperiences = null, language = 'it', name }) {
+  wantsExperiences = null, language = 'it', name, ritiri = null }) {
   // FV5 (10/9/2026 sera) — l'avviso ritiri NON si accende di passaggio:
   // dai cancelli (meditazioni, guide, InvitoSound) arriva solo l'email,
   // e il flag viaggia soltanto quando un form lo ha davvero chiesto.
   // Prima era `true` di default: sei iscritti dalle meditazioni
   // «volevano i ritiri» senza averlo mai detto.
+  // US (10/9 notte) — i cancelli ora LO CHIEDONO, col blocco condiviso
+  // AvvisamiRitiri: `ritiri` e' il suo payload (wants_experiences, vie,
+  // citta', dove, budget), e vince sul vecchio flag nudo.
   await api.post('/public/newsletter/subscribe', {
     email: (email || '').trim(), consent: true, language, source,
     ...(typeof wantsExperiences === 'boolean' ? { wants_experiences: wantsExperiences } : {}),
+    ...(ritiri && typeof ritiri === 'object' ? ritiri : {}),
     return_to: returnTo || undefined,
     // questo E' un cancello di sblocco: al gia'-confermato la prova
     // arriva dalla riga sotto, niente magic link via email

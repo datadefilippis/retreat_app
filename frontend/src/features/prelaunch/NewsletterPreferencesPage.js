@@ -41,10 +41,12 @@ export default function NewsletterPreferencesPage() {
   const [topics, setTopics] = useState([]);
   const [format, setFormat] = useState('all');
   const [alert, setAlert] = useState({ enabled: false, scope: 'italy', regions: [] });
-  // FV5 — le stesse tre cose del modulo di /cerca-ritiro: vie, citta', dove
+  // FV5 — le stesse cose del modulo di /cerca-ritiro: vie, citta', dove
+  // US (10/9 notte) — e il budget, come ovunque
   const [interests, setInterests] = useState([]);
   const [city, setCity] = useState('');
   const [travel, setTravel] = useState('');
+  const [budget, setBudget] = useState('');
 
   useSeoMeta({
     title: t('nlPrefs.seoTitle', { defaultValue: 'Le tue preferenze | Aurya' }),
@@ -64,6 +66,7 @@ export default function NewsletterPreferencesPage() {
         setInterests(dalBackend(res.data.interests || []));
         setCity(res.data.city || '');
         setTravel(res.data.travel || '');
+        setBudget(res.data.budget || '');
         setState('ready');
       })
       .catch(() => { if (mounted) setState('gone'); });
@@ -95,7 +98,8 @@ export default function NewsletterPreferencesPage() {
     try {
       await api.put('/public/newsletter/preferences',
         { token, topics, format, retreat_alert: alert,
-          interests: versoBackend(interests), city: city.trim(), travel: travel || null });
+          interests: versoBackend(interests), city: city.trim(), travel: travel || null,
+          budget: budget || null });
       setState('saved');
       setTimeout(indietro, 900);
     } catch { setState('error'); }
@@ -201,7 +205,8 @@ export default function NewsletterPreferencesPage() {
               {t('nlPrefs.ritiriHint', { defaultValue: 'Le stesse tre cose che chiediamo a chi cerca un ritiro: da qui partono le proposte.' })}
             </p>
             <PreferenzeRitiri accent={GREEN} interests={interests} onToggleInterest={toggleInterest}
-                              city={city} setCity={setCity} travel={travel} setTravel={setTravel} />
+                              city={city} setCity={setCity} travel={travel} setTravel={setTravel}
+                              budget={budget} setBudget={setBudget} />
           </section>
 
           <section className="mt-4 rounded-2xl border border-gray-200 bg-white p-5">

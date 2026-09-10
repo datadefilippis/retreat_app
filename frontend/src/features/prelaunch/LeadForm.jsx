@@ -32,6 +32,7 @@ import { sblocca } from '../../lib/cerchio';
 // il vocabolario del backend vivono in PreferenzeRitiri: UN blocco per
 // tutti i form (BASE_TO_EXP e' quella).
 import PreferenzeRitiri, { BASE_TO_EXP, versoBackend } from './PreferenzeRitiri';
+import AvvisamiRitiri from './AvvisamiRitiri';
 const ACTIVITIES = ['teacher', 'center', 'venue', 'organizer', 'therapist', 'other'];
 
 // BN2 — mappa chip interessi (chiavi lead storiche) → topics della
@@ -71,11 +72,8 @@ export default function LeadForm({ type = 'traveler', accent = '#376254', contex
                                    // una preferenza dentro lo stesso consenso, non un
                                    // secondo consenso (che resta esplicito e spento)
                                    experiencesDefault = false,
-                                   // CN1 — nel primo schermo della landing il blocco
-                                   // esperienze mostra SOLO la citta' (la cosa che rende
-                                   // «nella tua zona» vero): raggio e interessi si
-                                   // scelgono dopo, dalle preferenze
-                                   experiencesLight = false,
+                                   // (la variante «leggera» con la sola citta' e' uscita
+                                   // con US, 10/9/2026 notte: stesso blocco ovunque)
                                    // RB4 (10/9/2026) — la porta «Trovami il mio ritiro»: il
                                    // modulo pieno di luglio (citta', interessi, raggio, budget)
                                    // iscrive al Cerchio con la preferenza ritiri SEMPRE accesa,
@@ -138,7 +136,10 @@ export default function LeadForm({ type = 'traveler', accent = '#376254', contex
     prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key]);
   const toggleInterest = toggle(setInterests);
 
-  const withName = showName === null ? !compact : Boolean(showName);
+  // US (10/9 notte, founder: «il nome lo mettiamo sopra l'email per
+  // qualsiasi newsletter»): in ogni form del Cerchio il nome c'e',
+  // sopra l'email, facoltativo (e' il saluto delle email)
+  const withName = subscribe ? true : (showName === null ? !compact : Boolean(showName));
 
   /* OL3b — nella candidatura il nome e' OBBLIGATORIO: si risponde a una
      persona, non a un indirizzo. Resta facoltativo dove il nome e' un
@@ -373,9 +374,11 @@ export default function LeadForm({ type = 'traveler', accent = '#376254', contex
         </>
       ) : (
         <>
+          {/* il modulo pieno di /cerca-ritiro: qui le vie sono l'oggetto
+              della pagina, quindi stanno aperte */}
           <PreferenzeRitiri accent={accent} interests={interests} onToggleInterest={toggleInterest}
                             city={city} setCity={setCity} travel={travel} setTravel={setTravel}
-                            budget={budget} setBudget={setBudget} showBudget
+                            budget={budget} setBudget={setBudget} vieAperte
                             inputCls={inputCls} selectCls={selectCls} ringStyle={ringStyle} />
         </>
       )}
@@ -383,36 +386,21 @@ export default function LeadForm({ type = 'traveler', accent = '#376254', contex
       {/* NW2 — il form progressivo della Lettera: il percorso base resta
           nome+email; questo flag apre il blocco esperienze SOLO se
           l'utente lo chiede. Dati raccolti = dati scelti. */}
+      {/* US (10/9 notte): IL blocco condiviso, lo stesso dei cancelli del
+          mondo Sound — quattro cose, sempre le stesse */}
       {subscribe && experiencesOptIn && (
-        <div className="rounded-xl border p-3"
-             style={{ borderColor: `${accent}33`,
-                      background: wantsExperiences ? `${accent}0a` : 'transparent' }}>
-          <label className="flex items-start gap-2 text-sm text-foreground">
-            <input type="checkbox" checked={wantsExperiences}
-                   onChange={(e) => setWantsExperiences(e.target.checked)}
-                   className="mt-0.5 h-4 w-4 shrink-0" />
-            <span>
-              {t('form.expFlag', { defaultValue: 'Avvisami anche quando Aurya propone esperienze e ritiri' })}
-              <span className="block text-xs text-muted-foreground">
-                {t('form.expFlagHint', { defaultValue: 'Facoltativo: ci aiuti a proporti solo cose adatte a te.' })}
-              </span>
-            </span>
-          </label>
-          {wantsExperiences && (
-            <div className="mt-3 duration-300 animate-in fade-in slide-in-from-top-2">
-              <PreferenzeRitiri accent={accent} interests={interests} onToggleInterest={toggleInterest}
-                                city={city} setCity={setCity} travel={travel} setTravel={setTravel}
-                                light={experiencesLight}
-                                inputCls={inputCls} selectCls={selectCls} ringStyle={ringStyle} />
-            </div>
-          )}
-        </div>
+        <AvvisamiRitiri enabled={wantsExperiences} setEnabled={setWantsExperiences}
+                        interests={interests} onToggleInterest={toggleInterest}
+                        city={city} setCity={setCity} travel={travel} setTravel={setTravel}
+                        budget={budget} setBudget={setBudget}
+                        accent={accent} inputCls={inputCls} selectCls={selectCls} ringStyle={ringStyle} />
       )}
 
-      <label className="flex items-start gap-2 text-xs text-muted-foreground">
+      {/* US (10/9 notte): casella grande e testo leggibile, ovunque uguale */}
+      <label className="flex items-start gap-2.5 text-[13px] leading-snug text-foreground/80" style={{ cursor: 'pointer' }}>
         <input type="checkbox" checked={consent}
                onChange={(e) => setConsent(e.target.checked)}
-               className="mt-0.5 h-4 w-4 shrink-0" required />
+               className="mt-0.5 h-5 w-5 shrink-0" style={{ accentColor: accent }} required />
         <span>
           {consentText
             || t('form.consent', { defaultValue: 'Acconsento a essere contattato via email sul lancio di Aurya.' })}{' '}

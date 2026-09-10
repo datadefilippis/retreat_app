@@ -18,6 +18,13 @@
 import React, { useState } from 'react';
 import { sblocca, iscriviESblocca } from '../../lib/cerchio';
 import { creaAccount, entraInAurya } from '../../utils/authLinks';
+import AvvisamiRitiri, { useAvvisamiRitiri } from '../prelaunch/AvvisamiRitiri';
+
+/* US (10/9/2026 notte, founder: «nella newsletter delle meditazioni non
+   mettiamo opzioni di ritiri?»): anche il cancello chiede, con LO STESSO
+   blocco di /cerca-ritiro. Spento di default: chi vuole solo la
+   meditazione lascia solo l'email (FV5). L'oro di casa sullo scuro. */
+const ORO = '#d6c49a';
 
 const fmtMin = (s) => `${Math.round((s || 0) / 60)} minuti`;
 
@@ -26,12 +33,14 @@ export default function CancelloLettera({
   onSbloccato, children,
 }) {
   const [email, setEmail] = useState('');
+  const [nome, setNome] = useState('');
   const [consent, setConsent] = useState(false);
   const [invio, setInvio] = useState(false);
   const [attesa, setAttesa] = useState(false);
   const [msg, setMsg] = useState('');
   const chiaro = variante === 'chiaro';
   const dove = returnTo || (slug ? `/frequenze/${slug}` : '/meditazioni');
+  const avvisami = useAvvisamiRitiri(false);
 
   const iscrivi = async (e) => {
     e.preventDefault();
@@ -40,6 +49,7 @@ export default function CancelloLettera({
     try {
       const esito = await iscriviESblocca({
         email, source: `cancello:${slug || 'landing'}`, returnTo: dove,
+        name: nome.trim() || undefined, ritiri: avvisami.payload(),
       });
       if (esito === 'sbloccato') { onSbloccato && onSbloccato(); }
       else setAttesa(true);
@@ -93,6 +103,13 @@ export default function CancelloLettera({
         </div>
       )}
       <form onSubmit={iscrivi} className={chiaro ? 'mt-5' : undefined}>
+        {/* US: il nome sopra l'email, facoltativo, come in ogni form del Cerchio */}
+        <input type="text" value={nome} maxLength={80}
+          placeholder="il tuo nome (facoltativo)"
+          onChange={(e) => setNome(e.target.value)}
+          className={chiaro ? `${S.input} mb-2 w-full` : undefined}
+          style={chiaro ? undefined : { width: '100%', boxSizing: 'border-box', marginBottom: 8 }}
+          data-testid="cancello-nome" />
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
           <input type="email" required value={email}
             placeholder="la tua email"
@@ -106,11 +123,20 @@ export default function CancelloLettera({
             {invio ? 'Un attimo…' : 'Entra nel Cerchio e continua l’ascolto →'}
           </button>
         </div>
-        <label style={{ display: 'flex', gap: 8, alignItems: 'flex-start',
-                        fontSize: 12, marginTop: 10, cursor: 'pointer' }}
+        <div style={{ marginTop: 10 }}>
+          <AvvisamiRitiri {...avvisami} accent={chiaro ? '#2f5749' : ORO} scuro={!chiaro}
+                          testid="cancello-avvisami" />
+        </div>
+        {/* US (founder: «il flag di accettazione e' piccolissimo»): casella
+            18px nell'oro di casa, testo 13px leggibile sullo scuro */}
+        <label style={{ display: 'flex', gap: 10, alignItems: 'flex-start', lineHeight: 1.45,
+                        fontSize: 13, marginTop: 12, cursor: 'pointer',
+                        color: chiaro ? undefined : 'var(--bone)' }}
           className={chiaro ? 'text-muted-foreground' : undefined}>
           <input type="checkbox" checked={consent}
-            onChange={(e) => setConsent(e.target.checked)} />
+            onChange={(e) => setConsent(e.target.checked)}
+            style={{ width: 18, height: 18, flex: 'none', marginTop: 1, accentColor: chiaro ? '#2f5749' : ORO }}
+            data-testid="cancello-consenso" />
           <span>Acconsento a ricevere le email del Cerchio di Aurya
             (meditazioni, anteprime, la Lettera). Confermerai
             dall&rsquo;email che ti arriva; ti cancelli con un clic.

@@ -786,13 +786,15 @@ export default function NetworkHomePage() {
                 l'azione a minor attrito del sito. Pannello crema pieno:
                 gli input bianchi e il consenso grigio sono disegnati per
                 fondo chiaro, non per la fotografia. CN3: preferenza
-                ritiri accesa, con la citta' (variante leggera). */}
+                ritiri accesa. US (10/9 notte, founder): lo STESSO blocco
+                di /cerca-ritiro (citta', vie, dove, budget), non piu' la
+                sola citta'. */}
             <div className="mt-9 w-full max-w-md rounded-2xl bg-[#f6f2e8]/95 p-5 text-left
                             shadow-[0_18px_48px_-28px_rgba(14,26,21,0.6)] sm:p-6"
                  data-testid="hp-letter-form">
               <LeadForm
-                type="traveler" compact subscribe showName={false} accent={SAGE}
-                experiencesOptIn experiencesDefault experiencesLight
+                type="traveler" compact subscribe accent={SAGE}
+                experiencesOptIn experiencesDefault
                 context="home_letter"
                 consentText={t('blogCta.consent', { defaultValue: 'Acconsento a ricevere le email del Cerchio di Aurya.' })}
                 ctaLabel={t('nwHome.letterCta', { defaultValue: 'Entra nel Cerchio' })}

@@ -17,6 +17,7 @@ import { frequenciesAPI } from '../../api/frequencies';
 import { SafetyCurtain, SafetyLine } from './SafetyCurtain';
 import { creaAccount, entraInAurya } from '../../utils/authLinks';
 import { prova, emailDellaProva, sblocca, iscriviESblocca, migraVecchieChiavi } from '../../lib/cerchio';
+import AvvisamiRitiri, { useAvvisamiRitiri } from '../prelaunch/AvvisamiRitiri';
 import './frequenze.css';
 import './meditazioni.css';
 import SoundTopbar from './SoundTopbar';
@@ -65,6 +66,7 @@ export default function MeditazioniPage() {
   const [heartAsk, setHeartAsk] = useState(false);
   const [safety, setSafety] = useState(false);      // SF — lettura su richiesta
   const [email, setEmail] = useState('');
+  const [nome, setNome] = useState('');
   const [consent, setConsent] = useState(false);
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState('');
@@ -115,6 +117,10 @@ export default function MeditazioniPage() {
      dichiarando l'indirizzo. Prima qui bastava scrivere un'email
      qualsiasi: il cancello si apriva senza conferma. */
   const [attesaConferma, setAttesaConferma] = useState(false);
+  /* US (10/9/2026 notte, founder: «nella newsletter delle meditazioni
+     non mettiamo opzioni di ritiri?»): il blocco «avvisami» condiviso,
+     spento di default — chi vuole solo le meditazioni lascia l'email */
+  const avvisami = useAvvisamiRitiri(false);
   const subscribe = async (e) => {
     e.preventDefault();
     if (!consent) { setMsg('Serve il consenso alle email del Cerchio'); return; }
@@ -122,6 +128,8 @@ export default function MeditazioniPage() {
     try {
       const esito = await iscriviESblocca({
         email, source: 'meditazioni', returnTo: '/meditazioni',
+        name: nome.trim() || undefined,
+        ritiri: avvisami.payload(),     // US: lo stesso blocco di /cerca-ritiro
       });
       if (esito === 'sbloccato') await loadCatalog();
       else setAttesaConferma(true);   // prima iscrizione: click nell'email
@@ -184,6 +192,11 @@ export default function MeditazioniPage() {
               </div>
             )}
             <form onSubmit={subscribe} style={{ maxWidth: 440, margin: '18px auto 0' }}>
+              {/* US: il nome sopra l'email, facoltativo, come in ogni form del Cerchio */}
+              <input type="text" value={nome} maxLength={80} placeholder="il tuo nome (facoltativo)"
+                onChange={(e) => setNome(e.target.value)}
+                style={{ width: '100%', boxSizing: 'border-box', marginBottom: 8 }}
+                data-testid="med-nome" />
               <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                 <input type="email" required value={email} placeholder="la tua email"
                   onChange={(e) => setEmail(e.target.value)}
@@ -192,11 +205,18 @@ export default function MeditazioniPage() {
                   {busy ? 'Un attimo…' : 'Entra nel Cerchio e sblocca'}
                 </button>
               </div>
-              <label style={{ display: 'flex', gap: 8, alignItems: 'flex-start',
-                              fontSize: 12, color: 'var(--dim)', marginTop: 10,
+              <div style={{ marginTop: 10 }}>
+                <AvvisamiRitiri {...avvisami} accent="#d6c49a" scuro testid="med-avvisami" />
+              </div>
+              {/* US (founder: «il flag di accettazione e' piccolissimo»):
+                  casella 18px nell'oro, testo 13px in --bone (leggibile) */}
+              <label style={{ display: 'flex', gap: 10, alignItems: 'flex-start', lineHeight: 1.45,
+                              fontSize: 13, color: 'var(--bone)', marginTop: 12,
                               textAlign: 'left', cursor: 'pointer' }}>
                 <input type="checkbox" checked={consent}
-                  onChange={(e) => setConsent(e.target.checked)} />
+                  onChange={(e) => setConsent(e.target.checked)}
+                  style={{ width: 18, height: 18, flex: 'none', marginTop: 1, accentColor: '#d6c49a' }}
+                  data-testid="med-consenso" />
                 <span>Acconsento a ricevere le email del Cerchio di Aurya:
                   meditazioni, ritiri in anteprima e la Lettera. Ti cancelli
                   con un clic. <a href="/privacy" target="_blank" rel="noreferrer"

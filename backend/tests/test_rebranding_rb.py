@@ -689,7 +689,12 @@ class TestFv2LeSequenze:
         assert "export const VIE" in pref
         assert "export const BASE_TO_EXP" in pref and "export const TRAVELS = ['near', 'italy', 'abroad']" in pref
         form = (FE / "features" / "prelaunch" / "LeadForm.jsx").read_text()
-        assert form.count("<PreferenzeRitiri") == 2, "modulo pieno e blocco «avvisami»: lo stesso componente"
+        # US (10/9 notte): il blocco «avvisami» e' AvvisamiRitiri (condiviso
+        # coi cancelli del mondo Sound) e monta lo stesso PreferenzeRitiri,
+        # col budget: quattro cose, ovunque
+        assert form.count("<PreferenzeRitiri") == 1 and "<AvvisamiRitiri" in form
+        avv = (FE / "features" / "prelaunch" / "AvvisamiRitiri.jsx").read_text()
+        assert "<PreferenzeRitiri" in avv and "budget={budget} setBudget={setBudget}" in avv
         for morto in ("expInterests", "expCity", "expTravel", "EXP_INTERESTS"):
             assert morto not in form, f"doppione sopravvissuto: {morto}"
         pagina = (FE / "features" / "prelaunch" / "NewsletterPreferencesPage.js").read_text()

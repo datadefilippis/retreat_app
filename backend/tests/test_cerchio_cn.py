@@ -58,9 +58,20 @@ class TestCn1Landing:
         assert "showName\n" in src[i:i + 400] or "showName " in src[i:i + 400], "il nome resta nel form"
         form = (PRE / "LeadForm.jsx").read_text()
         assert "useState(\n    Boolean(experiencesOptIn && experiencesDefault))" in form
-        # FV5 (10/9 sera): la variante leggera vive nel blocco condiviso
-        assert "light={experiencesLight}" in form, "la variante leggera mostra solo la citta'"
-        assert "{!light && (" in (PRE / "PreferenzeRitiri.jsx").read_text()
+        # US (10/9 notte, founder: «integrarlo ovunque lo stesso sistema»):
+        # niente piu' variante leggera, IL blocco condiviso (AvvisamiRitiri)
+        # con le quattro cose di /cerca-ritiro, anche in home e nei cancelli
+        assert "experiencesLight" not in form and "<AvvisamiRitiri" in form
+        pref = (PRE / "PreferenzeRitiri.jsx").read_text()
+        assert "light" not in pref.split("export default")[1].split("{")[0] and "{!light && (" not in pref
+        for f in ("features/network/NetworkHomePage.js", "features/frequenze/CancelloLettera.jsx",
+                  "features/frequenze/MeditazioniPage.js", "features/frequenze/InvitoSound.jsx"):
+            src_f = (FE / f).read_text()
+            assert "experiencesLight" not in src_f
+            if "frequenze" in f:
+                assert "<AvvisamiRitiri" in src_f and "ritiri: avvisami.payload()" in src_f, f
+        cerchio = (FE / "lib" / "cerchio.js").read_text()
+        assert "ritiri = null" in cerchio and "...(ritiri && typeof ritiri === 'object' ? ritiri : {})" in cerchio
         # il consenso resta esplicito e SPENTO (e' un consenso, non una preferenza)
         assert "const [consent, setConsent] = useState(false);" in form
 
