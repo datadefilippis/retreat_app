@@ -352,8 +352,11 @@ const NAV_ITEMS = [
 // escono solo dal menu.
 const NETWORK_NAV_ITEMS = [
   { to: '/operatori', key: 'marketplace.navOperators', fallback: 'I nostri professionisti' },
-  // P3 (10/9/2026): i ritiri ed esperienze in programma, aperti a tutti
-  { to: '/esperienze', key: 'marketplace.navEsperienze', fallback: 'Ritiri ed esperienze' },
+  // P3 (10/9/2026) aveva messo «Ritiri ed esperienze» qui; NV (10/9 sera,
+  // founder): finche' non ci sono ritiri, TUTTO il traffico va alla
+  // landing /cerca-ritiro (iscrizione al Cerchio). La pagina /esperienze
+  // resta viva per chi ha il link (e per i motori quando avra' ritiri),
+  // ma esce dal menu.
   { to: '/blog', key: 'marketplace.navBlog', fallback: 'Magazine' },
   // SP4 — la biblioteca educativa sul suono e' contenuto pubblico come
   // il Magazine: voce propria («Sound» e' un nome, resta cosi' in ogni

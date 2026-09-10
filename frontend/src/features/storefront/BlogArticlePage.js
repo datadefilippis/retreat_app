@@ -501,17 +501,13 @@ export default function BlogArticlePage() {
                     <Lede size="lead" tone="inherit" className="mt-6 opacity-90">
                       {t('blog.portaCercaBody', {
                         cat: catLabel(article.category),
-                        defaultValue: 'Dicci dove e quando: ti avvisiamo appena c’è un ritiro di {{cat}} vicino a te, e intanto ti apriamo le meditazioni riservate. Quelli già in programma sono in «Ritiri ed esperienze».' })}
+                        defaultValue: 'Dicci dove e quando: ti avvisiamo appena c’è un ritiro di {{cat}} vicino a te, e intanto ti apriamo le meditazioni riservate.' })}
                     </Lede>
                     <p className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-6">
                       <EditorialCta to={`/cerca-ritiro?tema=${article.category}&porta=magazine`} variant="light"
                                     onClick={() => trackEvent('porta', { porta: 'cerca', da: 'magazine', tema: article.category })}
                                     data-testid="art-porta-cerca-cta">
                         {t('blog.portaCercaCta', { defaultValue: 'Trovami il mio ritiro' })}
-                      </EditorialCta>
-                      <EditorialCta to="/esperienze?porta=magazine" variant="quiet" tone="dark"
-                                    onClick={() => trackEvent('porta', { porta: 'esperienze', da: 'magazine', tema: article.category })}>
-                        {t('blog.portaEsperienzeCta', { defaultValue: 'I ritiri in programma' })}
                       </EditorialCta>
                     </p>
                   </div>

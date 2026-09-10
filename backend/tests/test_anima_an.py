@@ -502,10 +502,14 @@ class TestDs3EsperienzeOut:
     /esperienze/* rimanda ancora alla home, la sitemap non la elenca e
     la shell la serve come pagina cardine (noindex in fase rete)."""
 
-    def test_esperienze_nel_menu_della_rete(self):
+    def test_esperienze_viva_ma_fuori_dal_menu(self):
+        # NV (10/9/2026 sera, founder): niente voce di menu finche' non ci
+        # sono ritiri; la pagina resta raggiungibile dal link
         shell = (FRONTEND_SRC / "features" / "storefront" / "components"
                  / "MarketplaceShell.jsx").read_text()
-        assert "{ to: '/esperienze', key: 'marketplace.navEsperienze'" in shell
+        assert "{ to: '/esperienze'" not in shell
+        app = (FRONTEND_SRC / "App.js").read_text()
+        assert 'path="/esperienze" element={<EsperienzeGate />}' in app
 
     def test_esperienze_route_nuova_e_vecchia_fuori(self):
         app = (FRONTEND_SRC / "App.js").read_text()
