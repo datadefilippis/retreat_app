@@ -201,11 +201,11 @@ def corpo_professionisti() -> str:
         _h2(s, "goTitle"), "<ul>" + "".join(
             f"<li><b>{_t(s, f'v{i}t')}</b> {_t(s, f'v{i}b')} <b>{_t(s, f'v{i}k')}</b></li>"
             for i in range(1, 7) if _t(s, f'v{i}t')) + "</ul>",
-        _p(s, "goSoon"),
-        _h2(s, "prezziTitle"), _p(s, "prezziP1", "prezziP2"), _coppie(s, "prezzi", 3, "t", "b"),
+        _h2(s, "studioTitle"), _p(s, "studioSub", "goSoon"),
         _h2(s, "reteTitle"), _p(s, "reteP1", "reteP2", "reteP3"),
         _h2(s, "nowTitle"), _p(s, "nowP1", "nowP2"), _coppie(s, "nowB", 4, "t", "b"),
         _p(s, "nowCountFallback"), _p(s, "nowCloseA2", "nowCloseB2"),
+        _h2(s, "prezziTitle"), _p(s, "prezziP1", "prezziP2", "prezziP3"), _coppie(s, "prezzi", 3, "t", "b"),
         _h2(s, "joinTitle"), _coppie(s, "j", 3, "t", "b"),
         _h2(s, "faqTitle"), faq,
         _h2(s, "whoEyebrow"), _p(s, "whoLead"), _p(s, "whoV", "whoD", "whoP"),

@@ -126,7 +126,7 @@ class TestLx4IDatiStrutturati:
         # voglio?», e le risposte riscritte vivono su chiavi nuove
         assert len(coppie) == 6
         assert coppie[0][0] == "Quanto costa?" and "gratuito" in coppie[0][1]
-        assert coppie[5][0] == "Posso uscire quando voglio?"
+        assert coppie[5][0].startswith("Posso smettere di usare Aurya")   # founder 10/9 sera
 
 
 class TestLx1LlmsTxt:

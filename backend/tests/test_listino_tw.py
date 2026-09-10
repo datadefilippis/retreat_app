@@ -6184,7 +6184,8 @@ class TestLandingOperatoriOl1:
             # RB2-bis (10/9 sera): il Club Fondatori «gratuito fino al 30
             # giugno 2027» e' un vantaggio datato del patto, non la promessa nuda
             assert re.search(r"faq1b|faq3", finestra) or "31 dicembre 2026" in finestra \
-                or "senza commissioni" in finestra or "30 giugno 2027" in finestra, \
+                or "senza commissioni" in finestra or "30 giugno 2027" in finestra \
+                or "piano base" in finestra, \
                 f"'gratuito' fuori dalla FAQ nella landing: ...{finestra[-90:]}"
         for lang in self.LOCALES:
             blocco = self._locale(lang).get("opNw", {})

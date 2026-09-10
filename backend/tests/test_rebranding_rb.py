@@ -119,7 +119,7 @@ class TestRb2LaLandingDellOperatore:
     def test_il_trittico_nell_ordine(self):
         src = LANDING.read_text()
         pos = -1
-        for tid in ("ol-hero", "ol-go", "ol-prezzi", "ol-rete", "ol-now", "ol-join", "ol-faq", "ol-who", "ol-form", "ol-end"):
+        for tid in ("ol-hero", "ol-go", "ol-studio", "ol-rete", "ol-now", "ol-prezzi", "ol-join", "ol-faq", "ol-who", "ol-form", "ol-end"):
             here = src.index(f'data-testid="{tid}"')
             assert here > pos, f"{tid}: fuori ordine"
             pos = here
@@ -131,9 +131,9 @@ class TestRb2LaLandingDellOperatore:
         assert op["heroTitle"] == "Il tuo spazio professionale, pronto oggi."
         # RB2-bis (10/9 sera): l'offerta in una frase, la frase-marchio senza data
         for parola in ("prenotazioni", "ritiri", "un solo link"):
-            assert parola in op["heroP1"], f"l'offerta in chiaro nomina: {parola}"
+            assert parola in op["heroP1"] + " " + op["heroP2"], f"l'offerta in chiaro nomina: {parola}"
         assert op["heroP3"] == "Gratis per sempre, senza commissioni."
-        assert "31 ottobre 2026" in op["nowP1"] and "venti" in op["nowP1"], "il patto fondatori ha tetto e data"
+        assert "31 ottobre 2026" in op["nowP1"] and ("venti" in op["nowP1"] or "20 operatori" in op["nowP1"]), "il patto fondatori ha tetto e data"
         assert "30 giugno 2027" in op["nowB1b"] and "post al mese" not in json.dumps(op), "il Club fondatori ha una fine e niente post mensile"
         for k in ("v1k", "v6k", "reteTitle", "nowB4t", "nowCta"):
             assert op.get(k), k
@@ -151,10 +151,10 @@ class TestRb2LaLandingDellOperatore:
             assert vecchio not in src, f"tornato il cancello: {vecchio}"
         op = json.loads(PRELAUNCH.read_text())["opPro"]
         # founder 10/9 sera: niente attesa di una chiamata, il gruppo Telegram
-        assert "Telegram" in op["j3t"] and "Verificato Aurya" in op["j3b"]
+        assert "Telegram" in op["j3b"] and "Verificato Aurya" in op["j3b"]
         assert "Valentina ti scrive" not in json.dumps(op), "il processo non aspetta nessuno"
-        assert op["prezziP1"] == "Gratis per sempre, senza commissioni." and "19 €" in op["prezzi1t"]
-        assert "Nessuna carta" in op["j1b"]
+        assert "gratuito per sempre" in op["prezziP1"] and "19 €" in op["prezzi1t"]
+        assert "Non serve la carta" in op["j1b"] or "Nessuna carta" in op["j1b"]
 
     def test_il_contatore_dei_fondatori_e_vero(self):
         src = LANDING.read_text()
@@ -177,8 +177,8 @@ class TestRb2LaLandingDellOperatore:
         assert "Gratis per sempre, senza commissioni." in shell   # RB2-bis: la frase-marchio, senza data
         from services.identita import corpo_professionisti, faq_professionisti
         corpo = corpo_professionisti()
-        for frase in ("Il tuo spazio professionale, pronto oggi.", "Tutto il tuo lavoro, in un unico spazio.",
-                      "Entra nella rete di Aurya.", "Perché entrare ora.", "Come si comincia."):
+        for frase in ("Il tuo spazio professionale, pronto oggi.", "Tutto quello che ti serve, in un unico posto.",
+                      "scoperto anche su Aurya", "Perché entrare ora.", "Quanto costa.", "Come si comincia."):
             assert frase in corpo
         assert "non fa per te" not in corpo and "con calma" not in corpo
         assert len(faq_professionisti()) == 6

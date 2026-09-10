@@ -135,7 +135,7 @@ class TestSr1Directory:
         assert "ancora non c" not in landing.split("opPro.goSoon")[1][:200]
         it = json.loads((FE / "locales" / "it" / "prelaunch.json").read_text())
         # RB2-bis (10/9 sera): la parte pubblica aperta vive nella sezione «rete»
-        assert "può incontrare anche il tuo profilo" in it["opPro"]["reteP3"]
+        assert "puoi essere trovato" in it["opPro"]["reteP2"]
         assert it["nl"]["a1c"] == "Vai su Aurya Sound"
         assert "non a scadenza" not in it["nl"]["r3b"]
 

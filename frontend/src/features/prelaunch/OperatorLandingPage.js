@@ -109,8 +109,8 @@ export default function OperatorLandingPage() {
   const { t: tl } = useTranslation('landings');
 
   useSeoMeta({
-    title: t('opPro.seoTitle', { defaultValue: 'Per operatori olistici: il tuo spazio professionale, pronto oggi | Aurya' }),
-    description: t('opPro.seoDesc', { defaultValue: 'Profilo pubblico, servizi, prenotazioni, eventi e ritiri con iscrizioni online. Tutto in un unico posto, con un solo link da condividere. Gratis per sempre, senza commissioni.' }),
+    title: t('opPro.seoTitle', { defaultValue: "Per operatori olistici: il tuo spazio professionale, pronto oggi | Aurya" }),
+    description: t('opPro.seoDesc', { defaultValue: "Una pagina tutta tua per presentarti, mostrare i tuoi servizi, ricevere prenotazioni e organizzare eventi e ritiri. Un solo link da condividere. Gratis per sempre, senza commissioni." }),
     canonicalPath: '/entra-nella-rete',
   });
 
@@ -130,91 +130,79 @@ export default function OperatorLandingPage() {
     });
   };
 
-  /* Come si comincia: tre passi, tre schede. */
-  const cards = [
-    { numeral: '01',
-      title: t('opPro.j1t', { defaultValue: 'Crea il tuo account.' }),
-      body: t('opPro.j1b', { defaultValue: 'Nome, email e password. Un minuto. Nessuna carta.' }) },
-    { numeral: '02',
-      title: t('opPro.j2t', { defaultValue: 'Pubblica il tuo profilo.' }),
-      body: t('opPro.j2b', { defaultValue: 'Aggiungi foto, storia e primo servizio. Sei online e hai già il tuo link da condividere.' }) },
-    { numeral: '03',
-      // founder 10/9 sera: niente attesa di una chiamata — il gruppo Telegram
-      title: t('opPro.j3t', { defaultValue: 'Entra nel gruppo Telegram.' }),
-      body: t('opPro.j3b', { defaultValue: 'Appena il profilo è online ti aggiungiamo al gruppo Telegram degli operatori Aurya: le novità, le richieste che arrivano, noi a un messaggio di distanza. Il racconto del tuo lavoro e il badge Verificato Aurya li costruiamo lì, quando vuoi tu.' }) },
-  ];
-
-  /* Tutto il tuo lavoro: sei schede, un verbo, una frase che resta.
-     OF2: tutto al presente, solo cio' che il prodotto fa OGGI. */
+  /* Tutto quello che ti serve: sei schede, un verbo, una frase che resta. */
   const voices = [
-    { title: t('opPro.v1t', { defaultValue: "Ti presenti." }),
-      body: t('opPro.v1b', { defaultValue: "Crea il tuo profilo professionale con la tua storia, le discipline che pratichi, le foto, i servizi e le recensioni verificate." }),
-      key: t('opPro.v1k', { defaultValue: "Un luogo online che racconta davvero chi sei e cosa fai." }) },
-    { title: t('opPro.v2t', { defaultValue: "Ti trovano." }),
-      body: t('opPro.v2b', { defaultValue: "Il tuo profilo è pubblico e indicizzato su Google. In più entri nella directory di Aurya, dove le persone scoprono professionisti, pratiche, eventi e ritiri." }),
-      key: t('opPro.v2k', { defaultValue: "Non devi portare tu tutte le persone: Aurya è un punto d’incontro tra chi cerca benessere e chi lo offre." }) },
-    { title: t('opPro.v3t', { defaultValue: "Ti prenotano." }),
-      body: t('opPro.v3b', { defaultValue: "Pubblica i tuoi servizi con prezzi e disponibilità. Le persone chiedono un appuntamento dalla tua pagina e il calendario tiene conto degli orari già occupati." }),
-      key: t('opPro.v3k', { defaultValue: "Meno messaggi per organizzare un appuntamento." }) },
-    { title: t('opPro.v4t', { defaultValue: "Organizzi eventi e ritiri." }),
-      body: t('opPro.v4b', { defaultValue: "Crea le tue esperienze, stabilisci date, posti e prezzi e raccogli le iscrizioni online. Caparra, saldo e partecipanti in un unico posto." }),
-      key: t('opPro.v4k', { defaultValue: "Tu pensi all’esperienza. Aurya pensa alla gestione." }) },
-    { title: t('opPro.v5t', { defaultValue: "Un solo link." }),
-      body: t('opPro.v5b', { defaultValue: "Metti il tuo link nella bio di Instagram, su WhatsApp o ovunque ti trovino." }),
-      key: t('opPro.v5k', { defaultValue: "Profilo, servizi, prenotazioni, eventi, ritiri e recensioni. Tutto nella stessa pagina." }) },
-    { title: t('opPro.v6t', { defaultValue: "Gestisci il tuo lavoro." }),
-      body: t('opPro.v6b', { defaultValue: "Clienti, ordini, incassi e attività in un unico spazio." }),
-      key: t('opPro.v6k', { defaultValue: "Meno fogli, meno chat, meno strumenti da coordinare." }) },
+    { title: t('opPro.v1t', { defaultValue: "Racconti chi sei." }),
+      body: t('opPro.v1b', { defaultValue: "Crea la tua pagina professionale con la tua foto, la tua storia, le pratiche che proponi, i tuoi servizi e le recensioni dei tuoi clienti." }),
+      key: t('opPro.v1k', { defaultValue: "Chi arriva sulla tua pagina capisce subito chi sei e cosa offri." }) },
+    { title: t('opPro.v2t', { defaultValue: "Ti possono trovare." }),
+      body: t('opPro.v2b', { defaultValue: "Il tuo profilo è pubblico e può essere trovato anche su Google. Inoltre, puoi comparire nella directory di Aurya, dove le persone cercano operatori, pratiche, eventi e ritiri." }),
+      key: t('opPro.v2k', { defaultValue: "Non devi essere tu a portare ogni persona sulla tua pagina." }) },
+    { title: t('opPro.v3t', { defaultValue: "Ricevi prenotazioni." }),
+      body: t('opPro.v3b', { defaultValue: "Pubblica i tuoi servizi con prezzo e disponibilità. Chi è interessato può chiederti un appuntamento direttamente dalla tua pagina. Il calendario ti mostra gli appuntamenti già fissati, così sai sempre quando sei disponibile." }),
+      key: t('opPro.v3k', { defaultValue: "Meno messaggi per organizzare gli appuntamenti." }) },
+    { title: t('opPro.v4t', { defaultValue: "Organizzi i tuoi eventi e ritiri." }),
+      body: t('opPro.v4b', { defaultValue: "Crea la pagina del tuo evento o del tuo ritiro con data, luogo, descrizione, prezzo e posti disponibili. Le persone possono iscriversi online e pagare la caparra. Tu vedi in un unico posto chi si è iscritto e quanto ha già pagato." }),
+      key: t('opPro.v4k', { defaultValue: "Tu organizzi l’esperienza. Aurya ti aiuta a gestire le iscrizioni." }) },
+    { title: t('opPro.v5t', { defaultValue: "Hai un solo link da condividere." }),
+      body: t('opPro.v5b', { defaultValue: "Mettilo nella bio di Instagram, su WhatsApp o invialo direttamente ai tuoi clienti. Dentro trovano la tua storia, i tuoi servizi, gli eventi, i ritiri e le recensioni." }),
+      key: t('opPro.v5k', { defaultValue: "Un solo link al posto di tanti link diversi." }) },
+    { title: t('opPro.v6t', { defaultValue: "Tieni tutto sotto controllo." }),
+      body: t('opPro.v6b', { defaultValue: "Clienti, prenotazioni, ordini e incassi in un unico posto." }),
+      key: t('opPro.v6k', { defaultValue: "Meno fogli, meno messaggi e meno cose da ricordare." }) },
   ];
-
   /* Perche' entrare ora: quattro vantaggi da fondatore. */
-  /* Quanto costa: il base per sempre, il piu' dal 2027. */
-  const prezzi = [
-    { title: t('opPro.prezzi1t', { defaultValue: "Spinta · 19 € a ritiro" }),
-      body: t('opPro.prezzi1b', { defaultValue: "Un ritiro in prima fila in «Ritiri ed esperienze» e nella Lettera alla sua zona." }) },
-    { title: t('opPro.prezzi2t', { defaultValue: "Club · 49 € l’anno" }),
-      body: t('opPro.prezzi2b', { defaultValue: "La prima fila su tutti i tuoi ritiri, la Lettera alla tua zona, e sei tra i primi che chiamiamo quando la rete lavora." }) },
-    { title: t('opPro.prezzi3t', { defaultValue: "Pro · 119 € l’anno" }),
-      body: t('opPro.prezzi3b', { defaultValue: "Tutto il Club, più Crea Studio e noi accanto, su WhatsApp." }) },
-  ];
-
   const patto = [
     { title: t('opPro.nowB1t', { defaultValue: "Club Fondatori" }),
-      body: t('opPro.nowB1b', { defaultValue: "Gratuito fino al 30 giugno 2027: prima fila su ogni tuo ritiro e la Lettera di Aurya alla tua zona." }) },
+      body: t('opPro.nowB1b', { defaultValue: "Gratuito fino al 30 giugno 2027. Il tuo ritiro viene messo in evidenza e puoi essere presente nella Lettera di Aurya dedicata alla tua zona." }) },
     { title: t('opPro.nowB2t', { defaultValue: "Badge Fondatore" }),
-      body: t('opPro.nowB2b', { defaultValue: "Permanente sul tuo profilo." }) },
-    { title: t('opPro.nowB3t', { defaultValue: "Piano Pro" }),
-      body: t('opPro.nowB3b', { defaultValue: "Il prezzo che avrai da fondatore resta bloccato per sempre." }) },
-    { title: t('opPro.nowB4t', { defaultValue: "Lavoro dalla rete" }),
-      body: t('opPro.nowB4b', { defaultValue: "Chiamati per primi per team building, ritiri aziendali e regie." }) },
+      body: t('opPro.nowB2b', { defaultValue: "Resta per sempre sul tuo profilo." }) },
+    { title: t('opPro.nowB3t', { defaultValue: "Prezzo Pro bloccato" }),
+      body: t('opPro.nowB3b', { defaultValue: "Se in futuro scegli il piano Pro, mantieni per sempre il prezzo riservato ai fondatori." }) },
+    { title: t('opPro.nowB4t', { defaultValue: "Opportunità dalla rete" }),
+      body: t('opPro.nowB4b', { defaultValue: "I fondatori saranno tra i primi operatori contattati quando nasceranno richieste per team building, ritiri aziendali ed esperienze di gruppo." }) },
   ];
-
+  /* Quanto costa: il base per sempre, il piu' dal 2027. */
+  const prezzi = [
+    { title: t('opPro.prezzi1t', { defaultValue: "Spinta · 19 € per ritiro" }),
+      body: t('opPro.prezzi1b', { defaultValue: "Metti il tuo ritiro in evidenza nella sezione Ritiri ed esperienze e nella Lettera di Aurya dedicata alla sua zona." }) },
+    { title: t('opPro.prezzi2t', { defaultValue: "Club · 49 € l’anno" }),
+      body: t('opPro.prezzi2b', { defaultValue: "Metti in evidenza tutti i tuoi ritiri, compari nella Lettera della tua zona e hai priorità nelle opportunità che arrivano dalla rete." }) },
+    { title: t('opPro.prezzi3t', { defaultValue: "Pro · 119 € l’anno" }),
+      body: t('opPro.prezzi3b', { defaultValue: "Tutto quello che offre il Club, più Crea Studio e assistenza diretta su WhatsApp." }) },
+  ];
+  /* Come si comincia: tre passi, tre schede. */
+  const cards = [
+    { numeral: '01', title: t('opPro.j1t', { defaultValue: "Crei il tuo account." }), body: t('opPro.j1b', { defaultValue: "Inserisci nome, email e password. Ci metti circa un minuto. Non serve la carta." }) },
+    { numeral: '02', title: t('opPro.j2t', { defaultValue: "Crei la tua pagina." }), body: t('opPro.j2b', { defaultValue: "Aggiungi una foto, racconta chi sei e inserisci il tuo primo servizio. La tua pagina è online e puoi subito condividere il link." }) },
+    { numeral: '03', title: t('opPro.j3t', { defaultValue: "Entri nella rete." }), body: t('opPro.j3b', { defaultValue: "Quando il tuo profilo è online, entri nel gruppo Telegram degli operatori Aurya. Lì trovi le novità, le richieste che arrivano e puoi parlare direttamente con noi. Se vuoi, ti aiutiamo anche a raccontare il tuo lavoro su Aurya e a ottenere il badge Verificato Aurya." }) },
+  ];
   /* Sei domande, risposte brevi e oneste, una alla volta (SR5). */
   const faq = [
     {
-      q: t('opPro.faq1q', { defaultValue: 'Quanto costa?' }),
+      q: t('opPro.faq1q', { defaultValue: "Quanto costa?" }),
       a: (
         <ul className="list-disc space-y-2 pl-5">
-          <li>{t('opPro.faq1b1', { defaultValue: 'L’utilizzo di Aurya è sempre gratuito, e Aurya non prende commissioni: quello che incassi è tuo.' })}</li>
-          <li>{t('opPro.faq1b2', { defaultValue: 'Dal 2027 si paga solo la promozione, se la vuoi: la Spinta per un ritiro (19 €), il Club (49 € l’anno) o il Pro (119 € l’anno).' })}</li>
+          <li>{t('opPro.faq1b1', { defaultValue: "Il piano base è sempre gratuito e senza commissioni: Aurya non prende commissioni su quello che guadagni." })}</li>
+          <li>{t('opPro.faq1b2', { defaultValue: "Dal 2027 puoi scegliere di aggiungere servizi a pagamento, ma non sei obbligato: la Spinta per un ritiro (19 €), il Club (49 € l’anno) o il Pro (119 € l’anno)." })}</li>
           <li>
-            {t('opPro.faq1b3', { defaultValue: 'Gli operatori fondatori hanno il Club regalato fino al 30 giugno 2027 e il prezzo del Pro bloccato per sempre. ' })}
+            {t('opPro.faq1b3', { defaultValue: "Tutti i piani, riga per riga: " })}
             <Link to="/costi" className="font-semibold text-primary underline underline-offset-2">
-              {t('opPro.faq1b3cta', { defaultValue: 'Guarda i piani e i costi' })}
+              {t('opPro.faq1b3cta', { defaultValue: "scopri i piani e i costi" })}
             </Link>
           </li>
         </ul>
       ),
     },
-    { q: t('opPro.faq4q', { defaultValue: "Posso usare Aurya anche se ho già un sito?" }), a: t('opPro.faq4a', { defaultValue: "Sì. Puoi usare Aurya insieme al tuo sito, come spazio dedicato alla tua attività, alle prenotazioni, agli eventi e ai ritiri." }) },
-    { q: t('opPro.faq3q', { defaultValue: "Posso continuare a usare Instagram?" }), a: t('opPro.faq3a2', { defaultValue: "Sì. Il tuo profilo Aurya è pensato anche come link unico per la tua bio." }) },
-    { q: t('opPro.faq5q', { defaultValue: "Posso gestire prenotazioni che arrivano da altri canali?" }), a: t('opPro.faq5a2', { defaultValue: "Sì. Puoi continuare a usare i tuoi canali: qui blocchi gli orari già occupati e vedi in un unico calendario gli appuntamenti nati su Aurya." }) },
-    { q: t('opPro.faq6q', { defaultValue: "Posso uscire quando voglio?" }), a: t('opPro.faq6a', { defaultValue: "Sì. Non ci sono vincoli: puoi spegnere il profilo o cancellare l’account dalle impostazioni, quando vuoi. I tuoi clienti restano tuoi." }) },
-    { q: t('opPro.faq2q', { defaultValue: "Le persone possono trovare il mio profilo anche senza conoscermi?" }), a: t('opPro.faq2a3', { defaultValue: "Sì. Il profilo è pubblico, indicizzato su Google e presente nella directory di Aurya." }) },
+    { q: t('opPro.faq4q', { defaultValue: "Posso usare Aurya anche se ho già un sito?" }), a: t('opPro.faq4a', { defaultValue: "Sì. Puoi continuare a usare il tuo sito e usare Aurya per presentare i tuoi servizi, ricevere prenotazioni e gestire eventi e ritiri." }) },
+    { q: t('opPro.faq3q', { defaultValue: "Posso continuare a usare Instagram?" }), a: t('opPro.faq3a2', { defaultValue: "Certo. Puoi mettere il tuo link Aurya nella bio di Instagram e portare le persone direttamente alla tua pagina, ai tuoi servizi e alle tue esperienze." }) },
+    { q: t('opPro.faq5q', { defaultValue: "Posso continuare a ricevere prenotazioni da WhatsApp o telefono?" }), a: t('opPro.faq5a2', { defaultValue: "Sì. Puoi continuare a usare i tuoi canali abituali e inserire manualmente le prenotazioni nel tuo calendario Aurya." }) },
+    { q: t('opPro.faq2q', { defaultValue: "Le persone possono trovare il mio profilo anche se non mi conoscono?" }), a: t('opPro.faq2a3', { defaultValue: "Sì. Il tuo profilo è pubblico, può essere trovato su Google e può comparire nella directory di Aurya." }) },
+    { q: t('opPro.faq6q', { defaultValue: "Posso smettere di usare Aurya quando voglio?" }), a: t('opPro.faq6a', { defaultValue: "Sì. Non ci sono vincoli." }) },
   ];
 
-  const ctaOpen = t('opPro.ctaOpen', { defaultValue: 'Apri il tuo spazio' });
-  const ctaJoin = t('opPro.ctaJoin', { defaultValue: 'Apri il tuo spazio' });
+  const ctaOpen = t('opPro.ctaOpen', { defaultValue: "Apri il tuo spazio" });
+  const ctaJoin = t('opPro.ctaJoin', { defaultValue: "Apri il tuo spazio" });
   const rimasti = fondatori && Number.isFinite(fondatori.rimasti) ? fondatori.rimasti : null;
 
   return (
@@ -233,34 +221,22 @@ export default function OperatorLandingPage() {
             <div className="relative mx-auto w-full max-w-5xl px-6 py-16 sm:px-8 sm:py-24
                             lg:flex lg:min-h-[38rem] lg:flex-col lg:justify-center lg:py-24">
               <div className="lg:max-w-[30rem]">
-                {/* founder 10/9 sera: l'occhiello era troppo piccolo — ora e' una
-                    riga in oro, leggibile, che dice a chi parla la pagina */}
+                {/* founder 10/9 sera: l'occhiello grande, nell'oro di casa */}
                 <p className="mb-5 text-lg font-semibold uppercase tracking-[0.16em] text-[#d6c49a] text-hero-shadow sm:text-xl"
                    data-testid="ol-hero-eyebrow">
-                  {t('opPro.heroEyebrow', { defaultValue: 'Per operatori e operatrici olistiche' })}
+                  {t('opPro.heroEyebrow', { defaultValue: "Per operatori e operatrici olistiche" })}
                 </p>
                 <DisplayTitle as="h1" id="ol-hero-title" size="heroLines" measure="lines" className="text-hero-shadow">
-                  {t('opPro.heroTitle', { defaultValue: 'Il tuo spazio professionale, pronto oggi.' })}
+                  {t('opPro.heroTitle', { defaultValue: "Il tuo spazio professionale, pronto oggi." })}
                 </DisplayTitle>
                 <div className="mt-7 space-y-4 sm:mt-9 sm:space-y-5">
-                  <Lede size="body" tone="inherit" className="text-hero-shadow font-semibold">
-                    {t('opPro.heroP1', { defaultValue: "Profilo pubblico, servizi, prenotazioni, eventi e ritiri con iscrizioni online. Tutto in un unico posto, con un solo link da condividere." })}
-                  </Lede>
-                  <Lede size="body" tone="inherit" className="text-hero-shadow">
-                    {t('opPro.heroP2', { defaultValue: "Presentati, fatti trovare e permetti alle persone di prenotare il tuo lavoro, senza dover mettere insieme strumenti diversi." })}
-                  </Lede>
-                  <Lede size="body" tone="inherit" className="text-hero-shadow font-semibold">
-                    {t('opPro.heroP3', { defaultValue: 'Gratis per sempre, senza commissioni.' })}
-                  </Lede>
+                  <Lede size="body" tone="inherit" className="text-hero-shadow font-semibold">{t('opPro.heroP1', { defaultValue: "Una pagina tutta tua per presentarti, mostrare i tuoi servizi, ricevere prenotazioni e organizzare eventi e ritiri." })}</Lede>
+                  <Lede size="body" tone="inherit" className="text-hero-shadow">{t('opPro.heroP2', { defaultValue: "Condividi un solo link su Instagram, WhatsApp o dove vuoi." })}</Lede>
+                  <Lede size="body" tone="inherit" className="text-hero-shadow font-semibold">{t('opPro.heroP3', { defaultValue: "Gratis per sempre, senza commissioni." })}</Lede>
                 </div>
                 <div className="mt-9 sm:mt-10">
-                  <EditorialCta href={FORM_ANCHOR} onClick={scrollToForm} tone="dark" variant="solid"
-                                data-testid="ol-hero-cta-top">
-                    {ctaOpen}
-                  </EditorialCta>
-                  <p className="mt-3 text-sm opacity-80 text-hero-shadow">
-                    {t('opPro.heroNote', { defaultValue: 'Un minuto per registrarti. Nessuna carta.' })}
-                  </p>
+                  <EditorialCta href={FORM_ANCHOR} onClick={scrollToForm} variant="solid" tone="dark" data-testid="ol-hero-cta-top">{ctaOpen}</EditorialCta>
+                  <p className="mt-3 text-sm opacity-80 text-hero-shadow">{t('opPro.heroNote', { defaultValue: "Un minuto per registrarti. Nessuna carta." })}</p>
                 </div>
               </div>
             </div>
@@ -269,28 +245,22 @@ export default function OperatorLandingPage() {
           <Section tone="sand" rhythm="flow" width="max-w-5xl">
             <DisplayTitle as="p" size="section" measure="lines"
                           className="text-[1.6rem] leading-[1.18] sm:text-[2rem] lg:text-[2.3rem]">
-              {t('opPro.heroP4', { defaultValue: "Non è una promessa: è già così per chi è dentro." })}
+              {t('opPro.heroP4', { defaultValue: "È già disponibile." })}
             </DisplayTitle>
-            <Lede size="lead" className="mt-6">{t('opPro.heroP5', { defaultValue: "Guarda un profilo vero: servizi, recensioni verificate e un ritiro in programma, sulla stessa pagina." })}</Lede>
+            <Lede size="lead" className="mt-6">{t('opPro.heroP5', { defaultValue: "Guarda un profilo vero: servizi, recensioni e un ritiro in programma, tutto sulla stessa pagina." })}</Lede>
             <div className="mt-9 flex flex-col items-start gap-5 sm:flex-row sm:items-center sm:gap-8">
-              <EditorialCta href={FORM_ANCHOR} onClick={scrollToForm} variant="solid" data-testid="ol-hero-cta">
-                {ctaOpen}
+              <EditorialCta to={PROOF_PROFILE} variant="solid" data-testid="ol-hero-cta-alt">
+                {t('opPro.ctaProof', { defaultValue: "Guarda un profilo vero" })}
               </EditorialCta>
-              <EditorialCta to={PROOF_PROFILE} variant="quiet" data-testid="ol-hero-cta-alt">
-                {t('opPro.ctaProof', { defaultValue: 'Guarda un profilo vero' })}
-              </EditorialCta>
+              <EditorialCta href={FORM_ANCHOR} onClick={scrollToForm} variant="quiet" data-testid="ol-hero-cta">{ctaOpen}</EditorialCta>
             </div>
           </Section>
         </section>
 
-        {/* ── 2. TUTTO IL TUO LAVORO — sei schede, un verbo, una frase ──
-            Bianco su crema: si legge a colpo d'occhio, niente registro
-            da studiare. Il grassetto e' il vantaggio, non la funzione. */}
+        {/* ── 2. TUTTO QUELLO CHE TI SERVE — sei schede ─────────────── */}
         <Section tone="cream" rhythm="screen" labelledBy="ol-go-title" width="max-w-6xl">
           <div id="sound" data-testid="ol-go">
-            <DisplayTitle as="h2" id="ol-go-title" size="section" measure="title">
-              {t('opPro.goTitle', { defaultValue: "Tutto il tuo lavoro, in un unico spazio." })}
-            </DisplayTitle>
+            <DisplayTitle as="h2" id="ol-go-title" size="section" measure="title">{t('opPro.goTitle', { defaultValue: "Tutto quello che ti serve, in un unico posto." })}</DisplayTitle>
             <ul className="mt-10 grid list-none gap-6 p-0 sm:mt-12 sm:grid-cols-2 lg:grid-cols-3">
               {voices.map((v) => (
                 <li key={v.title}
@@ -302,35 +272,71 @@ export default function OperatorLandingPage() {
                 </li>
               ))}
             </ul>
-            {/* SP3 — Aurya Sound e' uno strumento gia' vero */}
-            <Lede size="body" className="mt-10 max-w-[70ch]">
-              {t('opPro.goSoon', { defaultValue: "E puoi creare anche le tue meditazioni: con Crea Studio, l’atelier di Aurya Sound, combini frequenze, metodi e la tua voce e le condividi con un link." })}{' '}
+          </div>
+        </Section>
+
+        {/* ── 3. CREA STUDIO — le tue meditazioni (SP3: strumento vero) ── */}
+        <Section tone="sand" rhythm="screen" labelledBy="ol-studio-title" width="max-w-5xl">
+          <div data-testid="ol-studio">
+            <DisplayTitle as="h2" id="ol-studio-title" size="section" measure="title">{t('opPro.studioTitle', { defaultValue: "Crea anche le tue meditazioni." })}</DisplayTitle>
+            <p className="mt-6 font-display text-[1.35rem] leading-snug text-foreground sm:text-[1.6rem]">{t('opPro.studioSub', { defaultValue: "Crea Studio, il tuo spazio per creare meditazioni." })}</p>
+            <Lede size="lead" className="mt-4 max-w-[62ch]">{t('opPro.goSoon', { defaultValue: "Puoi unire musica, frequenze e la tua voce per creare una meditazione personalizzata e condividerla con un link." })}</Lede>
+            <div className="mt-8 flex flex-col items-start gap-5 sm:flex-row sm:items-center sm:gap-8">
               <Link to="/sound/studio" data-testid="ol-voice-studio"
                     className="font-semibold text-[#2f5749] underline underline-offset-4">
-                {t('opPro.goSoonCta', { defaultValue: 'Scopri Crea Studio' })} →
+                {t('opPro.goSoonCta', { defaultValue: "Scopri Crea Studio" })} →
               </Link>
-            </Lede>
-            <div className="mt-9">
-              <EditorialCta href={FORM_ANCHOR} onClick={scrollToForm} variant="solid" data-testid="ol-go-cta">
-                {ctaOpen}
-              </EditorialCta>
+              <EditorialCta href={FORM_ANCHOR} onClick={scrollToForm} variant="solid" data-testid="ol-go-cta">{ctaOpen}</EditorialCta>
             </div>
           </div>
         </Section>
 
-        {/* ── 2b. QUANTO COSTA — in alto, in chiaro (founder 10/9 sera):
-            il base e' per sempre e tutto gratuito, si paga solo il piu'. */}
+        {/* ── 4. LA RETE — il profilo puo' essere scoperto anche su Aurya ── */}
+        <section data-testid="ol-rete" aria-labelledby="ol-rete-title">
+          <PhotoBand as="div" image={HORIZON_PHOTO} focus="50% 40%" width="max-w-3xl">
+            <DisplayTitle as="h2" id="ol-rete-title" size="section" measure="title" className="text-hero-shadow">
+              {t('opPro.reteTitle', { defaultValue: "E il tuo profilo può essere scoperto anche su Aurya." })}
+            </DisplayTitle>
+            <Lede size="lead" tone="inherit" className="mt-7 text-hero-shadow">{t('opPro.reteP1', { defaultValue: "Quando entri in Aurya, non ottieni soltanto una pagina personale." })}</Lede>
+            <Lede size="lead" tone="inherit" className="mt-3 text-hero-shadow font-semibold">{t('opPro.reteP2', { defaultValue: "Entri nella directory degli operatori e puoi essere trovato da persone che stanno cercando una pratica, un professionista o un ritiro." })}</Lede>
+            <Lede size="body" tone="inherit" className="mt-4 text-hero-shadow">{t('opPro.reteP3', { defaultValue: "In futuro, la rete Aurya servirà anche a mettere in contatto gli operatori con richieste di esperienze, ritiri e attività per aziende." })}</Lede>
+            <div className="mt-8"><EditorialCta href={FORM_ANCHOR} onClick={scrollToForm} variant="solid" tone="dark" data-testid="ol-rete-cta">{ctaOpen}</EditorialCta></div>
+          </PhotoBand>
+        </section>
+
+        {/* ── 5. PERCHE' ENTRARE ORA — il patto fondatori ──────────── */}
+        <PhotoSplit image={TOGETHER_PHOTO} side="left" tone="cream" focus="50% 45%"
+                    imageWidth="900" imageHeight="599" labelledBy="ol-now-title" data-testid="ol-now">
+          <DisplayTitle as="h2" id="ol-now-title" size="section" measure="title">{t('opPro.nowTitle', { defaultValue: "Perché entrare ora." })}</DisplayTitle>
+          <Lede size="lead" className="mt-7">{t('opPro.nowP1', { defaultValue: "I primi 20 operatori che pubblicano il proprio profilo entro il 31 ottobre 2026 entrano come operatori fondatori di Aurya." })}</Lede>
+          <ul className="mt-8 grid list-none gap-4 p-0 sm:grid-cols-2" data-testid="ol-now-patto">
+            {patto.map((b) => (
+              <li key={b.title} className="rounded-2xl bg-white/80 p-5 ring-1 ring-[#1e2f28]/[0.07]">
+                <p className="font-display text-[1.2rem] leading-tight text-foreground">{b.title}</p>
+                <p className="mt-2 text-sm leading-snug text-foreground/80">{b.body}</p>
+              </li>
+            ))}
+          </ul>
+          <p className="mt-7 font-display text-[1.35rem] leading-snug text-foreground sm:text-[1.6rem]"
+             data-testid="ol-fondatori-contatore">
+            {rimasti !== null
+              ? t('opPro.nowCount', { defaultValue: '{{rimasti}} posti su {{tetto}} ancora disponibili.', rimasti, tetto: fondatori.tetto })
+              : t('opPro.nowCountFallback', { defaultValue: "Venti posti, poi la parola fondatori sparisce da questa pagina." })}
+          </p>
+          <p className="mt-6 max-w-[52ch] text-base font-semibold leading-relaxed text-foreground">
+            {t('opPro.nowCloseA2', { defaultValue: "Non cerchiamo semplicemente iscritti." })}{' '}
+            {t('opPro.nowCloseB2', { defaultValue: "Cerchiamo i primi operatori con cui costruire la rete di Aurya." })}
+          </p>
+          <div className="mt-8"><EditorialCta href={FORM_ANCHOR} onClick={scrollToForm} variant="solid" data-testid="ol-now-cta">{t('opPro.nowCta', { defaultValue: "Diventa operatore fondatore" })}</EditorialCta></div>
+        </PhotoSplit>
+
+        {/* ── 6. QUANTO COSTA — il base per sempre, il piu' dal 2027 ─── */}
         <Section tone="sand" rhythm="screen" labelledBy="ol-prezzi-title" width="max-w-5xl">
           <div data-testid="ol-prezzi">
-            <DisplayTitle as="h2" id="ol-prezzi-title" size="section" measure="title">
-              {t('opPro.prezziTitle', { defaultValue: 'Quanto costa.' })}
-            </DisplayTitle>
-            <p className="mt-6 font-display text-[1.6rem] leading-tight text-[#2f5749] sm:text-[2rem]">
-              {t('opPro.prezziP1', { defaultValue: 'Gratis per sempre, senza commissioni.' })}
-            </p>
-            <Lede size="lead" className="mt-4 max-w-[62ch]">
-              {t('opPro.prezziP2', { defaultValue: 'Tutto quello che hai letto sopra è il piano base: non scade, non ha limiti nascosti e non prende una percentuale su quello che incassi. Si paga solo il più, se lo vuoi, dal 2027.' })}
-            </Lede>
+            <DisplayTitle as="h2" id="ol-prezzi-title" size="section" measure="title">{t('opPro.prezziTitle', { defaultValue: "Quanto costa." })}</DisplayTitle>
+            <p className="mt-6 font-display text-[1.6rem] leading-tight text-[#2f5749] sm:text-[2rem]">{t('opPro.prezziP1', { defaultValue: "Il piano base è gratuito per sempre." })}</p>
+            <p className="mt-3 text-lg font-semibold leading-snug text-foreground">{t('opPro.prezziP2', { defaultValue: "Non paghi un abbonamento e non paghi commissioni su quello che guadagni." })}</p>
+            <Lede size="lead" className="mt-4 max-w-[62ch]">{t('opPro.prezziP3', { defaultValue: "Tutto quello che hai visto sopra è incluso nel piano base. Dal 2027 puoi scegliere di aggiungere servizi a pagamento, solo se ti servono." })}</Lede>
             <ul className="mt-8 grid list-none gap-4 p-0 sm:grid-cols-3">
               {prezzi.map((x, i) => (
                 <li key={x.title} className="rounded-2xl bg-white p-5 ring-1 ring-[#1e2f28]/[0.07]" data-testid={`ol-prezzi-${i + 1}`}>
@@ -340,68 +346,15 @@ export default function OperatorLandingPage() {
               ))}
             </ul>
             <div className="mt-7">
-              <EditorialCta to="/costi" variant="quiet" data-testid="ol-prezzi-cta">
-                {t('opPro.prezziCta', { defaultValue: 'Tutti i piani, riga per riga' })}
-              </EditorialCta>
+              <EditorialCta to="/costi" variant="quiet" data-testid="ol-prezzi-cta">{t('opPro.prezziCta', { defaultValue: "Scopri tutti i piani" })}</EditorialCta>
             </div>
           </div>
         </Section>
 
-        {/* ── 3. LA RETE — il profilo non vive da solo ─────────────── */}
-        <section data-testid="ol-rete" aria-labelledby="ol-rete-title">
-          <PhotoBand as="div" image={HORIZON_PHOTO} focus="50% 40%" width="max-w-3xl">
-            <DisplayTitle as="h2" id="ol-rete-title" size="section" measure="title" className="text-hero-shadow">
-              {t('opPro.reteTitle', { defaultValue: "Entra nella rete di Aurya." })}
-            </DisplayTitle>
-            <Lede size="lead" tone="inherit" className="mt-7 text-hero-shadow">{t('opPro.reteP1', { defaultValue: "Il tuo profilo non vive da solo." })}</Lede>
-            <Lede size="lead" tone="inherit" className="mt-3 text-hero-shadow font-semibold">{t('opPro.reteP2', { defaultValue: "Entri in una rete di operatori, esperienze e luoghi dedicati al benessere." })}</Lede>
-            <Lede size="body" tone="inherit" className="mt-4 text-hero-shadow">{t('opPro.reteP3', { defaultValue: "Quando una persona cerca una pratica, un professionista o un ritiro, può incontrare anche il tuo profilo." })}</Lede>
-            <div className="mt-8">
-              <EditorialCta href={FORM_ANCHOR} onClick={scrollToForm} variant="solid" tone="dark" data-testid="ol-rete-cta">
-                {ctaOpen}
-              </EditorialCta>
-            </div>
-          </PhotoBand>
-        </section>
-
-        {/* ── 4. PERCHE' ENTRARE ORA — il patto fondatori ───────────
-            Un tetto, una data, un contatore vero, quattro schede. */}
-        <PhotoSplit image={TOGETHER_PHOTO} side="left" tone="sand" focus="50% 45%"
-                    imageWidth="900" imageHeight="599" labelledBy="ol-now-title" data-testid="ol-now">
-          <DisplayTitle as="h2" id="ol-now-title" size="section" measure="title">
-            {t('opPro.nowTitle', { defaultValue: "Perché entrare ora." })}
-          </DisplayTitle>
-          <Lede size="lead" className="mt-7">{t('opPro.nowP1', { defaultValue: "I primi venti operatori olistici che pubblicano il profilo entro il 31 ottobre 2026 entrano come operatori fondatori di Aurya." })}</Lede>
-          <ul className="mt-8 grid list-none gap-4 p-0 sm:grid-cols-2" data-testid="ol-now-patto">
-            {patto.map((b) => (
-              <li key={b.title} className="rounded-2xl bg-white/80 p-5 ring-1 ring-[#1e2f28]/[0.07]">
-                <p className="font-display text-[1.2rem] leading-tight text-foreground">{b.title}</p>
-                <p className="mt-2 text-sm font-semibold leading-snug text-[#2f5749]">{b.body}</p>
-              </li>
-            ))}
-          </ul>
-          <p className="mt-7 font-display text-[1.35rem] leading-snug text-foreground sm:text-[1.6rem]"
-             data-testid="ol-fondatori-contatore">
-            {rimasti !== null
-              ? t('opPro.nowCount', { defaultValue: '{{rimasti}} posti su {{tetto}} ancora disponibili.', rimasti, tetto: fondatori.tetto })
-              : t('opPro.nowCountFallback', { defaultValue: 'Venti posti, poi la parola fondatori sparisce da questa pagina.' })}
-          </p>
-          <p className="mt-6 max-w-[52ch] text-base font-semibold leading-relaxed text-foreground">
-            {t('opPro.nowCloseA2', { defaultValue: "I primi venti non sono semplici iscritti." })} {t('opPro.nowCloseB2', { defaultValue: "Sono i professionisti con cui stiamo costruendo la rete di Aurya." })}
-          </p>
-          <div className="mt-8">
-            <EditorialCta href={FORM_ANCHOR} onClick={scrollToForm} variant="solid" data-testid="ol-now-cta">
-              {t('opPro.nowCta', { defaultValue: 'Diventa operatore fondatore' })}
-            </EditorialCta>
-          </div>
-        </PhotoSplit>
-
-        {/* ── 5. COME SI COMINCIA — tre passi, tre schede ──────────── */}
+        {/* ── 7. COME SI COMINCIA — tre passi, tre schede ──────────── */}
         <Section tone="cream" rhythm="screen" labelledBy="ol-join-title" width="max-w-6xl">
           <div data-testid="ol-join">
-            <DisplayTitle as="h2" id="ol-join-title" size="section" measure="title">
-              {t('opPro.joinTitle', { defaultValue: "Come si comincia." })}
-            </DisplayTitle>
+            <DisplayTitle as="h2" id="ol-join-title" size="section" measure="title">{t('opPro.joinTitle', { defaultValue: "Come si comincia." })}</DisplayTitle>
             <ul className="mt-10 grid list-none gap-7 p-0 sm:mt-12 sm:gap-8 lg:grid-cols-3">
               {cards.map((c) => (
                 <li key={c.numeral} data-testid={`ol-card-${c.numeral}`} className="h-full">
@@ -412,12 +365,10 @@ export default function OperatorLandingPage() {
           </div>
         </Section>
 
-        {/* ── 6. DOMANDE — una alla volta (SR5) ──────────────────── */}
+        {/* ── 8. DOMANDE — una alla volta (SR5) ──────────────────── */}
         <Section tone="paper" rhythm="screen" labelledBy="ol-faq-title" width="max-w-3xl">
           <div data-testid="ol-faq">
-            <DisplayTitle as="h2" id="ol-faq-title" size="section" measure="title">
-              {t('opPro.faqTitle', { defaultValue: 'Domande frequenti.' })}
-            </DisplayTitle>
+            <DisplayTitle as="h2" id="ol-faq-title" size="section" measure="title">{t('opPro.faqTitle', { defaultValue: "Domande frequenti." })}</DisplayTitle>
             <div className="mt-10 sm:mt-12" data-testid="ol-faq-list">
               {faq.map((f, i) => (
                 <details key={f.q} className={`group py-5 ${i > 0 ? 'border-t border-[#1e2f28]/[0.10]' : 'pt-0'}`}>
@@ -434,14 +385,14 @@ export default function OperatorLandingPage() {
           </div>
         </Section>
 
-        {/* ── 7. CHI C'E' DIETRO AURYA — i volti veri ──────────────── */}
+        {/* ── 9. CHI C'E' DIETRO AURYA — i volti veri ──────────────── */}
         <Section tone="sand" rhythm="screen" labelledBy="ol-who-title" width="max-w-6xl">
           <div data-testid="ol-who">
-            <p className="eyebrow mb-5">{t('opPro.whoEyebrow', { defaultValue: 'Chi c’è dietro Aurya' })}</p>
+            <p className="eyebrow mb-5">{t('opPro.whoEyebrow', { defaultValue: "Chi c’è dietro Aurya" })}</p>
             <DisplayTitle as="h2" id="ol-who-title" size="section" measure="lines"
                           className="text-[1.9rem] leading-[1.14] sm:text-[2.4rem] lg:text-[2.9rem]">
-              <TitleLine>{t('opPro.whoLine1', { defaultValue: 'Pratiche, eventi e ritiri' })}</TitleLine>
-              <TitleLine>{t('opPro.whoLine2', { defaultValue: 'di benessere' })}</TitleLine>
+              <TitleLine>{t('opPro.whoLine1', { defaultValue: "Pratiche, eventi e ritiri" })}</TitleLine>
+              <TitleLine>{t('opPro.whoLine2', { defaultValue: "di benessere" })}</TitleLine>
             </DisplayTitle>
             <Lede size="lead" className="mt-7">{t('opPro.whoLead', { defaultValue: "Siamo due persone che hanno deciso di costruire lo spazio che avremmo voluto trovare." })}</Lede>
             <div className="mt-12 grid gap-9 sm:mt-14 lg:grid-cols-12 lg:items-center lg:gap-14">
@@ -456,29 +407,27 @@ export default function OperatorLandingPage() {
                   <span className="block">{t('opPro.whoV', { defaultValue: "Valentina vive il mondo del benessere ogni giorno." })}</span>
                   <span className="mt-3 block">{t('opPro.whoD', { defaultValue: "Davide costruisce prodotti digitali da anni." })}</span>
                 </p>
-                <Lede size="body" className="mt-6">{t('opPro.whoP', { defaultValue: "Aurya nasce dall’incontro tra queste due esperienze: conoscere il lavoro degli operatori e costruire gli strumenti digitali per aiutarli a presentarsi, lavorare e crescere online." })}</Lede>
+                <Lede size="body" className="mt-6">{t('opPro.whoP', { defaultValue: "Aurya nasce dall’incontro tra queste due esperienze: conoscere il lavoro degli operatori e creare strumenti semplici per aiutarli a presentarsi, lavorare e farsi conoscere online." })}</Lede>
                 <div className="mt-8">
-                  <EditorialCta to="/chi-siamo" variant="quiet" data-testid="ol-who-cta">
-                    {t('opPro.whoCta', { defaultValue: 'Conosci la nostra storia' })}
-                  </EditorialCta>
+                  <EditorialCta to="/chi-siamo" variant="quiet" data-testid="ol-who-cta">{t('opPro.whoCta', { defaultValue: "Conosci la nostra storia" })}</EditorialCta>
                 </div>
               </div>
             </div>
           </div>
         </Section>
 
-        {/* ── 8. LA REGISTRAZIONE — si comincia da te ──────────────── */}
+        {/* ── 10. LA REGISTRAZIONE — si comincia da te ─────────────── */}
         <Section tone="cream" rhythm="screen" labelledBy="ol-form-title" width="max-w-6xl"
                  id="presentati" className="scroll-mt-20">
           <div data-testid="ol-form" className="grid gap-10 lg:grid-cols-12 lg:items-start lg:gap-16">
             <div className="lg:col-span-5">
               <DisplayTitle as="h2" id="ol-form-title" size="section" measure="title"
                             className="text-[1.9rem] leading-[1.12] sm:text-[2.4rem] lg:text-[2.6rem]">
-                {t('opPro.formTitle2', { defaultValue: 'Si comincia da te.' })}
+                {t('opPro.formTitle2', { defaultValue: "Si comincia da te." })}
               </DisplayTitle>
-              <Lede size="lead" className="mt-7 font-semibold">{t('opPro.formA3', { defaultValue: "Crea il tuo account in un minuto e pubblica il tuo profilo." })}</Lede>
-              <Lede size="body" className="mt-5">{t('opPro.formC3', { defaultValue: "Appena il profilo è online ti aggiungiamo al gruppo Telegram degli operatori Aurya." })}</Lede>
-              <Lede size="body" className="mt-3">{t('opPro.formD3', { defaultValue: "Lì ci trovi a un messaggio di distanza, e quando vuoi costruiamo insieme il tuo racconto su Aurya." })}</Lede>
+              <Lede size="lead" className="mt-7 font-semibold">{t('opPro.formA3', { defaultValue: "Crea il tuo account in un minuto e pubblica la tua pagina." })}</Lede>
+              <Lede size="body" className="mt-5">{t('opPro.formC3', { defaultValue: "Quando sei online, entri nella rete degli operatori Aurya." })}</Lede>
+              <Lede size="body" className="mt-3">{t('opPro.formD3', { defaultValue: "E se vuoi, possiamo aiutarti a raccontare meglio il tuo lavoro." })}</Lede>
               <p className="mt-8 flex flex-wrap items-center gap-1.5 text-sm text-foreground/70">
                 <Mail className="h-4 w-4 shrink-0 text-[#2f5749]" aria-hidden />
                 {t('op.directT', { defaultValue: 'Preferisci parlarne senza form?' })}{' '}
@@ -496,23 +445,13 @@ export default function OperatorLandingPage() {
           </div>
         </Section>
 
-        {/* ── 9. CHIUSURA — l'ancora verde ─────────────────────────── */}
+        {/* ── 11. CHIUSURA — il tuo lavoro merita un posto tutto suo ── */}
         <Section tone="sage" rhythm="screen" labelledBy="ol-end-title" width="max-w-5xl">
           <div data-testid="ol-end">
-            <DisplayTitle as="h2" id="ol-end-title" size="section" measure="lines">
-              <TitleLine>{t('opPro.endA', { defaultValue: "Le reti non nascono da una piattaforma." })}</TitleLine>
-              <TitleLine>{t('opPro.endB', { defaultValue: "Nascono dalle persone." })}</TitleLine>
-            </DisplayTitle>
-            <Lede size="lead" tone="inherit" className="mt-7">
-              <span className="block">{t('opPro.endC2', { defaultValue: "Il tuo spazio è pronto." })}</span>
-              <span className="block">{t('opPro.endD2', { defaultValue: "Il resto lo costruiamo insieme." })}</span>
-            </Lede>
-            <Lede size="body" tone="inherit" className="mt-5 opacity-90">{t('opPro.endBody2', { defaultValue: "Se Aurya rappresenta anche il tuo modo di vedere il benessere, apri il tuo spazio oggi." })}</Lede>
-            <div className="mt-9">
-              <EditorialCta href={FORM_ANCHOR} onClick={scrollToForm} variant="solid" tone="dark" data-testid="ol-end-cta">
-                {ctaJoin}
-              </EditorialCta>
-            </div>
+            <DisplayTitle as="h2" id="ol-end-title" size="section" measure="title">{t('opPro.endA', { defaultValue: "Il tuo lavoro merita un posto tutto suo." })}</DisplayTitle>
+            <Lede size="lead" tone="inherit" className="mt-7 font-semibold">{t('opPro.endC2', { defaultValue: "Presentati. Fatti trovare. Ricevi prenotazioni. Organizza eventi e ritiri." })}</Lede>
+            <Lede size="lead" tone="inherit" className="mt-3 font-semibold">{t('opPro.endD2', { defaultValue: "Gratis per sempre, senza commissioni." })}</Lede>
+            <div className="mt-9"><EditorialCta href={FORM_ANCHOR} onClick={scrollToForm} variant="solid" tone="dark" data-testid="ol-end-cta">{ctaJoin}</EditorialCta></div>
           </div>
         </Section>
       </div>
