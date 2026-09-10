@@ -471,3 +471,71 @@ class TestP13AuryaPerLeAziendeEChiediLaRegia:
         assert "tipo, formula: tipo === 'regia' ? formula : null" in dialog
         admin = (FE / "features" / "admin" / "strutture" / "StrutturePage.js").read_text()
         assert 'data-testid="strutture-richiesta-tipo"' in admin and "team_building" in admin
+
+
+class TestRb8LaSequenzaDopoLaRegistrazione:
+    """RB8 (10/9/2026, piano di rebranding onda 2): dopo il benvenuto
+    quattro momenti con UNA azione ciascuno (g2 a Valentina, g7 profilo,
+    g14 primo ritiro, g30 come va), ognuno solo nella sua finestra, mai
+    due volte, mai un'urgenza."""
+
+    def test_i_passi_partono_solo_nella_loro_finestra(self):
+        sys.path.insert(0, str(BACKEND_DIR))
+        from services.sequenza_operatore import passo_dovuto, PASSI, FINESTRA_GIORNI
+        assert [n for n, _ in PASSI] == ["g2", "g7", "g14", "g30"] and FINESTRA_GIORNI == 7
+        assert passo_dovuto(0) is None and passo_dovuto(1) is None
+        assert passo_dovuto(2) == "g2" and passo_dovuto(6) == "g2"
+        assert passo_dovuto(7) == "g7" and passo_dovuto(13) == "g7"
+        assert passo_dovuto(14) == "g14" and passo_dovuto(20) == "g14"
+        assert passo_dovuto(25) is None, "chi si e' registrato mesi fa non riceve tre email in un colpo"
+        assert passo_dovuto(30) == "g30" and passo_dovuto(36) == "g30" and passo_dovuto(37) is None
+
+    def test_si_marca_prima_di_inviare_e_il_job_esiste(self):
+        src = (BACKEND_DIR / "services" / "sequenza_operatore.py").read_text()
+        assert src.index('{"$set": {f"sequenza.{passo}": now.isoformat()}}') < src.index("if _manda(passo, org")
+        assert '"is_sample": {"$ne": True}' in src and '"legacy_commerce": {"$ne": True}' in src
+        assert "reply_to=ADMIN_EMAIL" in src, "a g30 si risponde: legge Valentina"
+        for frase in ANTI_URGENZA + ("ultimi posti", "affrettati", "solo per oggi"):
+            assert frase not in src.lower(), frase
+        bg = (BACKEND_DIR / "services" / "background_service.py").read_text()
+        assert 'name="sequenza_operatore_job"' in bg
+
+    def test_le_email_dicono_una_azione_e_le_parole_del_piano(self):
+        sys.path.insert(0, str(BACKEND_DIR))
+        from services.sequenza_operatore import _contenuto
+        org = {"id": "o1", "name": "Studio Prova"}
+        f = {"aperto": True, "tetto": 20, "rimasti": 17, "scadenza": "2026-10-31"}
+        _, c7 = _contenuto("g7", "Giulia Serra", org, {"online": False, "ritiro": False, "slug": None}, f)
+        assert "Ciao Giulia," in c7 and "Completa il profilo" in c7 and c7.count('class="btn"') == 1
+        _, c7b = _contenuto("g7", "", org, {"online": True, "ritiro": False, "slug": "giulia"}, f)
+        assert "/o/giulia" in c7b and "senza commissioni" in c7b
+        _, c14 = _contenuto("g14", "Giulia", org, {"online": True, "ritiro": False, "slug": "giulia"}, f)
+        assert "gratis e senza commissioni" in c14 and "bonifico" in c14 and "/events/new" in c14
+        _, c30 = _contenuto("g30", "Giulia", org, {"online": True, "ritiro": True, "slug": "giulia"}, f)
+        assert "Rispondi a questa email" in c30 and "cinquanta" in c30
+        assert "31/10/2026" in c30 and "Ne restano 17" in c30
+        _, c30b = _contenuto("g30", "Giulia", org, {"online": True, "ritiro": True, "slug": "giulia"}, {"aperto": False})
+        assert "fondatori" not in c30b, "chiuso il tetto, la parola sparisce"
+
+
+class TestRb9StrisciaEFondatore:
+    """RB9 (10/9/2026): la striscia-guida dice la data dei fondatori col
+    contatore vero; il profilo pubblico porta il badge «Fondatore»
+    (primi 20 nella rete entro il 31/10/2026, fonte routers/fondatori)."""
+
+    def test_la_striscia_dice_la_data_col_contatore_vero(self):
+        src = (FE / "features" / "onboarding" / "OnboardingStrip.js").read_text()
+        assert "api.get('/public/fondatori')" in src
+        assert 'data-testid="strip-fondatori"' in src and "fondatori?.aperto" in src
+        assert "Club regalato per tutto il 2027" in src and "Ne restano {fondatori.rimasti}" in src
+
+    def test_il_badge_fondatore_viene_dal_backend(self):
+        fon = (BACKEND_DIR / "routers" / "fondatori.py").read_text()
+        assert "async def ids_fondatori()" in fon and "righe[:TETTO]" in fon
+        assert "SCADENZA.isoformat()" in fon
+        pub = (BACKEND_DIR / "routers" / "public.py").read_text()
+        assert '"fondatore": org_id in await _ids_fondatori(),' in pub
+        hdr = (FE / "features" / "storefront" / "components" / "OperatorIdentityHeader.jsx").read_text()
+        assert 'data-testid="founder-badge"' in hdr and "data.fondatore" in hdr
+        assert hdr.index('data-testid="verified-badge-slot"') < hdr.index('data-testid="founder-badge"'), \
+            "Verificato Aurya resta il primo badge"

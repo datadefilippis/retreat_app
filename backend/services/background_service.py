@@ -1155,6 +1155,28 @@ async def _cerchio_reminder_job() -> None:
             raise
 
 
+# ── La sequenza dopo la registrazione (RB8, 10/9/2026) ──────────────────────
+# Ogni 6 ore: ai professionisti nella finestra di un passo (g2 a
+# Valentina, g7 profilo, g14 primo ritiro, g30 come va) UNA email
+# (services/sequenza_operatore.py). Si marca prima di inviare.
+
+async def _sequenza_operatore_job() -> None:
+    interval_seconds = 6 * 3600
+    await asyncio.sleep(_INITIAL_DELAY_SECONDS + 240)
+    while True:
+        try:
+            from services.sequenza_operatore import run_sequenza_sweep
+            await run_sequenza_sweep()
+        except asyncio.CancelledError:
+            raise
+        except Exception as exc:
+            logger.error("background_service: sequenza operatore error: %s", exc, exc_info=True)
+        try:
+            await asyncio.sleep(interval_seconds)
+        except asyncio.CancelledError:
+            raise
+
+
 # ── Public API ────────────────────────────────────────────────────────────────
 
 def start() -> List[asyncio.Task]:
@@ -1180,6 +1202,8 @@ def start() -> List[asyncio.Task]:
         asyncio.create_task(_addon_consistency_audit_job(), name="addon_consistency_audit_job"),
         # CN2 — il promemoria del Cerchio ai non confermati
         asyncio.create_task(_cerchio_reminder_job(), name="cerchio_reminder_job"),
+        # RB8 — la sequenza dopo la registrazione del professionista
+        asyncio.create_task(_sequenza_operatore_job(), name="sequenza_operatore_job"),
     ]
     return tasks
 

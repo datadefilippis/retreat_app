@@ -4463,6 +4463,14 @@ async def _operator_listino(org_id: str) -> list:
     return out
 
 
+async def _ids_fondatori() -> set:
+    try:
+        from routers.fondatori import ids_fondatori
+        return await ids_fondatori()
+    except Exception:  # noqa: BLE001 — il badge non deve mai rompere il profilo
+        return set()
+
+
 @router.get("/operator/{org_slug}")
 async def public_operator_profile(org_slug: str, lang: Optional[str] = None):
     """Profilo pubblico organizzatore: bio, brand, prossimi ritiri.
@@ -4559,6 +4567,9 @@ async def public_operator_profile(org_slug: str, lang: Optional[str] = None):
         "interview_verified_at": (pp.get("interview_verified_at")
                                   if pp.get("interview_published") else None),
         "network_member": bool(org.get("network_member")),
+        # RB9 (10/9/2026) — il badge «Fondatore»: primi 20 nella rete
+        # entro il 31/10/2026 (routers/fondatori.py e' la fonte)
+        "fondatore": org_id in await _ids_fondatori(),
         # TW2 (piano Listino) — il profilo E' il negozio: i servizi
         # pubblicati, raggruppabili per categoria lato client. Il
         # bottone porta alla landing /p/ esistente (slot picker +

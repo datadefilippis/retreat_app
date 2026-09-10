@@ -95,6 +95,14 @@ export default function OperatorIdentityHeader({ data, t }) {
                 <VerifiedAuryaBadge variant="on-light" size="md" />
               </span>
             )}
+            {/* RB9 (10/9/2026) — «Fondatore»: primi 20 nella rete entro
+                il 31/10/2026, calcolato dal backend (routers/fondatori) */}
+            {data.fondatore && (
+              <span data-testid="founder-badge"
+                    className="rounded-full bg-[#2f5749]/10 text-[#2f5749] px-2.5 py-1 text-[11px] font-semibold">
+                Fondatore
+              </span>
+            )}
             {data.featured && (
               <span className="rounded-full bg-[#c9b37e]/20 text-[#8a7440] px-2.5 py-1 text-[11px] font-semibold">
                 ✦ {t('landings:calendar.featured', { defaultValue: 'In evidenza' })}

@@ -24,6 +24,14 @@ import api from '../../api/client';
 export default function OnboardingStrip({ step, refreshKey = 0, className = '' }) {
   const { t } = useTranslation('dashboard');
   const [status, setStatus] = useState(null);
+  // RB9 (10/9/2026) — la data dei fondatori dentro la striscia: il
+  // contatore VERO (GET /public/fondatori), solo finche' e' aperto
+  const [fondatori, setFondatori] = useState(null);
+  useEffect(() => {
+    let vivo = true;
+    api.get('/public/fondatori').then(r => { if (vivo) setFondatori(r.data); }).catch(() => {});
+    return () => { vivo = false; };
+  }, []);
 
   useEffect(() => {
     let mounted = true;
@@ -119,6 +127,12 @@ export default function OnboardingStrip({ step, refreshKey = 0, className = '' }
       <div className="min-w-0 flex-1">
         <p className="text-sm font-semibold text-foreground">{title}</p>
         <p className="text-xs text-muted-foreground">{hint}</p>
+        {fondatori?.aperto && (
+          <p className="mt-1 text-xs text-[#2f5749]" data-testid="strip-fondatori">
+            Profilo online entro il {new Date(fondatori.scadenza).toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' })}:
+            sei tra i primi {fondatori.tetto} fondatori, con il Club regalato per tutto il 2027. Ne restano {fondatori.rimasti}.
+          </p>
+        )}
       </div>
       {cta && (
         <Link to={cta.to} data-testid="strip-next-cta"
