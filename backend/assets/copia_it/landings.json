@@ -358,7 +358,7 @@
     "faqWhoA": "Ogni ritiro ha un volto: trovi la presentazione e il profilo di chi organizza qui sotto, con la sua storia e le recensioni di chi ha già partecipato.",
     "verifiedReviews_one": "1 recensione verificata",
     "verifiedReviews_other": "{{count}} recensioni verificate",
-    "breadcrumbRetreats": "Ritiri",
+    "breadcrumbRetreats": "Ritiri ed esperienze",
     "ctaRequest": "Chiedi un posto",
     "inlineRequestHint": "Nessun pagamento adesso: ricevi un’email con come confermare il posto.",
     "trustRequest": "Nessun pagamento online: confermi con chi organizza. Se è prevista una caparra, la versi con bonifico dopo la conferma.",
@@ -470,14 +470,14 @@
     }
   },
   "calendar": {
-    "title": "Ritiri olistici ed esperienze per evolvere",
-    "subtitle": "Yoga, meditazione, respiro, silenzio. Scegli l'esperienza che ti chiama e blocca il tuo posto con una caparra protetta. Il resto è cammino.",
+    "title": "I prossimi ritiri ed esperienze.",
+    "subtitle": "I ritiri e le esperienze dei professionisti della rete, per data. Ogni scheda dice chi conduce, dove, quando, il prezzo e come si prenota.",
     "allCategories": "Tutte le categorie",
     "allRegions": "Tutte le regioni",
     "clearFilters": "Azzera filtri",
     "loading": "Cerco i ritiri…",
-    "emptyTitle": "Nessun ritiro trovato",
-    "emptyBody": "Prova ad allargare i filtri, o torna presto: il calendario cresce ogni settimana.",
+    "emptyTitle": "I primi ritiri stanno arrivando.",
+    "emptyBody": "I professionisti della rete li stanno pubblicando. Dicci cosa cerchi e dove: ti avvisiamo appena c’è un ritiro vicino a te.",
     "priceFrom": "da {{price}}",
     "depositBadge": "Prenoti con caparra",
     "fewLeft": "Solo {{count}} posti rimasti",
@@ -502,7 +502,8 @@
     "comingSoon": "Presto disponibile",
     "prelaunchPreviewNote": "Questa è solo un’anteprima di come apparirà Aurya. I primi ritiri reali arrivano al lancio.",
     "prelaunchPreviewCtaTraveler": "Avvisami al lancio",
-    "prelaunchPreviewCtaOperator": "Porta i tuoi ritiri su Aurya"
+    "prelaunchPreviewCtaOperator": "Porta i tuoi ritiri su Aurya",
+    "emptyFilteredTitle": "Nessun ritiro con questi filtri"
   },
   "operator": {
     "notFound": "Professionista non trovato",
