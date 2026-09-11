@@ -393,11 +393,20 @@ export default function LinkPage({ handle }) {
             <span className="inline-flex justify-center opacity-90 transition-opacity group-hover:opacity-100">
               <BrandLogo size="xs" variant={lp.theme === 'notte' ? 'light' : 'dark'} />
             </span>
+            {/* LK-piede (11/9/2026, founder): col rebranding la domanda
+                dice «operatore olistico» (il nome che il lettore usa per
+                se'); sotto, UNA riga che dice cosa ottieni agganciata
+                alla pagina che ha davanti («una pagina come questa»: la
+                prova e' sopra, Aurya non si spiega); il bottone dice le
+                parole della porta in home. */}
             <p className="mt-3 text-sm font-medium">
-              {t('linkPage.footerAsk', { defaultValue: 'Sei un professionista del benessere?' })}
+              {t('linkPage.footerAsk', { defaultValue: 'Sei un operatore olistico?' })}
+            </p>
+            <p className="mx-auto mt-1.5 max-w-[34ch] text-xs leading-relaxed opacity-80" data-testid="link-page-join-what">
+              {t('linkPage.footerWhat', { defaultValue: 'Profilo, prenotazioni, eventi e ritiri in una pagina come questa. Gratis per sempre, senza commissioni.' })}
             </p>
             <span className={`mt-4 inline-flex items-center gap-2 rounded-full px-6 py-2.5 text-sm font-semibold transition-all duration-200 ${theme.ctaBtn}`}>
-              {t('linkPage.footerCta', { defaultValue: 'Crea il tuo profilo' })}
+              {t('linkPage.footerCta', { defaultValue: 'Crea il tuo spazio' })}
               <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" />
             </span>
           </Link>

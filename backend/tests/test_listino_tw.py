@@ -7836,8 +7836,12 @@ class TestLinkPageLk5:
 
     def test_footer_aurya_e_loop_di_fase(self):
         src = self._page_src()
-        assert "Sei un professionista del benessere?" in src, \
+        # LK-piede (11/9/2026, founder): col rebranding la domanda dice
+        # «operatore olistico», sotto UNA riga che dice cosa ottieni
+        # («una pagina come questa»), il bottone e' la porta della home
+        assert "Sei un operatore olistico?" in src, \
             "sparito il footer Aurya: e' il loop di crescita (LK2)"
+        assert 'data-testid="link-page-join-what"' in src and "una pagina come questa" in src
         # Founder 14/8: la CTA porta al login; ID (20/8): /accedi.
         # CN4 (founder 3/9/2026): la porta del loop e' la landing
         # /entra-nella-rete — chi arriva dal link di un collega deve
@@ -7845,7 +7849,7 @@ class TestLinkPageLk5:
         i = src.index('data-testid="link-page-join"')
         assert 'to="/entra-nella-rete"' in src[i - 120:i], \
             "la CTA footer deve portare a /entra-nella-rete"
-        assert "Crea il tuo profilo" in src
+        assert "Crea il tuo spazio" in src
 
     def test_quattro_temi_registrati(self):
         # LK8: rosa a 7 — i 4 storici + le tre atmosfere sceniche
