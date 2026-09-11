@@ -7847,9 +7847,17 @@ class TestLinkPageLk5:
         # /entra-nella-rete — chi arriva dal link di un collega deve
         # prima capire cos'e' Aurya, non trovarsi davanti un login.
         i = src.index('data-testid="link-page-join"')
-        assert 'to="/entra-nella-rete"' in src[i - 120:i], \
-            "la CTA footer deve portare a /entra-nella-rete"
+        assert 'to="/entra-nella-rete?porta=pagina-link"' in src[i - 160:i], \
+            "la CTA footer deve portare a /entra-nella-rete (tracciata)"
         assert "Crea il tuo spazio" in src
+        # LK-piede (11/9/2026, founder «procediamo»): la firma e' la
+        # pubblicita' gratuita, il piede non porta mai via clienti
+        # (nessuna porta verso /cerca-ritiro o /operatori), niente payoff
+        assert 'data-testid="link-page-firma"' in src and "defaultValue: 'Fatta con'" in src
+        assert "trackEvent('porta', { porta: 'operatore', da: 'pagina-link' })" in src
+        assert "linkPage.footerNote" not in src
+        piede = src[src.index("<footer"):src.index("</footer>")]
+        assert "/cerca-ritiro" not in piede and "/operatori" not in piede
 
     def test_quattro_temi_registrati(self):
         # LK8: rosa a 7 — i 4 storici + le tre atmosfere sceniche

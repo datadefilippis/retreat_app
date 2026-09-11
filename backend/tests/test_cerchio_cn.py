@@ -138,5 +138,6 @@ class TestCn4PaginaLink:
     def test_il_footer_del_link_porta_alla_landing(self):
         src = (FE / "features" / "storefront" / "LinkPage.js").read_text()
         i = src.index('data-testid="link-page-join"')
-        assert 'to="/entra-nella-rete"' in src[i - 120:i]
+        # LK-piede (11/9/2026): la porta e' tracciata (?porta=pagina-link + evento GA4)
+        assert 'to="/entra-nella-rete?porta=pagina-link"' in src[i - 160:i]
         assert 'to="/accedi" data-testid="link-page-join"' not in src

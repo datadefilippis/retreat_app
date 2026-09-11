@@ -21,6 +21,7 @@ import { useParams, Link, Navigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Instagram, Facebook, Globe, ArrowRight, MessageCircle, CalendarDays } from 'lucide-react';
 import api from '../../api/client';
+import { trackEvent } from '../../lib/analytics';   // LK-piede: la porta si misura
 import useSeoMeta from './lib/useSeoMeta';
 import useTrackView from './lib/useTrackView';
 import useItalianOnly from '../../lib/useItalianOnly';
@@ -386,10 +387,21 @@ export default function LinkPage({ handle }) {
           {/* CN4 (founder 3/9/2026): la porta del loop e' la landing
               «Entra nella rete», non il login — chi arriva da un link
               di un collega deve prima capire cos'e' Aurya */}
-          <Link to="/entra-nella-rete" data-testid="link-page-join"
+          {/* LK-piede (11/9/2026, founder «procediamo», da marketing
+              manager): il piede e' la PUBBLICITA' GRATUITA di Aurya —
+              lo vedono i clienti dell'operatore dalla sua bio. Tre
+              regole: non porta MAI via clienti (nessuna porta verso
+              altri professionisti o ritiri: l'operatore spegnerebbe la
+              pagina); la firma «Fatta con Aurya» e' l'impressione di
+              marca su ogni visita; il reclutamento si misura (evento
+              GA4 `porta` + ?porta=pagina-link, come le porte in home). */}
+          <Link to="/entra-nella-rete?porta=pagina-link" data-testid="link-page-join"
+                onClick={() => trackEvent('porta', { porta: 'operatore', da: 'pagina-link' })}
                 className={`group block rounded-3xl px-6 py-6 text-center transition-all duration-200 active:scale-[0.98] ${theme.cta}`}>
-            {/* size xs = solo glifo + wordmark: il payoff vive gia'
-                sotto la card, due taglines nella stessa vista stonano */}
+            <p className="mb-2 text-[11px] uppercase tracking-[0.14em] opacity-70" data-testid="link-page-firma">
+              {t('linkPage.footerMadeWith', { defaultValue: 'Fatta con' })}   {/* il nome lo dice il logo, subito sotto */}
+            </p>
+            {/* size xs = solo glifo + wordmark */}
             <span className="inline-flex justify-center opacity-90 transition-opacity group-hover:opacity-100">
               <BrandLogo size="xs" variant={lp.theme === 'notte' ? 'light' : 'dark'} />
             </span>
@@ -410,9 +422,8 @@ export default function LinkPage({ handle }) {
               <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" />
             </span>
           </Link>
-          <p className={`mt-4 text-center text-[11px] ${theme.footer}`}>
-            {t('linkPage.footerNote', { defaultValue: 'Ci si fida di qualcuno, non di qualcosa.' })}
-          </p>
+          {/* via il payoff sotto la card: nel piede di una pagina altrui
+              era una frase in piu'; il messaggio di marca lo fa la firma */}
         </footer>
       </main>
     </div>
