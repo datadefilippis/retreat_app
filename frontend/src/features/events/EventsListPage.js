@@ -25,6 +25,9 @@ import DpaPactDialog from '../../components/legal/DpaPactDialog';
 import RichiestaStrutturaDialog from './components/RichiestaStrutturaDialog';
 
 
+// AB-R6 (14/9/2026): «Chiedi la regia» nascosto finche' la regia non e' consolidata
+const REGIA_VISIBILE = false;
+
 export default function EventsListPage() {
   const navigate = useNavigate();
   const { t } = useTranslation('products');
@@ -45,10 +48,15 @@ export default function EventsListPage() {
           {/* P13 (10/9/2026) — la regia del ritiro. Founder (10/9 sera): via il
               pulsante «Cerco una struttura» — l'informazione gratis non si vende,
               il lavoro attorno si': la regia. */}
-          <Button size="sm" variant="outline" onClick={() => setStrutturaOpen(true)}
-                  data-testid="events-chiedi-regia">
-            Chiedi la regia
-          </Button>
+          {/* AB-R6 (14/9/2026, founder): la regia va ancora consolidata —
+              il pulsante e' nascosto, scheda ed endpoint restano pronti
+              (servono anche alle richieste del Pro). Un flag per riaccenderlo. */}
+          {REGIA_VISIBILE && (
+            <Button size="sm" variant="outline" onClick={() => setStrutturaOpen(true)}
+                    data-testid="events-chiedi-regia">
+              Chiedi la regia
+            </Button>
+          )}
           <RichiestaStrutturaDialog aperto={strutturaOpen} tipoIniziale="regia" onClose={() => setStrutturaOpen(false)} />
           <Button size="sm" onClick={() => navigate('/events/new')}
                   data-testid="events-new-cta">

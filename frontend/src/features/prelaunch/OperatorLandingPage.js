@@ -155,25 +155,26 @@ export default function OperatorLandingPage() {
       body: t('opPro.v6b', { defaultValue: "Clienti, prenotazioni, ordini e incassi in un unico posto." }),
       key: t('opPro.v6k', { defaultValue: "Meno fogli, meno messaggi e meno cose da ricordare." }) },
   ];
-  /* Perche' entrare ora: quattro vantaggi da fondatore. */
+  /* Perche' entrare ora — AB-R3 (14/9/2026, founder con Valentina): chi
+     pubblica il profilo entro il 31/12/2026 ha i vantaggi del Pro senza
+     Sound, gratis. Tre schede piu' il badge per i primi venti. */
   const patto = [
-    { title: t('opPro.nowB1t', { defaultValue: "Club Fondatori" }),
-      body: t('opPro.nowB1b', { defaultValue: "Gratuito fino al 30 giugno 2027. Il tuo ritiro viene messo in evidenza e puoi essere presente nella Lettera di Aurya dedicata alla tua zona." }) },
+    { title: t('opPro.nowC1t', { defaultValue: "L’intervista" }),
+      body: t('opPro.nowC1b', { defaultValue: "Una conversazione con noi e la tua pagina nel Magazine, gratis." }) },
+    { title: t('opPro.nowC2t', { defaultValue: "I tuoi eventi sui social di Aurya" }),
+      body: t('opPro.nowC2b', { defaultValue: "Pubblicati sui nostri canali, con la tua foto e il tuo link, gratis." }) },
+    { title: t('opPro.nowC3t', { defaultValue: "La Lettera del Cerchio, se serve" }),
+      body: t('opPro.nowC3b', { defaultValue: "I tuoi ritiri ed eventi agli iscritti della tua zona." }) },
     { title: t('opPro.nowB2t', { defaultValue: "Badge Fondatore" }),
-      body: t('opPro.nowB2b', { defaultValue: "Resta per sempre sul tuo profilo." }) },
-    { title: t('opPro.nowB3t', { defaultValue: "Prezzo Pro bloccato" }),
-      body: t('opPro.nowB3b', { defaultValue: "Se in futuro scegli il piano Pro, mantieni per sempre il prezzo riservato ai fondatori." }) },
-    { title: t('opPro.nowB4t', { defaultValue: "Opportunità dalla rete" }),
-      body: t('opPro.nowB4b', { defaultValue: "I fondatori saranno tra i primi operatori contattati quando nasceranno richieste per team building, ritiri aziendali ed esperienze di gruppo." }) },
+      body: t('opPro.nowB2b2', { defaultValue: "Ai primi venti, per sempre sul profilo." }) },
   ];
-  /* Quanto costa: il base per sempre, il piu' dal 2027. */
-  const prezzi = [
-    { title: t('opPro.prezzi1t', { defaultValue: "Spinta · 19 € per ritiro" }),
-      body: t('opPro.prezzi1b', { defaultValue: "Metti il tuo ritiro in evidenza nella sezione Ritiri ed esperienze e nella Lettera di Aurya dedicata alla sua zona." }) },
-    { title: t('opPro.prezzi2t', { defaultValue: "Club · 49 € l’anno" }),
-      body: t('opPro.prezzi2b', { defaultValue: "Metti in evidenza tutti i tuoi ritiri, compari nella Lettera della tua zona e hai priorità nelle opportunità che arrivano dalla rete." }) },
-    { title: t('opPro.prezzi3t', { defaultValue: "Pro · 119 € l’anno" }),
-      body: t('opPro.prezzi3b', { defaultValue: "Tutto quello che offre il Club, più Crea Studio e assistenza diretta su WhatsApp." }) },
+  /* Quanto costa: il base per sempre, UN abbonamento dal 2027 (AB-R3). */
+  const proRighe = [
+    t('opPro.pro1', { defaultValue: "Crea Studio, per comporre le tue meditazioni" }),
+    t('opPro.pro2', { defaultValue: "I tuoi eventi nella Lettera del Cerchio della tua zona" }),
+    t('opPro.pro3', { defaultValue: "I tuoi eventi sui social di Aurya" }),
+    t('opPro.pro4', { defaultValue: "L’intervista e i reel che ti raccontano" }),
+    t('opPro.pro5', { defaultValue: "I tuoi ritiri in prima fila" }),
   ];
   /* Come si comincia: tre passi, tre schede. */
   const cards = [
@@ -188,7 +189,7 @@ export default function OperatorLandingPage() {
       a: (
         <ul className="list-disc space-y-2 pl-5">
           <li>{t('opPro.faq1b1', { defaultValue: "Il piano base è sempre gratuito e senza commissioni: Aurya non prende commissioni su quello che guadagni." })}</li>
-          <li>{t('opPro.faq1b2', { defaultValue: "Dal 2027 puoi scegliere di aggiungere servizi a pagamento, ma non sei obbligato: la Spinta per un ritiro (19 €), il Club (49 € l’anno) o il Pro (119 € l’anno)." })}</li>
+          <li>{t('opPro.faq1b2', { defaultValue: "Dal 1° gennaio 2027, se vuoi di più, c’è il Pro: 19 € al mese o 200 € l’anno. Non sei obbligato: l’app resta gratuita." })}</li>
           <li>
             {t('opPro.faq1b3', { defaultValue: "Tutti i piani, riga per riga: " })}
             <Link to="/costi" className="font-semibold text-primary underline underline-offset-2">
@@ -206,7 +207,9 @@ export default function OperatorLandingPage() {
   ];
 
   const ctaOpen = t('opPro.ctaOpen', { defaultValue: "Apri il tuo spazio" });
-  const rimasti = fondatori && Number.isFinite(fondatori.rimasti) ? fondatori.rimasti : null;
+  // AB-R3: il contatore conta i GIORNI (il patto vale per tutti fino al
+  // 31/12/2026); i posti restano solo per il badge dei primi venti
+  const giorni = fondatori && Number.isFinite(fondatori.giorni_rimasti) ? fondatori.giorni_rimasti : null;
 
   return (
     <MarketplaceShell noSearch>
@@ -289,7 +292,7 @@ export default function OperatorLandingPage() {
           <div data-testid="ol-studio">
             <DisplayTitle as="h2" id="ol-studio-title" size="section" measure="title">{t('opPro.studioTitle', { defaultValue: "Crea anche le tue meditazioni." })}</DisplayTitle>
             <p className="mt-6 font-display text-[1.35rem] leading-snug text-foreground sm:text-[1.6rem]">{t('opPro.studioSub', { defaultValue: "Crea Studio, il tuo spazio per creare meditazioni." })}</p>
-            <Lede size="lead" className="mt-4 max-w-[62ch]">{t('opPro.goSoon', { defaultValue: "Puoi unire musica, frequenze e la tua voce per creare una meditazione personalizzata e condividerla con un link." })}</Lede>
+            <Lede size="lead" className="mt-4 max-w-[62ch]">{t('opPro.goSoon2', { defaultValue: "Puoi unire musica, frequenze e la tua voce per creare una meditazione personalizzata e condividerla con un link. È incluso nel Pro." })}</Lede>
             <div className="mt-8 flex flex-col items-start gap-5 sm:flex-row sm:items-center sm:gap-8">
               <Link to="/sound/studio" data-testid="ol-voice-studio"
                     className="font-semibold text-[#2f5749] underline underline-offset-4">
@@ -312,7 +315,7 @@ export default function OperatorLandingPage() {
         <Section tone="cream" rhythm="screen" labelledBy="ol-now-title" width="max-w-5xl">
          <div data-testid="ol-now">
           <DisplayTitle as="h2" id="ol-now-title" size="section" measure="title">{t('opPro.nowTitle', { defaultValue: "Perché entrare ora." })}</DisplayTitle>
-          <Lede size="lead" className="mt-7">{t('opPro.nowP1', { defaultValue: "I primi 20 operatori che pubblicano il proprio profilo entro il 31 ottobre 2026 entrano come operatori fondatori di Aurya." })}</Lede>
+          <Lede size="lead" className="mt-7">{t('opPro.nowP1', { defaultValue: "Chi pubblica il profilo entro il 31 dicembre 2026 ha gratis i vantaggi del Pro, tranne Studio. Dal 2027 sono nell’abbonamento; l’app resta gratuita." })}</Lede>
           <ul className="mt-8 grid list-none gap-4 p-0 sm:grid-cols-2" data-testid="ol-now-patto">
             {patto.map((b) => (
               <li key={b.title} className="rounded-2xl bg-white/80 p-5 ring-1 ring-[#1e2f28]/[0.07]">
@@ -323,15 +326,15 @@ export default function OperatorLandingPage() {
           </ul>
           <p className="mt-7 font-display text-[1.35rem] leading-snug text-foreground sm:text-[1.6rem]"
              data-testid="ol-fondatori-contatore">
-            {rimasti !== null
-              ? t('opPro.nowCount', { defaultValue: '{{rimasti}} posti su {{tetto}} ancora disponibili.', rimasti, tetto: fondatori.tetto })
-              : t('opPro.nowCountFallback', { defaultValue: "Venti posti, poi la parola fondatori sparisce da questa pagina." })}
+            {giorni !== null
+              ? t('opPro.nowGiorni', { defaultValue: 'Mancano {{giorni}} giorni al 31 dicembre 2026.', giorni })
+              : t('opPro.nowGiorniFallback', { defaultValue: "Fino al 31 dicembre 2026, poi questa sezione sparisce dalla pagina." })}
           </p>
           <p className="mt-6 max-w-[52ch] text-base font-semibold leading-relaxed text-foreground">
             {t('opPro.nowCloseA2', { defaultValue: "Non cerchiamo semplicemente iscritti." })}{' '}
             {t('opPro.nowCloseB2', { defaultValue: "Cerchiamo i primi operatori con cui costruire la rete di Aurya." })}
           </p>
-          <div className="mt-8"><EditorialCta href={FORM_ANCHOR} onClick={scrollToForm} variant="solid" data-testid="ol-now-cta">{t('opPro.nowCta', { defaultValue: "Diventa operatore fondatore" })}</EditorialCta></div>
+          <div className="mt-8"><EditorialCta href={FORM_ANCHOR} onClick={scrollToForm} variant="solid" data-testid="ol-now-cta">{t('opPro.nowCta2', { defaultValue: "Entra nel 2026" })}</EditorialCta></div>
          </div>
         </Section>
 
@@ -341,15 +344,20 @@ export default function OperatorLandingPage() {
             <DisplayTitle as="h2" id="ol-prezzi-title" size="section" measure="title">{t('opPro.prezziTitle', { defaultValue: "Quanto costa." })}</DisplayTitle>
             <p className="mt-6 font-display text-[1.6rem] leading-tight text-[#2f5749] sm:text-[2rem]">{t('opPro.prezziP1', { defaultValue: "Il piano base è gratuito per sempre." })}</p>
             <p className="mt-3 text-lg font-semibold leading-snug text-foreground">{t('opPro.prezziP2', { defaultValue: "Non paghi un abbonamento e non paghi commissioni su quello che guadagni." })}</p>
-            <Lede size="lead" className="mt-4 max-w-[62ch]">{t('opPro.prezziP3', { defaultValue: "Tutto quello che hai visto sopra è incluso nel piano base. Dal 2027 puoi scegliere di aggiungere servizi a pagamento, solo se ti servono." })}</Lede>
-            <ul className="mt-8 grid list-none gap-4 p-0 sm:grid-cols-3">
-              {prezzi.map((x, i) => (
-                <li key={x.title} className="rounded-2xl bg-white p-5 ring-1 ring-[#1e2f28]/[0.07]" data-testid={`ol-prezzi-${i + 1}`}>
-                  <p className="font-display text-[1.2rem] leading-tight text-foreground">{x.title}</p>
-                  <p className="mt-2 text-sm leading-relaxed text-foreground/75">{x.body}</p>
-                </li>
-              ))}
-            </ul>
+            <Lede size="lead" className="mt-4 max-w-[62ch]">{t('opPro.prezziP3', { defaultValue: "Tutto quello che hai visto sopra è incluso nel piano base. Dal 1° gennaio 2027, se vuoi di più, c’è un abbonamento solo." })}</Lede>
+            {/* AB-R3 (14/9/2026): UNA scheda, il Pro */}
+            <div className="mt-8 max-w-xl rounded-2xl bg-white p-6 ring-1 ring-[#1e2f28]/[0.07]" data-testid="ol-prezzi-pro">
+              <p className="font-display text-[1.4rem] leading-tight text-foreground">{t('opPro.proTitolo', { defaultValue: "Pro · 19 € al mese, o 200 € l’anno" })}</p>
+              <p className="mt-1 text-sm text-foreground/70">{t('opPro.proDal', { defaultValue: "Dal 1° gennaio 2027." })}</p>
+              <ul className="mt-4 space-y-2">
+                {proRighe.map((riga) => (
+                  <li key={riga} className="flex items-start gap-2 text-[0.975rem] leading-relaxed text-foreground/85">
+                    <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-[#2f5749]" aria-hidden />
+                    <span>{riga}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
             <div className="mt-7">
               <EditorialCta to="/costi" variant="quiet" data-testid="ol-prezzi-cta">{t('opPro.prezziCta', { defaultValue: "Scopri tutti i piani" })}</EditorialCta>
             </div>

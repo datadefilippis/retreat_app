@@ -18,14 +18,23 @@ import { Button } from '../../../components/ui/button';
 
 const input = 'w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring';
 
-const TIPI = { struttura: 'struttura', regia: 'regia', team_building: 'team building' };
+const TIPI = { struttura: 'struttura', regia: 'regia', team_building: 'team building',
+               lettera_eventi: 'Lettera del Cerchio', social: 'social di Aurya', intervista_reel: 'intervista e reel' };
+// AB-R4 (14/9/2026): i servizi del Pro (e del patto 2026) passano dalla
+// stessa scheda: un messaggio, niente zona/periodo/persone.
+const PRO = {
+  lettera_eventi: { titolo: 'I tuoi eventi nella Lettera del Cerchio', intro: 'Dicci quale ritiro o evento vuoi che mandiamo agli iscritti del Cerchio della tua zona, e quando.', ph: 'es. il ritiro del 12 ottobre a Ostuni, da mandare entro fine settembre' },
+  social: { titolo: 'I tuoi eventi sui social di Aurya', intro: 'Dicci quale evento pubblicare sui nostri canali: lo prepariamo con la tua foto e il tuo link.', ph: 'es. la giornata di yoga del 20 settembre' },
+  intervista_reel: { titolo: 'L’intervista e i reel', intro: 'Ti scriviamo per fissare la conversazione. Se vuoi, dicci già cosa vorresti raccontare.', ph: 'es. il mio percorso, la pratica che propongo, dove lavoro' },
+};
 
 // founder (10/9 sera): dal gestionale si chiede solo la REGIA; il tipo
 // «struttura» resta nel modello per le richieste gia' arrivate.
 export default function RichiestaStrutturaDialog({ aperto, onClose, tipoIniziale = 'regia' }) {
   const [tipo, setTipo] = useState(tipoIniziale);
   const [formula, setFormula] = useState('non_so');
-  const [f, setF] = useState({ zona: '', periodo: '', persone: '', notti: '', budget_persona: '', tipo_ritiro: '', esigenze: '' });
+  const [f, setF] = useState({ zona: '', periodo: '', persone: '', notti: '', budget_persona: '', tipo_ritiro: '', esigenze: '', messaggio: '' });
+  const pro = PRO[tipo] || null;
   const [busy, setBusy] = useState(false);
   const [fatto, setFatto] = useState(false);
   const [mie, setMie] = useState([]);
@@ -40,10 +49,10 @@ export default function RichiestaStrutturaDialog({ aperto, onClose, tipoIniziale
   const set = (k, v) => setF((x) => ({ ...x, [k]: v }));
   const invia = async (e) => {
     e.preventDefault();
-    if (!f.zona.trim() || !f.periodo.trim() || !f.persone) { toast.error('Servono zona, periodo e persone'); return; }
+    if (!pro && (!f.zona.trim() || !f.periodo.trim() || !f.persone)) { toast.error('Servono zona, periodo e persone'); return; }
     setBusy(true);
     try {
-      await api.post('/strutture/richieste', {
+      await api.post('/strutture/richieste', pro ? { tipo, messaggio: f.messaggio || null } : {
         zona: f.zona.trim(), periodo: f.periodo.trim(), persone: Number(f.persone),
         notti: f.notti ? Number(f.notti) : null, budget_persona: f.budget_persona ? Number(f.budget_persona) : null,
         tipo_ritiro: f.tipo_ritiro || null, esigenze: f.esigenze || null,
@@ -60,19 +69,27 @@ export default function RichiestaStrutturaDialog({ aperto, onClose, tipoIniziale
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" role="dialog" aria-modal="true" data-testid="richiesta-struttura">
       <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl max-h-[92vh] overflow-y-auto">
         <div className="flex items-start justify-between mb-2">
-          <h3 className="font-heading text-lg font-bold">{tipo === 'regia' ? 'Chiedi la regia del tuo ritiro' : 'Cerco una struttura per un ritiro'}</h3>
+          <h3 className="font-heading text-lg font-bold">{pro ? pro.titolo : tipo === 'regia' ? 'Chiedi la regia del tuo ritiro' : 'Cerco una struttura per un ritiro'}</h3>
           <button type="button" onClick={onClose} aria-label="Chiudi" className="text-gray-400 hover:text-gray-600 text-xl leading-none">×</button>
         </div>
         {fatto ? (
           <div className="space-y-3">
-            <p className="text-sm">{tipo === 'regia'
+            <p className="text-sm">{pro
+              ? 'Ricevuta. Ti scriviamo entro pochi giorni per organizzare insieme cosa e quando. Ti abbiamo mandato una ricevuta via email.'
+              : tipo === 'regia'
               ? 'Ricevuta. La leggiamo personalmente e ti scriviamo entro pochi giorni con una proposta chiara: cosa facciamo noi, cosa resta a te, quanto costa. Ti abbiamo mandato una ricevuta via email.'
               : 'Ricevuta. La leggiamo personalmente e ti scriviamo entro pochi giorni con le strutture che conosciamo e che rispondono a quello che cerchi. Ti abbiamo mandato una ricevuta via email.'}</p>
             <Button onClick={onClose}>Chiudi</Button>
           </div>
         ) : (
           <form onSubmit={invia} className="space-y-3">
-            {tipo === 'regia' ? (
+            {pro ? (
+              <div className="space-y-3" data-testid="richiesta-pro-intro">
+                <p className="text-sm text-muted-foreground">{pro.intro}</p>
+                <label className="block"><span className="block text-xs text-muted-foreground mb-1">Messaggio (facoltativo)</span>
+                  <textarea rows={4} value={f.messaggio} onChange={(e) => set('messaggio', e.target.value)} placeholder={pro.ph} className={input} /></label>
+              </div>
+            ) : tipo === 'regia' ? (
               <div className="space-y-2" data-testid="richiesta-regia-intro">
                 <p className="text-sm text-muted-foreground">Ti organizziamo noi il ritiro: la struttura, la scheda, le persone. Due formule, prezzo fisso.</p>
                 <ul className="text-sm space-y-1">
@@ -90,7 +107,7 @@ export default function RichiestaStrutturaDialog({ aperto, onClose, tipoIniziale
             ) : (
               <p className="text-sm text-muted-foreground">Conosciamo strutture adatte ai ritiri, viste di persona. Dicci cosa cerchi: ti rispondiamo noi, con nomi, prezzi e capienze veri.</p>
             )}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {!pro && (<div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <label className="block sm:col-span-2"><span className="block text-xs text-muted-foreground mb-1">Zona o regione</span><input value={f.zona} onChange={(e) => set('zona', e.target.value)} placeholder="es. Puglia, o «entro 2 ore da Milano»" className={input} required /></label>
               <label className="block"><span className="block text-xs text-muted-foreground mb-1">Periodo</span><input value={f.periodo} onChange={(e) => set('periodo', e.target.value)} placeholder="es. fine ottobre 2026" className={input} required /></label>
               <label className="block"><span className="block text-xs text-muted-foreground mb-1">Persone</span><input type="number" min="1" value={f.persone} onChange={(e) => set('persone', e.target.value)} className={input} required /></label>
@@ -98,7 +115,7 @@ export default function RichiestaStrutturaDialog({ aperto, onClose, tipoIniziale
               <label className="block"><span className="block text-xs text-muted-foreground mb-1">Budget a persona (€, soggiorno)</span><input type="number" min="0" value={f.budget_persona} onChange={(e) => set('budget_persona', e.target.value)} className={input} /></label>
               <label className="block sm:col-span-2"><span className="block text-xs text-muted-foreground mb-1">Tipo di ritiro</span><input value={f.tipo_ritiro} onChange={(e) => set('tipo_ritiro', e.target.value)} placeholder="es. yoga e meditazione" className={input} /></label>
               <label className="block sm:col-span-2"><span className="block text-xs text-muted-foreground mb-1">Esigenze</span><textarea rows={3} value={f.esigenze} onChange={(e) => set('esigenze', e.target.value)} placeholder="sala coperta, cucina vegana, camere singole, silenzio…" className={input} /></label>
-            </div>
+            </div>)}
             <Button type="submit" disabled={busy} data-testid="richiesta-struttura-invia">{busy ? 'Invio…' : 'Manda la richiesta'}</Button>
           </form>
         )}
@@ -106,7 +123,7 @@ export default function RichiestaStrutturaDialog({ aperto, onClose, tipoIniziale
           <div className="mt-5 border-t border-border pt-3">
             <p className="text-xs font-semibold text-muted-foreground mb-1">Le tue richieste</p>
             <ul className="space-y-1 text-sm">
-              {mie.map((r) => <li key={r.id}>{TIPI[r.tipo] || 'struttura'} · {r.zona} · {r.periodo} · {r.persone} persone — <i>{STATI[r.stato] || r.stato}</i></li>)}
+              {mie.map((r) => <li key={r.id}>{TIPI[r.tipo] || 'struttura'}{PRO[r.tipo] ? '' : ` · ${r.zona} · ${r.periodo} · ${r.persone} persone`} — <i>{STATI[r.stato] || r.stato}</i></li>)}
             </ul>
           </div>
         )}

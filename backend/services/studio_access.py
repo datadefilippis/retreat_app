@@ -35,7 +35,9 @@ STATI_BILLING_VALIDI = ("active", "trialing", "manual")
 # (spesso None/"free" anche su org abbonate) — col campo sbagliato
 # nessun abbonato vero avrebbe mai avuto Studio. Founding e Partner
 # sono trattamento-Pro assegnato dall'admin: Studio incluso.
-PIANI_STUDIO = ("retreat_pro", "retreat_founding", "retreat_partner")
+# AB-R1 (14/9/2026, founder): il patto di chi entra nel 2026 (retreat_founding)
+# NON include Sound — Studio si apre col Pro (o Partner), non col patto.
+PIANI_STUDIO = ("retreat_pro", "retreat_partner")
 
 # La proiezione minima che serve a decidere: chiederla tutta uguale
 # ovunque tiene le query piccole e il contratto visibile.

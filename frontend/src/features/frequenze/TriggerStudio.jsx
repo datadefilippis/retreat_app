@@ -20,8 +20,8 @@ export default function TriggerStudio() {
   return (
     <div className="trigger-studio" data-testid="trigger-studio">
       <span>
-        Sei un professionista del benessere? Componi le tue meditazioni
-        e condividile coi tuoi clienti.
+        Sei un operatore olistico? Con il Pro componi le tue meditazioni
+        e le condividi coi tuoi clienti.
       </span>
       <Link to="/sound/studio">Scopri Crea Studio →</Link>
     </div>

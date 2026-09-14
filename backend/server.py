@@ -206,6 +206,8 @@ async def lifespan(app: FastAPI):
         await migrate_vie_femminile_v1()   # TX: la via «cerchi» diventa «femminile»
         from services.migrazioni_cerchio import migrate_sequenze_bonifica_v1
         await migrate_sequenze_bonifica_v1()   # DEPLOY 10/9: niente «evento» vecchio a chi era gia' dentro
+        from services.seed_pricing import migrate_catalogo_pro19_v1
+        await migrate_catalogo_pro19_v1()   # AB-R1 14/9: Pro 19/200, Club nascosto, Entrato nel 2026
     except Exception as e:
         logging.error(f"Failed to run zero commissioni migration: {e}")
     # One-time migration: trial only on Core plan

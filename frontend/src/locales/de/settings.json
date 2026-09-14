@@ -325,7 +325,13 @@
       "retreat_pro_racconto": "Il racconto completo e la pagina nel Magazine",
       "retreat_pro_racconto_info": "L’intervista completa e una pagina tua nel Magazine di Aurya.",
       "retreat_pro_whatsapp": "Noi accanto, su WhatsApp",
-      "retreat_pro_whatsapp_info": "Un canale diretto con Valentina e Davide, risposta entro un giorno."
+      "retreat_pro_whatsapp_info": "Un canale diretto con Valentina e Davide, risposta entro un giorno.",
+      "retreat_pro_lettera_eventi": "I tuoi eventi e ritiri nella Lettera del Cerchio della tua zona",
+      "retreat_pro_social": "I tuoi eventi sui canali social di Aurya",
+      "retreat_pro_intervista_reel": "L'intervista e i reel che ti raccontano",
+      "retreat_pro_lettera_eventi_info": "Quando pubblichi un ritiro o un evento, lo mettiamo nella Lettera del Cerchio che arriva agli iscritti della tua zona. Ci chiedi tu, quando vuoi.",
+      "retreat_pro_social_info": "I tuoi eventi e ritiri pubblicati sui canali social di Aurya, con la tua foto e il tuo link. Ci chiedi tu, quando vuoi.",
+      "retreat_pro_intervista_reel_info": "Un'intervista fatta da noi, con la pagina nel Magazine, e se ha senso uno o più reel che ti presentano ai nostri follower."
     },
     "quota": {
       "warning_title": "Limit naehert sich",

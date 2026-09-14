@@ -1344,3 +1344,51 @@ async def migrate_plan_voices_lean_v1() -> None:
             __import__("datetime").timezone.utc).isoformat(),
     })
     logger.info("migrate_plan_voices_lean_v1: done.")
+
+
+# founder 14/9/2026: i price id live del Pro (19 €/mese, 200 €/anno)
+STRIPE_PREZZI_PRO19_LIVE = {
+    "stripe_price_id_monthly": "price_1U3yKoRL6JKSLFw8t21fhXUB",
+    "stripe_price_id_yearly": "price_1U3yKpRL6JKSLFw8jVsJ75Wj",
+}
+
+
+async def migrate_catalogo_pro19_v1() -> None:
+    """AB-R1 (founder con Valentina, 13-14/9/2026): UN abbonamento. Il Pro a
+    19 €/mese o 200 €/anno (Studio, eventi nella Lettera e sui social,
+    intervista + reel, prima fila); il Club non si vende piu' (nascosto);
+    «Club Fondatori» diventa «Entrato nel 2026» (i vantaggi del patto,
+    senza Sound). I price id Stripe del 2027 (Club 49, Pro 119) escono:
+    quelli nuovi si mettono dal pannello quando la vendita si accende
+    (1/1/2027). Flag-gated, idempotente."""
+    from database import db
+    from services.seed_commercial_plans import RETREAT_COMMERCIAL_PLANS
+
+    migrations = db["migrations"]
+    if await migrations.find_one({"_id": "catalogo_pro19_v1"}):
+        return
+    logger.info("migrate_catalogo_pro19_v1: applying...")
+    campi = ("name", "description", "tagline", "price_monthly", "price_yearly",
+             "features_display", "sort_order", "is_public", "is_self_serve",
+             "available_from", "intervals")
+    import os
+    live = os.environ.get("STRIPE_SECRET_KEY", "").startswith("sk_live_")
+    for piano in RETREAT_COMMERCIAL_PLANS:
+        if piano["slug"] not in ("retreat_pro", "retreat_club", "retreat_founding"):
+            continue
+        aggiorna = {k: piano.get(k) for k in campi if k in piano}
+        if piano["slug"] == "retreat_club":
+            aggiorna["stripe_price_id_monthly"] = None
+            aggiorna["stripe_price_id_yearly"] = None
+        if piano["slug"] == "retreat_pro":
+            # founder 14/9: i due prezzi del Pro in Stripe (19 mensile, 200
+            # annuale); solo con la chiave live, come per il 2027
+            aggiorna.update(STRIPE_PREZZI_PRO19_LIVE if live
+                            else {"stripe_price_id_monthly": None, "stripe_price_id_yearly": None})
+        await db["commercial_plans"].update_one({"slug": piano["slug"]}, {"$set": aggiorna})
+        logger.info("  - %s allineato (Pro 19/200, Club nascosto, Entrato nel 2026; stripe live=%s)", piano["slug"], live)
+    await migrations.insert_one({
+        "_id": "catalogo_pro19_v1",
+        "applied_at": __import__("datetime").datetime.now(__import__("datetime").timezone.utc),
+    })
+    logger.info("migrate_catalogo_pro19_v1: done")

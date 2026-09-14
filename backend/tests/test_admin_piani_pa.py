@@ -20,14 +20,15 @@ ADMIN = FE / "features" / "admin"
 class TestPa1FonteUnica:
     def test_i_quattro_piani_col_loro_nome(self):
         src = (ADMIN / "pianiAurya.js").read_text()
-        # P4 (10/9/2026): il Club entra, Founding diventa «Club Fondatori»
-        for slug, nome in (("retreat_free", "Gratis"), ("retreat_club", "Club"),
+        # AB-R1 (14/9/2026): UN abbonamento (Pro); il Club resta etichetta
+        # ritirata; «Entrato nel 2026» e' il patto
+        for slug, nome in (("retreat_free", "Gratis"), ("retreat_club", "Club (ritirato)"),
                            ("retreat_pro", "Pro"),
-                           ("retreat_founding", "Club Fondatori"),
+                           ("retreat_founding", "Entrato nel 2026"),
                            ("retreat_partner", "Partner")):
             assert slug in src and f"'{nome}'" in src
-        # i riservati portano il cartellino
-        assert src.count("riservato: true") == 2
+        # i riservati portano il cartellino (Club ritirato, Entrato nel 2026, Partner)
+        assert src.count("riservato: true") == 3
         assert "STATI" in src and "'in prova'" in src
 
     def test_il_badge_passa_dalla_fonte(self):

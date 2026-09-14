@@ -27,10 +27,11 @@ import MarketplaceShell from '../storefront/components/MarketplaceShell';
 import useSeoMeta from '../storefront/lib/useSeoMeta';
 import { Section, DisplayTitle, Lede } from '../../components/editorial';
 
-/* I prezzi dal 1° gennaio 2027 — devono combaciare col piano di
-   business (docs/AURYA_PIANO_BUSINESS_2026-09.md) e, da gennaio, col seed. */
-// founder 10/9 sera: il Pro e' solo annuale (in Stripe non esiste il mensile)
-export const PRICING_2027 = { spinta: 19, club: 49, pro: 119 };
+/* I prezzi dal 1° gennaio 2027 — devono combaciare col seed
+   (seed_commercial_plans.retreat_pro) e col piano
+   docs/PIANO_ABBONAMENTI_PRO19_2026-09.md. AB-R3 (14/9/2026, founder con
+   Valentina): UN abbonamento, il Pro, 19 €/mese o 200 €/anno. */
+export const PRICING_2027 = { pro_mese: 19, pro_anno: 200 };
 /* La commissione di Aurya, oggi e per sempre. La guardia la confronta col seed. */
 export const AURYA_FEE = 0;
 
@@ -53,28 +54,22 @@ const GRATIS = [
    'La tua pagina /@nome: servizi, eventi, ritiri, recensioni, la tua storia. Tutto nello stesso posto.'],
 ];
 
-/* I vantaggi dei piani a pagamento: SOLO quelli che sappiamo consegnare
-   da gennaio (founder 10/9: «non proponiamo ciò che non abbiamo»). Il
-   resto (la rete che lavora, la quota sugli ascolti, i 45 minuti) vive
-   nel piano di business e arriva in pagina quando e' vero. */
-const SPINTA = [
-  ['Il ritiro in prima fila', 'In cima a Ritiri ed esperienze, sopra l’elenco per data, fino al giorno del ritiro.'],
-  ['Un invio nella Lettera', 'Un’email agli iscritti del Cerchio della tua zona e dei tuoi temi, con la scheda del ritiro.'],
-  ['Un post su Instagram', 'Sull’account di Aurya, con il link al ritiro.'],
-];
-
-const CLUB = [
-  ['La prima fila su tutti i tuoi ritiri, tutto l’anno', 'Selezione in cima, un invio nella Lettera per ogni ritiro (fino a due al mese), un post al mese.'],
-  ['Badge e precedenza nella tua zona', 'Nella directory, a parità di profilo, vieni prima.'],
-  ['Il racconto breve', 'Otto domande, e scriviamo noi la tua storia sul profilo.'],
-  ['Risposta entro due giorni', 'Via email, da Valentina.'],
-];
-
+/* Il Pro: le quattro cose in piu' (founder 13-14/9), piu' la prima fila.
+   Studio si accende da solo col piano; Lettera, social, intervista e
+   reel li facciamo noi, li chiedi dal gestionale quando vuoi. */
 const PRO = [
-  ['Tutto il Club, per primo', 'Primo tra i Club in prima fila; fino a tre invii al mese.'],
-  ['L’intervista completa', 'Una conversazione con Valentina, il badge Verificato Aurya, una pagina nel Magazine.'],
-  ['Aurya Sound Studio', 'Crea Studio: componi meditazioni con la tua voce, basi e frequenze; le pubblichi con un link e le condividi coi tuoi clienti.'],
-  ['WhatsApp con Valentina', 'Con orari scritti.'],
+  ['Aurya Sound Studio (Crea Studio)', 'Componi le tue meditazioni con la tua voce, basi e frequenze; le condividi coi tuoi clienti con un link.'],
+  ['I tuoi eventi nella Lettera del Cerchio', 'Quando pubblichi un ritiro o un evento, lo mandiamo agli iscritti del Cerchio della tua zona.'],
+  ['I tuoi eventi sui social di Aurya', 'Pubblicati sui nostri canali, con la tua foto e il tuo link.'],
+  ['L’intervista e i reel', 'Una conversazione con noi, la pagina nel Magazine, e i reel che ti presentano ai nostri follower.'],
+  ['La prima fila', 'I tuoi ritiri in cima a Ritiri ed esperienze, tutto l’anno.'],
+];
+
+/* Chi entra nel 2026 (patto, 14/9): i vantaggi del Pro senza Sound, gratis. */
+const PATTO_2026 = [
+  ['L’intervista', 'Fatta da noi, con la pagina nel Magazine.'],
+  ['I tuoi eventi sui social di Aurya', 'Sui nostri canali, gratis.'],
+  ['La Lettera del Cerchio, se serve', 'I tuoi eventi agli iscritti della tua zona.'],
 ];
 
 function Scheda({ nome, prezzo, sotto, voci, evidenza, testid, domanda }) {
@@ -109,14 +104,14 @@ export default function PricingPage() {
 
   useSeoMeta({
     title: t('pricing.seoTitle2', { defaultValue: 'Quanto costa Aurya | Gratis per sempre, senza commissioni' }),
-    description: t('pricing.seoDesc2', { defaultValue: 'Aurya non prende commissioni, mai. Gli strumenti sono gratis per sempre. Dal 2027, se vuoi la prima fila: la Spinta per un ritiro a 19 €, il Club a 49 € l’anno, il Pro a 119 €.' }),
+    description: t('pricing.seoDesc3', { defaultValue: 'Aurya non prende commissioni, mai. Gli strumenti sono gratis per sempre. Dal 2027, se vuoi di più, c’è il Pro: 19 € al mese o 200 € l’anno.' }),
   });
 
   const verita = [
     t('pricing.v1', { defaultValue: 'Aurya non prende commissioni. Mai. Né sui ritiri, né sui servizi, né online né offline: quello che incassi è tuo.' }),
     t('pricing.v2', { defaultValue: 'Gli strumenti sono gratis per sempre: profilo, listino, richieste, calendario, clienti, recensioni, eventi e ritiri con la caparra, la pagina link.' }),
     t('pricing.v3', { defaultValue: 'Fino al 31 dicembre 2026 Aurya non ha alcun costo, di nessun tipo.' }),
-    t('pricing.v4', { defaultValue: 'Dal 1° gennaio 2027 si paga solo la prima fila, cioè le persone che ti portiamo, e la tua voce. Qui sotto trovi i prezzi, da oggi, così sai cosa succede a gennaio. Oggi non c’è niente da comprare: i piani si accendono a gennaio, e i vantaggi li scriviamo per intero a dicembre, quando saranno veri.' }),
+    t('pricing.v5', { defaultValue: 'Dal 1° gennaio 2027, se vuoi di più, c’è un abbonamento solo: il Pro, 19 € al mese o 200 € l’anno. Dentro: Crea Studio per le tue meditazioni, i tuoi eventi nella Lettera del Cerchio e sui social di Aurya, l’intervista e i reel. L’app resta gratuita.' }),
   ];
 
   return (
@@ -141,47 +136,43 @@ export default function PricingPage() {
           ))}
         </div>
 
-        {/* Le quattro porte, dal 1° gennaio 2027 */}
-        <div className="mx-auto mt-14 max-w-6xl">
+        {/* Due porte: Gratis per sempre, Pro dal 1° gennaio 2027 (AB-R3) */}
+        <div className="mx-auto mt-14 max-w-4xl">
           <p className="text-center text-xs font-semibold uppercase tracking-wider text-muted-foreground" data-testid="pricing-from">
             {t('pricing.from2027', { defaultValue: 'I prezzi dal 1° gennaio 2027' })}
           </p>
-          <div className="mt-6 grid gap-6 lg:grid-cols-2 xl:grid-cols-4" data-testid="pricing-plans">
+          <div className="mt-6 grid gap-6 md:grid-cols-2" data-testid="pricing-plans">
             <Scheda testid="plan-free" domanda="Posso lavorare?" nome="Gratis"
                     prezzo="0 €" sotto="Per sempre. Nessuna commissione." voci={GRATIS} />
-            <Scheda testid="plan-spinta" domanda="Ho un ritiro da riempire" nome="Spinta"
-                    prezzo={`${PRICING_2027.spinta} €`} sotto="Una volta, per un ritiro." voci={SPINTA} />
-            <Scheda testid="plan-club" domanda="Voglio persone e lavoro, tutto l’anno" nome="Club Aurya" evidenza
-                    prezzo={`${PRICING_2027.club} € l’anno`} sotto="Quattro euro al mese, pagati una volta." voci={CLUB} />
-            <Scheda testid="plan-pro" domanda="La mia voce, il mio racconto, qualcuno accanto" nome="Pro"
-                    prezzo={`${PRICING_2027.pro} € l’anno`} sotto="Dieci euro al mese, pagati una volta." voci={PRO} />
+            <Scheda testid="plan-pro" domanda="Voglio essere raccontato e trovato" nome="Pro" evidenza
+                    prezzo={`${PRICING_2027.pro_mese} € al mese`} sotto={`Oppure ${PRICING_2027.pro_anno} € l’anno. Dal 1° gennaio 2027.`} voci={PRO} />
           </div>
         </div>
 
-        {/* I cancelli e la garanzia: le promesse vere */}
+        {/* Il patto e la garanzia: le promesse vere */}
         <div className="mx-auto mt-10 max-w-2xl space-y-4" data-testid="pricing-cancelli">
-          <div className="rounded-2xl border bg-card px-5 py-4">
+          <div className="rounded-2xl border border-primary/30 bg-card px-5 py-4" data-testid="pricing-patto-2026">
             <p className="text-sm font-semibold text-foreground">
-              {t('pricing.gateTitle', { defaultValue: 'Il Club si accende quando la fila c’è.' })}
+              {t('pricing.patto2026Title', { defaultValue: 'Chi entra nel 2026.' })}
             </p>
             <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-              {t('pricing.gateBody', { defaultValue: 'Vendere la prima fila prima che esista sarebbe una bugia. Il Club si vende quando il Cerchio ha 300 iscritti confermati, ci sono 10 ritiri in programma e il sito fa 1.000 visite al mese. Finché questi tre numeri non sono veri, il Club resta gratis per tutti, e te lo diciamo qui. La Spinta si propone solo quando nella tua zona c’è davvero qualcuno da avvisare.' })}
+              {t('pricing.patto2026Body', { defaultValue: 'Chi pubblica il profilo entro il 31 dicembre 2026 ha gratis i vantaggi del Pro, tranne Studio: l’intervista, i suoi eventi sui social di Aurya e, se serve, nella Lettera del Cerchio. Dal 2027 questi servizi sono nel Pro; l’app resta gratuita. Il badge Fondatore va ai primi venti.' })}
             </p>
-          </div>
-          <div className="rounded-2xl border bg-card px-5 py-4">
-            <p className="text-sm font-semibold text-foreground">
-              {t('pricing.foundersTitle', { defaultValue: 'I fondatori.' })}
-            </p>
-            <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-              {t('pricing.foundersBody', { defaultValue: 'I primi venti operatori olistici che pubblicano il profilo entro il 31 ottobre 2026 hanno il Club regalato fino al 30 giugno 2027, il badge permanente, il prezzo del Pro bloccato per sempre e la prima chiamata quando la rete lavora.' })}
-            </p>
+            <ul className="mt-3 space-y-1.5">
+              {PATTO_2026.map(([label, info]) => (
+                <li key={label} className="flex items-start gap-2 text-sm">
+                  <Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" aria-hidden />
+                  <span><span className="font-semibold text-foreground">{label}</span> <span className="text-muted-foreground">{info}</span></span>
+                </li>
+              ))}
+            </ul>
           </div>
           <div className="rounded-2xl border bg-card px-5 py-4">
             <p className="text-sm font-semibold text-foreground">
               {t('pricing.guaranteeTitle', { defaultValue: 'La garanzia.' })}
             </p>
             <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-              {t('pricing.guaranteeBody', { defaultValue: 'Club e Pro: trenta giorni, se non ti serve ti rimborsiamo. La Spinta: se l’email non parte, ti rimborsiamo. Nessun contratto, nessun rinnovo a sorpresa: ti avvisiamo trenta giorni prima e disdici quando vuoi.' })}
+              {t('pricing.guaranteeBody2', { defaultValue: 'Pro: trenta giorni, se non ti serve ti rimborsiamo. Nessun contratto, nessun rinnovo a sorpresa: ti avvisiamo trenta giorni prima e disdici quando vuoi.' })}
             </p>
           </div>
           <div className="rounded-2xl border bg-card px-5 py-4">

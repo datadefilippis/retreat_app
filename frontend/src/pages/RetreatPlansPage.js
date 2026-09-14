@@ -13,7 +13,7 @@
  * I bullet vengono dal catalogo (plan.features_display → chiavi i18n):
  * cambiare il catalogo aggiorna la pagina senza redeploy frontend.
  */
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { AppLayout, Header } from '../components/Layout';
@@ -22,8 +22,18 @@ import { Check, Loader2, ArrowLeft, Sparkles, CalendarClock } from 'lucide-react
 import { toast } from 'sonner';
 import { billingAPI } from '../api/billing';
 import { useBilling } from '../hooks/useBilling';
+import api from '../api/client';
+import RichiestaStrutturaDialog from '../features/events/components/RichiestaStrutturaDialog';
 
-const NOMI_CTA = { retreat_club: 'Passa al Club', retreat_pro: 'Passa a Pro' };
+const NOMI_CTA = { retreat_pro: 'Passa a Pro' };
+
+/* AB-R4 (14/9/2026): i servizi del Pro (e del patto 2026) si chiedono da
+   qui, con la stessa scheda della regia. Studio segue il piano. */
+const SERVIZI = [
+  { tipo: 'lettera_eventi', label: 'I tuoi eventi nella Lettera del Cerchio' },
+  { tipo: 'social', label: 'I tuoi eventi sui social di Aurya' },
+  { tipo: 'intervista_reel', label: 'L’intervista e i reel' },
+];
 
 export default function RetreatPlansPage() {
   const { t } = useTranslation('settings');
@@ -33,17 +43,24 @@ export default function RetreatPlansPage() {
     hasStripeCustomer, isPaid, refresh,
   } = useBilling();
   const [loadingSlug, setLoadingSlug] = useState(null);
+  // AB-R4 — la cadenza si sceglie (mese/anno); i vantaggi arrivano dal backend
+  const [cadenza, setCadenza] = useState('month');
+  const [vantaggi, setVantaggi] = useState(null);
+  const [richiesta, setRichiesta] = useState(null);   // tipo aperto nella scheda
+  useEffect(() => {
+    api.get('/strutture/vantaggi-pro').then((r) => setVantaggi(r.data)).catch(() => setVantaggi(null));
+  }, [richiesta]);
 
   const retreatPlans = (plans || [])
-    .filter((p) => p.slug?.startsWith('retreat_') && !p.is_addon)
+    .filter((p) => p.slug?.startsWith('retreat_') && !p.is_addon && p.is_public !== false)
     .sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
-  const isFounding = currentPlan === 'retreat_founding';
+  const isFounding = currentPlan === 'retreat_founding' || vantaggi?.fonte === 'patto_2026';
 
   // P4 — quando si accende la vendita, e quale cadenza si compra
   const nonAncoraInVendita = (plan) => !!(plan?.available_from && new Date(plan.available_from) > new Date());
   const dataItaliana = (iso) => new Date(iso).toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' });
   const soloAnnuale = (plan) => Array.isArray(plan?.intervals) && !plan.intervals.includes('month');
-  const cadenzaDi = (plan) => (soloAnnuale(plan) ? 'year' : 'month');
+  const cadenzaDi = (plan) => (soloAnnuale(plan) ? 'year' : cadenza);
 
   const handleUpgrade = async (plan) => {
     if (nonAncoraInVendita(plan)) return;
@@ -80,9 +97,13 @@ export default function RetreatPlansPage() {
       return { importo: `€${plan.price_yearly}`, periodo: t('billing.year_short', 'anno'), nota: null };
     }
     if (plan.price_monthly > 0) {
+      if (cadenza === 'year' && plan.price_yearly > 0) {
+        return { importo: `€${plan.price_yearly}`, periodo: t('billing.year_short', 'anno'),
+                 nota: t('billing.retreat.monthly_hint_dynamic', { price: plan.price_monthly, defaultValue: 'oppure {{price}} €/mese' }) };
+      }
       return {
         importo: `€${plan.price_monthly}`, periodo: t('billing.month_short', 'mese'),
-        nota: plan.price_yearly > 0 ? t('billing.retreat.yearly_hint_dynamic', { price: plan.price_yearly, defaultValue: '{{price}} €/anno' }) : null,
+        nota: plan.price_yearly > 0 ? t('billing.retreat.yearly_hint_dynamic', { price: plan.price_yearly, defaultValue: 'oppure {{price}} €/anno' }) : null,
       };
     }
     return { importo: t('billing.free_label', 'Gratis'), periodo: null, nota: null };
@@ -92,7 +113,7 @@ export default function RetreatPlansPage() {
     <AppLayout>
       <Header
         title={t('billing.retreat.title', 'Piani e costi')}
-        subtitle={t('billing.retreat.subtitle', 'Il piano base è gratuito per sempre e Aurya non prende commissioni. Club e Pro si accendono il 1° gennaio 2027.')}
+        subtitle={t('billing.retreat.subtitle', 'Il piano base è gratuito per sempre e Aurya non prende commissioni. Il Pro si accende il 1° gennaio 2027.')}
       >
         <Button variant="outline" size="sm" onClick={() => navigate('/settings')}>
           <ArrowLeft className="h-4 w-4 mr-1.5" />
@@ -106,7 +127,7 @@ export default function RetreatPlansPage() {
             <Sparkles className="h-5 w-5 text-amber-600 mt-0.5 flex-shrink-0" />
             <div>
               <p className="font-semibold text-amber-900 text-sm">
-                {t('billing.retreat.founding_badge', 'Club Fondatori attivo')}
+                {t('billing.retreat.founding_badge', 'Sei entrato nel 2026')}
               </p>
               <p className="text-sm text-amber-800 mt-0.5">{t('billing.retreat.founding_note')}</p>
             </div>
@@ -125,13 +146,56 @@ export default function RetreatPlansPage() {
           </p>
         </div>
 
-        {/* Card piani: Gratis, Club, Pro (dal catalogo) */}
-        <div className="grid gap-5 md:grid-cols-3">
+        {/* AB-R4 — i vantaggi: dal Pro o dal patto 2026, con le richieste */}
+        {vantaggi?.servizi && (
+          <div className="rounded-xl border border-[#2f5749]/30 bg-white p-4" data-testid="plans-vantaggi">
+            <p className="font-semibold text-sm text-foreground">{t('billing.retreat.vantaggi_title', 'I tuoi vantaggi')}</p>
+            <ul className="mt-2 divide-y divide-gray-100">
+              {SERVIZI.map((s) => {
+                const r = (vantaggi.richieste || []).find((x) => x.tipo === s.tipo && x.stato !== 'chiusa');
+                return (
+                  <li key={s.tipo} className="flex items-center justify-between gap-3 py-2 text-sm">
+                    <span>{s.label}</span>
+                    {r ? (
+                      <span className="text-xs text-muted-foreground">{t('billing.retreat.vantaggi_richiesto', 'richiesto')}</span>
+                    ) : (
+                      <Button size="sm" variant="outline" onClick={() => setRichiesta(s.tipo)} data-testid={`plans-chiedi-${s.tipo}`}>
+                        {t('billing.retreat.vantaggi_chiedi', 'Chiedilo')}
+                      </Button>
+                    )}
+                  </li>
+                );
+              })}
+              <li className="flex items-center justify-between gap-3 py-2 text-sm">
+                <span>Crea Studio (Aurya Sound)</span>
+                {vantaggi.studio
+                  ? <Button size="sm" variant="outline" onClick={() => navigate('/sound/studio')}>{t('billing.retreat.vantaggi_studio_on', 'Attivo: apri Crea Studio')}</Button>
+                  : <span className="text-xs text-muted-foreground">{t('billing.retreat.vantaggi_studio_off', 'Nel Pro')}</span>}
+              </li>
+            </ul>
+          </div>
+        )}
+        <RichiestaStrutturaDialog aperto={richiesta !== null} tipoIniziale={richiesta || 'regia'} onClose={() => setRichiesta(null)} />
+
+        {/* AB-R4 — la cadenza del Pro: mese o anno */}
+        <div className="flex justify-end" data-testid="plans-cadenza">
+          <div className="inline-flex rounded-full border border-gray-200 bg-white p-0.5 text-xs font-medium">
+            {[['month', t('billing.retreat.cadenza_mese', 'Mensile')], ['year', t('billing.retreat.cadenza_anno', 'Annuale')]].map(([k, label]) => (
+              <button key={k} type="button" onClick={() => setCadenza(k)} aria-pressed={cadenza === k}
+                      className={`rounded-full px-3 py-1 ${cadenza === k ? 'bg-gray-900 text-white' : 'text-gray-600'}`}>
+                {label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Card piani: Gratis e Pro (dal catalogo; il Club e' nascosto) */}
+        <div className="grid gap-5 md:grid-cols-2">
           {retreatPlans.map((plan) => {
             const isCurrent = plan.slug === currentPlan;
             const chiuso = nonAncoraInVendita(plan);
             const p = prezzo(plan);
-            const evidenza = plan.slug === 'retreat_club';
+            const evidenza = plan.slug === 'retreat_pro';
             return (
               <div
                 key={plan.slug}

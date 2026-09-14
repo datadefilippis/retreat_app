@@ -143,7 +143,8 @@ class TestKillList:
 class TestPricingPositioning:
     def test_free_costs_zero_pro_costs_29(self):
         assert _plan("retreat_free")["price_monthly"] == 0.0
-        assert _plan("retreat_pro")["price_monthly"] == 0.0   # P4-bis: solo annuale, 119/anno
+        # AB-R1 (14/9/2026, founder con Valentina): il Pro e' 19 €/mese o 200 €/anno
+        assert _plan("retreat_pro")["price_monthly"] == 19.0
 
     def test_free_is_baseline_not_checkout_target(self):
         free = _plan("retreat_free")
@@ -173,8 +174,9 @@ class TestRetreatBusinessModel:
         # il canone tiene tutto il transato.
         pro = _plan("retreat_pro")
         assert pro["transaction_fee_percent"] == 0.0
-        assert pro["price_monthly"] == 0.0 and pro["intervals"] == ["year"]
-        assert pro["price_yearly"] == 119.0
+        # AB-R1 (14/9/2026): 19/mese o 200/anno, entrambi gli intervalli
+        assert pro["price_monthly"] == 19.0 and pro["intervals"] == ["month", "year"]
+        assert pro["price_yearly"] == 200.0
         assert pro["is_self_serve"] is True
         # P1: la commissione zero e' di tutti, non un vantaggio del Pro
         assert "billing.features.retreat_sound_studio" in pro["features_display"]
@@ -554,14 +556,18 @@ class TestAbPrezziCoerenti:
                     if p["slug"] == "retreat_pro")
 
     def test_pro_costa_12_e_119(self):
-        """P4 (10/9/2026): Pro 119/anno o 12/mese, Club 49/anno solo
-        annuale, vendita dal 1° gennaio 2027 — gli stessi numeri di
-        /costi (PRICING_2027) e della landing."""
+        """AB-R1 (14/9/2026, founder con Valentina): UN abbonamento — Pro
+        19/mese o 200/anno, vendita dal 1° gennaio 2027; il Club non si
+        vende piu' (nascosto, non self-serve). Gli stessi numeri di /costi
+        e della landing."""
         from services.seed_commercial_plans import RETREAT_COMMERCIAL_PLANS, VENDITA_PIANI_DAL
         pro = self._pro()
-        assert pro["price_yearly"] == 119.0 and pro["intervals"] == ["year"]   # solo annuale
+        assert pro["price_monthly"] == 19.0 and pro["price_yearly"] == 200.0
+        assert pro["intervals"] == ["month", "year"]
         club = next(p for p in RETREAT_COMMERCIAL_PLANS if p["slug"] == "retreat_club")
-        assert club["price_yearly"] == 49.0 and club["intervals"] == ["year"]
+        assert club["is_public"] is False and club["is_self_serve"] is False
+        fond = next(p for p in RETREAT_COMMERCIAL_PLANS if p["slug"] == "retreat_founding")
+        assert fond["name"] == "Entrato nel 2026" and "billing.features.retreat_sound_studio" not in fond["features_display"]
         assert VENDITA_PIANI_DAL == "2027-01-01"
         assert pro["available_from"] == VENDITA_PIANI_DAL and club["available_from"] == VENDITA_PIANI_DAL
 
@@ -575,9 +581,12 @@ class TestAbPrezziCoerenti:
         import re
         src = (self.FRONTEND / "src" / "features" / "prelaunch"
                / "PricingPage.js").read_text()
-        m = re.search(r"PRICING_2027 = \{ spinta: (\d+), club: (\d+), pro: (\d+) \}", src)
+        # AB-R3 (14/9/2026): Pro 19/mese o 200/anno — gli stessi numeri del seed
+        m = re.search(r"PRICING_2027 = \{ pro_mese: (\d+), pro_anno: (\d+) \}", src)
         assert m, "PRICING_2027 non trovato nella pagina /costi"
-        assert tuple(map(int, m.groups())) == (19, 49, 119)   # P4-bis: niente mensile
+        assert tuple(map(int, m.groups())) == (19, 200)
+        pro = self._pro()
+        assert (pro["price_monthly"], pro["price_yearly"]) == (19.0, 200.0)
         assert "AURYA_FEE = 0" in src
         free = next(p for p in __import__(
             "services.seed_commercial_plans",
@@ -594,8 +603,11 @@ class TestAbPrezziCoerenti:
         a /costi. La data promessa (31 dicembre 2026) e' scritta li'."""
         src = (self.FRONTEND / "src" / "features" / "prelaunch"
                / "OperatorLandingPage.js").read_text()
-        # RB2-bis (10/9 sera): il gratis non ha piu' una data (P1: per sempre)
-        assert "31 dicembre 2026" not in src
+        # RB2-bis (10/9 sera): il gratis non ha piu' una data (P1: per sempre).
+        # AB-R3 (14/9): il 31 dicembre 2026 e' la scadenza del PATTO (chi
+        # entra prima ha i vantaggi del Pro), mai una data del gratis.
+        assert "gratis fino al" not in src.lower() and "gratuito fino al" not in src.lower()
+        assert "31 dicembre 2026 ha gratis i vantaggi del Pro" in src
         assert 'Link to="/costi"' in src
         assert "sempre gratuito" in src
 

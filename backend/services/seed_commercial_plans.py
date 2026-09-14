@@ -406,6 +406,9 @@ RETREAT_COMMERCIAL_PLANS: List[dict] = [
         ],
     },
     {
+        # AB-R1 (14/9/2026, founder con Valentina): il Club NON si vende
+        # piu' — UN solo abbonamento, il Pro. Resta nel catalogo, nascosto e
+        # non acquistabile, per non rompere chi lo avesse (nessuno).
         "slug": "retreat_club",
         "name": "Club",
         "description": "La prima fila su tutti i tuoi ritiri, la Lettera di Aurya alla tua zona, e sei tra i primi che chiamiamo quando la rete lavora.",
@@ -416,8 +419,8 @@ RETREAT_COMMERCIAL_PLANS: List[dict] = [
         "available_from": VENDITA_PIANI_DAL,
         "currency": "EUR",
         "trial_days": 0,
-        "is_public": True,
-        "is_self_serve": True,
+        "is_public": False,
+        "is_self_serve": False,
         "sort_order": 11,
         "transaction_fee_percent": 0.0,
         "platform_limits": {"team_members": 2},
@@ -431,13 +434,17 @@ RETREAT_COMMERCIAL_PLANS: List[dict] = [
         ],
     },
     {
+        # AB-R1 (14/9/2026, founder con Valentina): L'abbonamento, uno solo.
+        # 19 €/mese o 200 €/anno; dentro: Crea Studio (automatico), i tuoi
+        # eventi nella Lettera del Cerchio e sui social di Aurya, intervista
+        # + reel (servizi fatti da noi, su richiesta), prima fila.
         "slug": "retreat_pro",
         "name": "Pro",
-        "description": "Tutto il Club, più la tua voce e noi accanto: Crea Studio, il racconto completo con la pagina nel Magazine, assistenza diretta su WhatsApp.",
-        "tagline": "La mia voce, il mio racconto, qualcuno accanto",
-        "price_monthly": 0.0,           # founder 10/9 sera: il Pro e' solo annuale (in Stripe non c'e' il mensile)
-        "price_yearly": 119.0,
-        "intervals": ["year"],
+        "description": "Tutto il Gratis, più Crea Studio per le tue meditazioni, i tuoi eventi nella Lettera del Cerchio della tua zona e sui social di Aurya, l'intervista e i reel che ti raccontano.",
+        "tagline": "La mia voce, i miei eventi, qualcuno che li racconta",
+        "price_monthly": 19.0,
+        "price_yearly": 200.0,          # founder 14/9: annuale 200
+        "intervals": ["month", "year"],
         "available_from": VENDITA_PIANI_DAL,
         "currency": "EUR",
         "trial_days": 0,
@@ -448,17 +455,23 @@ RETREAT_COMMERCIAL_PLANS: List[dict] = [
         "platform_limits": {"team_members": 5},
         "module_plans": dict(_TIERS_PRO),
         "features_display": [
-            "billing.features.retreat_everything_club",
+            "billing.features.retreat_everything_free",
             "billing.features.retreat_sound_studio",
-            "billing.features.retreat_pro_racconto",
-            "billing.features.retreat_pro_whatsapp",
-            "billing.features.retreat_priority_support",
+            "billing.features.retreat_pro_lettera_eventi",
+            "billing.features.retreat_pro_social",
+            "billing.features.retreat_pro_intervista_reel",
+            "billing.features.retreat_club_prima_fila",
         ],
     },
     {
+        # AB-R1 (14/9/2026): il patto di chi entra nel 2026 — i vantaggi del
+        # Pro senza Sound, gratis (intervista, social, eventuale Lettera).
+        # Non si assegna: il diritto e' CALCOLATO (routers.fondatori
+        # .vantaggi_2026) da «profilo pubblicato entro il 31/12/2026».
+        # Il piano resta come etichetta/leva del pannello.
         "slug": "retreat_founding",
-        "name": "Club Fondatori",
-        "description": "Il patto dei primi venti: il Club regalato fino al 30 giugno 2027, il badge Fondatore per sempre, il prezzo del Pro bloccato, i primi chiamati quando la rete lavora.",
+        "name": "Entrato nel 2026",
+        "description": "Il vantaggio di essere entrato subito: l'intervista, i tuoi eventi sui social di Aurya e nella Lettera del Cerchio, gratis. Il badge Fondatore ai primi venti.",
         "tagline": "Per chi costruisce la rete con noi",
         "price_monthly": 0.0,
         "price_yearly": None,
@@ -471,10 +484,11 @@ RETREAT_COMMERCIAL_PLANS: List[dict] = [
         "platform_limits": {"team_members": 5},
         "module_plans": dict(_TIERS_PRO),   # i limiti del Pro: chi c'era prima li aveva
         "features_display": [
-            "billing.features.retreat_everything_club",
+            "billing.features.retreat_everything_free",
+            "billing.features.retreat_pro_intervista_reel",
+            "billing.features.retreat_pro_social",
+            "billing.features.retreat_pro_lettera_eventi",
             "billing.features.retreat_founding_badge",
-            "billing.features.retreat_founding_pro_bloccato",
-            "billing.features.retreat_club_rete_lavoro",
         ],
     },
     {

@@ -158,6 +158,12 @@ PROMISE_ENFORCEMENT = {
     "billing.features.retreat_pro_racconto":       ("process", "intervista completa + pagina Magazine (tab Interviste)"),
     "billing.features.retreat_pro_whatsapp":       ("process", "canale WhatsApp con Valentina e Davide"),
     "billing.features.retreat_founding_badge":     ("code", "routers.fondatori.ids_fondatori + badge «Fondatore» sul profilo (RB9)"),
+    # ── AB-R2 (14/9/2026): i servizi del Pro e del patto 2026 — richieste
+    #    tipizzate su /strutture/richieste, gate routers.fondatori.vantaggi_pro,
+    #    email a noi + riga nel pannello; consegna manuale ──
+    "billing.features.retreat_pro_lettera_eventi": ("process", "richiesta tipo lettera_eventi (gate vantaggi_pro) → invio manuale nella Lettera di zona"),
+    "billing.features.retreat_pro_social":         ("process", "richiesta tipo social (gate vantaggi_pro) → pubblicazione manuale sui canali Aurya"),
+    "billing.features.retreat_pro_intervista_reel": ("process", "richiesta tipo intervista_reel (gate vantaggi_pro) → intervista + pagina Magazine + reel"),
     "billing.features.retreat_founding_pro_bloccato": ("process", "prezzo Pro riservato ai fondatori, fissato in Stripe quando la vendita si accende"),
 }
 

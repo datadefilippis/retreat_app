@@ -210,10 +210,11 @@ function Richieste({ schema }) {
           </div>
           {/* P13 — il tipo (struttura, regia, team building) e i contatti dell'azienda */}
           <p className="mt-1 text-xs font-semibold uppercase tracking-wide text-[#2f5749]" data-testid="strutture-richiesta-tipo">
-            {({ regia: 'Regia', team_building: 'Team building' })[r.tipo] || 'Struttura'}{r.formula ? ` · ${r.formula}` : ''}
+            {({ regia: 'Regia', team_building: 'Team building', lettera_eventi: 'Pro · Lettera del Cerchio', social: 'Pro · social', intervista_reel: 'Pro · intervista e reel' })[r.tipo] || 'Struttura'}{r.formula ? ` · ${r.formula}` : ''}{r.fonte === 'patto_2026' ? ' · patto 2026' : ''}
           </p>
           {r.tipo === 'team_building' && <p className="mt-1 text-sm">{r.nome}{r.telefono ? ` · ${r.telefono}` : ''}</p>}
-          <p className="mt-1 text-sm">{r.zona} · {r.periodo} · {r.persone} persone{r.notti ? ` · ${r.notti} notti` : ''}{r.budget_persona ? ` · ${r.budget_persona} € a persona` : ''}{r.tipo_ritiro ? ` · ${r.tipo_ritiro}` : ''}</p>
+          {/* AB-R4: le richieste del Pro non hanno zona/periodo/persone */}
+          {!['lettera_eventi', 'social', 'intervista_reel'].includes(r.tipo) && <p className="mt-1 text-sm">{r.zona} · {r.periodo} · {r.persone} persone{r.notti ? ` · ${r.notti} notti` : ''}{r.budget_persona ? ` · ${r.budget_persona} € a persona` : ''}{r.tipo_ritiro ? ` · ${r.tipo_ritiro}` : ''}</p>}
           {r.messaggio && <p className="mt-1 text-sm text-muted-foreground">{r.messaggio}</p>}
           {r.esigenze && <p className="mt-1 text-sm text-muted-foreground">{r.esigenze}</p>}
           <div className="mt-3 flex flex-wrap items-center gap-2">

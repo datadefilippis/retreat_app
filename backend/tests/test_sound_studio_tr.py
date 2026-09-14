@@ -266,10 +266,12 @@ class TestStudioAttivo:
                               ("manual", True), ("past_due", False),
                               ("canceled", False), ("none", False)):
             assert studio_attivo({**base, "billing_status": stato}) is atteso
-        # Founding e Partner = trattamento Pro: Studio incluso
-        for piano in ("retreat_founding", "retreat_partner"):
-            assert studio_attivo({"commercial_plan_slug": piano,
-                                  "billing_status": "manual"}) is True
+        # Partner = trattamento Pro: Studio incluso. AB-R1 (14/9/2026):
+        # il patto 2026 (retreat_founding) NON include Sound (founder)
+        assert studio_attivo({"commercial_plan_slug": "retreat_partner",
+                              "billing_status": "manual"}) is True
+        assert studio_attivo({"commercial_plan_slug": "retreat_founding",
+                              "billing_status": "manual"}) is False
         assert studio_attivo({"commercial_plan_slug": "retreat_free",
                               "billing_status": "active"}) is False
         # il campo LEGACY non accende niente: era il difetto

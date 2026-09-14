@@ -38,6 +38,14 @@ def _tipo(r: dict) -> str:
     return r.get("tipo") or "struttura"
 
 
+# AB-R2 (14/9/2026): i servizi del Pro (e del patto 2026) passano di qui
+ETICHETTE_PRO = {
+    "lettera_eventi": "i suoi eventi nella Lettera del Cerchio",
+    "social": "la pubblicazione dei suoi eventi sui social di Aurya",
+    "intervista_reel": "l'intervista e i reel",
+}
+
+
 def _riassunto(r: dict) -> str:
     tipo = _tipo(r)
     righe = []
@@ -46,9 +54,12 @@ def _riassunto(r: dict) -> str:
                   f"Referente: {r.get('nome')} — {r.get('email')}"]
         if r.get("telefono"):
             righe.append(f"Telefono: {r['telefono']}")
+    elif tipo in ETICHETTE_PRO:
+        righe.append(f"Servizio: {ETICHETTE_PRO[tipo]}")
     else:
         righe.append(f"Zona: {r.get('zona')}")
-    righe += [f"Periodo: {r.get('periodo')}", f"Persone: {r.get('persone')}"]
+    if tipo not in ETICHETTE_PRO:
+        righe += [f"Periodo: {r.get('periodo')}", f"Persone: {r.get('persone')}"]
     if tipo == "regia":
         righe.append(f"Formula: {FORMULE.get(r.get('formula'), 'da capire insieme')}")
     if r.get("notti"):
@@ -77,6 +88,9 @@ def avvisa_piattaforma_richiesta(r: dict) -> None:
         elif tipo == "team_building":
             testa = f"<p><b>{chi}</b> chiede un team building o un ritiro aziendale su misura.</p>"
             oggetto = f"Richiesta team building da {chi}"
+        elif tipo in ETICHETTE_PRO:
+            testa = f"<p><b>{chi}</b> chiede {ETICHETTE_PRO[tipo]} ({'Pro' if r.get('fonte') == 'piano' else 'patto 2026'}).</p>"
+            oggetto = f"Richiesta Pro ({ETICHETTE_PRO[tipo]}) da {chi}"
         else:
             testa = f"<p><b>{chi}</b> cerca una struttura per un ritiro.</p>"
             oggetto = f"Richiesta struttura da {chi}"
@@ -100,6 +114,10 @@ def ricevuta_operatore(r: dict) -> None:
                      "La leggiamo personalmente e ti scriviamo entro pochi giorni con una "
                      "proposta chiara: cosa facciamo noi, cosa resta a te, quanto costa.</p>")
             oggetto = "La tua richiesta di regia è arrivata"
+        elif tipo in ETICHETTE_PRO:
+            corpo = (f"<p>Ciao,</p><p>abbiamo ricevuto la tua richiesta: {ETICHETTE_PRO[tipo]}. "
+                     "Ti scriviamo entro pochi giorni per organizzare insieme cosa e quando.</p>")
+            oggetto = "La tua richiesta è arrivata"
         elif tipo == "team_building":
             corpo = (f"<p>Ciao {r.get('nome') or ''},</p><p>abbiamo ricevuto la richiesta di "
                      f"<b>{r.get('azienda') or r.get('organization_nome')}</b> per un'esperienza su misura. "

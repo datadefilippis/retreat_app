@@ -325,7 +325,13 @@
       "retreat_founding_badge": "Badge Fondatore, per sempre",
       "retreat_founding_badge_info": "Il badge resta sul tuo profilo anche dopo il 30 giugno 2027.",
       "retreat_founding_pro_bloccato": "Prezzo del Pro bloccato",
-      "retreat_founding_pro_bloccato_info": "Se un giorno scegli il Pro, paghi per sempre il prezzo riservato ai fondatori."
+      "retreat_founding_pro_bloccato_info": "Se un giorno scegli il Pro, paghi per sempre il prezzo riservato ai fondatori.",
+      "retreat_pro_lettera_eventi": "I tuoi eventi e ritiri nella Lettera del Cerchio della tua zona",
+      "retreat_pro_social": "I tuoi eventi sui canali social di Aurya",
+      "retreat_pro_intervista_reel": "L'intervista e i reel che ti raccontano",
+      "retreat_pro_lettera_eventi_info": "Quando pubblichi un ritiro o un evento, lo mettiamo nella Lettera del Cerchio che arriva agli iscritti della tua zona. Ci chiedi tu, quando vuoi.",
+      "retreat_pro_social_info": "I tuoi eventi e ritiri pubblicati sui canali social di Aurya, con la tua foto e il tuo link. Ci chiedi tu, quando vuoi.",
+      "retreat_pro_intervista_reel_info": "Un'intervista fatta da noi, con la pagina nel Magazine, e se ha senso uno o più reel che ti presentano ai nostri follower."
     },
     "quota": {
       "warning_title": "Stai per raggiungere il limite",
@@ -520,7 +526,7 @@
     "legacy_lock_tooltip": "Stai pagando il prezzo originale. Quando aggiorni piano, manteniamo questa tariffa.",
     "retreat": {
       "title": "Piani e costi",
-      "subtitle": "Il piano base è gratuito per sempre e Aurya non prende commissioni. Club e Pro si accendono il 1° gennaio 2027: li vedi già qui, li compri da quel giorno.",
+      "subtitle": "Il piano base è gratuito per sempre e Aurya non prende commissioni. Il Pro si accende il 1° gennaio 2027: lo vedi già qui, lo compri da quel giorno.",
       "fee_label": "Fee piattaforma",
       "fee_value": "{{pct}}% sul transato",
       "fee_free_note": "Paghi solo quando incassi",
@@ -531,8 +537,8 @@
       "example_platform": "Fee piattaforma ({{pct}}%)",
       "example_stripe": "Commissioni Stripe (≈)",
       "example_net": "A te restano (≈)",
-      "founding_badge": "Club Fondatori attivo",
-      "founding_note": "Sei tra i fondatori: il Club è tuo fino al 30 giugno 2027, il badge resta per sempre e il prezzo del Pro è bloccato. Grazie di costruire la rete con noi.",
+      "founding_badge": "Sei entrato nel 2026",
+      "founding_note": "Hai gratis i vantaggi del Pro, tranne Studio: l’intervista, i tuoi eventi sui social di Aurya e, se serve, nella Lettera del Cerchio. Chiedili qui sotto, quando vuoi. Grazie di costruire la rete con noi.",
       "current": "Piano attuale",
       "cta_upgrade": "Passa a Pro",
       "cta_downgrade": "Torna a Gratis",
@@ -543,7 +549,14 @@
       "hero_fee_line_zero": "Zero commissioni piattaforma sul transato · le commissioni Stripe sono separate (le incassa Stripe, non noi)",
       "yearly_hint_dynamic": "{{price}} €/anno",
       "available_from": "In vendita dal {{date}}",
-      "stripe_fees_short": "Se incassi online con Stripe, le commissioni di Stripe (≈ 1,5% + 0,25 €) le incassa Stripe, non noi."
+      "stripe_fees_short": "Se incassi online con Stripe, le commissioni di Stripe (≈ 1,5% + 0,25 €) le incassa Stripe, non noi.",
+      "vantaggi_title": "I tuoi vantaggi",
+      "vantaggi_chiedi": "Chiedilo",
+      "vantaggi_richiesto": "richiesto",
+      "vantaggi_studio_on": "Attivo: apri Crea Studio",
+      "vantaggi_studio_off": "Nel Pro",
+      "cadenza_mese": "Mensile",
+      "cadenza_anno": "Annuale"
     },
     "available_from_label": "Dal {{date}}"
   },

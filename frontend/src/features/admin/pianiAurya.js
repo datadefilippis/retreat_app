@@ -12,11 +12,12 @@
 
 export const PIANI = {
   retreat_free: { nome: 'Gratis', classe: 'bg-gray-100 text-gray-700' },
-  // P4 (10/9/2026): il catalogo del 2027 — Club 49/anno, Pro 119/anno (solo annuali)
-  retreat_club: { nome: 'Club', classe: 'bg-teal-100 text-teal-700' },
+  // AB-R1 (14/9/2026): UN abbonamento — Pro 19/mese o 200/anno; il Club
+  // resta solo come etichetta (nessuno lo ha, non si vende)
+  retreat_club: { nome: 'Club (ritirato)', classe: 'bg-gray-100 text-gray-500', riservato: true },
   retreat_pro: { nome: 'Pro', classe: 'bg-violet-100 text-violet-700' },
   retreat_founding: {
-    nome: 'Club Fondatori', classe: 'bg-amber-100 text-amber-700', riservato: true,
+    nome: 'Entrato nel 2026', classe: 'bg-amber-100 text-amber-700', riservato: true,
   },
   retreat_partner: {
     nome: 'Partner', classe: 'bg-emerald-100 text-emerald-700', riservato: true,

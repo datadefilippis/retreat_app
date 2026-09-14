@@ -567,9 +567,9 @@ _BRAND_PAGES = {
         # P1 (10/9/2026): zero commissioni, i piani del 2027 scritti da oggi
         "title": "Quanto costa Aurya | Gratis per sempre, senza commissioni",
         "description": ("La piattaforma è gratuita: profilo, listino, "
-                        "ritiri e clienti non si pagano. Fino al 31 "
-                        "dicembre 2026 nessun costo, nemmeno sulle "
-                        "prenotazioni. Poi scegli tu."),
+                        "ritiri e clienti non si pagano, mai commissioni. "
+                        "Dal 2027, se vuoi di più, il Pro: 19 € al mese "
+                        "o 200 € l'anno."),
         "image": "/media/hero-organizer.webp",
     },
     "come-funziona": {

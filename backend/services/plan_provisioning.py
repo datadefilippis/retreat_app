@@ -35,6 +35,9 @@ logger = logging.getLogger(__name__)
 # un flag denormalizzato sull'org (directory_featured), letto dal
 # listing /public/retreats per boost di ordinamento + badge.
 FEATURED_PLAN_SLUGS = {"retreat_pro", "retreat_founding", "retreat_partner"}
+# AB-R2 (14/9/2026): Crea Studio e' dentro il Pro, ma NON si sincronizza
+# da qui — si DERIVA a ogni richiesta in services/studio_access.py
+# (TR1: «derivare, mai sincronizzare»). Qui non c'e' nulla da fare.
 
 
 async def sync_module_activation(org_id: str, module_plans: dict) -> dict:

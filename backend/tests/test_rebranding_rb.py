@@ -139,9 +139,12 @@ class TestRb2LaLandingDellOperatore:
         for parola in ("prenotazioni", "ritiri", "un solo link"):
             assert parola in op["heroP1"] + " " + op["heroP2"], f"l'offerta in chiaro nomina: {parola}"
         assert op["heroP3"] == "Gratis per sempre, senza commissioni."
-        assert "31 ottobre 2026" in op["nowP1"] and ("venti" in op["nowP1"] or "20 operatori" in op["nowP1"]), "il patto fondatori ha tetto e data"
-        assert "30 giugno 2027" in op["nowB1b"] and "post al mese" not in json.dumps(op), "il Club fondatori ha una fine e niente post mensile"
-        for k in ("v1k", "v6k", "nowB4t", "nowCta"):
+        # AB-R3 (14/9/2026): il patto e' «chi entra entro il 31/12/2026 ha i
+        # vantaggi del Pro senza Studio»; il tetto resta solo per il badge
+        assert "31 dicembre 2026" in op["nowP1"] and "tranne Studio" in op["nowP1"], "il patto 2026 ha la data e il confine"
+        assert "primi venti" in op["nowP2"], "il badge Fondatore ai primi venti"
+        assert "30 giugno 2027" not in json.dumps(op) and "post al mese" not in json.dumps(op), "via il 30/6/2027 e niente post mensile"
+        for k in ("v1k", "v6k", "nowC1t", "nowC2t", "nowC3t", "nowCta2", "proTitolo"):
             assert op.get(k), k
         assert op["ctaOpen"] == "Apri il tuo spazio"
         testo = " ".join(str(v) for v in op.values()).lower()
@@ -159,13 +162,14 @@ class TestRb2LaLandingDellOperatore:
         # founder 10/9 sera: niente attesa di una chiamata, il gruppo Telegram
         assert "Telegram" in op["j3b"] and "Verificato Aurya" in op["j3b"]
         assert "Valentina ti scrive" not in json.dumps(op), "il processo non aspetta nessuno"
-        assert "gratuito per sempre" in op["prezziP1"] and "19 €" in op["prezzi1t"]
+        assert "gratuito per sempre" in op["prezziP1"] and "19 €" in op["proTitolo"] and "200 €" in op["proTitolo"]
         assert "Non serve la carta" in op["j1b"] or "Nessuna carta" in op["j1b"]
 
     def test_il_contatore_dei_fondatori_e_vero(self):
         src = LANDING.read_text()
         assert "api.get('/public/fondatori')" in src and 'data-testid="ol-fondatori-contatore"' in src
-        assert "nowCountFallback" in src, "senza rete la frase resta senza numero, mai un numero inventato"
+        # AB-R3: il contatore conta i giorni al 31/12/2026, non i posti
+        assert "nowGiorniFallback" in src and "giorni_rimasti" in src, "senza rete la frase resta senza numero, mai un numero inventato"
         import requests
         try:
             r = requests.get(f"{BASE}/api/public/fondatori", timeout=10)
@@ -174,7 +178,8 @@ class TestRb2LaLandingDellOperatore:
             pytest.skip("backend locale non raggiungibile")
         assert r.status_code == 200
         j = r.json()
-        assert j["tetto"] == 20 and j["scadenza"] == "2026-10-31"
+        # AB-R3 (14/9/2026): scadenza del patto 31/12/2026, giorni rimasti nel contatore
+        assert j["tetto"] == 20 and j["scadenza"] == "2026-12-31" and "giorni_rimasti" in j
         assert 0 <= j["rimasti"] <= 20 and j["presi"] + j["rimasti"] == 20
 
     def test_la_shell_e_il_corpo_dicono_la_stessa_landing(self):
@@ -293,11 +298,14 @@ class TestP1LeParoleSuiSoldi:
 
     def test_costi_dice_zero_commissioni_e_i_piani_del_2027(self):
         src = re.sub(r"/\*.*?\*/", "", self.COSTI.read_text(), flags=re.DOTALL)
+        # AB-R3 (14/9/2026): due porte (Gratis, Pro 19/200), il patto 2026, la garanzia
         for frase in ("Aurya non prende commissioni. Mai.", "Gratis per sempre, senza commissioni",
-                      "I prezzi dal 1° gennaio 2027", 'testid="plan-spinta"', 'testid="plan-club"',
-                      "Il Club si accende quando la fila c’è.", "300 iscritti confermati", "10 ritiri", "1.000 visite",
-                      "I fondatori.", "Club regalato fino al 30 giugno 2027", "La garanzia.", "E Stripe?"):
+                      "I prezzi dal 1° gennaio 2027", 'testid="plan-free"', 'testid="plan-pro"',
+                      "PRICING_2027 = { pro_mese: 19, pro_anno: 200 }",
+                      "Chi entra nel 2026.", "31 dicembre 2026", "La garanzia.", "E Stripe?"):
             assert frase in src, frase
+        for vecchio in ('testid="plan-spinta"', 'testid="plan-club"', "30 giugno 2027", "Il Club si accende"):
+            assert vecchio not in src, f"tornato: {vecchio}"
         assert "5%" not in src and "sugli incassi online" not in src.split("E Stripe?")[0].replace("senza commissioni", "")
 
     def test_la_fee_e_zero_nel_seed_e_la_migrazione_esiste(self):
@@ -314,8 +322,8 @@ class TestP1LeParoleSuiSoldi:
         it = json.loads(LOCALE.read_text())["nwHome"]
         assert "senza commissioni" in it["doorOpText"]   # CP: prosOffer e' uscito dalla home
         op = json.loads(PRELAUNCH.read_text())["opPro"]
-        assert "non prende commissioni" in op["faq1b1"] and "Club Fondatori regalato fino al 30 giugno 2027" in op["nowP2"]
-        assert "19 €" in op["faq1b2"] and "49 €" in op["faq1b2"] and "119 €" in op["faq1b2"]   # RB2-bis: i prezzi nel secondo punto
+        assert "non prende commissioni" in op["faq1b1"] and "30 giugno 2027" not in op["nowP2"]
+        assert "19 €" in op["faq1b2"] and "200 €" in op["faq1b2"] and "49 €" not in op["faq1b2"]   # AB-R3: un abbonamento
         sett = json.loads((FE / "locales" / "it" / "settings.json").read_text())["billing"]["retreat"]
         assert "non prende commissioni" in sett["subtitle"]
         llms = (BACKEND_DIR / "assets" / "llms.txt").read_text()
@@ -521,7 +529,9 @@ class TestP13AuryaPerLeAziendeEChiediLaRegia:
         assert "honeypot" not in src.lower() and "website" not in src, "niente esca: l'autofill la riempiva (28/8)"
         assert "aziende_router.router" in (BACKEND_DIR / "server.py").read_text()
         rs = (BACKEND_DIR / "routers" / "strutture.py").read_text()
-        assert 'tipo: Literal["struttura", "regia"] = "struttura"' in rs
+        # AB-R2 (14/9/2026): i servizi del Pro passano dalla stessa scheda
+        assert 'tipo: Literal["struttura", "regia", "lettera_eventi", "social", "intervista_reel"] = "struttura"' in rs
+        assert 'TIPI_PRO = ("lettera_eventi", "social", "intervista_reel")' in rs and "vantaggi_pro" in rs
         em = (BACKEND_DIR / "services" / "strutture_email.py").read_text()
         for s in ("Richiesta di regia da", "Richiesta team building da", "Richiesta struttura da",
                   "La tua richiesta di regia è arrivata", "Aurya per le aziende"):
@@ -530,6 +540,8 @@ class TestP13AuryaPerLeAziendeEChiediLaRegia:
     def test_la_scheda_del_gestionale_chiede_anche_la_regia(self):
         events = (FE / "features" / "events" / "EventsListPage.js").read_text()
         assert 'data-testid="events-chiedi-regia"' in events and 'tipoIniziale="regia"' in events
+        # AB-R6 (14/9/2026, founder): nascosto finche' la regia non e' consolidata
+        assert "const REGIA_VISIBILE = false;" in events and "{REGIA_VISIBILE && (" in events
         assert 'data-testid="events-cerca-struttura"' not in events, "founder 10/9 sera: gratis non si vende, il pulsante esce"
         dialog = (FE / "features" / "events" / "components" / "RichiestaStrutturaDialog.jsx").read_text()
         # founder 10/9 sera: solo la regia dal gestionale, niente linguette
@@ -870,9 +882,14 @@ class TestP4IlCatalogoDel2027:
     def test_il_catalogo_e_la_migrazione(self):
         seed = (BACKEND_DIR / "services" / "seed_commercial_plans.py").read_text()
         assert 'VENDITA_PIANI_DAL = "2027-01-01"' in seed
-        assert '"slug": "retreat_club"' in seed and '"name": "Club Fondatori"' in seed
+        # AB-R1 (14/9/2026): il Club resta nel catalogo ma nascosto; «Club
+        # Fondatori» e' «Entrato nel 2026»; il Pro e' 19/mese o 200/anno
+        assert '"slug": "retreat_club"' in seed and '"name": "Entrato nel 2026"' in seed
         blocco = seed[seed.index("RETREAT_COMMERCIAL_PLANS: List[dict] = ["):]
-        assert '"price_monthly": 19.0' not in blocco and '"price_yearly": 190.0' not in blocco, "il Pro di agosto e' ritirato"
+        assert '"price_monthly": 19.0' in blocco and '"price_yearly": 200.0' in blocco
+        assert '"price_yearly": 190.0' not in blocco and '"price_yearly": 119.0' not in blocco
+        assert "async def migrate_catalogo_pro19_v1" in (BACKEND_DIR / "services" / "seed_pricing.py").read_text()
+        assert "migrate_catalogo_pro19_v1()" in (BACKEND_DIR / "server.py").read_text()
         pricing = (BACKEND_DIR / "services" / "seed_pricing.py").read_text()
         assert "async def migrate_catalogo_2027_v1" in pricing
         assert 'aggiorna["stripe_price_id_monthly"] = None' in pricing, "i price id di agosto (19/190) escono"
@@ -891,17 +908,18 @@ class TestP4IlCatalogoDel2027:
         rp = (FE / "pages" / "RetreatPlansPage.js").read_text()
         assert "example_title" not in rp and "feeExample" not in rp, "founder 10/9: via gli esempi sui 100 €"
         assert 'data-testid={`plans-cta-${plan.slug}`}' in rp and "nonAncoraInVendita(plan)" in rp
-        assert "md:grid-cols-3" in rp, "tre schede: Gratis, Club, Pro"
+        assert "md:grid-cols-2" in rp, "due schede: Gratis, Pro (AB-R4)"
 
     def test_le_parole_dentro_dicono_le_stesse_del_fuori(self):
         it = json.loads((FE / "locales" / "it" / "settings.json").read_text())["billing"]
         assert "1° gennaio 2027" in it["retreat"]["subtitle"] and "gratuito per sempre" in it["retreat"]["subtitle"]
-        assert "30 giugno 2027" in it["retreat"]["founding_note"]
-        for k in ("retreat_club_prima_fila", "retreat_club_lettera_zona", "retreat_club_rete_lavoro",
-                  "retreat_pro_racconto", "retreat_pro_whatsapp", "retreat_founding_badge"):
+        # AB-R3/R4 (14/9/2026): niente 30/6/2027; i tre servizi del Pro hanno la voce
+        assert "30 giugno 2027" not in it["retreat"]["founding_note"] and "tranne Studio" in it["retreat"]["founding_note"]
+        for k in ("retreat_club_prima_fila", "retreat_sound_studio", "retreat_pro_lettera_eventi",
+                  "retreat_pro_social", "retreat_pro_intervista_reel", "retreat_founding_badge"):
             assert it["features"].get(k), k
         src = (FE / "features" / "prelaunch" / "PricingPage.js").read_text()
-        assert "PRICING_2027 = { spinta: 19, club: 49, pro: 119 }" in src
+        assert "PRICING_2027 = { pro_mese: 19, pro_anno: 200 }" in src
         pricing = (BACKEND_DIR / "services" / "seed_pricing.py").read_text()
         assert "async def migrate_stripe_prezzi_2027_v1" in pricing and 'startswith("sk_live_")' in pricing
         assert "price_1UE819RL6JKSLFw8BZRkQlLX" in pricing and "price_1UE81ZRL6JKSLFw8H0XyEHbD" in pricing
