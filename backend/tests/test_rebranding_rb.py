@@ -143,8 +143,8 @@ class TestRb2LaLandingDellOperatore:
         # AB-R3 (14/9/2026): il patto e' «chi entra entro il 31/12/2026 ha i
         # vantaggi del Pro senza Studio»; il tetto resta solo per il badge
         # founder 14/9: il testo di «Perche' entrare ora» e' il suo, parola per parola
-        assert op["nowP1"].startswith("Fino al 31 dicembre 2026, i primi operatori") and "gratuitamente" in op["nowP1"]
-        assert op["nowP2"] == "In più, il piano base di Aurya resta gratuito per sempre."
+        assert op["nowP1"].startswith("Entra entro il 31 dicembre 2026") and "piano Pro" in op["nowP1"]
+        assert op["nowP2"] == "Il piano base, invece, resta gratuito per sempre."
         assert "primi 20 operatori" in op["nowB2b2"] and op["nowEntra"].startswith("Entra entro il 31 dicembre 2026")
         assert "30 giugno 2027" not in json.dumps(op) and "post al mese" not in json.dumps(op), "via il 30/6/2027 e niente post mensile"
         for k in ("v1k", "v6k", "nowC1t", "nowC2t", "nowC3t", "nowPostoT", "proTitolo", "baseTitolo"):
@@ -170,9 +170,10 @@ class TestRb2LaLandingDellOperatore:
 
     def test_il_contatore_dei_fondatori_e_vero(self):
         src = LANDING.read_text()
-        assert "api.get('/public/fondatori')" in src and 'data-testid="ol-fondatori-contatore"' in src
-        # AB-R3: il contatore conta i giorni al 31/12/2026, non i posti
-        assert "nowGiorniFallback" in src and "giorni_rimasti" in src, "senza rete la frase resta senza numero, mai un numero inventato"
+        # founder 14/9/2026: niente countdown in pagina (diventa obsoleto);
+        # la data sta nel testo, /public/fondatori resta la fonte del badge
+        assert 'data-testid="ol-fondatori-contatore"' not in src and "Mancano" not in src
+        assert "Entra entro il 31 dicembre 2026" in src
         import requests
         try:
             r = requests.get(f"{BASE}/api/public/fondatori", timeout=10)
@@ -194,8 +195,9 @@ class TestRb2LaLandingDellOperatore:
         # 14/9/2026: il corpo per i crawler dice quello che dice la pagina —
         # niente Studio, niente fascia «rete», il patto 2026 con le parole
         # del founder, Gratis e Pro a confronto
-        for frase in ("Il tuo spazio professionale, pronto oggi.", "Tutto quello che ti serve, in un unico posto.",
-                      "Perché entrare ora", "Cosa ricevi entrando ora:", "Un posto tra i primi",
+        for frase in ("Il tuo spazio professionale, pronto oggi.", "Cosa puoi fare con Aurya.",
+                      "Perché entrare ora", "Entrando ora hai anche:", "Entra tra i primi operatori di Aurya.",
+                      "Una pagina per presentarti. Un link da condividere.",
                       "Quanto costa.", "Piano base · 0 €", "Pro · 19 € al mese, o 200 € l’anno", "Come si comincia."):
             assert frase in corpo, frase
         for vecchio in ("scoperto anche su Aurya", "Crea anche le tue meditazioni", "30 giugno 2027", "Chi c’è dietro Aurya", "merita un posto"):
@@ -331,7 +333,7 @@ class TestP1LeParoleSuiSoldi:
         it = json.loads(LOCALE.read_text())["nwHome"]
         assert "senza commissioni" in it["doorOpText"]   # CP: prosOffer e' uscito dalla home
         op = json.loads(PRELAUNCH.read_text())["opPro"]
-        assert "non prende commissioni" in op["faq1b1"] and "30 giugno 2027" not in op["nowP2"]
+        assert "non paghi commissioni" in op["faq1b1"] and "30 giugno 2027" not in op["nowP2"]
         assert "19 €" in op["faq1b2"] and "200 €" in op["faq1b2"] and "49 €" not in op["faq1b2"]   # AB-R3: un abbonamento
         sett = json.loads((FE / "locales" / "it" / "settings.json").read_text())["billing"]["retreat"]
         assert "non prende commissioni" in sett["subtitle"]

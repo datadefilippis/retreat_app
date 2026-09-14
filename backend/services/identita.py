@@ -217,6 +217,7 @@ def corpo_professionisti() -> str:
         "<ul>" + "".join(f"<li>{_t(s, f'pro{i}')}</li>" for i in range(1, 6) if _t(s, f'pro{i}')) + "</ul>",
         _h2(s, "joinTitle"), _coppie(s, "j", 3, "t", "b"),
         _h2(s, "faqTitle"), faq,
+        _p(s, "formSintesi1", "formSintesi2"),
         _h2(s, "formTitle2"), _p(s, "formA3", "formC3", "formD3", "formWho"),
     ])
 

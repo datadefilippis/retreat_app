@@ -137,8 +137,9 @@ class TestSr1Directory:
         assert 'data-testid="ol-studio"' not in landing
         assert 'data-testid="ol-prezzi-sound"' in landing and "link: '/sound'" in landing
         it = json.loads((FE / "locales" / "it" / "prelaunch.json").read_text())
-        # RB2-bis (10/9 sera): la parte pubblica aperta vive nella sezione «rete»
-        assert "puoi essere trovato" in it["opPro"]["reteP2"]
+        # 14/9: la fascia «rete» e' uscita (CP); la parte pubblica aperta
+        # vive nella scheda «Fatti trovare» e nella FAQ
+        assert "può essere trovato" in it["opPro"]["v2b"] and "può essere trovato" in it["opPro"]["faq2a3"]
         assert it["nl"]["a1c"] == "Vai su Aurya Sound"
         assert "non a scadenza" not in it["nl"]["r3b"]
 

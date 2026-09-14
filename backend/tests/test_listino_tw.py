@@ -6203,6 +6203,7 @@ class TestLandingOperatoriOl1:
             # Lettera GRATIS a chi entra entro l'anno) e' un vantaggio datato
             assert re.search(r"faq1b|faq3", finestra) or "31 dicembre 2026" in finestra \
                 or "senza commissioni" in finestra or "nowC" in finestra \
+                or "formSintesi" in finestra \
                 or "piano base" in finestra, \
                 f"'gratuito' fuori dalla FAQ nella landing: ...{finestra[-90:]}"
         for lang in self.LOCALES:

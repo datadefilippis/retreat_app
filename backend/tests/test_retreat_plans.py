@@ -607,9 +607,9 @@ class TestAbPrezziCoerenti:
         # AB-R3 (14/9): il 31 dicembre 2026 e' la scadenza del PATTO (chi
         # entra prima ha i vantaggi del Pro), mai una data del gratis.
         assert "gratis fino al" not in src.lower() and "gratuito fino al" not in src.lower()
-        assert "Fino al 31 dicembre 2026, i primi operatori" in src   # il patto, parole del founder
+        assert "Entra entro il 31 dicembre 2026 e ricevi gratuitamente" in src   # il patto, parole del founder
         assert 'Link to="/costi"' in src
-        assert "sempre gratuito" in src
+        assert "gratuito per sempre" in src   # founder 14/9: la FAQ «Quanto costa?»
 
     def test_rotta_costi_registrata(self):
         app = (self.FRONTEND / "src" / "App.js").read_text()
