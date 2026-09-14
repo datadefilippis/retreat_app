@@ -607,7 +607,7 @@ class TestAbPrezziCoerenti:
         # AB-R3 (14/9): il 31 dicembre 2026 e' la scadenza del PATTO (chi
         # entra prima ha i vantaggi del Pro), mai una data del gratis.
         assert "gratis fino al" not in src.lower() and "gratuito fino al" not in src.lower()
-        assert "31 dicembre 2026 ha gratis i vantaggi del Pro" in src
+        assert "Fino al 31 dicembre 2026, i primi operatori" in src   # il patto, parole del founder
         assert 'Link to="/costi"' in src
         assert "sempre gratuito" in src
 

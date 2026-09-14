@@ -132,9 +132,10 @@ class TestSr1Directory:
         i = nl.index("Ascolta un assaggio")
         assert "to: '/sound'" in nl[i - 600:i], "l'assaggio senza iscrizione vive su Aurya Sound"
         landing = (FE / "features" / "prelaunch" / "OperatorLandingPage.js").read_text()
-        # RB2-bis (10/9 sera): Crea Studio e' un link sotto le sei schede
-        assert 'to="/sound/studio"' in landing and 'data-testid="ol-voice-studio"' in landing
-        assert "ancora non c" not in landing.split("opPro.goSoon")[1][:200]
+        # founder 14/9: via la sezione Studio dalla landing (toglieva il focus);
+        # Aurya Sound e' il link nella riga di Studio della scheda Pro
+        assert 'data-testid="ol-studio"' not in landing
+        assert 'data-testid="ol-prezzi-sound"' in landing and "link: '/sound'" in landing
         it = json.loads((FE / "locales" / "it" / "prelaunch.json").read_text())
         # RB2-bis (10/9 sera): la parte pubblica aperta vive nella sezione «rete»
         assert "puoi essere trovato" in it["opPro"]["reteP2"]

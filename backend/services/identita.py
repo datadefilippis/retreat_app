@@ -201,16 +201,23 @@ def corpo_professionisti() -> str:
         _h2(s, "goTitle"), "<ul>" + "".join(
             f"<li><b>{_t(s, f'v{i}t')}</b> {_t(s, f'v{i}b')} <b>{_t(s, f'v{i}k')}</b></li>"
             for i in range(1, 7) if _t(s, f'v{i}t')) + "</ul>",
-        _h2(s, "studioTitle"), _p(s, "studioSub", "goSoon"),
-        _h2(s, "reteTitle"), _p(s, "reteP1", "reteP2", "reteP3"),
-        _h2(s, "nowTitle"), _p(s, "nowP1", "nowP2"), _coppie(s, "nowB", 4, "t", "b"),
-        _p(s, "nowCountFallback"), _p(s, "nowCloseA2", "nowCloseB2"),
-        _h2(s, "prezziTitle"), _p(s, "prezziP1", "prezziP2", "prezziP3"), _coppie(s, "prezzi", 3, "t", "b"),
+        # 14/9/2026 (founder): via Studio e la fascia «rete» (CP); il patto
+        # 2026 con le sue parole (nowC1-3 + badge), Gratis e Pro a confronto;
+        # la pagina finisce sul modulo (via chi-siamo e la chiusura verde).
+        _h2(s, "nowTitle"), _p(s, "nowP1", "nowP2"), _p(s, "nowSub"),
+        "<ul>" + "".join(
+            f"<li><b>{_t(s, t_)}</b> {_t(s, b_)}</li>"
+            for t_, b_ in (("nowC1t", "nowC1b"), ("nowC2t", "nowC2b"), ("nowC3t", "nowC3b"), ("nowB2t", "nowB2b2"))
+            if _t(s, t_)) + "</ul>",
+        _p(s, "nowPostoT"), _p(s, "nowCloseA2", "nowCloseB2", "nowEntra"),
+        _h2(s, "prezziTitle"), _p(s, "prezziP1", "prezziP2", "prezziP3"),
+        f"<h3>{_t(s, 'baseTitolo')}</h3>", _p(s, "baseSotto"),
+        "<ul>" + "".join(f"<li>{_t(s, f'g{i}')}</li>" for i in range(1, 6) if _t(s, f'g{i}')) + "</ul>",
+        f"<h3>{_t(s, 'proTitolo')}</h3>", _p(s, "proSotto"),
+        "<ul>" + "".join(f"<li>{_t(s, f'pro{i}')}</li>" for i in range(1, 6) if _t(s, f'pro{i}')) + "</ul>",
         _h2(s, "joinTitle"), _coppie(s, "j", 3, "t", "b"),
         _h2(s, "faqTitle"), faq,
-        _h2(s, "whoEyebrow"), _p(s, "whoLead"), _p(s, "whoV", "whoD", "whoP"),
-        _h2(s, "formTitle2"), _p(s, "formA3", "formC3", "formD3", "formE3"),
-        _p(s, "endA", "endB", "endC2", "endD2"), _p(s, "endBody2"),
+        _h2(s, "formTitle2"), _p(s, "formA3", "formC3", "formD3", "formWho"),
     ])
 
 

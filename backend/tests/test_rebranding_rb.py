@@ -125,7 +125,8 @@ class TestRb2LaLandingDellOperatore:
         pos = -1
         # CP (10/9 notte): via ol-rete, ol-who, ol-end; il filo a /chi-siamo
         # resta in una riga dentro il modulo (ol-who-cta)
-        for tid in ("ol-hero", "ol-go", "ol-studio", "ol-now", "ol-prezzi", "ol-join", "ol-faq", "ol-form", "ol-who-cta"):
+        # founder 14/9: via «Crea anche le tue meditazioni» (ol-studio)
+        for tid in ("ol-hero", "ol-go", "ol-now", "ol-prezzi", "ol-join", "ol-faq", "ol-form", "ol-who-cta"):
             here = src.index(f'data-testid="{tid}"')
             assert here > pos, f"{tid}: fuori ordine"
             pos = here
@@ -141,10 +142,12 @@ class TestRb2LaLandingDellOperatore:
         assert op["heroP3"] == "Gratis per sempre, senza commissioni."
         # AB-R3 (14/9/2026): il patto e' «chi entra entro il 31/12/2026 ha i
         # vantaggi del Pro senza Studio»; il tetto resta solo per il badge
-        assert "31 dicembre 2026" in op["nowP1"] and "tranne Studio" in op["nowP1"], "il patto 2026 ha la data e il confine"
-        assert "primi venti" in op["nowP2"], "il badge Fondatore ai primi venti"
+        # founder 14/9: il testo di «Perche' entrare ora» e' il suo, parola per parola
+        assert op["nowP1"].startswith("Fino al 31 dicembre 2026, i primi operatori") and "gratuitamente" in op["nowP1"]
+        assert op["nowP2"] == "In più, il piano base di Aurya resta gratuito per sempre."
+        assert "primi 20 operatori" in op["nowB2b2"] and op["nowEntra"].startswith("Entra entro il 31 dicembre 2026")
         assert "30 giugno 2027" not in json.dumps(op) and "post al mese" not in json.dumps(op), "via il 30/6/2027 e niente post mensile"
-        for k in ("v1k", "v6k", "nowC1t", "nowC2t", "nowC3t", "nowCta2", "proTitolo"):
+        for k in ("v1k", "v6k", "nowC1t", "nowC2t", "nowC3t", "nowPostoT", "proTitolo", "baseTitolo"):
             assert op.get(k), k
         assert op["ctaOpen"] == "Apri il tuo spazio"
         testo = " ".join(str(v) for v in op.values()).lower()
@@ -188,9 +191,15 @@ class TestRb2LaLandingDellOperatore:
         assert "Gratis per sempre, senza commissioni." in shell   # RB2-bis: la frase-marchio, senza data
         from services.identita import corpo_professionisti, faq_professionisti
         corpo = corpo_professionisti()
+        # 14/9/2026: il corpo per i crawler dice quello che dice la pagina —
+        # niente Studio, niente fascia «rete», il patto 2026 con le parole
+        # del founder, Gratis e Pro a confronto
         for frase in ("Il tuo spazio professionale, pronto oggi.", "Tutto quello che ti serve, in un unico posto.",
-                      "scoperto anche su Aurya", "Perché entrare ora.", "Quanto costa.", "Come si comincia."):
-            assert frase in corpo
+                      "Perché entrare ora", "Cosa ricevi entrando ora:", "Un posto tra i primi",
+                      "Quanto costa.", "Piano base · 0 €", "Pro · 19 € al mese, o 200 € l’anno", "Come si comincia."):
+            assert frase in corpo, frase
+        for vecchio in ("scoperto anche su Aurya", "Crea anche le tue meditazioni", "30 giugno 2027", "Chi c’è dietro Aurya", "merita un posto"):
+            assert vecchio not in corpo, vecchio
         assert "non fa per te" not in corpo and "con calma" not in corpo
         assert len(faq_professionisti()) == 6
 
