@@ -150,7 +150,7 @@ export default function OperatorLandingPage() {
   const grigliaPassi = useStagger();
 
   useSeoMeta({
-    title: t('opPro.seoTitle', { defaultValue: "Per operatori olistici: il tuo spazio professionale, pronto oggi | Aurya" }),
+    title: t('opPro.seoTitle', { defaultValue: "Per operatori olistici: il tuo spazio professionale | Aurya" }),
     description: t('opPro.seoDesc', { defaultValue: "Una pagina tutta tua per presentarti, mostrare i tuoi servizi, ricevere prenotazioni e organizzare eventi e ritiri. Un solo link da condividere. Gratis per sempre, senza commissioni." }),
     canonicalPath: '/entra-nella-rete',
   });

@@ -531,7 +531,8 @@ _BRAND_PAGES = {
     # RB2 (10/9/2026, REBRANDING) — la landing dell'OPERATORE OLISTICO:
     # l'offerta in chiaro, la data, il racconto come premio dopo.
     "entra-nella-rete": {
-        "title": "Per operatori olistici: il tuo spazio professionale, pronto oggi | Aurya",
+        # SEO-A: 72 caratteri → 58 (Google taglia a ~60); stesso title nel JSON della SPA
+        "title": "Per operatori olistici: il tuo spazio professionale | Aurya",
         # RB2-bis (10/9 sera): la stessa frase della landing
         # SEO-A (14/9): 182 caratteri → sotto i 160
         "description": ("Una pagina tutta tua per presentarti, mostrare i servizi, "
@@ -754,10 +755,10 @@ def _scheda_content_html(slug: str, scheda: dict) -> str:
 _SOUND_PAGES = {
     None: {
         "title": "Aurya Sound: onde cerebrali, frequenze e metodi | Aurya",
-        "description": ("Una biblioteca educativa sul suono: cosa sono le "
-                        "bande cerebrali, le frequenze e i metodi di "
-                        "stimolazione sonora — con il livello di evidenza "
-                        "dichiarato per ogni scheda."),
+        # SEO-A: 169 caratteri → sotto i 160
+        "description": ("Una biblioteca educativa sul suono: bande cerebrali, "
+                        "frequenze e metodi di stimolazione sonora, con il "
+                        "livello di evidenza dichiarato per ogni scheda."),
     },
     "esplora": {
         "title": "Esplora le frequenze: bande, frequenze e metodi | Aurya Sound",
@@ -2201,11 +2202,10 @@ async def _meta_esperienze(categoria: Optional[str] = None,
                '<a href="/blog">Il Magazine</a></p></div>')
     return {
         "title": "Ritiri ed esperienze olistiche in programma | Aurya",
+        # SEO-A: 221 caratteri → sotto i 160
         "description": ("I ritiri e le esperienze olistiche dei professionisti "
-                        "della rete Aurya, per data: yoga, meditazione, respiro, "
-                        "suono, cammini. Ogni scheda dice chi conduce, dove, "
-                        "quando, il prezzo e come si prenota, online o con "
-                        "bonifico."),
+                        "della rete Aurya, per data: chi conduce, dove, quando, "
+                        "il prezzo e come si prenota."),
         "canonical": canonical,
         "hreflang": _hub_hreflang(canonical),
         "image": f"{base}/media/hero-blog.webp",   # la copertina della pagina
@@ -2330,8 +2330,8 @@ async def _meta_operator(org_slug: str) -> Optional[dict]:
         "url": canonical,
         "description": bio,
     }
-    if image:
-        jsonld["image"] = image
+    # SEO-C: `image` e' obbligatoria per il rich result: senza foto, il marchio
+    jsonld["image"] = image or f"{base}/og-cover.jpg"
     address = sx.postal_address(city=city, region=region)
     if address:
         jsonld["address"] = address
@@ -2367,6 +2367,12 @@ async def _meta_operator(org_slug: str) -> Optional[dict]:
         except Exception:               # noqa: BLE001 — mai 500 sulla shell
             _rows = []
         if _rows:
+            # SEO-C (14/9 sera): priceRange dal listino (rich result LocalBusiness)
+            _prezzi = sorted(float(r["price"]) for r in _rows
+                             if r.get("price") and not r.get("on_request"))
+            if _prezzi:
+                _lo, _hi = int(_prezzi[0]), int(_prezzi[-1])
+                jsonld["priceRange"] = f"€{_lo}" if _lo == _hi else f"€{_lo}-€{_hi}"
             jsonld["hasOfferCatalog"] = {
                 "@type": "OfferCatalog",
                 "name": f"Listino di {name}",
@@ -2472,6 +2478,57 @@ async def _meta_operator(org_slug: str) -> Optional[dict]:
         "jsonld": [jsonld, crumbs] if crumbs else jsonld,
         "hreflang": hreflang,
         "content_html": "".join(pezzi),
+    }
+
+
+async def _meta_intervista(org_slug: str) -> Optional[dict]:
+    """SEO-C (14/9/2026 sera) — l'intervista pubblicata come pagina
+    indicizzabile: Article con author = l'operatore (E-E-A-T: l'esperienza
+    di chi pratica), domande come h2, risposte in chiaro, briciole. Senza
+    intervista pubblicata → None (404), niente pagine vuote."""
+    from services import seo_schema as sx
+    from database import stores_collection, organizations_collection
+    base = _base_url()
+    # stessa risoluzione del profilo: store pubblicato prima, public_slug poi
+    _proj = {"_id": 0, "id": 1, "name": 1, "public_profile": 1, "store_settings": 1}
+    store = await stores_collection.find_one({"slug": org_slug, "is_published": True}, {"_id": 0, "organization_id": 1})
+    org = (await organizations_collection.find_one({"id": store["organization_id"]}, _proj) if store
+           else await organizations_collection.find_one({"public_slug": org_slug}, _proj))
+    if not org:
+        return None
+    profile = org.get("public_profile") or {}
+    qa = [x for x in (profile.get("interview") or []) if isinstance(x, dict) and x.get("answer")]
+    if not profile.get("interview_published") or not qa:
+        return None
+    name = (org.get("name") or (org.get("store_settings") or {}).get("display_name") or org_slug)
+    canonical = f"{base}/o/{org_slug}/intervista"
+    image = _abs_image(profile.get("cover_url") or profile.get("portrait_url") or profile.get("logo_url"))
+    title = f"{name}, l'intervista | Aurya"
+    desc = _taglia_description(str(qa[0].get("answer") or ""))
+    corpo = "".join(
+        f"<h2>{_html.escape(str(x.get('question') or ''))}</h2>"
+        + "".join(f"<p>{_html.escape(c.strip()[:1500])}</p>" for c in str(x.get("answer")).split("\n") if c.strip())
+        for x in qa)
+    testo = " ".join(str(x.get("answer") or "") for x in qa)
+    jsonld = {
+        "@context": "https://schema.org", "@type": "Article",
+        "headline": f"{name}, l'intervista",
+        "author": {"@type": "Person", "name": name, "url": f"{base}/o/{org_slug}"},
+        "publisher": {"@type": "Organization", "name": "Aurya", "url": f"{base}/"},
+        "mainEntityOfPage": canonical,
+        "articleBody": testo[:5000],
+        "wordCount": len(testo.split()),
+        **({"image": image} if image else {}),
+        **({"datePublished": profile["interview_verified_at"]} if profile.get("interview_verified_at") else {}),
+    }
+    crumbs = sx.breadcrumb([("Aurya", f"{base}/"), ("Professionisti", f"{base}/operatori"),
+                            (name, f"{base}/o/{org_slug}"), ("Intervista", canonical)])
+    return {
+        "title": title, "description": desc, "canonical": canonical, "image": image,
+        "jsonld": [jsonld, crumbs] if crumbs else jsonld,
+        "content_html": (f"<div><h1>{_html.escape(name)}, l'intervista</h1>{corpo}"
+                         f'<p><a href="/o/{_html.escape(org_slug)}">Il profilo di {_html.escape(name)}</a> · '
+                         '<a href="/operatori">Tutti i professionisti</a></p></div>'),
     }
 
 
@@ -2672,6 +2729,10 @@ async def resolve_meta(path: str) -> Optional[dict]:
             parts[1] if len(parts) > 1 else None)
     if head == "destinazioni":
         return await _meta_destination(parts[1] if len(parts) > 1 else None)
+    # SEO-C (14/9 sera): /o/{slug}/intervista e' una pagina a se' (Article
+    # firmato dall'operatore); non pubblicata → 404, come la SPA che rimanda
+    if head == "o" and len(parts) == 3 and parts[2] == "intervista":
+        return await _meta_intervista(parts[1])
     if head == "o" and len(parts) >= 2:
         return await _meta_operator(parts[1])
     # LK2 — pagina link: /@slug (l'URL da bio Instagram) e /l/slug

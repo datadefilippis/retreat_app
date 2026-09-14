@@ -340,6 +340,7 @@ async def build_operators() -> str:
         base = _base_url()
         slug_by_org = await _public_org_slugs()
         members: dict = {}
+        interviste: set = set()
         # ES (25/8) — il criterio non e' piu' SOLO `network_member`.
         # Quel flag dice «intervistato e accolto» ed e' una decisione
         # editoriale del founder; la sitemap invece ha un compito
@@ -355,13 +356,20 @@ async def build_operators() -> str:
                  "exclude_from_listings": {"$ne": True},
                  "$or": [{"network_member": True},
                          {"public_slug": {"$nin": [None, ""]}}]},
-                {"_id": 0, "id": 1, "updated_at": 1}):
+                {"_id": 0, "id": 1, "updated_at": 1,
+                 "public_profile.interview_published": 1, "public_profile.interview": 1}):
             slug = slug_by_org.get(o["id"])
             if slug:
                 members[slug] = o.get("updated_at")
+                # SEO-C (14/9 sera): l'intervista pubblicata e' una pagina a se'
+                _pp = o.get("public_profile") or {}
+                if _pp.get("interview_published") and _pp.get("interview"):
+                    interviste.add(slug)
         urls = [_url(f"{base}/o/{slug}", priority="0.6",
                      lastmod=members[slug])
                 for slug in sorted(members)]
+        urls += [_url(f"{base}/o/{slug}/intervista", priority="0.5", lastmod=members[slug])
+                 for slug in sorted(interviste)]
         return _wrap(urls, "operators")
     base = _base_url()
     slug_by_org = await _public_org_slugs()

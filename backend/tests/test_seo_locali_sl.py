@@ -160,3 +160,44 @@ class TestClient:
         assert 'import(/* webpackChunkName: "osservabilita" */ "./sentry")' in oss
         assert "requestIdleCallback" in oss
         assert not re.search(r'^import .*@sentry', oss, re.M)
+
+
+class TestSecondoGiro:
+    """SEO-C minori, SEO-E seconda meta', SEO-G (14/9 sera, secondo giro)."""
+    SHELL = (BACKEND / "routers" / "seo_shell.py").read_text()
+
+    def test_intervista_pagina_propria(self):
+        assert "async def _meta_intervista(" in self.SHELL
+        assert 'if head == "o" and len(parts) == 3 and parts[2] == "intervista":' in self.SHELL
+        corpo = self.SHELL[self.SHELL.index("async def _meta_intervista("):self.SHELL.index("async def _meta_link_page(")]
+        assert '"@type": "Article"' in corpo and '"author": {"@type": "Person"' in corpo
+        assert 'if not profile.get("interview_published") or not qa:\n        return None' in corpo
+        seo = (BACKEND / "routers" / "seo.py").read_text()
+        assert '/o/{slug}/intervista' in seo and "interviste.add(slug)" in seo
+
+    def test_localbusiness_prezzi_e_immagine(self):
+        corpo = self.SHELL[self.SHELL.index("async def _meta_operator("):self.SHELL.index("async def _meta_link_page(")]
+        assert 'jsonld["priceRange"]' in corpo
+        assert 'jsonld["image"] = image or f"{base}/og-cover.jpg"' in corpo
+
+    def test_font_self_hosted(self):
+        html = (ROOT / "frontend" / "public" / "index.html").read_text()
+        assert "fonts.googleapis.com" not in html and "fonts.gstatic.com" not in html
+        assert 'rel="preload" as="font"' in html and "/static/fonts/fonts.css" in html
+        cart = ROOT / "frontend" / "public" / "static" / "fonts"
+        for f in ("cinzel", "jetbrains-mono", "manrope", "public-sans"):
+            assert (cart / f"{f}.woff2").stat().st_size > 10_000, f
+        css = (cart / "fonts.css").read_text()
+        assert css.count("@font-face") == 4 and "font-display: swap" in css and "unicode-range" in css
+        assert "font-weight: 400 800" in css   # Manrope variabile
+
+    def test_galleria_con_dimensioni(self):
+        src = (FE / "features" / "storefront" / "OperatorProfilePage.js").read_text()
+        assert 'loading="lazy" width="400" height="300"' in src
+
+    def test_crawl_ripetibile(self):
+        import subprocess, sys
+        script = ROOT / "scripts" / "seo_crawl.py"
+        assert script.exists()
+        r = subprocess.run([sys.executable, str(script), "--help"], capture_output=True, text=True)
+        assert r.returncode == 0 and "--shell" in r.stdout

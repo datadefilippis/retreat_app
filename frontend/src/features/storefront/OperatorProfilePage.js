@@ -78,7 +78,7 @@ function Gallery({ photos, name, t }) {
         {photos.map((url, i) => (
           <button key={url} type="button" onClick={() => setOpen(i)}
                   className="h-36 rounded-xl overflow-hidden bg-secondary group">
-            <img src={url} alt={`${name} — foto ${i + 1}`} loading="lazy"
+            <img src={url} alt={`${name} — foto ${i + 1}`} loading="lazy" width="400" height="300" decoding="async"
                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
           </button>
         ))}

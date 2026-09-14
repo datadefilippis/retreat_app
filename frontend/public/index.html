@@ -34,9 +34,13 @@
         element attribute. This meta tag is the document-level fallback.
         -->
         <meta name="referrer" content="no-referrer-when-downgrade" />
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-        <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600&family=Inter:wght@600&family=JetBrains+Mono:wght@400;500;700&family=Manrope:wght@400;500;700;800&family=Public+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+        <!-- SEO-E (14/9/2026 sera): font self-hosted (prima 5 famiglie da Google
+             Fonts, terza parte e render-blocking). Le due che disegnano il primo
+             schermo (corpo e titoli) si precaricano; Cinzel e JetBrains Mono
+             arrivano quando servono. -->
+        <link rel="preload" as="font" type="font/woff2" crossorigin href="%PUBLIC_URL%/static/fonts/public-sans.woff2" />
+        <link rel="preload" as="font" type="font/woff2" crossorigin href="%PUBLIC_URL%/static/fonts/manrope.woff2" />
+        <link rel="stylesheet" href="%PUBLIC_URL%/static/fonts/fonts.css" />
         <!--
         manifest.json provides metadata used when your web app is installed on a
         user's mobile device or desktop. See https://developers.google.com/web/fundamentals/web-app-manifest/

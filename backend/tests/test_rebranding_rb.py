@@ -188,7 +188,8 @@ class TestRb2LaLandingDellOperatore:
 
     def test_la_shell_e_il_corpo_dicono_la_stessa_landing(self):
         shell = SHELL.read_text()
-        assert "Per operatori olistici: il tuo spazio professionale, pronto oggi | Aurya" in shell
+        # SEO-A (14/9 sera): title accorciato a 58 caratteri (Google taglia a ~60)
+        assert "Per operatori olistici: il tuo spazio professionale | Aurya" in shell
         assert "Gratis per sempre, senza commissioni." in shell   # RB2-bis: la frase-marchio, senza data
         from services.identita import corpo_professionisti, faq_professionisti
         corpo = corpo_professionisti()
