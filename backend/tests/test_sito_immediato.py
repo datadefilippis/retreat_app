@@ -47,7 +47,9 @@ class TestSr1Directory:
         assert "isPreview" not in page
         assert "PrelaunchBanner" not in page.split("const OperatorsMapView")[0].replace("import", ""), \
             "niente banner «d'esempio»: i dati sono veri"
-        assert "canonicalPath: categoria ? `/operatori/${categoria}` : '/operatori'" in page
+        # SEO-B (14/9 sera): sulle pagine locali il canonico lo manda il backend
+        # (`pagina`, la stessa verita' della shell); altrove resta /operatori
+        assert "canonicalPath: data?.pagina?.path || '/operatori'" in page
 
     def test_la_copertina_nomina_la_rete_una_volta_sola(self):
         page = (STORE / "OperatorsIndexPage.js").read_text()
@@ -83,10 +85,12 @@ class TestSr1Directory:
         src = (BACKEND / "routers" / "seo_shell.py").read_text()
         i = src.index("async def _meta_operators_index")
         corpo = src[i:src.index("async def _meta_esplora_operatori")]
-        assert "return await _meta_esplora_operatori(category)" in corpo
+        # SEO-B (14/9 sera): il secondo segmento (regione) viaggia con la categoria
+        assert "return await _meta_esplora_operatori(category, sub)" in corpo
         assert "network_member" not in corpo, "la shell non filtra piu' per membri della rete"
         j = src.index("async def _meta_esplora_operatori")
-        assert 'canonical = f"{base}/operatori"' in src[j:j + 1500]
+        # SEO-B: canonico proprio SOLO per le pagine locali, /operatori per il resto
+        assert 'canonical = f"{base}{_pl.percorso(disciplina, regione)}" if locale else f"{base}/operatori"' in src[j:j + 2500]
         assert 'href="/esplora-operatori"' not in src
 
     def test_sr2_home_la_porta_di_casa_e_la_directory(self):
