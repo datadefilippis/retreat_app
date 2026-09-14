@@ -1,0 +1,331 @@
+[
+ {
+  "title": "Alimentazione ayurvedica: come si mangia e perché",
+  "slug": "alimentazione-ayurvedica-principi-sei-sapori",
+  "category": "ayurveda",
+  "parole": 1846,
+  "access": null
+ },
+ {
+  "title": "Ayurveda: cos'è, i dosha e come funziona la visita",
+  "slug": "ayurveda-cose-i-tre-dosha-cosa-aspettarsi",
+  "category": "ayurveda",
+  "parole": 2142,
+  "access": null
+ },
+ {
+  "title": "Breathwork: cos'è, tecniche e controindicazioni",
+  "slug": "breathwork-cose-tecniche-benefici",
+  "category": "breathwork",
+  "parole": 1321,
+  "access": null
+ },
+ {
+  "title": "Rebirthing: cos'è e le controindicazioni",
+  "slug": "rebirthing-cose-come-funziona-una-sessione",
+  "category": "breathwork",
+  "parole": 1358,
+  "access": null
+ },
+ {
+  "title": "Respiro e sistema nervoso: cosa succede",
+  "slug": "respiro-sistema-nervoso-cosa-succede",
+  "category": "breathwork",
+  "parole": 1226,
+  "access": null
+ },
+ {
+  "title": "Bagni di foresta e cammini: camminare come pratica",
+  "slug": "camminare-bagni-di-foresta-cammini",
+  "category": "cammini",
+  "parole": 1671,
+  "access": null
+ },
+ {
+  "title": "I cammini italiani: quale scegliere la prima volta",
+  "slug": "cammini-italiani-quale-scegliere-la-prima-volta",
+  "category": "cammini",
+  "parole": 1644,
+  "access": null
+ },
+ {
+  "title": "Digiuno e detox: benefici veri e controindicazioni",
+  "slug": "digiuno-consapevole-detox-benefici-falsi-miti",
+  "category": "detox",
+  "parole": 1425,
+  "access": null
+ },
+ {
+  "title": "Smettere alcol, zucchero e caffeina: cosa succede",
+  "slug": "smettere-alcol-zucchero-caffeina-cosa-succede",
+  "category": "detox",
+  "parole": 1223,
+  "access": null
+ },
+ {
+  "title": "I sette chakra: cosa sono e come si usano",
+  "slug": "chakra-cosa-sono-i-sette-come-si-usano",
+  "category": "energia",
+  "parole": 1544,
+  "access": null
+ },
+ {
+  "title": "Costellazioni familiari: cosa sono e come funzionano",
+  "slug": "costellazioni-familiari-cosa-sono-come-funzionano",
+  "category": "energia",
+  "parole": 1524,
+  "access": null
+ },
+ {
+  "title": "Lettura del tema natale: cos'è e cosa aspettarsi",
+  "slug": "lettura-tema-natale-cosa-aspettarsi",
+  "category": "energia",
+  "parole": 1731,
+  "access": null
+ },
+ {
+  "title": "Reiki: cos'è e come funziona una sessione",
+  "slug": "reiki-cose-come-funziona-una-sessione",
+  "category": "energia",
+  "parole": 1483,
+  "access": null
+ },
+ {
+  "title": "Tarocchi evolutivi: cosa sono e come funzionano",
+  "slug": "tarocchi-oracoli-strumento-evolutivo",
+  "category": "energia",
+  "parole": 1719,
+  "access": null
+ },
+ {
+  "title": "Cerchi di donne: cosa succede davvero dentro",
+  "slug": "cerchi-di-donne-cosa-sono-come-funzionano",
+  "category": "femminile",
+  "parole": 1782,
+  "access": null
+ },
+ {
+  "title": "Ciclo mestruale: le quattro fasi come mappa",
+  "slug": "ciclo-mestruale-quattro-fasi-come-ascoltarlo",
+  "category": "femminile",
+  "parole": 1481,
+  "access": null
+ },
+ {
+  "title": "Massaggio olistico: i tipi e cosa aspettarsi",
+  "slug": "massaggio-olistico-tipi-cosa-aspettarsi",
+  "category": "massaggio",
+  "parole": 1769,
+  "access": null
+ },
+ {
+  "title": "Shiatsu: come funziona una seduta",
+  "slug": "shiatsu-cose-come-funziona-una-seduta",
+  "category": "massaggio",
+  "parole": 1738,
+  "access": null
+ },
+ {
+  "title": "Sette pratiche da quindici minuti al giorno",
+  "slug": "kit-pratiche-quotidiane-15-minuti",
+  "category": "meditazione",
+  "parole": 2896,
+  "access": "subscriber"
+ },
+ {
+  "title": "Meditazione per chi inizia: la guida semplice",
+  "slug": "meditazione-per-chi-inizia-guida-semplice",
+  "category": "meditazione",
+  "parole": 2132,
+  "access": null
+ },
+ {
+  "title": "Mindfulness: cos'è, come funziona un protocollo MBSR",
+  "slug": "mindfulness-cose-mbsr-come-funziona",
+  "category": "meditazione",
+  "parole": 1851,
+  "access": null
+ },
+ {
+  "title": "Mindfulness e meditazione: che differenza c'è",
+  "slug": "mindfulness-e-meditazione-la-differenza",
+  "category": "meditazione",
+  "parole": 1136,
+  "access": null
+ },
+ {
+  "title": "Pratiche contro lo stress: cosa funziona",
+  "slug": "pratiche-olistiche-contro-stress-cosa-funziona",
+  "category": "meditazione",
+  "parole": 1355,
+  "access": null
+ },
+ {
+  "title": "Aromaterapia: cos'è, usi e cosa dice la ricerca",
+  "slug": "aromaterapia-cose-come-si-usa-ricerca",
+  "category": "naturopatia",
+  "parole": 1375,
+  "access": null
+ },
+ {
+  "title": "Naturopatia: cos'è e cosa dice la ricerca",
+  "slug": "naturopatia-cose-consulto-cosa-dice-ricerca",
+  "category": "naturopatia",
+  "parole": 1014,
+  "access": null
+ },
+ {
+  "title": "Assicurazione RC per operatori olistici: la guida",
+  "slug": "assicurazione-rc-operatore-olistico",
+  "category": "operatori",
+  "parole": 868,
+  "access": null
+ },
+ {
+  "title": "Bio professionale dell'operatore olistico: la guida",
+  "slug": "bio-professionale-operatore-olistico",
+  "category": "operatori",
+  "parole": 1252,
+  "access": null
+ },
+ {
+  "title": "Codice ATECO per operatori olistici: quale scegliere",
+  "slug": "codice-ateco-operatore-olistico",
+  "category": "operatori",
+  "parole": 978,
+  "access": null
+ },
+ {
+  "title": "Come promuovere un ritiro e riempire i posti",
+  "slug": "come-promuovere-un-ritiro-e-riempire-i-posti",
+  "category": "operatori",
+  "parole": 1713,
+  "access": null
+ },
+ {
+  "title": "Legge 4/2013: cosa dice per le professioni olistiche",
+  "slug": "legge-4-2013-professioni-olistiche",
+  "category": "operatori",
+  "parole": 767,
+  "access": null
+ },
+ {
+  "title": "Partita IVA per operatori olistici: la guida 2026",
+  "slug": "partita-iva-operatore-olistico-fiscalita-guida",
+  "category": "operatori",
+  "parole": 1355,
+  "access": null
+ },
+ {
+  "title": "Come calcolare il prezzo di un ritiro",
+  "slug": "prezzo-giusto-ritiro-come-calcolarlo",
+  "category": "operatori",
+  "parole": 1879,
+  "access": null
+ },
+ {
+  "title": "Come scegliere un ritiro: tipo, durata e budget",
+  "slug": "come-scegliere-un-ritiro",
+  "category": "ritiri",
+  "parole": 743,
+  "access": null
+ },
+ {
+  "title": "Cosa portare a un ritiro: la lista che serve davvero",
+  "slug": "cosa-portare-a-un-ritiro",
+  "category": "ritiri",
+  "parole": 645,
+  "access": null
+ },
+ {
+  "title": "Come capire se un operatore olistico è serio",
+  "slug": "come-capire-se-un-operatore-olistico-e-serio",
+  "category": "scegliere",
+  "parole": 2791,
+  "access": null
+ },
+ {
+  "title": "Le discipline olistiche, una per una: la mappa",
+  "slug": "discipline-olistiche-la-mappa",
+  "category": "scegliere",
+  "parole": 900,
+  "access": null
+ },
+ {
+  "title": "Le domande da fare prima di prenotare un ritiro",
+  "slug": "domande-da-fare-prima-di-prenotare-un-ritiro",
+  "category": "scegliere",
+  "parole": 1884,
+  "access": null
+ },
+ {
+  "title": "Il primo colloquio con un operatore olistico",
+  "slug": "primo-colloquio-operatore-olistico",
+  "category": "scegliere",
+  "parole": 1369,
+  "access": null
+ },
+ {
+  "title": "Quanto costano le pratiche olistiche, una per una",
+  "slug": "quanto-costano-pratiche-olistiche",
+  "category": "scegliere",
+  "parole": 966,
+  "access": null
+ },
+ {
+  "title": "Bagno di gong: come funziona e cosa si prova",
+  "slug": "bagno-di-gong-sound-healing-benefici",
+  "category": "suono",
+  "parole": 1446,
+  "access": null
+ },
+ {
+  "title": "Campane tibetane: benefici e come funzionano",
+  "slug": "campane-tibetane-benefici-come-funzionano",
+  "category": "suono",
+  "parole": 1397,
+  "access": null
+ },
+ {
+  "title": "Come scegliere un insegnante di yoga",
+  "slug": "come-scegliere-un-insegnante-di-yoga",
+  "category": "yoga",
+  "parole": 1469,
+  "access": null
+ },
+ {
+  "title": "Tipi di yoga: hatha, vinyasa, yin e le differenze",
+  "slug": "differenze-tipi-di-yoga-hatha-vinyasa-ashtanga-yin-kundalini",
+  "category": "yoga",
+  "parole": 1701,
+  "access": null
+ },
+ {
+  "title": "Kriya yoga: cos'è e in cosa si distingue",
+  "slug": "kriya-yoga-cose-come-funziona",
+  "category": "yoga",
+  "parole": 1070,
+  "access": null
+ },
+ {
+  "title": "Pranayama: le tecniche di respirazione dello yoga",
+  "slug": "pranayama-tecniche-respirazione-yoga",
+  "category": "yoga",
+  "parole": 1237,
+  "access": null
+ },
+ {
+  "title": "Yoga: cos'è, da dove viene e come cominciare",
+  "slug": "yoga-cose-da-dove-viene-come-cominciare",
+  "category": "yoga",
+  "parole": 2342,
+  "access": null
+ },
+ {
+  "title": "Yoga nidra: cos'è e come funziona una sessione",
+  "slug": "yoga-nidra-cose-come-funziona-una-sessione",
+  "category": "yoga",
+  "parole": 1138,
+  "access": null
+ }
+]
