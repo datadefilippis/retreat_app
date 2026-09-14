@@ -1,5 +1,10 @@
 # Aurya, 14 settembre 2026 — Il piano unico: Gratis e Pro a 19 €
 
+*Stato 14/9 sera: AB-R1..R6 IMPLEMENTATI in locale (commit «feat(AB-R)»),
+annuale 200 € (founder), price id Stripe del founder nella migrazione
+(solo chiave live), vendita dal 1/1/2027, patto fino al 31/12/2026 per
+tutti col badge ai primi venti, prima fila nel Pro. Non in produzione.*
+
 Decisione del founder (13/9, con Valentina): **per iniziare c'è solo la
 versione gratuita**, con l'uso completo del gestionale. Poi **un solo
 abbonamento, Pro, a 19 € al mese o 228 € all'anno**, che oltre a tutto il
