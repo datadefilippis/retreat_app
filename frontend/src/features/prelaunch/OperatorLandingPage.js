@@ -58,10 +58,13 @@
  * rimasti, scadenza). Se la rete non risponde, la frase resta senza
  * numero: mai un contatore inventato.
  */
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
-import { Mail } from 'lucide-react';
+import {
+  Mail, UserRound, Search, CalendarCheck2, Mountain, Link2, ClipboardCheck,
+  Newspaper, Megaphone, Send, Award, Check,
+} from 'lucide-react';
 import MarketplaceShell from '../storefront/components/MarketplaceShell';
 import useSeoMeta from '../storefront/lib/useSeoMeta';
 import InlineSignupForm from './InlineSignupForm';
@@ -86,17 +89,25 @@ const CARD_PHOTOS = {
   '03': '/media/prelaunch/r09.jpg',  // la pratica nello spazio di tutti
 };
 
+/* DS-L (14/9/2026, founder: «un tocco piu' stiloso»): il numerale sta
+   SULLA foto come pillola d'oro, la foto respira al passaggio (scala
+   1.04 in 700 ms), la scheda si solleva. Solo dove il hover esiste. */
 function OfferCard({ image, numeral, title, body }) {
   return (
-    <article className="flex h-full flex-col overflow-hidden rounded-[1.75rem] bg-white
+    <article className="group flex h-full flex-col overflow-hidden rounded-[1.75rem] bg-white
                         ring-1 ring-[#1e2f28]/[0.07]
-                        shadow-[0_1px_2px_rgba(30,47,40,0.04),0_18px_40px_-24px_rgba(30,47,40,0.28)]">
-      <div className="aspect-[3/2] w-full overflow-hidden bg-[#e8e2d4]">
+                        shadow-[0_1px_2px_rgba(30,47,40,0.04),0_18px_40px_-24px_rgba(30,47,40,0.28)]
+                        motion-safe:transition-all motion-safe:duration-500
+                        hover:-translate-y-1 hover:shadow-[0_2px_4px_rgba(30,47,40,0.05),0_28px_56px_-24px_rgba(30,47,40,0.40)]">
+      <div className="relative aspect-[3/2] w-full overflow-hidden bg-[#e8e2d4]">
         <img src={image} alt="" width="900" height="600" loading="lazy" decoding="async"
-             className="h-full w-full object-cover" />
+             className="h-full w-full object-cover motion-safe:transition-transform motion-safe:duration-700 group-hover:scale-[1.04]" />
+        <span className="absolute left-4 top-4 inline-flex h-9 min-w-9 items-center justify-center rounded-full
+                         bg-[#0e1a15]/70 px-3 font-display text-sm tracking-[0.12em] text-[#d6c49a] backdrop-blur-sm ring-1 ring-[#d6c49a]/40"
+              aria-hidden>{numeral}</span>
       </div>
       <div className="flex flex-1 flex-col p-7 sm:p-8">
-        <p className="eyebrow mb-3">{numeral}</p>
+        <div aria-hidden className="gold-rule mb-4 max-w-[3rem]" />
         <h3 className="font-display text-[1.4rem] leading-tight text-foreground sm:text-2xl">
           {title}
         </h3>
@@ -108,8 +119,35 @@ function OfferCard({ image, numeral, title, body }) {
   );
 }
 
+/* DS-L — i riquadri entrano uno dopo l'altro quando la griglia arriva in
+   vista (classe ol-stagger in index.css). Default VISIBILE: senza
+   IntersectionObserver, o con «meno movimento», non si nasconde nulla. */
+function useStagger() {
+  const ref = useRef(null);
+  const [dentro, setDentro] = useState(true);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || typeof IntersectionObserver !== 'function') return undefined;
+    if (typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return undefined;
+    if (el.getBoundingClientRect().top < window.innerHeight * 0.85) return undefined;
+    setDentro(false);
+    const io = new IntersectionObserver((entries) => {
+      if (entries.some((e) => e.isIntersecting)) { setDentro(true); io.disconnect(); }
+    }, { rootMargin: '0px 0px -10% 0px', threshold: 0.05 });
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+  return { ref, className: `ol-stagger${dentro ? ' is-in' : ''}` };
+}
+
+const ICONE_VOCI = [UserRound, Search, CalendarCheck2, Mountain, Link2, ClipboardCheck];
+const ICONE_PATTO = [Newspaper, Megaphone, Send, Award];
+
 export default function OperatorLandingPage() {
   const { t } = useTranslation('prelaunch');
+  const griglia = useStagger();
+  const grigliaPatto = useStagger();
+  const grigliaPassi = useStagger();
 
   useSeoMeta({
     title: t('opPro.seoTitle', { defaultValue: "Per operatori olistici: il tuo spazio professionale, pronto oggi | Aurya" }),
@@ -276,16 +314,35 @@ export default function OperatorLandingPage() {
         <Section tone="cream" rhythm="screen" labelledBy="ol-go-title" width="max-w-6xl">
           <div id="sound" data-testid="ol-go">
             <DisplayTitle as="h2" id="ol-go-title" size="section" measure="title">{t('opPro.goTitle', { defaultValue: "Cosa puoi fare con Aurya." })}</DisplayTitle>
-            <ul className="mt-10 grid list-none gap-6 p-0 sm:mt-12 sm:grid-cols-2 lg:grid-cols-3">
-              {voices.map((v) => (
-                <li key={v.title}
-                    className="flex h-full flex-col rounded-[1.75rem] bg-white p-7 ring-1 ring-[#1e2f28]/[0.07]
-                               shadow-[0_1px_2px_rgba(30,47,40,0.04),0_18px_40px_-24px_rgba(30,47,40,0.28)]">
-                  <h3 className="font-display text-[1.45rem] leading-tight text-foreground sm:text-2xl">{v.title}</h3>
-                  <p className="mt-3 text-[0.975rem] leading-relaxed text-foreground/75">{v.body}</p>
-                  <p className="mt-auto pt-5 text-[0.975rem] font-semibold leading-snug text-[#2f5749]">{v.key}</p>
-                </li>
-              ))}
+            {/* DS-L: numerale d'oro + icona in un cerchio salvia, fondo che
+                sfuma verso il crema, la frase-chiave con un filo a sinistra,
+                sollevamento al passaggio, ingresso a scalare */}
+            <ul ref={griglia.ref} className={`mt-10 grid list-none gap-6 p-0 sm:mt-12 sm:grid-cols-2 lg:grid-cols-3 ${griglia.className}`}>
+              {voices.map((v, i) => {
+                const Icona = ICONE_VOCI[i] || UserRound;
+                return (
+                  <li key={v.title}
+                      className="group relative flex h-full flex-col overflow-hidden rounded-[1.75rem] bg-gradient-to-b from-white to-[#faf7f0]
+                                 p-7 ring-1 ring-[#1e2f28]/[0.07]
+                                 shadow-[0_1px_2px_rgba(30,47,40,0.04),0_18px_40px_-24px_rgba(30,47,40,0.28)]
+                                 motion-safe:transition-all motion-safe:duration-500
+                                 hover:-translate-y-1 hover:ring-[#c9b37e]/60 hover:shadow-[0_2px_4px_rgba(30,47,40,0.05),0_28px_56px_-24px_rgba(30,47,40,0.40)]">
+                    <div className="flex items-start justify-between gap-4">
+                      <p className="eyebrow" aria-hidden>{String(i + 1).padStart(2, '0')}</p>
+                      <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#2f5749]/10 text-[#2f5749]
+                                       motion-safe:transition-colors group-hover:bg-[#2f5749] group-hover:text-[#f6f2e8]">
+                        <Icona className="h-5 w-5" aria-hidden />
+                      </span>
+                    </div>
+                    <h3 className="mt-5 font-display text-[1.45rem] leading-tight text-foreground sm:text-2xl">{v.title}</h3>
+                    <p className="mt-3 text-[0.975rem] leading-relaxed text-foreground/75">{v.body}</p>
+                    <p className="mt-auto border-l-2 border-[#c9b37e] pl-3 pt-0 text-[0.975rem] font-semibold leading-snug text-[#2f5749]"
+                       style={{ marginTop: 'auto', paddingTop: 0 }}>
+                      <span className="block pt-5">{v.key}</span>
+                    </p>
+                  </li>
+                );
+              })}
             </ul>
           </div>
         </Section>
@@ -307,21 +364,41 @@ export default function OperatorLandingPage() {
           <Lede size="lead" className="mt-7">{t('opPro.nowP1', { defaultValue: "Entra entro il 31 dicembre 2026 e ricevi gratuitamente alcuni vantaggi che dal 2027 saranno disponibili nel piano Pro." })}</Lede>
           <Lede size="body" className="mt-3 font-semibold">{t('opPro.nowP2', { defaultValue: "Il piano base, invece, resta gratuito per sempre." })}</Lede>
           <p className="mt-8 font-display text-[1.35rem] leading-snug text-foreground sm:text-[1.6rem]">{t('opPro.nowSub', { defaultValue: "Entrando ora hai anche:" })}</p>
-          <ul className="mt-5 grid list-none gap-4 p-0 sm:grid-cols-2" data-testid="ol-now-patto">
-            {patto.map((b) => (
-              <li key={b.title} className="rounded-2xl bg-white/80 p-5 ring-1 ring-[#1e2f28]/[0.07]">
-                <p className="font-display text-[1.2rem] leading-tight text-foreground">{b.title}</p>
-                <p className="mt-2 text-sm leading-snug text-foreground/80">{b.body}</p>
-              </li>
-            ))}
+          {/* DS-L: quattro schede con un'icona e un filo d'oro in testa,
+              ingresso a scalare; la chiusura «Entra tra i primi» in un
+              pannello salvia (l'unica ancora scura della pagina dopo l'hero) */}
+          <ul ref={grigliaPatto.ref} className={`mt-5 grid list-none gap-4 p-0 sm:grid-cols-2 ${grigliaPatto.className}`} data-testid="ol-now-patto">
+            {patto.map((b, i) => {
+              const Icona = ICONE_PATTO[i] || Award;
+              return (
+                <li key={b.title}
+                    className="group relative overflow-hidden rounded-2xl bg-white p-5 ring-1 ring-[#1e2f28]/[0.07]
+                               motion-safe:transition-all motion-safe:duration-500 hover:-translate-y-0.5 hover:shadow-[0_18px_40px_-24px_rgba(30,47,40,0.35)]">
+                  <div aria-hidden className="gold-rule absolute inset-x-5 top-0" />
+                  <div className="flex items-start gap-4">
+                    <span className="mt-0.5 inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#c9b37e]/20 text-[#7d6a3a]">
+                      <Icona className="h-[18px] w-[18px]" aria-hidden />
+                    </span>
+                    <div>
+                      <p className="font-display text-[1.2rem] leading-tight text-foreground">{b.title}</p>
+                      <p className="mt-2 text-sm leading-snug text-foreground/80">{b.body}</p>
+                    </div>
+                  </div>
+                </li>
+              );
+            })}
           </ul>
-          <p className="mt-10 font-display text-[1.35rem] leading-snug text-foreground sm:text-[1.6rem]">{t('opPro.nowPostoT', { defaultValue: "Entra tra i primi operatori di Aurya." })}</p>
-          <p className="mt-3 max-w-[52ch] text-base font-semibold leading-relaxed text-foreground">
-            {t('opPro.nowCloseA2', { defaultValue: "Non cerchiamo semplicemente iscritti." })}{' '}
-            {t('opPro.nowCloseB2', { defaultValue: "Cerchiamo i primi operatori con cui costruire la rete di Aurya." })}
-          </p>
-          <p className="mt-3 max-w-[52ch] text-base leading-relaxed text-foreground">{t('opPro.nowEntra', { defaultValue: "Entra entro il 31 dicembre 2026 per avere questi vantaggi." })}</p>
-          <div className="mt-8"><EditorialCta href={FORM_ANCHOR} onClick={scrollToForm} variant="solid" data-testid="ol-now-cta">{ctaOpen}</EditorialCta></div>
+          <div className="relative mt-10 overflow-hidden rounded-[1.75rem] bg-[#2f5749] px-7 py-8 text-[#f6f2e8] sm:px-10 sm:py-10" data-testid="ol-now-posto">
+            <div aria-hidden className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-[#d6c49a]/10 blur-2xl" />
+            <div aria-hidden className="gold-rule mb-6 max-w-[6rem] opacity-90" />
+            <p className="font-display text-[1.5rem] leading-snug sm:text-[1.9rem]">{t('opPro.nowPostoT', { defaultValue: "Entra tra i primi operatori di Aurya." })}</p>
+            <p className="mt-4 max-w-[52ch] text-base font-semibold leading-relaxed">
+              {t('opPro.nowCloseA2', { defaultValue: "Non cerchiamo semplicemente iscritti." })}{' '}
+              {t('opPro.nowCloseB2', { defaultValue: "Cerchiamo i primi operatori con cui costruire la rete di Aurya." })}
+            </p>
+            <p className="mt-3 max-w-[52ch] text-base leading-relaxed opacity-90">{t('opPro.nowEntra', { defaultValue: "Entra entro il 31 dicembre 2026 per avere questi vantaggi." })}</p>
+            <div className="mt-7"><EditorialCta href={FORM_ANCHOR} onClick={scrollToForm} variant="solid" tone="dark" data-testid="ol-now-cta">{ctaOpen}</EditorialCta></div>
+          </div>
          </div>
         </Section>
 
@@ -333,35 +410,51 @@ export default function OperatorLandingPage() {
             <p className="mt-3 text-lg font-semibold leading-snug text-foreground">{t('opPro.prezziP2', { defaultValue: "Non paghi un abbonamento e non paghi commissioni su quello che guadagni." })}</p>
             <Lede size="lead" className="mt-4 max-w-[62ch]">{t('opPro.prezziP3', { defaultValue: "Tutto quello che hai visto sopra è incluso nel piano base. Dal 1° gennaio 2027, se vuoi funzioni aggiuntive, puoi scegliere il piano Pro." })}</Lede>
             {/* founder 14/9: i due piani a confronto diretto */}
-            <div className="mt-8 grid gap-4 sm:grid-cols-2" data-testid="ol-prezzi-confronto">
-              <div className="rounded-2xl bg-white p-6 ring-1 ring-[#1e2f28]/[0.07]" data-testid="ol-prezzi-base">
-                <p className="font-display text-[1.4rem] leading-tight text-foreground">{t('opPro.baseTitolo', { defaultValue: "Piano base · 0 €" })}</p>
-                <p className="mt-1 text-sm text-foreground/70">{t('opPro.baseSotto', { defaultValue: "Per sempre." })}</p>
-                <ul className="mt-4 space-y-2">
+            {/* DS-L: il piano base in bianco con le spunte salvia, il Pro
+                in salvia scuro con l'oro (il contrasto dice «e' il piu'»),
+                prezzo grande in display, l'eyebrow con la data */}
+            <div className="mt-8 grid gap-5 sm:grid-cols-2" data-testid="ol-prezzi-confronto">
+              <div className="flex flex-col rounded-[1.75rem] bg-white p-7 ring-1 ring-[#1e2f28]/[0.07]
+                              shadow-[0_1px_2px_rgba(30,47,40,0.04),0_18px_40px_-24px_rgba(30,47,40,0.28)]" data-testid="ol-prezzi-base">
+                <p className="eyebrow">{t('opPro.baseEyebrow', { defaultValue: "Piano base" })}</p>
+                <p className="mt-3 font-display text-[2.4rem] leading-none text-foreground">0 €</p>
+                <p className="mt-2 text-sm text-foreground/70">{t('opPro.baseSotto', { defaultValue: "Per sempre." })}</p>
+                <div aria-hidden className="gold-rule my-5" />
+                <ul className="space-y-2.5">
                   {baseRighe.map((riga) => (
-                    <li key={riga} className="flex items-start gap-2 text-[0.975rem] leading-relaxed text-foreground/85">
-                      <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-[#2f5749]" aria-hidden />
+                    <li key={riga} className="flex items-start gap-3 text-[0.975rem] leading-relaxed text-foreground/85">
+                      <span className="mt-1 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#2f5749]/10 text-[#2f5749]">
+                        <Check className="h-3 w-3" aria-hidden />
+                      </span>
                       <span>{riga}</span>
                     </li>
                   ))}
                 </ul>
               </div>
-              <div className="rounded-2xl bg-white p-6 ring-2 ring-[#2f5749]/40" data-testid="ol-prezzi-pro">
-                <p className="font-display text-[1.4rem] leading-tight text-foreground">{t('opPro.proTitolo', { defaultValue: "Pro · 19 € al mese, o 200 € l’anno" })}</p>
-                <p className="mt-1 text-sm text-foreground/70">{t('opPro.proSotto', { defaultValue: "Dal 1° gennaio 2027. Tutto il piano base, più:" })}</p>
-                <ul className="mt-4 space-y-2">
+              <div className="relative flex flex-col overflow-hidden rounded-[1.75rem] bg-[#2f5749] p-7 text-[#f6f2e8]
+                              shadow-[0_18px_44px_-20px_rgba(47,87,73,0.55)]" data-testid="ol-prezzi-pro">
+                <div aria-hidden className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full bg-[#d6c49a]/10 blur-2xl" />
+                <p className="eyebrow eyebrow-light">{t('opPro.proEyebrow', { defaultValue: "Pro · dal 1° gennaio 2027" })}</p>
+                <p className="mt-3 font-display text-[2.4rem] leading-none">19 € <span className="text-[1.1rem] opacity-80">al mese</span></p>
+                <p className="mt-2 text-sm opacity-85">{t('opPro.proSotto2', { defaultValue: "Oppure 200 € l’anno. Tutto il piano base, più:" })}</p>
+                <div aria-hidden className="gold-rule my-5 opacity-90" />
+                <ul className="space-y-2.5">
                   {proRighe.map((r) => (
-                    <li key={r.testo} className="flex items-start gap-2 text-[0.975rem] leading-relaxed text-foreground/85">
-                      <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-[#2f5749]" aria-hidden />
+                    <li key={r.testo} className="flex items-start gap-3 text-[0.975rem] leading-relaxed">
+                      <span className="mt-1 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#d6c49a]/20 text-[#d6c49a]">
+                        <Check className="h-3 w-3" aria-hidden />
+                      </span>
                       <span>
                         {r.testo}
                         {r.link && (
-                          <>{' '}<Link to={r.link} data-testid="ol-prezzi-sound" className="font-semibold text-[#2f5749] underline underline-offset-4">{r.linkLabel} →</Link></>
+                          <>{' '}<Link to={r.link} data-testid="ol-prezzi-sound" className="font-semibold text-[#f6f2e8] underline decoration-[#d6c49a] underline-offset-4 hover:text-[#d6c49a]">{r.linkLabel} →</Link></>
                         )}
                       </span>
                     </li>
                   ))}
                 </ul>
+                {/* il titolo intero resta nel DOM per chi legge senza stile e per la shell */}
+                <p className="sr-only">{t('opPro.proTitolo', { defaultValue: "Pro · 19 € al mese, o 200 € l’anno" })}</p>
               </div>
             </div>
             <div className="mt-7">
@@ -374,7 +467,7 @@ export default function OperatorLandingPage() {
         <Section tone="cream" rhythm="screen" labelledBy="ol-join-title" width="max-w-6xl">
           <div data-testid="ol-join">
             <DisplayTitle as="h2" id="ol-join-title" size="section" measure="title">{t('opPro.joinTitle', { defaultValue: "Come si comincia." })}</DisplayTitle>
-            <ul className="mt-10 grid list-none gap-7 p-0 sm:mt-12 sm:gap-8 lg:grid-cols-3">
+            <ul ref={grigliaPassi.ref} className={`mt-10 grid list-none gap-7 p-0 sm:mt-12 sm:gap-8 lg:grid-cols-3 ${grigliaPassi.className}`}>
               {cards.map((c) => (
                 <li key={c.numeral} data-testid={`ol-card-${c.numeral}`} className="h-full">
                   <OfferCard image={CARD_PHOTOS[c.numeral]} numeral={c.numeral} title={c.title} body={c.body} />
@@ -393,9 +486,11 @@ export default function OperatorLandingPage() {
                 <details key={f.q} className={`group py-5 ${i > 0 ? 'border-t border-[#1e2f28]/[0.10]' : 'pt-0'}`}>
                   <summary className="flex cursor-pointer list-none items-start justify-between gap-4
                                       font-display text-[1.2rem] leading-snug text-foreground sm:text-[1.4rem]
+                                      motion-safe:transition-colors hover:text-[#2f5749]
                                       [&::-webkit-details-marker]:hidden">
                     <span>{f.q}</span>
-                    <span aria-hidden className="mt-1 shrink-0 text-[#8a7440] transition-transform group-open:rotate-45">+</span>
+                    <span aria-hidden className="mt-0.5 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full
+                                                 ring-1 ring-[#c9b37e]/70 text-[#8a7440] transition-transform group-open:rotate-45 group-open:bg-[#c9b37e]/15">+</span>
                   </summary>
                   <div className="mt-3 max-w-[62ch] text-base leading-relaxed text-foreground/75 sm:text-lg">{f.a}</div>
                 </details>

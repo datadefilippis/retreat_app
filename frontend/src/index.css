@@ -492,3 +492,23 @@ body {
                            fixed, fixed, fixed, fixed, fixed,
                            scroll;
 }
+
+
+/* DS-L (14/9/2026) — i riquadri della landing operatori entrano uno dopo
+   l'altro quando la griglia arriva in vista (useStagger in
+   OperatorLandingPage). Default VISIBILE; con «meno movimento» nessuna
+   dissolvenza; la classe .is-in la mette il componente. */
+.ol-stagger > * {
+    opacity: 0;
+    transform: translateY(14px);
+    transition: opacity 0.6s cubic-bezier(0.22, 1, 0.36, 1), transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.ol-stagger.is-in > * { opacity: 1; transform: none; }
+.ol-stagger.is-in > *:nth-child(2) { transition-delay: 0.08s; }
+.ol-stagger.is-in > *:nth-child(3) { transition-delay: 0.16s; }
+.ol-stagger.is-in > *:nth-child(4) { transition-delay: 0.24s; }
+.ol-stagger.is-in > *:nth-child(5) { transition-delay: 0.32s; }
+.ol-stagger.is-in > *:nth-child(6) { transition-delay: 0.40s; }
+@media (prefers-reduced-motion: reduce) {
+    .ol-stagger > * { opacity: 1; transform: none; transition: none; }
+}
