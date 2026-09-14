@@ -97,6 +97,56 @@ function LocationAutocomplete({ value, onSelect, onTextChange }) {
   );
 }
 
+/* LS — le stesse regole di services/social_links.py, per l'anteprima e per
+   mostrare il solo nome utente nella casella. La verita' la scrive il server. */
+const TRACCIANTI = new Set(['igsi', 'igshid', 'igsh', 'stkn', 'fbclid', 'mibextid', 'si',
+  'utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term', 'utm_id']);
+function nomeUtenteInstagram(v) {
+  let x = (v || '').trim().replace(/^@/, '');
+  if (!x) return '';
+  if (/instagram\.com/i.test(x)) {
+    try {
+      const u = new URL(/^https?:\/\//i.test(x) ? x : `https://${x}`);
+      x = u.pathname.split('/').filter(Boolean)[0] || '';
+    } catch { return x; }
+  }
+  return x.replace(/^@/, '').replace(/\/+$/, '');
+}
+const mostraInstagram = (v) => nomeUtenteInstagram(v);
+function anteprimaInstagram(v) {
+  const nome = nomeUtenteInstagram(v);
+  if (!nome) return '';
+  return /^[A-Za-z0-9._]{1,30}$/.test(nome) ? `https://instagram.com/${nome}` : null;
+}
+function mostraSito(v) {
+  return (v || '').replace(/^https?:\/\//i, '');
+}
+function anteprimaSito(v) {
+  const x = (v || '').trim();
+  if (!x) return '';
+  try {
+    const u = new URL(/^https?:\/\//i.test(x) ? x : `https://${x}`);
+    if (!u.hostname.includes('.')) return null;
+    const q = new URLSearchParams([...u.searchParams].filter(([k]) => !TRACCIANTI.has(k.toLowerCase())));
+    return `https://${u.hostname.toLowerCase()}${u.pathname.replace(/\/+$/, '')}${q.toString() ? `?${q}` : ''}`;
+  } catch { return null; }
+}
+/* «Si aprira': …» + «Prova il link»: l'unica verifica onesta e' aprirlo */
+function AnteprimaLink({ url, testid }) {
+  if (url === '') return null;
+  if (url === null) {
+    return <p className="mt-1 text-xs text-amber-700" data-testid={testid}>Non sembra un indirizzo valido: controlla.</p>;
+  }
+  return (
+    <p className="mt-1 flex flex-wrap items-center gap-x-2 text-xs text-muted-foreground" data-testid={testid}>
+      <span>Si aprirà: <span className="font-medium text-foreground">{url.replace(/^https:\/\//, '')}</span></span>
+      <a href={url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 font-medium text-[#2f5749] underline underline-offset-2">
+        Prova il link <ExternalLink className="h-3 w-3" aria-hidden />
+      </a>
+    </p>
+  );
+}
+
 export default function PublicProfilePage() {
   const { t } = useTranslation('settings');
   const [form, setForm] = useState(null);
@@ -651,21 +701,44 @@ export default function PublicProfilePage() {
           {/* Social */}
           <div className="rounded-xl border bg-card p-4 space-y-3">
             <Label id="pp-socials">{t('publicProfile.socials', { defaultValue: 'Social e sito' })}</Label>
-            <div className="space-y-2">
-              <div className="flex items-center gap-2">
-                <Instagram className="h-4 w-4 text-muted-foreground shrink-0" />
-                <Input placeholder="instagram.com/iltuoprofilo" value={form.instagram || ''}
-                       onChange={e => set('instagram', e.target.value)} />
+            {/* LS (14/9/2026, founder): agli operatori viene spontaneo scrivere
+                il NOME UTENTE, non l'URL — in produzione 4 link Instagram su 10
+                erano rotti per questo. Qui si chiede il nome utente col
+                prefisso fisso, si mostra dove si aprira' e si puo' provare;
+                chi incolla comunque l'URL non sbaglia: il server normalizza
+                (services/social_links.py) e salva la forma canonica. */}
+            <div className="space-y-3">
+              <div>
+                <div className="flex items-center gap-2">
+                  <Instagram className="h-4 w-4 text-muted-foreground shrink-0" />
+                  <div className="flex w-full items-center overflow-hidden rounded-md border border-input bg-background">
+                    <span className="select-none border-r border-input bg-muted/50 px-2.5 py-2 text-sm text-muted-foreground">instagram.com/</span>
+                    <Input placeholder="iltuonomeutente" value={mostraInstagram(form.instagram)}
+                           onChange={e => set('instagram', e.target.value)}
+                           className="border-0 shadow-none focus-visible:ring-0" data-testid="pp-instagram" />
+                  </div>
+                </div>
+                <AnteprimaLink url={anteprimaInstagram(form.instagram)} testid="pp-instagram-anteprima" />
               </div>
-              <div className="flex items-center gap-2">
-                <Globe className="h-4 w-4 text-muted-foreground shrink-0" />
-                <Input placeholder="iltuosito.it" value={form.website || ''}
-                       onChange={e => set('website', e.target.value)} />
+              <div>
+                <div className="flex items-center gap-2">
+                  <Globe className="h-4 w-4 text-muted-foreground shrink-0" />
+                  <div className="flex w-full items-center overflow-hidden rounded-md border border-input bg-background">
+                    <span className="select-none border-r border-input bg-muted/50 px-2.5 py-2 text-sm text-muted-foreground">https://</span>
+                    <Input placeholder="iltuosito.it" value={mostraSito(form.website)}
+                           onChange={e => set('website', e.target.value)}
+                           className="border-0 shadow-none focus-visible:ring-0" data-testid="pp-website" />
+                  </div>
+                </div>
+                <AnteprimaLink url={anteprimaSito(form.website)} testid="pp-website-anteprima" />
               </div>
-              <div className="flex items-center gap-2">
-                <Facebook className="h-4 w-4 text-muted-foreground shrink-0" />
-                <Input placeholder="facebook.com/latuapagina" value={form.facebook || ''}
-                       onChange={e => set('facebook', e.target.value)} />
+              <div>
+                <div className="flex items-center gap-2">
+                  <Facebook className="h-4 w-4 text-muted-foreground shrink-0" />
+                  <Input placeholder="incolla il link della tua pagina Facebook" value={form.facebook || ''}
+                         onChange={e => set('facebook', e.target.value)} data-testid="pp-facebook" />
+                </div>
+                <AnteprimaLink url={anteprimaSito(form.facebook)} testid="pp-facebook-anteprima" />
               </div>
             </div>
           </div>

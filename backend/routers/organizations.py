@@ -1941,6 +1941,14 @@ async def update_public_profile(
                 updates[f"public_profile.{field}"] = None
             elif isinstance(val, str):
                 updates[f"public_profile.{field}"] = val.strip()[:max_len]
+    # LS (14/9/2026) — i social si salvano in forma canonica: «nome_utente»,
+    # «@nome» o l'URL incollato dall'app diventano https://instagram.com/nome;
+    # sito con https davanti; via il tracciamento (services.social_links)
+    from services.social_links import NORMALIZZATORI
+    for campo, fn in NORMALIZZATORI.items():
+        chiave = f"public_profile.{campo}"
+        if updates.get(chiave):
+            updates[chiave] = (fn(updates[chiave]) or "")[:_PUBLIC_PROFILE_FIELDS[campo]] or None
     if "show_contacts" in body:
         updates["public_profile.show_contacts"] = bool(body["show_contacts"])
     # LK1 — pagina link: il client manda sempre lo stato COMPLETO

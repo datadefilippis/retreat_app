@@ -208,6 +208,8 @@ async def lifespan(app: FastAPI):
         await migrate_sequenze_bonifica_v1()   # DEPLOY 10/9: niente «evento» vecchio a chi era gia' dentro
         from services.seed_pricing import migrate_catalogo_pro19_v1
         await migrate_catalogo_pro19_v1()   # AB-R1 14/9: Pro 19/200, Club nascosto, Entrato nel 2026
+        from services.migrazioni_profilo import migrate_social_normalizzati_v1
+        await migrate_social_normalizzati_v1()   # LS 14/9: link social in forma canonica
     except Exception as e:
         logging.error(f"Failed to run zero commissioni migration: {e}")
     # One-time migration: trial only on Core plan
