@@ -46,6 +46,8 @@ from services import identita as _identita
 
 logger = logging.getLogger(__name__)
 
+from services.sedi import dove_testo as _dove_testo   # SD4: «dove» con tutte le sedi
+
 router = APIRouter(prefix="/__seo", tags=["SEO shell"])
 
 _CACHE: dict = {}          # path → (html, monotonic_ts)
@@ -395,7 +397,7 @@ async def _home_content_html() -> str:
         parti.append("<h2>Alcuni professionisti della rete</h2><ul>")
         for o in orgs:
             pp = o.get("public_profile") or {}
-            dove = ", ".join(x for x in (pp.get("city"), pp.get("region")) if x)
+            dove = _dove_testo(pp)   # SD4 — tutte le sedi
             parti.append(f'<li><a href="/o/{_html.escape(o["public_slug"])}">'
                          f'{_html.escape(o.get("name") or o["public_slug"])}</a>'
                          + (f" — {_html.escape(dove)}" if dove else "") + "</li>")
@@ -2085,7 +2087,7 @@ async def _meta_esplora_operatori(categoria: Optional[str] = None) -> dict:
         righe = []
         for o in orgs:
             pp = o.get("public_profile") or {}
-            dove = ", ".join(x for x in (pp.get("city"), pp.get("region")) if x)
+            dove = _dove_testo(pp)   # SD4 — tutte le sedi
             disc = ", ".join(DISCIPLINES[d] for d in (pp.get("disciplines") or [])
                              if d in DISCIPLINES)
             coda = " — ".join(x for x in (dove, disc) if x)
@@ -2288,6 +2290,12 @@ async def _meta_operator(org_slug: str) -> Optional[dict]:
     geo = sx.geo_coordinates(profile.get("latitude"), profile.get("longitude"))
     if geo:
         jsonld["geo"] = geo
+    # SD4 — piu' sedi: address/geo restano della principale (un
+    # LocalBusiness, un indirizzo); le altre sono aree servite
+    from services.sedi import etichetta_sede, sedi_da_profilo
+    _altre = [etichetta_sede(x) for x in sedi_da_profilo(profile)[1:] if etichetta_sede(x)]
+    if _altre:
+        jsonld["areaServed"] = [{"@type": "Place", "name": n} for n in _altre]
     rating = sx.aggregate_rating(org.get("reviews_stats"))
     if rating:
         jsonld["aggregateRating"] = rating
@@ -2383,7 +2391,7 @@ async def _meta_operator(org_slug: str) -> Optional[dict]:
     if disc:
         pezzi.append("<p>Pratiche: " + ", ".join(
             _html.escape(d) for d in disc) + "</p>")
-    dove = ", ".join(x for x in (city, region) if x)
+    dove = _dove_testo(profile) or ", ".join(x for x in (city, region) if x)
     if dove:
         pezzi.append(f"<p>Dove: {_html.escape(dove)}</p>")
     pezzi.append('<p><a href="/operatori">Tutti i professionisti '

@@ -108,7 +108,11 @@ def test_public_listings_gate_samples_behind_flag():
     assert "def _ritiro_listabile(" in src
     regola = src[src.index("def _ritiro_listabile("):src.index("async def _categorie_con_ritiri")]
     assert "if prelaunch_mode() and not preview:" in regola and "return oid in sample_orgs" in regola
-    assert 'prod.get("transaction_mode") == "request" or oid in pay_ready' in regola
+    # SD6 (14/9/2026): la regola di prenotabilita' vive in
+    # services/ritiri_visibilita.py (la leggono anche griglia e admin)
+    assert "from services.ritiri_visibilita import prenotabile" in regola
+    assert 'modo(prod) == "request" or prod.get("organization_id") in pay_ready' \
+        in _src("services/ritiri_visibilita.py")
     assert "pay_ready |= sample_orgs" not in src, \
         "regressione: i ritiri veri comparirebbero in pre-lancio"
     # operatori: specchio sample <=> prelaunch
@@ -362,9 +366,10 @@ def test_operator_landing_transparency_and_direct_contact():
     # che oggi non si paga.
     risposta = " ".join(
         op_faq.get(k) or "" for k in ("faq1b1", "faq1b2", "faq1b3"))
-    assert "non prende commissioni" in risposta, \
+    # 14/9/2026 (copy del founder, landing AB-R): «non paghi commissioni»
+    assert "non prende commissioni" in risposta or "non paghi commissioni" in risposta, \
         "la risposta sul costo deve dire in chiaro che oggi non si paga"
-    assert "sempre gratuito" in risposta, \
+    assert "sempre gratuito" in risposta or "gratuito per sempre" in risposta, \
         "sparita la promessa zero costi fino alla data detta dal founder"
 
 

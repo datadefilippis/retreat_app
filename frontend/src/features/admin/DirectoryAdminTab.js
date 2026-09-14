@@ -21,7 +21,7 @@ import OrgBusinessProfileDialog from './OrgBusinessProfileDialog';
 const REASON_LABELS = {
   stripe_not_ready: 'Stripe non attivo',
   no_public_page: 'Nessuna pagina pubblica',
-  no_direct_retreats: 'Nessun ritiro prenotabile online',
+  no_direct_retreats: 'Nessun ritiro futuro pubblicato',   // SD6: i «su richiesta» contano
 };
 
 export default function DirectoryAdminTab() {

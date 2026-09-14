@@ -40,3 +40,51 @@ async def migrate_social_normalizzati_v1() -> None:
     await migrations.insert_one({"_id": _FLAG, "applied_at": datetime.now(timezone.utc),
                                  "cambiati": len(cambiati)})
     logger.info("migrate_social_normalizzati_v1: %s profili normalizzati: %s", len(cambiati), cambiati)
+
+
+async def migrate_sedi_v1() -> None:
+    """SD5 (14/9/2026) — integrazione, non reset: ogni profilo con una
+    localita' riceve `sedi = [sede principale]` costruita da
+    city/region/latitude/longitude, che restano IDENTICI (sono gli
+    specchi). La regione mancante (11 profili su 13 in prod) si ricava
+    dalle coordinate col reverse geocoding (cache, 1 req/s, best-effort:
+    senza risposta resta vuota, mai un errore). `geo` diventa MultiPoint.
+    Il valore precedente resta in `sedi_prima`. Flag-gated, idempotente."""
+    from database import db
+    from services.sedi import normalizza_sede, specchi
+    from services.geocoding import reverse_geocode
+    migrations = db["migrations"]
+    flag = "sedi_v1"
+    if await migrations.find_one({"_id": flag}):
+        return
+    fatti = []
+    async for org in db.organizations.find(
+            {"$or": [{"public_profile.city": {"$nin": [None, ""]}},
+                     {"public_profile.region": {"$nin": [None, ""]}}],
+             "public_profile.sedi.0": {"$exists": False}},
+            {"_id": 0, "id": 1, "name": 1, "public_profile.city": 1,
+             "public_profile.region": 1, "public_profile.latitude": 1,
+             "public_profile.longitude": 1}):
+        pp = org.get("public_profile") or {}
+        raw = {"citta": pp.get("city"), "regione": pp.get("region"),
+               "lat": pp.get("latitude"), "lng": pp.get("longitude")}
+        sede = normalizza_sede(raw)
+        if not sede:
+            continue
+        if not sede.get("regione") and sede.get("lat") is not None:
+            dett = await reverse_geocode(sede["lat"], sede["lng"])
+            if dett:
+                sede = normalizza_sede({**raw, "regione": dett.get("regione"),
+                                        "provincia": dett.get("provincia"),
+                                        "paese": dett.get("paese")}) or sede
+        sedi = [sede]
+        set_ = {"public_profile.sedi": sedi,
+                "public_profile.sedi_prima": {k: pp.get(k) for k in ("city", "region", "latitude", "longitude")},
+                "public_profile.geo": specchi(sedi)["geo"],
+                # la regione trovata si scrive anche nello specchio (era vuota)
+                "public_profile.region": pp.get("region") or sede.get("regione")}
+        await db.organizations.update_one({"id": org["id"]}, {"$set": set_})
+        fatti.append({"org": org.get("name"), "sede": sede.get("etichetta")})
+    await migrations.insert_one({"_id": flag, "applied_at": datetime.now(timezone.utc),
+                                 "profili": len(fatti)})
+    logger.info("migrate_sedi_v1: %s profili con sede principale: %s", len(fatti), fatti)

@@ -12,8 +12,10 @@
  *                               bonifico (P2).
  *   - mode 'direct' + !ready  → una riga complementare a
  *                               StripeRequiredAlert: senza Stripe il
- *                               pagamento sul sito non parte, il ritiro
- *                               compare comunque.
+ *                               pagamento sul sito non parte e il ritiro
+ *                               NON compare (SD6 14/9: la regola vera e'
+ *                               services/ritiri_visibilita.py — prima qui
+ *                               si prometteva «compare comunque»).
  *
  * Solo per prodotti evento: gli altri tipi non vivono nel marketplace.
  */
@@ -34,7 +36,9 @@ export default function DirectoryListingHint({ mode, className = '' }) {
     });
   } else if (mode === 'direct' && !loading && !ready) {
     message = t('directoryHint.stripeNote', {
-      defaultValue: 'Prenotazione online: finché Stripe non è attivo il pagamento sul sito non parte. Scegli «su richiesta» oppure collega Stripe nelle Impostazioni. Il ritiro compare comunque in Ritiri ed esperienze.',
+      // SD6 (14/9/2026): la lista pubblica ESCLUDE l'online senza Stripe
+      // (non si potrebbe prenotare in nessun modo): l'avviso lo dice
+      defaultValue: 'Prenotazione online: finché Stripe non è attivo il pagamento sul sito non parte e il ritiro non compare in Ritiri ed esperienze. Scegli «su richiesta» (compare subito, la richiesta ti arriva via email) oppure collega Stripe nelle Impostazioni.',
     });
   }
   if (!message) return null;

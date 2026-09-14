@@ -760,6 +760,12 @@
     "disciplinesSuggest": "and we'll add it for everyone.",
     "disciplinesCopyEmail": "Copy",
     "disciplinesEmailCopied": "Copied",
-    "disciplinesEmailSelected": "Selected: press Cmd+C"
+    "disciplinesEmailSelected": "Selected: press Cmd+C",
+    "sediTitolo": "Dove lavori",
+    "sediAiuto": "Fino a tre sedi. Comparirai nelle ricerche vicino a ognuna.",
+    "sedePrincipale": "principale",
+    "sedeSenzaMappa": "senza posizione sulla mappa",
+    "sedeAggiungi": "Aggiungi una sede: cerca e scegli dalla lista…",
+    "sedeNessuna": "Scegli dalla lista: senza una sede non compari nelle ricerche per zona."
   }
 }

@@ -25,6 +25,8 @@ from services.branding_service import resolve_for_store as resolve_branding_for_
 
 logger = logging.getLogger(__name__)
 
+from services import sedi as _sd   # SD (14/9/2026): le sedi dell'operatore
+
 router = APIRouter(prefix="/public", tags=["Public Storefront"])
 
 
@@ -3452,7 +3454,10 @@ def _ritiro_listabile(prod: dict, pay_ready: set, sample_orgs: set, preview: int
     oid = prod.get("organization_id")
     if prelaunch_mode() and not preview:
         return oid in sample_orgs
-    return prod.get("transaction_mode") == "request" or oid in pay_ready
+    # SD6 (14/9): la regola di prenotabilita' vive in services.ritiri_visibilita
+    # (la leggono anche griglia del gestionale e Admin › Directory)
+    from services.ritiri_visibilita import prenotabile
+    return prenotabile(prod, pay_ready)
 
 
 async def _categorie_con_ritiri(preview: int = 1) -> dict:
@@ -4335,6 +4340,13 @@ async def public_operators_index(
         # delle occorrenze): l'operatore senza ritiri futuri resta
         # scopribile geograficamente
         prof_regions = {r for r in (pp.get("region"), pp.get("city")) if r}
+        # SD3 (14/9/2026) — le SEDI (1..3, services.sedi): citta'/regioni di
+        # tutte alimentano `regions` (→ /destinazioni di ogni regione) e il
+        # filtro ?luogo; la distanza dall'indice e' gia' dalla sede piu'
+        # vicina (geo MultiPoint), qui si dice QUALE sede
+        _sedi = _sd.sedi_da_profilo(pp)
+        prof_regions |= _sd.nomi_luoghi(_sedi)
+        _sede_vicina = None
         # LM3 — raggio da un punto: distanza dall'indice ($geoNear
         # sopra); fallback haversine per i doc con lat/lng senza `geo`.
         # Chi non ha coordinate o e' fuori raggio esce dal filtro geo
@@ -4342,12 +4354,17 @@ async def public_operators_index(
         _d_km = None
         if _geo_active:
             _d_km = geo_km.get(s["organization_id"])
+            _sv, _sv_km = _sd.sede_piu_vicina(_sedi, lat, lng)
+            if _d_km is None and _sv_km is not None:
+                # fallback per i documenti fuori dall'indice (senza `geo`)
+                _d_km = _sv_km
             if (_d_km is None and pp.get("latitude") is not None
                     and pp.get("longitude") is not None):
                 _d_km = round(_haversine_km(
                     lat, lng, pp["latitude"], pp["longitude"]), 1)
             if _d_km is None or _d_km > radius_km:
                 continue
+            _sede_vicina = _sd.etichetta_sede(_sv) if _sv and len(_sedi) > 1 else None
         # LM2 — card ricca: 'da X euro · N servizi' + anteprima delle
         # prime 3 righe di listino per la vista rapida in card. Per i
         # campioni niente rating ne' anteprima (identita' redatta PL9).
@@ -4376,6 +4393,10 @@ async def public_operators_index(
             "longitude": pp.get("longitude"),
             # LM3 — distanza dall'indice 2dsphere (None senza filtro geo)
             "distance_km": _d_km,
+            # SD3 — tutte le sedi (etichetta, coordinate, destinazione) e la
+            # sede da cui viene la distanza quando ce n'e' piu' d'una
+            "sedi": [_sd.sede_pubblica(x) for x in _sedi],
+            "sede_vicina": _sede_vicina,
             "regions": sorted(b["regions"] | prof_regions),
             # GT3 — priorita' nell'aggregatore per i piani featured
             "featured": bool(org.get("directory_featured")),
@@ -4413,7 +4434,8 @@ async def public_operators_index(
         items = [i for i in items
                  if loc in (i.get("city") or "").lower()
                  or loc in (i.get("region") or "").lower()
-                 or any(loc in r.lower() for r in i["regions"])]
+                 or any(loc in r.lower() for r in i["regions"])
+                 or any(loc in (x.get("etichetta") or "").lower() for x in i.get("sedi") or [])]
 
     # LM3 — ordinamento esplicito: distance (solo con geo attivo, i più
     # vicini prima con featured a parità — invariato AN3), rating
@@ -4618,6 +4640,8 @@ async def public_operator_profile(org_slug: str, lang: Optional[str] = None):
         # SEO1 — coordinate per il GeoCoordinates del LocalBusiness client
         "latitude": pp.get("latitude"),
         "longitude": pp.get("longitude"),
+        # SD4 — tutte le sedi (la prima e' quella di city/region/lat/lng)
+        "sedi": [_sd.sede_pubblica(x) for x in _sd.sedi_da_profilo(pp)],
         "socials": {k: pp.get(k) for k in ("instagram", "website", "facebook")
                     if pp.get(k)},
         "upcoming": upcoming,

@@ -1915,6 +1915,9 @@ async def get_public_profile(current_user: dict = Depends(require_admin)):
             # AN3 — la posizione configurata (autocomplete o geocoding)
             "latitude": pp.get("latitude"),
             "longitude": pp.get("longitude"),
+            # SD1 — le sedi (1..3); ricavate dalla localita' storica se il
+            # profilo non e' ancora migrato: nessuno parte da zero
+            "sedi": __import__("services.sedi", fromlist=["sedi_da_profilo"]).sedi_da_profilo(pp),
             # CS4 (founder, 13/8) — il primo salvataggio genera lo slug
             # (GT6 _ensure_public_surface) ma la risposta non lo diceva:
             # il pulsante "Vedi il tuo profilo online" appariva solo
@@ -2014,6 +2017,17 @@ async def update_public_profile(
                     "type": "Point", "coordinates": [lng_f, lat_f]}
         except (TypeError, ValueError):
             pass
+    # SD1 (14/9/2026) — le SEDI (1..3): quando il client le manda sono la
+    # verita'; city/region/latitude/longitude diventano SPECCHI della
+    # sede principale e `geo` un MultiPoint di tutte (services.sedi).
+    # Chi manda solo `city` (benvenuto, client vecchi) passa dal ramo
+    # storico e _allinea_sedi_dagli_specchi conserva le altre sedi.
+    if "sedi" in body:
+        from services.sedi import normalizza_sedi, specchi
+        _sedi = normalizza_sedi(body.get("sedi"))
+        updates["public_profile.sedi"] = _sedi
+        for _k, _v in specchi(_sedi).items():
+            updates[f"public_profile.{_k}"] = _v
 
     if not updates:
         # PV2 retrocompat — un client vecchio che manda SOLO interview
@@ -2030,6 +2044,9 @@ async def update_public_profile(
     # (form senza autocomplete, profili vecchi) → stessa cache
     # Nominatim delle occurrence. Mai bloccante.
     await _geocode_profile_if_needed(current_user["organization_id"])
+    # SD1 — dopo un salvataggio storico (solo city/lat/lng) o un geocoding,
+    # la sede principale segue gli specchi e le altre sedi restano
+    await _allinea_sedi_dagli_specchi(current_user["organization_id"])
     # GT6 — gradino 0 profilo-first: il primo profilo con bio accende
     # la vetrina pubblica anche senza store ne' prodotti
     await _ensure_public_surface(current_user["organization_id"])
@@ -2052,6 +2069,34 @@ async def update_public_profile(
     # scheda LocalBusiness merita reindex rapido). Best-effort, mai blocca.
     await _ping_operator_indexnow(current_user["organization_id"])
     return await get_public_profile(current_user)
+
+
+async def _ritiri_online_senza_stripe(org_id: str, stripe_connected: bool) -> int:
+    """SD6 — quanti ritiri futuri pubblicati sono «prenotazione online»
+    senza Stripe pronto: gli unici che restano fuori dalla lista
+    (services.ritiri_visibilita). 0 con Stripe pronto o solo «su richiesta»."""
+    from datetime import datetime as _dt, timezone as _tz
+    from database import (event_occurrences_collection, payment_connections_collection,
+                          products_collection)
+    from services.ritiri_visibilita import conta_online_senza_stripe
+    try:
+        pronto = bool(await payment_connections_collection.find_one(
+            {"organization_id": org_id, "status": "active", "runtime_status": "ready"},
+            {"_id": 1}))
+        if pronto:
+            return 0
+        now_iso = _dt.now(_tz.utc).isoformat()[:16]
+        pids = await event_occurrences_collection.distinct(
+            "product_id", {"organization_id": org_id, "status": "published",
+                           "start_at": {"$gte": now_iso}})
+        if not pids:
+            return 0
+        prods = await products_collection.find(
+            {"id": {"$in": pids}, "is_published": True, "is_active": {"$ne": False}},
+            {"_id": 0, "transaction_mode": 1}).to_list(200)
+        return conta_online_senza_stripe(prods, False)
+    except Exception:  # noqa: BLE001 — un segnale, mai un errore in home
+        return 0
 
 
 async def _ping_operator_indexnow(org_id: str) -> None:
@@ -2091,6 +2136,38 @@ async def _geocode_profile_if_needed(org_id: str) -> None:
                           "public_profile.longitude": coords["lng"],
                           "public_profile.geo": to_geojson(
                               coords["lat"], coords["lng"])}})
+    except Exception:  # noqa: BLE001 — best-effort dichiarato
+        pass
+
+
+async def _allinea_sedi_dagli_specchi(org_id: str) -> None:
+    """SD1 — integrazione, non reset: se il profilo ha gia' `sedi`, la
+    sede principale si riallinea a city/region/lat/lng (che un client
+    storico o il geocoding possono aver appena scritto) e le altre sedi
+    restano com'erano; se non ha `sedi` non si inventa niente (le
+    ricava sedi_da_profilo al volo, la bonifica le scrive una volta).
+    Best-effort, mai bloccante."""
+    from database import organizations_collection
+    try:
+        org = await organizations_collection.find_one(
+            {"id": org_id}, {"_id": 0, "public_profile": 1})
+        pp = (org or {}).get("public_profile") or {}
+        if not isinstance(pp.get("sedi"), list) or not pp["sedi"]:
+            return
+        from services.sedi import normalizza_sede, normalizza_sedi, specchi
+        vecchia = pp["sedi"][0] if isinstance(pp["sedi"][0], dict) else {}
+        stessa_citta = (vecchia.get("citta") or vecchia.get("regione")) == pp.get("city")
+        nuova = normalizza_sede({
+            **(vecchia if stessa_citta else {}),
+            "citta": pp.get("city"), "regione": pp.get("region") or (vecchia.get("regione") if stessa_citta else None),
+            "lat": pp.get("latitude"), "lng": pp.get("longitude"),
+            "etichetta": vecchia.get("etichetta") if stessa_citta else None})
+        sedi = normalizza_sedi(([nuova] if nuova else []) + list(pp["sedi"][1:]))
+        if sedi == pp["sedi"]:
+            return
+        set_ = {"public_profile.sedi": sedi}
+        set_.update({f"public_profile.{k}": v for k, v in specchi(sedi).items()})
+        await organizations_collection.update_one({"id": org_id}, {"$set": set_})
     except Exception:  # noqa: BLE001 — best-effort dichiarato
         pass
 
@@ -2435,6 +2512,7 @@ async def onboarding_status(current_user: dict = Depends(require_admin)):
             {"organization_id": org_id}, {"_id": 1})
         pub_occ = await event_occurrences_collection.find_one(
             {"organization_id": org_id, "status": "published"}, {"_id": 1})
+        online_senza_stripe = await _ritiri_online_senza_stripe(org_id, bool(conn))
 
         return {"steps": steps, "completed_count": completed,
                 "total": len(steps), "is_complete": completed == len(steps),
@@ -2445,7 +2523,11 @@ async def onboarding_status(current_user: dict = Depends(require_admin)):
                 "links": links,
                 "signals": {"stripe_connected": bool(conn),
                             "retreat_created": bool(any_occ),
-                            "retreat_published": bool(pub_occ)}}
+                            "retreat_published": bool(pub_occ),
+                            # SD6 — accende il riquadro in home SOLO per
+                            # i ritiri «online» senza Stripe (i «su
+                            # richiesta» sono in lista: nessun avviso)
+                            "retreats_direct_no_stripe": online_senza_stripe}}
 
     # 1. Stripe collegato: connection attiva
     conn = await payment_connections_collection.find_one(
@@ -2501,4 +2583,12 @@ async def onboarding_status(current_user: dict = Depends(require_admin)):
 
     return {"steps": steps, "completed_count": completed,
             "total": len(steps), "is_complete": completed == len(steps),
-            "links": links}
+            "links": links,
+            # SD6 — la home legge `signals` (o `steps`): stesso contratto
+            # del ramo snello, cosi' il riquadro «online senza Stripe» vale
+            # per tutti
+            "signals": {"stripe_connected": bool(conn),
+                        "retreat_created": bool(any_occ),
+                        "retreat_published": bool(pub_occ),
+                        "retreats_direct_no_stripe":
+                            await _ritiri_online_senza_stripe(org_id, bool(conn))}}

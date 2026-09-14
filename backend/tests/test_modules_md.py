@@ -279,11 +279,15 @@ class TestCalendarListingGt1b:
 
     def test_operator_home_warns_when_calendar_blocked(self):
         """L'operatore con ritiri pubblicati ma Stripe non collegato vede
-        il banner che spiega perche' non compare nel calendario."""
+        il banner che spiega perche' non compare nel calendario.
+        SD6 (14/9/2026): dal 10/9 i ritiri «su richiesta» SONO in lista
+        senza Stripe; il riquadro scatta SOLO per i ritiri «online» senza
+        Stripe (segnale retreats_direct_no_stripe dal backend), mai piu'
+        per «pubblicato && !Stripe»."""
         home = (BACKEND_DIR.parent / "frontend" / "src" / "features"
                 / "dashboard" / "OperatorHome.js").read_text()
-        assert "retreat_published" in home
-        assert "stripe_connected" in home
+        assert "retreats_direct_no_stripe" in home
+        assert "obSteps.retreat_published && !obSteps.stripe_connected" not in home
         assert "calendar_blocked" in home
 
     def test_calendar_blocked_copy_in_four_languages(self):

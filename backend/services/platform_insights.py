@@ -194,14 +194,21 @@ async def directory_snapshot() -> Dict[str, Any]:
     for oid, o in orgs.items():
         n_direct = future_direct.get(oid, 0)
         n_other = future_other.get(oid, 0)
+        # SD6 (14/9/2026) — la STESSA regola della lista pubblica
+        # (services.ritiri_visibilita): i «su richiesta» sono listati
+        # sempre, gli «online» solo con Stripe pronto. Prima l'admin
+        # contava listati solo gli online e diceva «0 in directory»
+        # mentre il sito ne listava due.
+        n_listabili = n_other + (n_direct if oid in pay_ready else 0)
         reasons = []
-        if oid not in pay_ready:
-            reasons.append("stripe_not_ready")
         if oid not in public_page:
             reasons.append("no_public_page")
-        if n_direct == 0:
-            reasons.append("no_direct_retreats")
-        listed = not reasons and n_direct > 0
+        if n_listabili == 0:
+            if n_direct > 0 and oid not in pay_ready:
+                reasons.append("stripe_not_ready")
+            else:
+                reasons.append("no_direct_retreats")   # = nessun ritiro futuro pubblicato
+        listed = not reasons
         o30 = orders_30d.get(oid, {"marketplace": 0, "total": 0})
         rows.append({
             "organization_id": oid,
@@ -210,8 +217,8 @@ async def directory_snapshot() -> Dict[str, Any]:
             "featured": bool(o.get("directory_featured")),
             "listed": listed,
             "reasons": reasons,
-            "retreats_listed": n_direct if listed else 0,
-            "retreats_excluded": (n_direct if not listed else 0) + n_other,
+            "retreats_listed": n_listabili if listed else 0,
+            "retreats_excluded": (n_direct + n_other) - (n_listabili if listed else 0),
             "orders_marketplace_30d": o30["marketplace"],
             "orders_total_30d": o30["total"],
             "reviews_stats": o.get("reviews_stats"),

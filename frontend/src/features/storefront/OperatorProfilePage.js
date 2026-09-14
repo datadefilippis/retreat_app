@@ -480,6 +480,11 @@ export default function OperatorProfilePage() {
           longitude: data.longitude,
         },
       } : {}),
+      // SD4 — piu' sedi: address/geo della principale, le altre aree servite
+      ...(Array.isArray(data.sedi) && data.sedi.length > 1 ? {
+        areaServed: data.sedi.slice(1).filter(s => s.etichetta)
+          .map(s => ({ '@type': 'Place', name: s.etichetta })),
+      } : {}),
       ...(Object.keys(data.socials || {}).length > 0
         ? { sameAs: Object.values(data.socials).map(u =>
             String(u).startsWith('http') ? u : `https://${u}`) } : {}),

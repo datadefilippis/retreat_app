@@ -14,12 +14,12 @@ import { Input } from '../../components/ui/input';
 import { Label } from '../../components/ui/label';
 import { Skeleton } from '../../components/ui/skeleton';
 import { Link, Link as RouterLink } from 'react-router-dom';
-import {
-  ExternalLink, Copy, Check, Upload, Loader2, Instagram, Globe, Facebook,
-  Eye, Mic, ChevronDown,
-} from 'lucide-react';
+import { ExternalLink, Copy, Check, Upload, Loader2, Instagram, Globe, Facebook, Eye, Mic, ChevronDown, MapPin, X } from 'lucide-react';
 import { toast } from 'sonner';
 import api from '../../api/client';
+// SD2 — l'autocomplete vive in components (lo usa anche il benvenuto)
+import LocationAutocomplete, { sedeDaLuogo } from '../../components/LocationAutocomplete';
+import { SEDI_MAX, sediDaProfilo, specchiSede } from '../../lib/sedi';
 import { BRAND_EMAIL } from '../../config/brand';
 import { compressImage } from '../../lib/compressImage';
 import OnboardingStrip from '../onboarding/OnboardingStrip';
@@ -41,61 +41,11 @@ const snapshot = (f, name) => JSON.stringify({
   photos: f?.photos || [],
   languages: f?.languages || [],
   disciplines: f?.disciplines || [],   // DI — discipline dichiarate
+  sedi: (f?.sedi || []).map(s => s?.etichetta || ''),   // SD2 — le sedi
   translations: f?.translations || {},
   show_contacts: Boolean(f?.show_contacts),
   name: (name || '').trim(),
 });
-
-// AN3 — autocomplete località per il profilo: stesso backend della
-// barra "Dove?" della directory (/public/geo/search, Nominatim+cache).
-function LocationAutocomplete({ value, onSelect, onTextChange }) {
-  const [text, setText] = useState(value || '');
-  const [results, setResults] = useState([]);
-  const [open, setOpen] = useState(false);
-  // CS4 (founder, 13/8) — il dropdown restava aperto dopo la scelta:
-  // selezionare scriveva form.city → value → setText, e il cambio di
-  // text rilanciava la ricerca riaprendo la lista. Si cerca (e si apre)
-  // solo se il testo l'ha battuto l'utente.
-  const typedRef = useRef(false);
-  useEffect(() => { setText(value || ''); }, [value]);
-  useEffect(() => {
-    if (!typedRef.current) return undefined;
-    if (!text || text.length < 2) { setResults([]); setOpen(false); return undefined; }
-    const timer = setTimeout(() => {
-      api.get('/public/geo/search', { params: { q: text } })
-        .then(res => { setResults(res.data?.results || []); setOpen(true); })
-        .catch(() => setResults([]));
-    }, 400);
-    return () => clearTimeout(timer);
-  }, [text]);
-  return (
-    <div className="relative">
-      <Input
-        value={text}
-        onChange={e => { typedRef.current = true; setText(e.target.value); onTextChange?.(e.target.value); }}
-        onFocus={() => results.length && setOpen(true)}
-        onBlur={() => setTimeout(() => setOpen(false), 150)}
-        placeholder="Ostuni, Puglia…"
-        className="mt-1"
-      />
-      {open && results.length > 0 && (
-        <ul className="absolute z-20 mt-1 w-full rounded-md border border-border bg-white shadow-lg max-h-52 overflow-auto">
-          {results.map((r) => (
-            <li key={`${r.lat}-${r.lng}`}>
-              <button
-                type="button"
-                onMouseDown={() => { typedRef.current = false; onSelect(r); setOpen(false); setResults([]); }}
-                className="w-full text-left px-3 py-2 text-sm hover:bg-muted/60"
-              >
-                📍 {r.label}
-              </button>
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
-  );
-}
 
 /* LS — le stesse regole di services/social_links.py, per l'anteprima e per
    mostrare il solo nome utente nella casella. La verita' la scrive il server. */
@@ -219,9 +169,25 @@ export default function PublicProfilePage() {
 
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
 
+  // SD2 — le sedi (max SEDI_MAX): la principale scrive anche gli specchi
+  // city/latitude/longitude che anteprima e completezza leggono
+  const sedi = useMemo(() => sediDaProfilo(form), [form]);
+  const scriviSedi = (nuove) => setForm(f => ({ ...f, sedi: nuove, ...specchiSede(nuove) }));
+  const aggiungiSede = (place) => {
+    const sede = sedeDaLuogo(place);
+    if (!sede) return;
+    const attuali = sediDaProfilo(form);
+    if (attuali.length >= SEDI_MAX) return;
+    const doppia = attuali.some(s => (s.citta || '').toLowerCase() === (sede.citta || '').toLowerCase()
+      && (s.regione || '').toLowerCase() === (sede.regione || '').toLowerCase());
+    if (doppia) return;
+    scriviSedi([...attuali, sede]);
+  };
+  const rimuoviSede = (i) => scriviSedi(sediDaProfilo(form).filter((_, k) => k !== i));
+
   const completeness = useMemo(() => {
     if (!form) return 0;
-    const checks = [form.cover_url, form.bio, form.city,
+    const checks = [form.cover_url, form.bio, form.city || (form.sedi || []).length,
       form.instagram || form.website || form.facebook];
     return Math.round(checks.filter(Boolean).length / checks.length * 100);
   }, [form]);
@@ -241,6 +207,12 @@ export default function PublicProfilePage() {
         payload.latitude = form.latitude;
         payload.longitude = form.longitude;
       }
+      // SD2 — le sedi sono la verita': il server ne ricava city/region/
+      // lat/lng (specchi della principale) e geo per la directory
+      payload.sedi = sediDaProfilo(form).map(s => ({
+        citta: s.citta || null, provincia: s.provincia || null, regione: s.regione || null,
+        paese: s.paese || 'Italia', lat: s.lat ?? null, lng: s.lng ?? null, etichetta: s.etichetta || null,
+      }));
       payload.show_contacts = Boolean(form.show_contacts);
       payload.photos = form.photos || [];
       payload.languages = form.languages || [];
@@ -558,26 +530,58 @@ export default function PublicProfilePage() {
                   )}
                 </div>
               </div>
-            {/* AN3 — località con autocomplete (Nominatim via /geo/search):
-                compila città E coordinate → l'operatore compare sulla
-                mappa e nel raggio "vicino a me" della directory */}
-            <div>
-              <Label>{t('publicProfile.locationSearch', { defaultValue: 'Località (cerca e seleziona)' })}</Label>
-              <LocationAutocomplete
-                value={form.city || ''}
-                onSelect={(place) => {
-                  setForm(f => ({
-                    ...f,
-                    city: (place.label || '').split(',')[0].trim(),
-                    latitude: place.lat,
-                    longitude: place.lng,
-                  }));
-                }}
-                onTextChange={(txt) => set('city', txt)}
-              />
-              {form.latitude != null && (
-                <p className="text-[11px] text-muted-foreground mt-1">
-                  📍 {t('publicProfile.locationPinned', { defaultValue: 'Posizione agganciata alla mappa' })} ({Number(form.latitude).toFixed(3)}, {Number(form.longitude).toFixed(3)})
+            {/* SD2 (14/9/2026, founder) — «Dove lavori»: da una localita' a
+                TRE sedi. La prima e' la principale (city/lat/lng restano i
+                suoi specchi: anteprima, completezza, titolo SEO). Una sede
+                esiste solo se scelta dalla lista: testo e coordinate non
+                possono piu' divergere. Chi aveva una localita' la ritrova
+                qui come prima sede: integrazione, non reset. */}
+            <div data-testid="pp-sedi">
+              <Label>{t('publicProfile.sediTitolo', { defaultValue: 'Dove lavori' })}</Label>
+              <p className="text-[11px] text-muted-foreground mt-0.5">
+                {t('publicProfile.sediAiuto', { defaultValue: 'Fino a tre sedi. Comparirai nelle ricerche vicino a ognuna.' })}
+              </p>
+              {sedi.length > 0 && (
+                <ul className="mt-2 space-y-1.5">
+                  {sedi.map((s, i) => (
+                    <li key={`${s.etichetta}-${i}`} data-testid="pp-sede"
+                        className="flex items-center justify-between gap-2 rounded-md border border-border bg-muted/30 px-3 py-2 text-sm">
+                      <span className="flex min-w-0 items-center gap-2">
+                        <MapPin className="h-3.5 w-3.5 shrink-0 text-[#376254]" aria-hidden />
+                        <span className="truncate">{s.etichetta}</span>
+                        {i === 0 && (
+                          <span className="shrink-0 rounded-full bg-[#376254]/10 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-[#376254]">
+                            {t('publicProfile.sedePrincipale', { defaultValue: 'principale' })}
+                          </span>
+                        )}
+                        {s.lat == null && (
+                          <span className="shrink-0 text-[11px] text-amber-700">
+                            {t('publicProfile.sedeSenzaMappa', { defaultValue: 'senza posizione sulla mappa' })}
+                          </span>
+                        )}
+                      </span>
+                      <button type="button" onClick={() => rimuoviSede(i)}
+                              aria-label={`Togli ${s.etichetta}`}
+                              className="shrink-0 rounded p-1 text-muted-foreground hover:bg-muted hover:text-foreground">
+                        <X className="h-3.5 w-3.5" aria-hidden />
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              {sedi.length < SEDI_MAX && (
+                <LocationAutocomplete
+                  key={`sede-${sedi.length}`}
+                  value=""
+                  placeholder={sedi.length
+                    ? t('publicProfile.sedeAggiungi', { defaultValue: 'Aggiungi una sede: cerca e scegli dalla lista…' })
+                    : 'Ostuni, Puglia…'}
+                  onSelect={aggiungiSede}
+                />
+              )}
+              {sedi.length === 0 && (
+                <p className="text-[11px] text-amber-700 mt-1">
+                  {t('publicProfile.sedeNessuna', { defaultValue: 'Scegli dalla lista: senza una sede non compari nelle ricerche per zona.' })}
                 </p>
               )}
             </div>
@@ -872,13 +876,8 @@ export default function PublicProfilePage() {
                   </div>
                 </div>
 
-                {/* Regione (la località essenziale sta sopra) */}
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <Label>{t('publicProfile.region', { defaultValue: 'Regione' })}</Label>
-                    <Input className={inputCls} value={form.region || ''} onChange={e => set('region', e.target.value)} />
-                  </div>
-                </div>
+                {/* SD2 — il campo «Regione» libero non c'e' piu': la regione
+                    arriva dalla sede scelta dalla lista (services/sedi.py) */}
 
                 {/* Contatti opzionali */}
                 <div className="space-y-3">
@@ -957,9 +956,10 @@ export default function PublicProfilePage() {
             </div>
             <div className="pt-9 px-5 pb-5">
               <h3 className="font-bold text-gray-900">{orgName || '—'}</h3>
-              {(form.city || form.region) && (
+              {(sedi.length > 0 || form.city || form.region) && (
                 <p className="text-xs text-gray-500">
-                  {[form.city, form.region].filter(Boolean).join(', ')}
+                  {sedi.length ? sedi.map(s => s.etichetta).join(' · ')
+                    : [form.city, form.region].filter(Boolean).join(', ')}
                 </p>
               )}
               <p className="mt-2 text-sm text-gray-700 leading-relaxed whitespace-pre-line">

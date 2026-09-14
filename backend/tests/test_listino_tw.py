@@ -236,8 +236,9 @@ class TestCs4PrimoSalvataggio:
         """Selezionare scriveva form.city → value → setText, e il cambio
         di testo rilanciava la ricerca riaprendo la lista: si cerca solo
         se il testo l'ha battuto l'utente."""
-        src = (FRONTEND_SRC / "features" / "settings"
-               / "PublicProfilePage.js").read_text()
+        # SD2 (14/9/2026): l'autocomplete vive in components/LocationAutocomplete
+        # (lo usano editor e benvenuto); la regola e' la stessa
+        src = (FRONTEND_SRC / "components" / "LocationAutocomplete.jsx").read_text()
         assert "typedRef" in src
         assert "if (!typedRef.current) return undefined;" in src
         blocco = src.split("onMouseDown")[1][:120]
@@ -328,8 +329,10 @@ class TestAc2ProfiloEssenziale:
         # LK6 (founder, 14/8) — il ritratto e' SALITO in primo piano
         # accanto alla copertina: si controlla sotto, fuori da questa
         # lista.
+        # SD2 (14/9/2026): «region» non e' piu' un campo — la regione
+        # arriva dalla sede scelta dalla lista (services/sedi.py)
         for chiave in ("publicName", "foundedYear",
-                       "gallery", "region", "showContacts",
+                       "gallery", "showContacts",
                        "visibilityTitle"):
             assert f"publicProfile.{chiave}" in avanzato, \
                 f"{chiave} deve vivere in Per approfondire"
@@ -343,8 +346,9 @@ class TestAc2ProfiloEssenziale:
         """Cover, bio, localita' e social restano nell'essenziale."""
         src = self.PAGE.read_text()
         prima = src.split('data-testid="profile-advanced-toggle"')[0]
+        # SD2 (14/9/2026): la localita' e' il blocco «Dove lavori» (sedi)
         for chiave in ("publicProfile.cover", "publicProfile.bio",
-                       "publicProfile.locationSearch",
+                       "publicProfile.sediTitolo",
                        "publicProfile.socials"):
             assert chiave in prima, f"{chiave} deve restare in vista"
 

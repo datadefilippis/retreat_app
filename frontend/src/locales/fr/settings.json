@@ -727,6 +727,12 @@
     "disciplinesSuggest": "et nous l'ajouterons pour tous.",
     "disciplinesCopyEmail": "Copier",
     "disciplinesEmailCopied": "Copié",
-    "disciplinesEmailSelected": "Sélectionnée : Cmd+C"
+    "disciplinesEmailSelected": "Sélectionnée : Cmd+C",
+    "sediTitolo": "Dove lavori",
+    "sediAiuto": "Fino a tre sedi. Comparirai nelle ricerche vicino a ognuna.",
+    "sedePrincipale": "principale",
+    "sedeSenzaMappa": "senza posizione sulla mappa",
+    "sedeAggiungi": "Aggiungi una sede: cerca e scegli dalla lista…",
+    "sedeNessuna": "Scegli dalla lista: senza una sede non compari nelle ricerche per zona."
   }
 }

@@ -727,6 +727,12 @@
     "disciplinesSuggest": "und wir ergänzen sie für alle.",
     "disciplinesCopyEmail": "Kopieren",
     "disciplinesEmailCopied": "Kopiert",
-    "disciplinesEmailSelected": "Markiert: Cmd+C drücken"
+    "disciplinesEmailSelected": "Markiert: Cmd+C drücken",
+    "sediTitolo": "Dove lavori",
+    "sediAiuto": "Fino a tre sedi. Comparirai nelle ricerche vicino a ognuna.",
+    "sedePrincipale": "principale",
+    "sedeSenzaMappa": "senza posizione sulla mappa",
+    "sedeAggiungi": "Aggiungi una sede: cerca e scegli dalla lista…",
+    "sedeNessuna": "Scegli dalla lista: senza una sede non compari nelle ricerche per zona."
   }
 }

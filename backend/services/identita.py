@@ -462,7 +462,8 @@ def sezione_rete_llms(base: str, profili: List[Dict]) -> List[str]:
              "senza commissioni, con profilo pubblico, listino, prenotazioni, eventi e ritiri.", ""]
     for o in profili:
         pp = o.get("public_profile") or {}
-        dove = ", ".join(x for x in (pp.get("city"), pp.get("region")) if x)
+        from services.sedi import dove_testo
+        dove = dove_testo(pp)   # SD4 — tutte le sedi
         disc = ", ".join(pp.get("disciplines_labels") or [])
         coda = " — ".join(x for x in (dove, disc) if x)
         righe.append(f"- [{o.get('name') or o['public_slug']}]({base}/o/{o['public_slug']})"

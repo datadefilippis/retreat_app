@@ -40,6 +40,11 @@ export default function OperatorIdentityHeader({ data, t }) {
   const avatar = data.logo_url || data.portrait_url;
   const luogo = [data.city, data.region].filter(Boolean).join(', ');
   const placeSlug = placeSlugOf(data);
+  // SD4 — tutte le sedi, ognuna col link alla sua destinazione; il
+  // profilo non migrato ha la sola localita' storica (stessa riga di ieri)
+  const sedi = Array.isArray(data.sedi) && data.sedi.length
+    ? data.sedi.filter(s => s.etichetta)
+    : (luogo ? [{ etichetta: luogo, destinazione: placeSlug }] : []);
   const discipline = Array.isArray(data.disciplines) ? data.disciplines : [];
   return (
     <header className="relative" data-testid="operator-identity">
@@ -75,14 +80,19 @@ export default function OperatorIdentityHeader({ data, t }) {
                   {data.tagline}
                 </p>
               )}
-              {luogo && (
-                <p className="mt-1.5 flex items-center gap-1 text-sm text-gray-500">
+              {sedi.length > 0 && (
+                <p className="mt-1.5 flex flex-wrap items-center gap-x-1 text-sm text-gray-500" data-testid="operator-sedi">
                   <MapPin className="h-3.5 w-3.5 text-[#376254]" aria-hidden />
-                  {placeSlug ? (
-                    <Link to={`/destinazioni/${placeSlug}`} className="hover:text-[#376254] hover:underline">
-                      {luogo}
-                    </Link>
-                  ) : luogo}
+                  {sedi.map((s, i) => (
+                    <React.Fragment key={`${s.etichetta}-${i}`}>
+                      {i > 0 && <span aria-hidden className="text-gray-300">·</span>}
+                      {s.destinazione ? (
+                        <Link to={`/destinazioni/${s.destinazione}`} className="hover:text-[#376254] hover:underline">
+                          {s.etichetta}
+                        </Link>
+                      ) : <span>{s.etichetta}</span>}
+                    </React.Fragment>
+                  ))}
                 </p>
               )}
             </div>

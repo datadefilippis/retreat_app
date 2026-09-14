@@ -18,6 +18,9 @@ import { useTranslation } from 'react-i18next';
 import api from '../../api/client';
 import { BrandLogo } from '../../components/BrandLogo';
 import { DISCIPLINE_FAMILIES, DISCIPLINES_MAX } from '../../lib/disciplines';
+// SD2 — la stessa scelta dalla lista dell'editor: citta' E coordinate E
+// regione in un gesto; le altre sedi (fino a 3) si aggiungono dal profilo
+import LocationAutocomplete, { sedeDaLuogo, etichettaSede } from '../../components/LocationAutocomplete';
 
 export default function WelcomeRetePage() {
   const navigate = useNavigate();
@@ -30,6 +33,7 @@ export default function WelcomeRetePage() {
   const dest = rawNext.startsWith('/') && !rawNext.startsWith('//')
     ? rawNext : '/dashboard';
   const [city, setCity] = useState('');
+  const [sede, setSede] = useState(null);   // SD2 — la sede scelta dalla lista
   const [phone, setPhone] = useState('');
   const [instagram, setInstagram] = useState('');
   const [disciplines, setDisciplines] = useState([]);
@@ -50,6 +54,7 @@ export default function WelcomeRetePage() {
       if (!alive) return;
       const pp = r.data || {};
       if (pp.city) setCity(pp.city);
+      if (Array.isArray(pp.sedi) && pp.sedi[0]) { setSede(pp.sedi[0]); setCity(etichettaSede(pp.sedi[0])); }
       if (pp.public_phone) setPhone(pp.public_phone);
       if (pp.instagram) setInstagram(pp.instagram);
       if (Array.isArray(pp.disciplines) && pp.disciplines.length) {
@@ -85,7 +90,10 @@ export default function WelcomeRetePage() {
     setError('');
     try {
       const payload = {};
-      if (city.trim()) payload.city = city.trim();
+      // SD2 — scelta dalla lista → sede completa; solo digitata → city
+      // come prima (il server geocodifica, mai si perde il testo)
+      if (sede) payload.sedi = [sede];
+      else if (city.trim()) payload.city = city.trim();
       if (phone.trim()) payload.public_phone = phone.trim();
       if (instagram.trim()) payload.instagram = instagram.trim().replace(/^@/, '');
       if (disciplines.length) payload.disciplines = disciplines;
@@ -138,9 +146,18 @@ export default function WelcomeRetePage() {
               <label className="block text-sm font-semibold text-gray-700 mb-1.5">
                 {t('welcomeRete.city', { defaultValue: 'La tua città' })}
               </label>
-              <input type="text" value={city} onChange={(e) => setCity(e.target.value)}
-                maxLength={80} placeholder="Es. Ostuni"
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-[#376254] focus:outline-none" />
+              <LocationAutocomplete
+                value={city}
+                placeholder="Es. Ostuni"
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-[#376254] focus:outline-none"
+                onSelect={(place) => { const s = sedeDaLuogo(place); setSede(s); setCity(s ? etichettaSede(s) : ''); }}
+                onTextChange={(txt) => { setSede(null); setCity(txt); }}
+              />
+              <p className="mt-1 text-[11px] text-gray-500">
+                {sede
+                  ? t('welcomeRete.cityOk', { defaultValue: 'Comparirai nelle ricerche vicino a qui. Altre sedi si aggiungono dal profilo.' })
+                  : t('welcomeRete.cityHint', { defaultValue: 'Scegli dalla lista per comparire sulla mappa.' })}
+              </p>
             </div>
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-1.5">

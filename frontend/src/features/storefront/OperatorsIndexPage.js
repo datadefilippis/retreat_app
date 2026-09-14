@@ -149,12 +149,16 @@ function OperatorCard({ op, t, lang }) {
           </p>
         )}
         {/* AN3 — posizione dal profilo + distanza quando c'è un punto */}
-        {(op.city || op.region || op.distance_km != null) && (
+        {/* SD3 — tutte le sedi (max 3); con la ricerca per raggio la
+            distanza e' dalla piu' vicina, e si dice quale */}
+        {((op.sedi || []).length > 0 || op.city || op.region || op.distance_km != null) && (
           <p className="text-xs text-muted-foreground mt-1">
-            <MapPin className="h-3 w-3 inline-block mr-0.5 align-[-1px]" aria-hidden />{[op.city, op.region].filter(Boolean).join(', ')}
+            <MapPin className="h-3 w-3 inline-block mr-0.5 align-[-1px]" aria-hidden />
+            {(op.sedi || []).length ? op.sedi.map(s => s.etichetta).join(' · ')
+              : [op.city, op.region].filter(Boolean).join(', ')}
             {op.distance_km != null && (
               <span className="ml-1.5 rounded-full bg-primary/10 text-primary px-2 py-0.5 text-[11px] font-semibold">
-                {op.distance_km} km
+                {op.distance_km} km{op.sede_vicina ? ` · ${op.sede_vicina}` : ''}
               </span>
             )}
           </p>

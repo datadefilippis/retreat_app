@@ -496,7 +496,8 @@ async def list_events_admin(
         directory_reasons = []
         if (occ.get("start_at") or "") >= now_iso:
             # P3 (10/9/2026): il ritiro «su richiesta» STA nel marketplace;
-            # Stripe conta solo per la prenotazione online
+            # Stripe conta solo per la prenotazione online. SD6 (14/9): e'
+            # la regola di services.ritiri_visibilita.prenotabile_con_stripe
             if prod.get("transaction_mode") == "direct" and not stripe_ready:
                 directory_reasons.append("stripe_not_ready")
             if not (prod.get("is_published") and prod.get("is_active", True)):

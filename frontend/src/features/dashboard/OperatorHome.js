@@ -179,9 +179,11 @@ export default function OperatorHome() {
   const todoRow = 'flex items-center justify-between rounded-lg border px-3 py-2 transition-colors';
   const footLink = 'mt-3 inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground';
 
-  // GT1b — il calendario pubblico mostra solo ritiri prenotabili online:
-  // se hai pubblicato ma Stripe non è attivo, i tuoi ritiri NON compaiono.
-  const calendarBlocked = obSteps && obSteps.retreat_published && !obSteps.stripe_connected;
+  // SD6 (14/9/2026) — dal 10/9 i ritiri «su richiesta» SONO in lista senza
+  // Stripe: il vecchio riquadro (GT1b: pubblicato && !Stripe) avvisava
+  // anche loro. Ora scatta SOLO se c'e' un ritiro «prenotazione online»
+  // senza Stripe pronto: l'unico che resta fuori (services/ritiri_visibilita).
+  const calendarBlocked = obSteps && Number(obSteps.retreats_direct_no_stripe || 0) > 0;
 
   return (
     <div className="space-y-5" data-testid="operator-home">
@@ -190,14 +192,19 @@ export default function OperatorHome() {
         <span aria-hidden>⚠️</span>
         <div className="text-sm">
           <p className="font-semibold text-[#8a4a33]">
-            {t('home.calendar_blocked_title', { defaultValue: 'I tuoi ritiri non compaiono nel calendario pubblico' })}
+            {t('home.calendar_blocked_title', { defaultValue: 'Un tuo ritiro con prenotazione online non compare' })}
           </p>
           <p className="text-[#8a4a33]/90 mt-0.5">
-            {t('home.calendar_blocked_body', { defaultValue: 'Nel calendario di Aurya entrano solo i ritiri prenotabili online. Attiva i pagamenti per essere visibile e ricevere prenotazioni.' })}
+            {t('home.calendar_blocked_body', { defaultValue: 'Finché Stripe non è attivo il pagamento sul sito non parte, quindi il ritiro resta fuori da Ritiri ed esperienze. Collega i pagamenti, oppure mettilo «su richiesta»: comparirà subito e la richiesta ti arriverà via email.' })}
           </p>
-          <Link to="/settings" className="inline-block mt-1.5 text-sm font-semibold text-[#376254] hover:underline">
-            {t('home.calendar_blocked_cta', { defaultValue: 'Attiva i pagamenti online' })} →
-          </Link>
+          <span className="inline-flex flex-wrap gap-x-4 mt-1.5">
+            <Link to="/settings" className="text-sm font-semibold text-[#376254] hover:underline">
+              {t('home.calendar_blocked_cta', { defaultValue: 'Collega i pagamenti' })} →
+            </Link>
+            <Link to="/events" className="text-sm font-semibold text-[#376254] hover:underline">
+              {t('home.calendar_blocked_cta2', { defaultValue: 'Mettilo su richiesta' })} →
+            </Link>
+          </span>
         </div>
       </div>
     )}

@@ -224,7 +224,10 @@ class TestOperatorGeoAn3:
         editor = (FRONTEND_SRC / "features" / "settings"
                   / "PublicProfilePage.js").read_text()
         assert "LocationAutocomplete" in editor
-        assert "/public/geo/search" in editor
+        # SD2 (14/9/2026): il componente vive in components/ (lo usa anche
+        # il benvenuto) ed e' lui a parlare con /public/geo/search
+        comp = (FRONTEND_SRC / "components" / "LocationAutocomplete.jsx").read_text()
+        assert "/public/geo/search" in comp
         assert "payload.latitude" in editor
 
     def test_backfill_script_respects_nominatim(self):

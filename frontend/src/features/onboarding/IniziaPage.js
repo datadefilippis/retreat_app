@@ -108,7 +108,7 @@ export default function IniziaPage() {
     {
       key: 'stripe_connected', icon: CreditCard, minutes: 5,
       title: t('onboarding.stripe_title', { defaultValue: 'Collega i pagamenti' }),
-      why: t('onboarding.stripe_why', { defaultValue: 'È dove arrivano i tuoi incassi: direttamente sul tuo conto, con caparre e saldi gestiti in automatico. Serve anche per comparire nel calendario pubblico.' }),
+      why: t('onboarding.stripe_why', { defaultValue: 'È dove arrivano i tuoi incassi: direttamente sul tuo conto, con caparre e saldi gestiti in automatico. Serve solo se vuoi la prenotazione online: i ritiri «su richiesta» compaiono anche senza.' }),
       cta: t('onboarding.stripe_cta', { defaultValue: 'Collega Stripe' }),
       href: '/settings',
     },

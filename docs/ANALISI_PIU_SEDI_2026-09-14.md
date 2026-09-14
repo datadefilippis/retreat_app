@@ -176,6 +176,21 @@ link, email, Sound, checkout. Nessun cambio di rotte, nessuna pagina
 nuova. La forma della risposta della directory resta la stessa con un
 campo `sedi` in più.
 
+### 2.4-bis Integrazione, non reset (vincolo del founder, 14/9)
+
+Chi ha già una località **non perde niente**, in nessun momento:
+
+- **prima della bonifica** (anche se la migrazione non fosse ancora
+  passata) ogni lettore ricava le sedi dai quattro campi di oggi: la
+  località esistente È la sede principale, per costruzione;
+- **la bonifica** aggiunge `sedi` e la regione mancante senza toccare
+  `city`, `latitude`, `longitude` (che restano identici e diventano gli
+  specchi); il valore precedente resta annotato in `sedi_prima`;
+- **un salvataggio vecchio stile** (chi manda solo `city`, come
+  /benvenuto) aggiorna la sede principale e **conserva le altre due**;
+- il tetto di 3 e le regole vivono in un servizio solo
+  (`services/sedi.py`): un punto da leggere, uno da cambiare.
+
 ### 2.5 La bonifica dei profili esistenti
 
 Migrazione una tantum con flag, come per i link social:
@@ -214,12 +229,36 @@ Migrazione una tantum con flag, come per i link social:
 | **SD3** directory e destinazioni | `sedi` e regioni di tutte le sedi nella risposta, scheda con sedi + distanza dalla più vicina, filtro `?luogo` su ogni sede, un segnaposto per sede | `routers/public.py`, `OperatorsIndexPage.js`, `OperatorsMapView.jsx`, `DestinationsPage.js` | ½ giornata |
 | **SD4** profilo e SEO | intestazione con tutte le sedi, `areaServed`, shell crawler, `llms.txt`, home ed elenco | `OperatorIdentityHeader.jsx`, `OperatorProfilePage.js`, `seo_shell.py`, `identita.py` | ½ giornata |
 | **SD5** bonifica e prova | migrazione `sedi_v1` con reverse geocoding, tabella sulla copia di prod, suite completa, giro in browser | `services/migrazioni_profilo.py`, `server.py` | ½ giornata |
+| **SD6** Stripe e visibilità (appendice, go del founder 14/9) | una funzione di visibilità per lista, griglia e admin; riquadro in home solo per «online senza Stripe» col testo giusto e i due link; avviso del wizard che dice la verità; via «serve per comparire» dalla checklist | `services/ritiri_visibilita.py`, `platform_insights.py`, `OperatorHome.js`, `DirectoryListingHint.jsx`, locali | ½ giornata |
 
 Circa due giornate di lavoro in locale, un solo deploy insieme al ciclo
 già pronto (abbonamenti, landing, `/costi`, link social). L'ordine è
 quello: ogni passo lascia il sito funzionante, e SD1 da solo già fa
 comparire l'operatore in più zone anche prima che l'interfaccia lo
 mostri.
+
+## 4-bis. Stato: IMPLEMENTATO in locale (14/9 sera, go del founder)
+
+SD1-SD6 fatti come da piano, solo locale, nessun deploy:
+
+- `services/sedi.py` (regole, specchi, MultiPoint, sede più vicina),
+  `services/ritiri_visibilita.py` (regola unica), `services/geocoding.py`
+  (`addressdetails`, `reverse_geocode`), PATCH/GET profilo con `sedi`,
+  directory con `sedi`/`sede_vicina`/regioni di tutte le sedi, profilo
+  con `areaServed`, shell/llms con tutte le sedi, migrazione `sedi_v1`.
+- Gestionale: blocco «Dove lavori» (`components/LocationAutocomplete.jsx`
+  condiviso col benvenuto), scheda e mappa della directory (un
+  segnaposto per sede), intestazione del profilo, riquadro in home solo
+  per «online senza Stripe», avviso del wizard e checklist corretti,
+  etichetta admin «Nessun ritiro futuro pubblicato».
+- Verificato nel browser con l'account fixture: tre sedi salvate, la
+  quarta non si può aggiungere, directory da Como «39,4 km · Milano»,
+  tre segnaposto, tre link nell'intestazione, `areaServed` nei dati per
+  Google, riquadro nuovo in home. Guardie: `tests/test_sedi_sd.py`.
+- Da sapere: la shell per i crawler ha una cache per URL di 10 minuti
+  (già prima): il profilo aggiornato arriva ai bot entro quel tempo.
+  Le pagine `/destinazioni/{x}` esistono solo per i luoghi con ritiri
+  (già prima): l'operatore vi compare per ognuna delle sue regioni.
 
 ## 5. Le decisioni che spettano al founder
 

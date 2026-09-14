@@ -132,6 +132,63 @@ async def enrich_occurrence_geo(doc: Dict[str, Any]) -> Dict[str, Any]:
     return doc
 
 
+def dettagli_luogo(addr: dict) -> dict:
+    """SD1 — da `address` di Nominatim a {citta, provincia, regione, paese}.
+    La regione e' canonica (services.sedi) o None fuori Italia."""
+    from services.sedi import regione_canonica
+    citta = None
+    for k in ("city", "town", "village", "municipality", "hamlet", "county"):
+        if addr.get(k):
+            citta = addr[k]
+            break
+    stato = addr.get("state")
+    regione = regione_canonica(stato)
+    paese = addr.get("country") or "Italia"
+    # e' la regione stessa (featureType settlement include le regioni):
+    # citta' vuota, regione piena = sede «tutta la regione»
+    if not regione and regione_canonica(citta):
+        regione, citta = regione_canonica(citta), None
+    if citta and regione and citta.lower() == regione.lower():
+        citta = None
+    return {"citta": citta, "provincia": addr.get("county") if addr.get("county") != citta else None,
+            "regione": regione, "paese": paese}
+
+
+async def reverse_geocode(lat: float, lng: float) -> Optional[dict]:
+    """SD5 — da coordinate a {citta, provincia, regione, paese}: serve alla
+    bonifica dei profili che hanno il punto ma non la regione. Cache,
+    1 req/s, best-effort → None."""
+    from database import db
+    cache_key = f"reverse:{round(float(lat), 4)}:{round(float(lng), 4)}"
+    cached = await db.geocode_cache.find_one({"query": cache_key}, {"_id": 0})
+    if cached is not None:
+        return cached.get("dettagli")
+    global _last_call_ts
+    dettagli = None
+    try:
+        async with _lock:
+            wait = 1.0 - (time.monotonic() - _last_call_ts)
+            if wait > 0:
+                await asyncio.sleep(wait)
+            _last_call_ts = time.monotonic()
+            async with httpx.AsyncClient(timeout=TIMEOUT_S) as client:
+                resp = await client.get(NOMINATIM_URL.replace("/search", "/reverse"), params={
+                    "lat": lat, "lon": lng, "format": "json", "zoom": 10,
+                    "addressdetails": 1,
+                }, headers={"User-Agent": USER_AGENT})
+        resp.raise_for_status()
+        raw = resp.json()
+        if isinstance(raw, dict) and raw.get("address"):
+            dettagli = dettagli_luogo(raw["address"])
+    except Exception as exc:
+        logger.warning("reverse_geocode fallito per %s,%s: %s", lat, lng, exc)
+        return None
+    await db.geocode_cache.update_one(
+        {"query": cache_key},
+        {"$set": {"query": cache_key, "dettagli": dettagli}}, upsert=True)
+    return dettagli
+
+
 async def search_places(q: str, limit: int = 5) -> list:
     """Autocomplete localita' (directory "Dove?"): lista di
     {label, lat, lng}. Cache-first, best-effort → [] su errore."""
@@ -139,7 +196,10 @@ async def search_places(q: str, limit: int = 5) -> list:
     if len(query) < 2:
         return []
     from database import db
-    cache_key = f"search:{query}:{limit}"
+    # SD1 (14/9/2026): addressdetails → citta'/provincia/regione/paese
+    # nella risposta (la regione non si chiede piu' all'operatore).
+    # Chiave nuova: la cache vecchia non aveva i dettagli.
+    cache_key = f"search2:{query}:{limit}"
     cached = await db.geocode_cache.find_one({"query": cache_key}, {"_id": 0})
     if cached is not None:
         return cached.get("results") or []
@@ -156,6 +216,7 @@ async def search_places(q: str, limit: int = 5) -> list:
                     "q": query, "format": "json", "limit": limit,
                     # solo luoghi "contenitore": citta', paesi, regioni
                     "featureType": "settlement",
+                    "addressdetails": 1,
                 }, headers={"User-Agent": USER_AGENT})
         resp.raise_for_status()
         raw = resp.json()
@@ -170,6 +231,7 @@ async def search_places(q: str, limit: int = 5) -> list:
                 "label": r.get("display_name", ""),
                 "lat": float(r["lat"]),
                 "lng": float(r["lon"]),
+                **dettagli_luogo(r.get("address") or {}),
             })
         except (KeyError, TypeError, ValueError):
             continue

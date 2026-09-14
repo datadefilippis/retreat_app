@@ -36,8 +36,18 @@ function FitBounds({ points }) {
 
 export default function OperatorsMapView({ items }) {
   const { t } = useTranslation('landings');
-  const pinned = items.filter(i => i.latitude != null && i.longitude != null);
-  const points = pinned.map(i => [i.latitude, i.longitude]);
+  // SD3 — un segnaposto PER SEDE (max 3 per operatore); i profili non
+  // ancora migrati hanno la sola posizione storica
+  const pinned = items.flatMap(op => {
+    const sedi = (op.sedi || []).filter(s => s.lat != null && s.lng != null);
+    if (sedi.length) {
+      return sedi.map((s, i) => ({ op, key: `${op.org_slug}-${i}`, lat: s.lat, lng: s.lng, luogo: s.etichetta }));
+    }
+    return op.latitude != null && op.longitude != null
+      ? [{ op, key: op.org_slug, lat: op.latitude, lng: op.longitude, luogo: [op.city, op.region].filter(Boolean).join(', ') }]
+      : [];
+  });
+  const points = pinned.map(i => [i.lat, i.lng]);
 
   if (!pinned.length) {
     return (
@@ -55,15 +65,15 @@ export default function OperatorsMapView({ items }) {
           url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
         <FitBounds points={points} />
-        {pinned.map(op => (
-          <Marker key={op.org_slug} position={[op.latitude, op.longitude]}>
+        {pinned.map(({ op, key, lat, lng, luogo }) => (
+          <Marker key={key} position={[lat, lng]}>
             <Popup>
               <div className="min-w-[180px]">
                 <p className="font-semibold text-sm mb-0.5">
                   {op.featured && <span className="text-[#376254]">✦ </span>}{op.name}
                 </p>
                 <p className="text-xs text-gray-600 mb-1">
-                  {[op.city, op.region].filter(Boolean).join(', ')}
+                  {luogo}
                   {op.distance_km != null && <> · {op.distance_km} km</>}
                 </p>
                 {op.upcoming_retreats > 0 && (
