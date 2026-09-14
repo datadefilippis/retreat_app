@@ -2275,6 +2275,16 @@ async def _meta_frequenza(slug: str) -> Optional[dict]:
     }
 
 
+def _taglia_description(testo: str, massimo: int = 155) -> str:
+    """SEO-C: la description si ferma a ~155 caratteri, su una parola
+    intera (Google taglia il resto e mostra i puntini)."""
+    t = " ".join((testo or "").split())
+    if len(t) <= massimo:
+        return t
+    corto = t[:massimo].rsplit(" ", 1)[0].rstrip(",;:")
+    return corto + "…"
+
+
 async def _meta_operator(org_slug: str) -> Optional[dict]:
     from database import stores_collection, organizations_collection
     from services import seo_schema as sx
@@ -2302,7 +2312,7 @@ async def _meta_operator(org_slug: str) -> Optional[dict]:
     # abbastanza (>= 80 caratteri); altrimenti la bio, che e' sempre
     # piu' ricca («Ilaria» aveva una description di 35 caratteri)
     _tag = (profile.get("tagline") or "").strip()
-    bio = (_tag if len(_tag) >= 80 else (profile.get("bio") or _tag or ""))[:300]
+    bio = _taglia_description(_tag if len(_tag) >= 80 else (profile.get("bio") or _tag or ""))
     image = _abs_image(profile.get("logo_url") or profile.get("cover_url")
                        or profile.get("portrait_url"))
     canonical = f"{base}/o/{org_slug}"

@@ -113,6 +113,11 @@ class TestDoveVive:
     def test_profilo_description_e_id(self):
         corpo = self.SHELL[self.SHELL.index("async def _meta_operator("):self.SHELL.index("async def _meta_link_page")]
         assert "len(_tag) >= 80" in corpo and '"@id": canonical' in corpo
+        assert "_taglia_description(" in corpo, "la description del profilo si ferma a ~155 caratteri"
+        from routers.seo_shell import _taglia_description
+        assert _taglia_description("a" * 100) == "a" * 100
+        lunga = _taglia_description("parola " * 40)
+        assert len(lunga) <= 156 and lunga.endswith("…") and not lunga[:-1].endswith(" ")
         assert "_pl.pagine_per_profilo(profile, await _pl.contatori_locali())" in corpo
         assert "Vedi anche: " in corpo
 
