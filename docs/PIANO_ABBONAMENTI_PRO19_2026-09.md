@@ -12,6 +12,13 @@ gratuito comprende:
 4. **l'intervista** all'operatore, con eventuali **reel** che lo
    sponsorizzano.
 
+**Aggiunta del 14/9**: **chi entra prima del 31 dicembre 2026 ha i
+vantaggi del Pro senza Sound**, gratis: l'intervista, la sponsorizzazione
+sui canali social di Aurya, l'eventuale newsletter. Dal 1° gennaio 2027
+chi vuole la sponsorizzazione passa all'abbonamento; l'app resta gratuita.
+Il «30 giugno 2027» sparisce: il patto dei fondatori È questo, i vantaggi
+di entrare subito.
+
 Inoltre, per ora, **il pulsante «Chiedi la regia»** nella sezione eventi
 del gestionale **si nasconde** (la regia va ancora consolidata).
 
@@ -47,20 +54,23 @@ Connect degli operatori.
 
 ## 2. Il modello nuovo, in una tabella
 
-| | Gratis | Pro |
-|---|---|---|
-| Prezzo | 0 €, per sempre | 19 €/mese · 228 €/anno |
-| Commissioni | zero | zero |
-| Gestionale completo (profilo, listino, prenotazioni, eventi e ritiri con caparra, clienti, recensioni, pagina link, newsletter ai propri clienti) | sì | sì |
-| Crea Studio (Aurya Sound) | no | **sì**, automatico |
-| I tuoi eventi nella Lettera del Cerchio della tua zona | no | **sì** |
-| I tuoi eventi sui social di Aurya | no | **sì** |
-| Intervista + reel | no | **sì**, su richiesta |
-| Ritiri in prima fila su /esperienze | no | **sì** (proposta, vedi decisioni) |
+| | Gratis | Entrati entro il 31/12/2026 | Pro (dal 1/1/2027) |
+|---|---|---|---|
+| Prezzo | 0 €, per sempre | 0 € | 19 €/mese · 228 €/anno |
+| Commissioni | zero | zero | zero |
+| Gestionale completo (profilo, listino, prenotazioni, eventi e ritiri con caparra, clienti, recensioni, pagina link, newsletter ai propri clienti) | sì | sì | sì |
+| Crea Studio (Aurya Sound) | no | no | **sì**, automatico |
+| I tuoi eventi nella Lettera del Cerchio della tua zona | no | **sì**, se serve | **sì** |
+| I tuoi eventi sui social di Aurya | no | **sì**, gratis | **sì** |
+| Intervista + reel | no | **sì**, gratis | **sì**, su richiesta |
+| Ritiri in prima fila su /esperienze | no | (proposta: sì) | **sì** (proposta) |
 
-Spariscono: **Spinta** (19 € per ritiro), **Club** (49 €). Restano nascosti
-e assegnabili solo dal pannello: **Club Fondatori** (rinominato «Fondatori»)
-e **Partner**.
+Spariscono: **Spinta** (19 € per ritiro), **Club** (49 €), la data del
+**30 giugno 2027** e il «prezzo Pro bloccato». Il piano nascosto
+`retreat_founding` diventa **«Entrato nel 2026»**: lo assegna il sistema a
+chi pubblica il profilo entro il 31/12/2026, dà i tre servizi gratis (non
+Studio), e dal 1/1/2027 resta com'è (l'app è gratuita) ma le nuove
+sponsorizzazioni passano dal Pro. **Partner** invariato.
 
 Le quattro cose del Pro sono di due nature, e il piano le tratta in modo
 diverso:
@@ -86,12 +96,15 @@ diverso:
    mesi regalati, «paghi dieci mesi»): è la leva classica per incassare
    subito e ridurre le disdette. Se preferite 228, resta 228: il piano
    funziona uguale.
-3. **I fondatori.** Il patto dice «Club gratis fino al 30/6/2027 e prezzo
-   Pro bloccato». Il Club non esiste più. Proposta: **i fondatori hanno il
-   Pro gratis fino al 30 giugno 2027**, poi il prezzo bloccato a 19. È
-   un patto migliore di quello promesso, costa zero, e sparisce
-   l'imbarazzo di un piano fantasma. Landing, /costi, gestionale e email
-   dicono la stessa cosa.
+3. **Il patto di chi entra nel 2026** (deciso il 14/9: intervista, social,
+   eventuale newsletter, gratis; niente Sound; niente 30/6/2027). Resta
+   da dire una cosa sola: **il tetto**. Oggi la landing dice «i primi
+   venti entro il 31 ottobre» con badge Fondatore e contatore vero.
+   Proposta: la scadenza diventa **31 dicembre 2026 per tutti, senza
+   tetto** (chi pubblica il profilo entro l'anno ha i tre servizi); il
+   **badge Fondatore resta ai primi venti**, perché è l'unica cosa che ha
+   senso contare. Il contatore in landing passa da «posti rimasti» a
+   «giorni rimasti».
 4. **La prima fila** (ritiri in evidenza su /esperienze e nella Lettera
    di zona) era del Club. Proposta: **dentro il Pro**, è già implementata
    (`FEATURED_PLAN_SLUGS`) e rende il piano visibile sul sito.
@@ -115,11 +128,19 @@ prova generale sulla copia di produzione.
   `retreat_pro_social`, `retreat_pro_intervista_reel`, prima fila).
 - `retreat_club`: `is_public: False`, `is_self_serve: False`, non più
   seedato come vendibile (resta nel DB per chi lo avesse: nessuno).
-- `retreat_founding` → nome «Fondatori», descrizione «Pro gratis fino al
-  30 giugno 2027, poi 19 € bloccati»; `retreat_partner` invariato.
+- `retreat_founding` → nome «Entrato nel 2026», descrizione «Intervista,
+  i tuoi eventi sui social di Aurya e nella Lettera, gratis: il vantaggio
+  di essere entrato subito»; feature: i tre servizi, NON Studio
+  (`module_plans` = base); `retreat_partner` invariato.
+- Assegnazione automatica: chi ha il profilo pubblicato (rete) entro il
+  31/12/2026 riceve `retreat_founding` (oggi `ids_fondatori` lo calcola
+  coi primi venti: la stessa funzione, con la scadenza nuova e senza
+  tetto per i servizi; il tetto resta solo per il badge).
 - Migrazione `catalogo_pro19_v1` (flag-gated, idempotente): allinea i
-  campi admin-protetti, toglie i price id 2027, nasconde il Club.
-- Costanti: `VENDITA_PIANI_DAL`, `CLUB_FINO` → `PRO_GRATIS_FINO`.
+  campi admin-protetti, toglie i price id 2027, nasconde il Club,
+  assegna «Entrato nel 2026» a chi ha diritto.
+- Costanti: `VENDITA_PIANI_DAL` (1/1/2027), `SCADENZA` → 31/12/2026,
+  `CLUB_FINO` sparisce.
 - Guardie: `test_retreat_plans.py` (slug, prezzi, intervalli),
   `test_admin_piani_pa.py`, `test_rebranding_rb.py` (patto fondatori).
 
@@ -143,8 +164,13 @@ prova generale sulla copia di produzione.
   scheda sola**: «Pro · 19 € al mese o 228 € l'anno» con le quattro righe
   (Studio, Lettera, social, intervista + reel) e «dal 1° gennaio 2027».
   Via le tre schede. FAQ «Quanto costa?» riscritta di conseguenza.
-  Patto fondatori: «Pro gratis fino al 30 giugno 2027, poi 19 € per
-  sempre».
+  Patto in landing («Perché entrare ora»): «Chi pubblica il profilo
+  entro il 31 dicembre 2026 ha gratis l'intervista, i suoi eventi sui
+  social di Aurya e nella Lettera del Cerchio. Dal 2027 questi servizi
+  sono nel Pro. L'app resta gratuita.» Le quattro schede del patto
+  diventano tre (intervista, social, Lettera) più il badge per i primi
+  venti; via «Club Fondatori gratuito fino al 30 giugno 2027» e «prezzo
+  Pro bloccato».
 - /costi: **due colonne** (Gratis, Pro), il cancello «si accende quando»
   diventa la frase sulla data, fondatori aggiornati, garanzia 30 giorni
   solo sul Pro; shell SEO di /costi allineata (titolo resta «Gratis per
@@ -199,7 +225,8 @@ prova generale e deploy un'ora. Tutto in una giornata di lavoro.
   Crea Studio per le tue meditazioni, i tuoi eventi nella Lettera del
   Cerchio della tua zona e sui social di Aurya, l'intervista e i reel che
   ti raccontano.*
-- Fondatori: *I primi venti hanno il Pro gratis fino al 30 giugno 2027,
-  poi 19 € per sempre.*
+- Perché entrare ora: *Chi pubblica il profilo entro il 31 dicembre 2026
+  ha gratis l'intervista, i suoi eventi sui social di Aurya e nella
+  Lettera del Cerchio. Dal 2027 sono nel Pro. L'app resta gratuita.*
 - Gestionale: *Sei nel piano Gratis. Il Pro si accende dal 1° gennaio
   2027.*
