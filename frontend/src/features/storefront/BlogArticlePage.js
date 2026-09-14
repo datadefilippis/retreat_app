@@ -483,6 +483,29 @@ export default function BlogArticlePage() {
                    cosa fatta. SB6: ma se non ha un account, il passo
                    naturale e' finalizzarlo — una riga, non un muro. */
                 ponteIscritto
+              ) : article.category === 'aziendale' ? (
+                /* NA10 (14/9 notte) — un articolo per le aziende non chiude su
+                   «cerchi un ritiro di benessere aziendale?»: chiude sulla
+                   porta aziende (progetto, modulo, risposta in due giorni). */
+                <Section tone="sage" rhythm="flow" width="max-w-3xl"
+                         labelledBy="art-porta-aziende-title">
+                  <div data-testid="art-porta-aziende">
+                    <DisplayTitle as="h2" id="art-porta-aziende-title" size="section" measure="title"
+                                  className="text-[1.8rem] sm:text-[2.2rem] lg:text-[2.5rem]">
+                      {t('blog.portaAziendeTitle', { defaultValue: 'Un progetto di benessere per la tua azienda?' })}
+                    </DisplayTitle>
+                    <Lede size="lead" tone="inherit" className="mt-6 opacity-90">
+                      {t('blog.portaAziendeBody', { defaultValue: 'Team building, percorsi di otto settimane, giornate del benessere: condotti dai professionisti della rete Aurya, costruiti sul tuo gruppo. Rispondiamo entro due giorni lavorativi.' })}
+                    </Lede>
+                    <p className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-6">
+                      <EditorialCta to="/aziende?porta=magazine" variant="light"
+                                    onClick={() => trackEvent('porta', { porta: 'aziende', da: 'magazine' })}
+                                    data-testid="art-porta-aziende-cta">
+                        {t('blog.portaAziendeCta', { defaultValue: 'Parliamone' })}
+                      </EditorialCta>
+                    </p>
+                  </div>
+                </Section>
               ) : sitePhase === 'network' && BOOKABLE_CATS.has(article.category) ? (
                 /* RB12 (10/9/2026, rebranding onda 3) — il Magazine e'
                    l'unica sorgente che porta gia' persone, e in fondo a
