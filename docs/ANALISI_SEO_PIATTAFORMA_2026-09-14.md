@@ -199,6 +199,36 @@ Ordine consigliato: A (subito, con il fix di stasera) → B → C → E, con D
 e F che partono in parallelo e non finiscono mai. Circa 5 giornate di
 sviluppo più il lavoro editoriale.
 
+## 4-bis. Stato: SEO-A, B, C, E IN PRODUZIONE (14/9 sera, tag prod-2026-09-14c)
+
+- **A** — `/magazine` 301 → `/blog`, barra finale 301 con query
+  conservata, `/cerca-ritiro` in sitemap, prefisso `/esperienze` nella
+  sitemap dei ritiri, titoli e description accorciati (aziende,
+  cerca-ritiro, chi-siamo, come-funziona, newsletter, entra-nella-rete,
+  landing ritiro), «in Puglia» nelle destinazioni, client di
+  `/operatori` allineato alla shell.
+- **B** — pagine locali `/operatori/{disciplina}`, `/operatori/{regione}`,
+  `/operatori/{disciplina}/{regione}` (`services/pagine_locali.py`, una
+  verità per shell e client), indicizzabili solo con ≥ 3 operatori.
+  Oggi in sitemap: yoga, meditazione, reiki, cerchi-di-donne,
+  coaching-olistico; Puglia e Lazio hanno 2 operatori ciascuna e restano
+  `noindex` finché non arriva il terzo. Select «Regione» nella directory.
+- **C** — description del profilo dalla bio (se la tagline è corta),
+  fermata a ~155 caratteri; `LocalBusiness` con `@id`; «Vedi anche» con
+  le pagine locali sopra soglia e la categoria del Magazine.
+- **E** — 16 pagine del commerce legacy e Sentry fuori dal bundle
+  iniziale: `main.js` da 434 a 362 KB gzip (−17%). Font e
+  `splitChunks` dei vendor restano per un giro successivo (decisione 4).
+- **G** — guardie in `tests/test_seo_locali_sl.py` (soglia, preposizioni,
+  lunghezze title/description delle pagine brand, parità client/shell,
+  bundle). Il crawl di questa analisi è in `scratchpad/crawl_seo.py`: da
+  portare in `scripts/`.
+
+Da fare fuori dal codice (SEO-F): ripresentare la sitemap in Search
+Console e chiedere l'indicizzazione delle cinque pagine locali e dei
+nove profili; Bing Webmaster. SEO-D (contenuto) resta un lavoro
+editoriale continuo.
+
 ## 5. Le decisioni che spettano al founder
 
 1. **Pagine locali**: soglia di 3 operatori per indicizzare (proposta) o

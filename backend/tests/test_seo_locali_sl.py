@@ -123,8 +123,6 @@ class TestDoveVive:
 
     def test_titoli_e_description_delle_pagine_brand_nella_misura(self):
         blocco = self.SHELL[self.SHELL.index("_BRAND_PAGES = {"):self.SHELL.index("def _meta_brand_page")]
-        ns: dict = {}
-        exec("BRAND = " + blocco.split("_BRAND_PAGES = ", 1)[1].split("\n\n\n", 1)[0].rstrip().rstrip(","), {}, ns) if False else None
         # senza eseguire codice: si misurano i literal
         for m in re.finditer(r'"title": "([^"]+)"', blocco):
             assert len(m.group(1)) <= 72, m.group(1)   # /entra-nella-rete ha 72: e' il tetto
