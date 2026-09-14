@@ -310,11 +310,16 @@ class TestP1LeParoleSuiSoldi:
     def test_costi_dice_zero_commissioni_e_i_piani_del_2027(self):
         src = re.sub(r"/\*.*?\*/", "", self.COSTI.read_text(), flags=re.DOTALL)
         # AB-R3 (14/9/2026): due porte (Gratis, Pro 19/200), il patto 2026, la garanzia
-        for frase in ("Aurya non prende commissioni. Mai.", "Gratis per sempre, senza commissioni",
+        # 14/9: copy di /costi ottimizzato (founder): quattro punti, due
+        # schede, il patto 2026, la garanzia, Stripe senza percentuali
+        for frase in ("Aurya non prende commissioni.", "Gratis per sempre, senza commissioni",
                       "I prezzi dal 1° gennaio 2027", 'testid="plan-free"', 'testid="plan-pro"',
                       "PRICING_2027 = { pro_mese: 19, pro_anno: 200 }",
-                      "Chi entra nel 2026.", "31 dicembre 2026", "La garanzia.", "E Stripe?"):
+                      "Chi entra nel 2026", "31 dicembre 2026", "La garanzia.", "E Stripe?",
+                      "Il piano base resta gratuito", "Ricevi la caparra come preferisci", "Clienti e pagamenti"):
             assert frase in src, frase
+        for vecchio in ("Posso lavorare?", "Te lo diciamo per intero", "Clienti, ordini e conti", "se serve", "1,5 per cento"):
+            assert vecchio not in src, f"tornato: {vecchio}"
         for vecchio in ('testid="plan-spinta"', 'testid="plan-club"', "30 giugno 2027", "Il Club si accende"):
             assert vecchio not in src, f"tornato: {vecchio}"
         assert "5%" not in src and "sugli incassi online" not in src.split("E Stripe?")[0].replace("senza commissioni", "")
