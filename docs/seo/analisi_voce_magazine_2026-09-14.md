@@ -1,0 +1,54 @@
+# Analisi della voce del Magazine — 14 settembre 2026 (prima della revisione)
+
+Misure sui 52 articoli pubblicati, calcolate con `scratchpad/analisi_voce.py` sul testo piano (link e titoli esclusi). Serve come base di confronto per la revisione editoriale (docs/REDAZIONE_VOCE_AURYA.md).
+
+```
+ARCHIVIO: 52 articoli, 75337 parole
+frasi: media 15.8 parole, mediana 14.0, oltre 35 parole: 196 su 4780 (4%), oltre 50: 32
+paragrafi: media 39 parole, oltre 90: 51 su 1949 (3%)
+intro prima del primo H2: media 109 parole, max 172
+menzioni Aurya: media 0.2 per articolo, max 4; bullet per articolo media 1.7
+
+FRASI A EFFETTO (totale archivio):
+   407  domanda retorica
+    45  non è… è (stessa frase)
+    30  come se / come un(a) (similitudine)
+    14  vale più di
+     8  non X, ma Y (contrapposizione)
+     6  E poi c'è
+     5  la parte (più) importante/che conta
+     3  Non è X. È Y.
+     3  Ed è (proprio) qui/lì
+     3  va detto / detto semplice / onestamente
+     2  che nessuno dice/racconta
+     2  due punti + frase a effetto
+     1  Il punto è
+     1  la strada di casa
+     0  non si tratta di… ma
+     0  La vera domanda
+     0  non è un lusso
+     0  Il corpo lo sa
+     0  non è magia
+
+ESPRESSIONI RICORRENTI (n-grammi in >= 6 articoli):
+  24 articoli,  39 volte: vale la pena
+  24 articoli,  30 volte: ed è il
+  21 articoli,  30 volte: ed è la
+  20 articoli,  29 volte: motivo per cui
+  20 articoli,  28 volte: il motivo per
+  20 articoli,  28 volte: il motivo per cui
+  20 articoli,  25 volte: è il motivo
+  20 articoli,  20 volte: capire se un
+  20 articoli,  20 volte: se un operatore
+  20 articoli,  20 volte: capire se un operatore
+  19 articoli,  27 volte: è la parte
+  19 articoli,  25 volte: la parte che
+```
+
+## Cosa emerge
+
+- Quasi ogni articolo apre con una scena costruita (formula scena → spiegazione → promessa → introduzione); le introduzioni sono lunghe (109 parole in media prima del primo H2, fino a 172).
+- Domande retoriche: 407 in 52 articoli, otto per articolo.
+- Tic ricorrenti in decine di articoli: «vale la pena» (24), «ed è il/la» (30+30), «il motivo per cui» (28), «è la parte che» (25), «è il modo più», «vale più di», «il momento in cui», «tutto il resto», «è il punto», «la maggior parte delle persone», «non è… è» nella stessa frase (45), similitudini «come se/come un» (30).
+- I cinque articoli del 14/9 hanno frasi troppo cariche (19-22 parole di media, 11-15% oltre le 35) e paragrafi da 140-176 parole.
+- Funziona già: profondità, fonti, prezzi veri, struttura H2 → FAQ, link interni, Aurya poco presente (0,2 menzioni per articolo).
