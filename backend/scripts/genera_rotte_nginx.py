@@ -68,8 +68,13 @@ def blocchi():
 """ for k, v in sorted(rimandi.items())) + "".join(
         f"""    location ~ ^/{re.escape(k)}(/.*)?$ {{ return 301 {v}; }}
 """ for k, v in sorted(rimandi_prefisso.items()))
+    # SEO-A (14/9/2026 sera): la barra finale e' un doppione (/operatori/
+    # rispondeva 200): 301 verso la forma senza barra, query conservata.
+    # Esclusi api/uploads/static/media/__seo, che non sono pagine.
+    barra = """    location ~ ^/(?!api/|uploads/|static/|media/|__seo/)(.+)/$ { return 301 /$1$is_args$args; }
+"""
     b1 = f"""{INIZIO_SHELL}
-{righe_rimandi}    location ~ ^/({'|'.join(solo_slug)})/?$ {{
+{barra}{righe_rimandi}    location ~ ^/({'|'.join(solo_slug)})/?$ {{
         rewrite ^ /__seo/404 break;
         proxy_pass http://backend:8000;
         proxy_set_header Host $host;

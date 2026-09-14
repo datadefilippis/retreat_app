@@ -117,6 +117,8 @@ async def build_core() -> str:
     base = _base_url()
     urls = [
         _url(f"{base}/", priority="1.0"),
+        # SEO-A (14/9): la porta di chi cerca non era dichiarata
+        _url(f"{base}/cerca-ritiro", priority="0.8"),
         _url(f"{base}/manifesto", priority="0.8"),
         # SW3 — /chi-siamo e' una pagina propria (le persone dietro
         # Aurya): torna in sitemap, un gradino sotto il Manifesto, che
@@ -167,6 +169,13 @@ async def build_core() -> str:
     # /operatori è la landing della rete e resta (indicizzabile).
     if site_phase() == "network":
         urls.append(_url(f"{base}/operatori", priority="0.8"))
+        # SEO-B (14/9 sera) — le pagine locali sopra soglia (services.pagine_locali)
+        try:
+            from services import pagine_locali as _pl
+            for _d, _r, _n in _pl.indicizzabili(await _pl.profili_pubblici()):
+                urls.append(_url(f"{base}{_pl.percorso(_d, _r)}", priority="0.7"))
+        except Exception:   # noqa: BLE001 — la sitemap non esplode
+            pass
         # ES (25/8) — le due directory della fase rete entrano in
         # sitemap SOLO quando hanno contenuto: una pagina dichiarata ai
         # crawler e poi trovata vuota e' una promessa mancata, e la
@@ -231,13 +240,19 @@ async def build_core() -> str:
             places.add(_place_slug(name))
 
     for cat, reg in sorted(cat_reg, key=lambda x: (x[0], x[1] or "")):
-        path = f"/ritiri/{cat}" + (f"/{reg}" if reg else "")
+        path = f"/esperienze/{cat}" + (f"/{reg}" if reg else "")   # SEO-A: il canonico e' /esperienze
         urls.append(_url(f"{base}{path}", priority="0.7"))
 
     if slug_by_org:
         urls.append(_url(f"{base}/operatori", priority="0.8"))
-        for cat in sorted(op_cats):
-            urls.append(_url(f"{base}/operatori/{cat}", priority="0.6"))
+        # SEO-B: le categorie di prodotto canonicalizzano a /operatori (non
+        # si dichiarano); si dichiarano le pagine locali sopra soglia
+        try:
+            from services import pagine_locali as _pl
+            for _d, _r, _n in _pl.indicizzabili(await _pl.profili_pubblici()):
+                urls.append(_url(f"{base}{_pl.percorso(_d, _r)}", priority="0.7"))
+        except Exception:   # noqa: BLE001
+            pass
         # DS3: /esperienze fuori dal sitemap finché il founder non la riapre
     if places:
         urls.append(_url(f"{base}/destinazioni", priority="0.8"))

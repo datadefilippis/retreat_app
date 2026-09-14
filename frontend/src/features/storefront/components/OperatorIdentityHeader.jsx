@@ -67,6 +67,7 @@ export default function OperatorIdentityHeader({ data, t }) {
           <div className="flex items-start gap-4">
             {avatar && (
               <img src={avatar} alt={data.logo_url ? `Logo di ${data.name}` : `Foto di ${data.name}`}
+                   width="96" height="96" decoding="async"
                    className="h-20 w-20 sm:h-24 sm:w-24 shrink-0 rounded-full
                               object-cover object-[center_25%] bg-gray-100
                               ring-2 ring-[#c9b37e]/70 shadow-md" />

@@ -15,6 +15,8 @@ import api from '../../api/client';
 import MarketplaceShell from './components/MarketplaceShell';
 import Redacted from '../prelaunch/Redacted';
 import GeoSearchBar from './components/GeoSearchBar';
+import { risolviSegmenti, percorsoLocale } from '../../lib/pagineLocali';   // SEO-B
+import { REGIONI } from '../../lib/sedi';
 import useSeoMeta from './lib/useSeoMeta';
 import BrandPayoff from '../../components/BrandPayoff';
 
@@ -299,7 +301,12 @@ function OperatorCard({ op, t, lang }) {
 
 export default function OperatorsIndexPage() {
   const { t, i18n } = useTranslation('landings');
-  const { categoria } = useParams();
+  const { categoria: seg1, sub: seg2 } = useParams();
+  // SEO-B (14/9 sera) — i segmenti sono disciplina / regione / categoria
+  // legacy (lib/pagineLocali = specchio di services/pagine_locali)
+  const segmenti = useMemo(() => risolviSegmenti(seg1, seg2), [seg1, seg2]);
+  const categoria = segmenti.categoria;
+  const regione = segmenti.regione;
   // PN/LM → SR1 (3/9/2026): questa pagina nacque come anteprima non
   // linkata su /esplora-operatori; ora E' la directory dei
   // professionisti e vive su /operatori (l'URL canonico, in sitemap,
@@ -327,8 +334,9 @@ export default function OperatorsIndexPage() {
   const ordina = params.get('ordina') || '';
   const defaultOrdina = geoValue ? 'distanza' : 'valutazione';
   const effectiveOrdina = SORT_PARAM[ordina] ? ordina : defaultOrdina;
-  // DI — filtro per disciplina dichiarata (query string, no path)
-  const disciplina = params.get('disciplina') || '';
+  // DI — filtro per disciplina dichiarata: dal PATH (pagina locale) o,
+  // per i link vecchi, dalla query string
+  const disciplina = segmenti.disciplina || params.get('disciplina') || '';
 
   const setGeo = (next) => {
     const q = new URLSearchParams(params);
@@ -364,6 +372,7 @@ export default function OperatorsIndexPage() {
     let mounted = true;
     setLoading(true);
     const q = categoria ? { category: categoria } : {};
+    if (regione) q.regione = regione;   // SEO-B
     if (geoLat && geoLng) {
       q.lat = geoLat; q.lng = geoLng; q.radius_km = geoRadius;
     }
@@ -381,7 +390,7 @@ export default function OperatorsIndexPage() {
       .catch(() => { if (mounted) setData({ items: [], total: 0, categories: {} }); })
       .finally(() => { if (mounted) setLoading(false); });
     return () => { mounted = false; };
-  }, [categoria, geoLat, geoLng, geoRadius, ordina, disciplina, uiLang]);
+  }, [categoria, regione, geoLat, geoLng, geoRadius, ordina, disciplina, uiLang]);
 
   const items = data?.items || [];
   const categories = useMemo(
@@ -404,20 +413,23 @@ export default function OperatorsIndexPage() {
     // SR1 — lo STESSO title che serve la shell SSR per /operatori
     // (_meta_esplora_operatori): due writer che dicono due cose sono
     // due verita' per la stessa URL
-    title: categoria
-      ? t('landings:operators.seoTitleCat', {
-          cat: catLabel, defaultValue: 'Professionisti di {{cat}} | Aurya' })
-      : 'Professionisti del benessere in Italia | Aurya',
-    description: t('landings:operators.seoDesc', {
+    // SEO-B (14/9 sera): sulle pagine locali title/description/noindex li
+    // manda il backend (`pagina`, la STESSA verita' della shell); sulla
+    // directory e sulle categorie legacy il titolo della shell, e il
+    // canonico e' SEMPRE /operatori (la categoria di prodotto e' un
+    // sottoinsieme della stessa lista)
+    title: data?.pagina?.title
+      || 'Operatori olistici e professionisti del benessere in Italia | Aurya',
+    description: data?.pagina?.description || t('landings:operators.seoDesc', {
       defaultValue: 'Scopri i professionisti del benessere su Aurya: pratiche, discipline e percorsi, raccontati uno a uno.',
     }),
-    // ES (25/8) → SR1: il canonico e' la pagina stessa, su /operatori.
-    canonicalPath: categoria ? `/operatori/${categoria}` : '/operatori',
-    // 0 risultati = pagina indice vuota: mai in SERP (regola S5).
+    canonicalPath: data?.pagina?.path || '/operatori',
+    // 0 risultati = pagina indice vuota: mai in SERP (regola S5); una
+    // pagina locale sotto la soglia e' noindex (services/pagine_locali).
     // ATTENZIONE: questa riga governa il DOM renderizzato, ed e' quello
     // che Google legge davvero — un noindex qui annullerebbe tutto il
     // lavoro server-side della shell al primo rendering.
-    noindex: !loading && items.length === 0,
+    noindex: !loading && (items.length === 0 || (data?.pagina ? !data.pagina.indicizzabile : false)),
     jsonLd: items.length > 0 ? {
       '@context': 'https://schema.org',
       '@type': 'ItemList',
@@ -526,10 +538,10 @@ export default function OperatorsIndexPage() {
               <select
                 value={disciplina}
                 onChange={(e) => {
-                  const q = new URLSearchParams(params);
-                  if (e.target.value) q.set('disciplina', e.target.value);
-                  else q.delete('disciplina');
-                  setParams(q, { replace: true });
+                  // SEO-B — la disciplina vive nel PATH (pagina locale)
+                  const q = new URLSearchParams(params); q.delete('disciplina');
+                  navigate({ pathname: percorsoLocale(e.target.value || null, regione),
+                    search: q.toString() ? `?${q.toString()}` : '' }, { replace: true });
                 }}
                 aria-label={t('landings:operators.disciplineLabel', { defaultValue: 'Disciplina' })}
                 data-testid="operators-discipline-filter"
@@ -555,6 +567,28 @@ export default function OperatorsIndexPage() {
                     </optgroup>
                   );
                 })}
+              </select>
+            )}
+            {/* SEO-B (14/9 sera) — Regione: solo quelle con operatori
+                (conteggio), nel PATH come la disciplina */}
+            {(Object.keys(data?.regioni || {}).length > 0 || regione) && (
+              <select
+                value={regione || ''}
+                onChange={(e) => {
+                  const q = new URLSearchParams(params);
+                  navigate({ pathname: percorsoLocale(disciplina || null, e.target.value || null),
+                    search: q.toString() ? `?${q.toString()}` : '' }, { replace: true });
+                }}
+                aria-label={t('landings:operators.regionLabel', { defaultValue: 'Regione' })}
+                data-testid="operators-region-filter"
+                className="flex-none w-40 lg:w-44 rounded-full border border-gray-300 bg-white px-3.5 py-1.5 text-sm text-gray-700 focus:border-primary focus:outline-none"
+              >
+                <option value="">
+                  {t('landings:operators.regionAll', { defaultValue: 'Tutta Italia' })}
+                </option>
+                {REGIONI.filter(r => data?.regioni?.[r] || r === regione).map(r => (
+                  <option key={r} value={r}>{r}{data?.regioni?.[r] ? ` (${data.regioni[r]})` : ''}</option>
+                ))}
               </select>
             )}
             {/* Formato — asse complementare alla Disciplina: la

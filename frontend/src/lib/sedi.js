@@ -31,3 +31,18 @@ export function luogoSeo(data) {
   if (sede.regione) return IN_REGIONE[sede.regione] || `in ${sede.regione}`;
   return '';
 }
+
+/* SEO-B (14/9 sera) — le 20 regioni (specchio di models/event_occurrence
+   ITALIAN_REGIONS) e lo slug di /operatori/{regione} (stessa regola di
+   services/sedi.slug_destinazione). */
+export const REGIONI = Object.freeze([
+  'Abruzzo', 'Basilicata', 'Calabria', 'Campania', 'Emilia-Romagna',
+  'Friuli-Venezia Giulia', 'Lazio', 'Liguria', 'Lombardia', 'Marche',
+  'Molise', 'Piemonte', 'Puglia', 'Sardegna', 'Sicilia', 'Toscana',
+  'Trentino-Alto Adige', 'Umbria', "Valle d'Aosta", 'Veneto',
+]);
+export function slugRegione(regione) {
+  return String(regione || '').toLowerCase().normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+}
+export const REGIONE_DA_SLUG = Object.freeze(Object.fromEntries(REGIONI.map(r => [slugRegione(r), r])));

@@ -136,10 +136,14 @@ class TestNetworkPhaseRT5:
         # SEO-R (10/9/2026): «operatori olistici» e' la parola che la gente cerca
         assert meta["title"] == "Operatori olistici e professionisti del benessere in Italia | Aurya"
         assert "rete aurya |" not in meta["title"].lower()
-        # le varianti /operatori/{cat} mostrano un sottoinsieme della
-        # stessa lista: canonical sulla radice
-        meta_cat = await shell._meta_operators_index("yoga")
+        # le varianti /operatori/{categoria di prodotto} mostrano un
+        # sottoinsieme della stessa lista: canonical sulla radice.
+        # SEO-B (14/9 sera): «yoga» e' una DISCIPLINA → pagina locale con
+        # canonico proprio (services/pagine_locali); la categoria legacy resta
+        meta_cat = await shell._meta_operators_index("servizi")
         assert meta_cat["canonical"].endswith("/operatori")
+        meta_loc = await shell._meta_operators_index("yoga")
+        assert meta_loc["canonical"].endswith("/operatori/yoga")
 
     def test_phase_noindex_spares_operatori(self):
         assert "operatori" not in shell._PHASE_NOINDEX_HEADS
@@ -491,9 +495,11 @@ class TestSbloccoIndicizzazioneGs:
         # /operatori in ogni fase (esplora rimanda): canonico = /operatori,
         # niente piu' isPreview nella pagina
         assert "isPreview" not in ops, "operatori: la directory non e' piu' un'anteprima"
-        assert "canonicalPath: categoria ? `/operatori/${categoria}` : '/operatori'" in ops
+        # SEO-B (14/9 sera): sulle pagine locali il canonico e il noindex li
+        # manda il backend (`pagina`, la stessa verita' della shell); altrove /operatori
+        assert "canonicalPath: data?.pagina?.path || '/operatori'" in ops
         # e il vuoto resta governato dai dati, in entrambe
-        assert "!loading && items.length === 0" in ops
+        assert "!loading && (items.length === 0 || (data?.pagina ? !data.pagina.indicizzabile : false))" in ops
         assert "!loading && (data?.items || []).length === 0" in rit
 
     def test_lo_script_dei_campioni_non_puo_toccare_i_veri(self):
@@ -749,7 +755,7 @@ class TestSbloccoIndicizzazioneGs:
         profilo mandava i crawler su una pagina muta."""
         monkeypatch.setenv("SITE_PHASE", "network")
         src = (BACKEND_DIR / "routers" / "seo_shell.py").read_text()
-        corpo = src.split("GS7 (25/8)")[1][:2200]
+        corpo = src.split("GS7 (25/8)")[1][:3600]   # SEO-C (14/9 sera): «Vedi anche» allunga il corpo
         # il testo VERO del profilo, non un riassunto generato
         for campo in ("tagline", "bio", "disciplines"):
             assert campo in corpo, f"il corpo del profilo ignora {campo}"

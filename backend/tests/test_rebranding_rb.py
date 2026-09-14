@@ -1178,7 +1178,9 @@ class TestSeoRIlConsolidamento:
         for chiave in ("newsletter", "meditazioni", "chi-siamo", "manifesto", "aziende", "costi", "cerca-ritiro", "entra-nella-rete"):
             i = blocco.index(f'    "{chiave}": {{')
             assert '"image": "/media/' in blocco[i:blocco.index("\n    },", i)], f"{chiave} senza immagine di anteprima"
-        assert "Operatori olistici e professionisti del benessere in Italia | Aurya" in shell
+        # SEO-B (14/9 sera): il titolo della directory vive in services/pagine_locali (shell e client lo leggono da li')
+        assert "Operatori olistici e professionisti del benessere in Italia | Aurya" \
+            in (BACKEND_DIR / "services" / "pagine_locali.py").read_text()
         assert 'if head in ("strutture", "struttura"):' in shell
         seo = (BACKEND_DIR / "routers" / "seo.py").read_text()
         assert 'urls.append(_url(f"{base}/esplora-operatori"' not in seo, "un 301 non si dichiara in sitemap"

@@ -26,6 +26,7 @@ from services.branding_service import resolve_for_store as resolve_branding_for_
 logger = logging.getLogger(__name__)
 
 from services import sedi as _sd   # SD (14/9/2026): le sedi dell'operatore
+from services import pagine_locali as _pl   # SEO-B (14/9 sera): pagine locali
 
 router = APIRouter(prefix="/public", tags=["Public Storefront"])
 
@@ -4091,6 +4092,9 @@ async def public_operators_index(
     lng: float = Query(default=None, ge=-180, le=180),
     radius_km: int = Query(default=100, ge=1, le=500),
     location: str = Query(default=None, max_length=80),
+    # SEO-B (14/9 sera) — filtro per regione (canonica) delle sedi: e' la
+    # pagina locale /operatori/{disciplina}/{regione} e il select «Regione»
+    regione: str = Query(default=None, max_length=40),
     # LM3 — ricerca Treatwell: "Cosa" sulle categorie delle righe di
     # listino (service) e ordinamento esplicito. sort fuori dai valori
     # noti viene ignorato (default: distance se geo attivo, sennò rating).
@@ -4289,6 +4293,7 @@ async def public_operators_index(
     items = []
     all_categories: dict = {}
     all_disciplines: dict = {}     # DI — conteggi per il filtro
+    all_regioni: dict = {}         # SEO-B — regioni delle sedi (conteggi)
     for s in stores:
         org = orgs.get(s["organization_id"])
         if not org:
@@ -4347,6 +4352,12 @@ async def public_operators_index(
         _sedi = _sd.sedi_da_profilo(pp)
         prof_regions |= _sd.nomi_luoghi(_sedi)
         _sede_vicina = None
+        # SEO-B — regioni presenti (conteggio per il select) e filtro
+        _regs = {x["regione"] for x in _sedi if x.get("regione")}
+        for _rg in _regs:
+            all_regioni[_rg] = all_regioni.get(_rg, 0) + 1
+        if regione and regione not in _regs:
+            continue
         # LM3 — raggio da un punto: distanza dall'indice ($geoNear
         # sopra); fallback haversine per i doc con lat/lng senza `geo`.
         # Chi non ha coordinate o e' fuori raggio esce dal filtro geo
@@ -4474,6 +4485,11 @@ async def public_operators_index(
             # DI — discipline presenti (slug -> n. operatori): il
             # frontend mostra solo chip con contenuto
             "disciplines": all_disciplines,
+            # SEO-B — regioni con conteggio e, sulle pagine locali, la SEO della
+            # pagina (title/description/canonical/noindex): la stessa della shell
+            "regioni": all_regioni,
+            "pagina": (_pl.meta(discipline if discipline in _pl.DISCIPLINES else None, regione, len(items))
+                       if (discipline or regione) else None),
             # LM3 — l'ordinamento effettivamente applicato (default
             # compreso): il frontend lo riflette nel controllo Ordina
             "sort": _sort,
@@ -4642,6 +4658,10 @@ async def public_operator_profile(org_slug: str, lang: Optional[str] = None):
         "longitude": pp.get("longitude"),
         # SD4 — tutte le sedi (la prima e' quella di city/region/lat/lng)
         "sedi": [_sd.sede_pubblica(x) for x in _sd.sedi_da_profilo(pp)],
+        # SEO-C — «Vedi anche»: pagine locali sopra soglia + Magazine
+        "pagine_locali": _pl.pagine_per_profilo(pp, await _pl.contatori_locali()),
+        "categoria_articoli": next((_pl.CATEGORIA_ARTICOLI[d] for d in (pp.get("disciplines") or [])
+                                    if d in _pl.CATEGORIA_ARTICOLI), None),
         "socials": {k: pp.get(k) for k in ("instagram", "website", "facebook")
                     if pp.get(k)},
         "upcoming": upcoming,

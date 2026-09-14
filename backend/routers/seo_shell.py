@@ -477,19 +477,18 @@ _BRAND_PAGES = {
     # e ritiri aziendali costruiti ad hoc con la rete: una landing, un modulo.
     "aziende": {
         "title": "Aurya per le aziende | Team building e ritiri aziendali su misura",
-        "description": ("Esperienze di team building e ritiri aziendali costruiti "
-                        "su misura per il vostro team: respiro, suono, yoga, cammini, "
-                        "cerchi. Con la rete Aurya di professionisti del benessere e di "
-                        "strutture, condotti da persone vere. Prezzo pattuito su quello "
-                        "che volete. Risposta entro due giorni lavorativi."),
+        # SEO-A (14/9): 293 caratteri → sotto i 160 (Google taglia il resto)
+        "description": ("Team building e ritiri aziendali su misura con la rete Aurya "
+                        "di professionisti del benessere: respiro, suono, yoga, cammini, "
+                        "cerchi. Risposta in due giorni."),
         "image": "/media/aurya-hero-poster.jpg",
     },
     "cerca-ritiro": {
         "title": "Trovami il mio ritiro | Ritiri olistici vicino a te | Aurya",
+        # SEO-A (14/9): 190 caratteri → sotto i 160
         "description": ("Dicci cosa cerchi e dove: ti avvisiamo quando troviamo "
                         "un ritiro adatto a te, vicino a dove vuoi andare. Subito "
-                        "le meditazioni riservate, poi ritiri ed esperienze "
-                        "pensati sui tuoi interessi."),
+                        "le meditazioni riservate del Cerchio."),
         "image": "/media/hero-destination.webp",
     },
     "per-operatori": {
@@ -519,10 +518,10 @@ _BRAND_PAGES = {
     "newsletter": {
         # SEO-R (10/9/2026): entro i ~60 caratteri che Google mostra
         "title": "Il Cerchio di Aurya | Meditazioni gratuite e ritiri in anteprima",
+        # SEO-A (14/9): 177 caratteri → sotto i 160
         "description": ("Entra nel Cerchio di Aurya: meditazioni riservate "
-                        "gratuite, ritiri ed esperienze olistiche in "
-                        "anteprima nella tua zona e la Lettera, ogni due "
-                        "settimane. Ti cancelli con un clic."),
+                        "gratuite, ritiri ed esperienze olistiche in anteprima "
+                        "nella tua zona, la Lettera ogni due settimane."),
         "image": "/media/hero-destination.webp",
     },
     # OF3 — tre bugie in due righe: la pagina non si chiama piu' cosi'
@@ -534,16 +533,18 @@ _BRAND_PAGES = {
     "entra-nella-rete": {
         "title": "Per operatori olistici: il tuo spazio professionale, pronto oggi | Aurya",
         # RB2-bis (10/9 sera): la stessa frase della landing
-        "description": ("Una pagina tutta tua per presentarti, mostrare i tuoi "
-                        "servizi, ricevere prenotazioni e organizzare eventi e ritiri. "
-                        "Un solo link da condividere. Gratis per sempre, senza commissioni."),
+        # SEO-A (14/9): 182 caratteri → sotto i 160
+        "description": ("Una pagina tutta tua per presentarti, mostrare i servizi, "
+                        "ricevere prenotazioni e organizzare eventi e ritiri. "
+                        "Un solo link. Gratis per sempre, senza commissioni."),
         "image": "/media/hero-organizer.webp",
     },
     # SW3 — /chi-siamo e' di nuovo una pagina propria (le persone dietro
     # Aurya), quindi torna canonica di se stessa: il canonical_slug che
     # la mandava su /manifesto e' caduto insieme al redirect.
     "chi-siamo": {
-        "title": "Chi siamo | Aurya",
+        # SEO-A (14/9): un titolo di 17 caratteri non dice a Google di cosa parla
+        "title": "Chi siamo: le persone dietro Aurya | Aurya",
         # OF3 — la pagina non racconta piu' l'attivita' di terreno:
         # risponde a "perche' fidarsi di chi sta costruendo Aurya".
         "description": ("Siamo Valentina e Davide. Perché abbiamo "
@@ -575,7 +576,7 @@ _BRAND_PAGES = {
         "image": "/media/hero-organizer.webp",
     },
     "come-funziona": {
-        "title": "Come funziona Aurya: prenota ritiri olistici con caparra e pagamento diretto",
+        "title": "Come funziona Aurya: ritiri olistici con caparra | Aurya",   # SEO-A: era 76 caratteri
         "description": ("Scegli il ritiro, blocca il posto con una piccola "
                         "caparra e il pagamento diretto online, vivi "
                         "l'esperienza e recensisci: su Aurya solo recensioni "
@@ -1558,6 +1559,12 @@ async def _meta_event(org_slug: str, occ_slug: str) -> Optional[dict]:
 
     title = f"{prod['name']} · {where} · {when} | Aurya" if when \
         else f"{prod['name']} · {where} | Aurya"
+    # SEO-A (14/9): Google taglia a ~60-65 caratteri: prima cade il luogo,
+    # poi la data — il nome del ritiro resta sempre
+    if len(title) > 65 and when:
+        title = f"{prod['name']} · {when} | Aurya"
+    if len(title) > 65:
+        title = f"{prod['name']} | Aurya"
     cat = prod.get("category")
     crumbs = sx.breadcrumb([
         ("Aurya", f"{base}/"),
@@ -2012,7 +2019,8 @@ async def _meta_destination(place_slug: Optional[str] = None) -> dict:
                             (real, canonical)])
     blocks = [b for b in (crumbs, sx.item_list(retreats, base)) if b]
     return {
-        "title": f"Ritiri ed esperienze a {real} | Aurya",
+        # SEO-L (14/9): «in Puglia» / «a Ostuni» (services.sedi.luogo_seo)
+        "title": f"Ritiri ed esperienze {__import__('services.sedi', fromlist=['luogo_seo']).luogo_seo({'city': real})} | Aurya",
         "description": (f"Ritiri di yoga, meditazione ed esperienze olistiche "
                         f"a {real}: date, prezzi e disponibilità reali. "
                         "Prenota online con la caparra."),
@@ -2041,17 +2049,18 @@ async def _meta_experiences(category: Optional[str] = None) -> dict:
     }
 
 
-async def _meta_operators_index(category: Optional[str] = None) -> dict:
+async def _meta_operators_index(category: Optional[str] = None, sub: Optional[str] = None) -> Optional[dict]:
     # RT5 → SR1 (3/9/2026, piano SITO IMMEDIATO): in fase rete
     # /operatori era la landing del racconto («presto potrai
     # conoscere...») con i membri in coda; con 8 professionisti veri
     # pubblicati, /operatori E' la directory in ogni fase — la stessa
     # che serviva /esplora-operatori (che ora rimanda qui). Un solo
     # documento, un solo canonico, lo stesso title della SPA.
-    return await _meta_esplora_operatori(category)
+    return await _meta_esplora_operatori(category, sub)
 
 
-async def _meta_esplora_operatori(categoria: Optional[str] = None) -> dict:
+async def _meta_esplora_operatori(categoria: Optional[str] = None,
+                                  sub: Optional[str] = None) -> Optional[dict]:
     """ES1 (25/8) — la DIRECTORY dei professionisti registrati.
 
     Attenzione a non confonderla con `/operatori`: quella e' la pagina
@@ -2065,16 +2074,23 @@ async def _meta_esplora_operatori(categoria: Optional[str] = None) -> dict:
     che vede la persona (che e' la definizione di cloaking).
     """
     from database import organizations_collection
+    from services import pagine_locali as _pl
+    from services import seo_schema as sx
     base = _base_url()
-    # SR1 — la directory vive su /operatori: canonico unico anche per
-    # chi arriva ancora da /esplora-operatori (la SPA rimanda)
-    canonical = f"{base}/operatori"
-    # SEO-R (10/9/2026): «operatori olistici» e' la parola che la gente cerca
-    titolo = "Operatori olistici e professionisti del benessere in Italia | Aurya"
-    descr = ("Scopri i professionisti del benessere su Aurya: pratiche, "
-             "discipline e percorsi, raccontati uno a uno.")
+    # SEO-B (14/9/2026 sera, analisi SEO gap G1): /operatori/{disciplina},
+    # /operatori/{regione}, /operatori/{disciplina}/{regione} sono PAGINE
+    # LOCALI con canonico proprio, indicizzabili solo sopra la soglia
+    # (services.pagine_locali); la categoria di prodotto legacy resta un
+    # sottoinsieme della stessa lista (canonico /operatori).
+    ris = _pl.risolvi(categoria, sub)
+    if not ris["valida"]:
+        return None
+    disciplina, regione = ris["disciplina"], ris["regione"]
+    locale = bool(disciplina or regione)
+    canonical = f"{base}{_pl.percorso(disciplina, regione)}" if locale else f"{base}/operatori"
 
     voci, quanti = "", 0
+    orgs = []
     try:
         orgs = await organizations_collection.find(
             {"is_sample": {"$ne": True}, "is_active": {"$ne": False},
@@ -2082,7 +2098,14 @@ async def _meta_esplora_operatori(categoria: Optional[str] = None) -> dict:
              "public_slug": {"$nin": [None, ""]}},
             {"_id": 0, "name": 1, "public_slug": 1, "public_profile": 1},
         ).sort("name", 1).to_list(200)
+        if locale:
+            orgs = [o for o in orgs if _pl.appartiene(o.get("public_profile") or {}, disciplina, regione)]
         quanti = len(orgs)
+    except Exception:   # noqa: BLE001 — la shell non muore mai per il DB
+        orgs = []
+    pagina = _pl.meta(disciplina, regione, quanti)
+    titolo, descr = pagina["title"], pagina["description"]
+    try:
         from models.disciplines import DISCIPLINES
         righe = []
         for o in orgs:
@@ -2101,12 +2124,22 @@ async def _meta_esplora_operatori(categoria: Optional[str] = None) -> dict:
 
     # LX3 (5/9): la stessa introduzione della pagina viva (landings.operators)
     ops_copy = (_identita._copia("landings").get("operators") or {})
-    intro = _html.escape(ops_copy.get("subtitle") or "")
+    intro = _html.escape(pagina["intro"] or ops_copy.get("subtitle") or "")
     join = _html.escape(ops_copy.get("joinCta") or "")
-    corpo = (f"<div><h1>I professionisti della rete Aurya</h1>"
+    # SEO-B — la maglia: dalla pagina locale ai suoi genitori e al Magazine
+    maglia = []
+    if disciplina and regione:
+        maglia.append(f'<a href="{_pl.percorso(disciplina, None)}">{_html.escape(pagina["disciplina_label"])} in tutta Italia</a>')
+        maglia.append(f'<a href="{_pl.percorso(None, regione)}">Tutti gli operatori olistici {_html.escape(_pl._in_regione(regione))}</a>')
+    elif locale:
+        maglia.append('<a href="/operatori">Tutti i professionisti</a>')
+    if pagina.get("categoria_articoli"):
+        maglia.append(f'<a href="/blog/categoria/{pagina["categoria_articoli"]}">Articoli del Magazine su {_html.escape(pagina["disciplina_label"])}</a>')
+    corpo = (f"<div><h1>{_html.escape(pagina['h1'])}</h1>"
              f"<p>{_html.escape(descr)}</p>"
              + (f"<p>{intro}</p>" if intro else "")
              + (f"<ul>{voci}</ul>" if voci else "")
+             + (f"<p>{' · '.join(maglia)}</p>" if maglia else "")
              + (f'<p><a href="/entra-nella-rete">{join}</a></p>' if join else "")
              + '<p><a href="/manifesto">Come nasce la rete</a> · '
                '<a href="/blog">Il Magazine</a></p></div>')
@@ -2114,7 +2147,7 @@ async def _meta_esplora_operatori(categoria: Optional[str] = None) -> dict:
     lista = None
     try:
         lista = {"@context": "https://schema.org", "@type": "ItemList",
-                 "name": "I professionisti della rete Aurya",
+                 "name": pagina["h1"],
                  "itemListElement": [
                      {"@type": "ListItem", "position": i + 1,
                       "name": o.get("name") or o["public_slug"],
@@ -2131,10 +2164,10 @@ async def _meta_esplora_operatori(categoria: Optional[str] = None) -> dict:
         "hreflang": _hub_hreflang(canonical),
         "image": f"{base}/og-cover.jpg",
         "content_html": corpo,
-        **({"jsonld": [lista]} if lista else {}),
-        # anti thin-content: un elenco vuoto non si indicizza. Quando
-        # entra il primo professionista si accende da solo.
-        "noindex": quanti == 0,
+        **({"jsonld": [x for x in (lista, sx.breadcrumb([(n, f"{base}{p}") for n, p in _pl.briciole(disciplina, regione)]) if locale else None) if x]} if lista else {}),
+        # anti thin-content: un elenco vuoto non si indicizza; una pagina
+        # locale si indicizza solo sopra la soglia (SEO-B)
+        "noindex": not pagina["indicizzabile"],
     }
 
 
@@ -2265,7 +2298,11 @@ async def _meta_operator(org_slug: str) -> Optional[dict]:
     name = (org.get("name")
             or (org.get("store_settings") or {}).get("display_name")
             or org_slug)
-    bio = (profile.get("tagline") or profile.get("bio") or "")[:300]
+    # SEO-C (14/9 sera): la tagline vale come description solo se dice
+    # abbastanza (>= 80 caratteri); altrimenti la bio, che e' sempre
+    # piu' ricca («Ilaria» aveva una description di 35 caratteri)
+    _tag = (profile.get("tagline") or "").strip()
+    bio = (_tag if len(_tag) >= 80 else (profile.get("bio") or _tag or ""))[:300]
     image = _abs_image(profile.get("logo_url") or profile.get("cover_url")
                        or profile.get("portrait_url"))
     canonical = f"{base}/o/{org_slug}"
@@ -2278,6 +2315,7 @@ async def _meta_operator(org_slug: str) -> Optional[dict]:
     jsonld = {
         "@context": "https://schema.org",
         "@type": "LocalBusiness",
+        "@id": canonical,   # SEO-C: identita' stabile per i rich result
         "name": name,
         "url": canonical,
         "description": bio,
@@ -2397,6 +2435,21 @@ async def _meta_operator(org_slug: str) -> Optional[dict]:
     dove = _dove_testo(profile) or ", ".join(x for x in (city, region) if x)
     if dove:
         pezzi.append(f"<p>Dove: {_html.escape(dove)}</p>")
+    # SEO-C — la maglia dal profilo: «Yoga in Puglia», «Operatori olistici
+    # in Puglia», articoli del Magazine sulla disciplina. Solo verso pagine
+    # che superano la soglia (mai verso una noindex).
+    try:
+        from services import pagine_locali as _pl
+        _link = [f'<a href="{l["path"]}">{_html.escape(l["label"])}</a>'
+                 for l in _pl.pagine_per_profilo(profile, await _pl.contatori_locali())]
+        _cat = next((_pl.CATEGORIA_ARTICOLI[d] for d in (profile.get("disciplines") or [])
+                     if d in _pl.CATEGORIA_ARTICOLI), None)
+        if _cat:
+            _link.append(f'<a href="/blog/categoria/{_cat}">Articoli del Magazine</a>')
+        if _link:
+            pezzi.append("<p>Vedi anche: " + " · ".join(_link) + "</p>")
+    except Exception:   # noqa: BLE001
+        pass
     pezzi.append('<p><a href="/operatori">Tutti i professionisti '
                  'della rete Aurya</a> · <a href="/blog">Il Magazine</a>'
                  '</p></div>')
@@ -2591,7 +2644,11 @@ async def resolve_meta(path: str) -> Optional[dict]:
     if head in _PRODUCT_KINDS and len(parts) >= 3:
         return await _meta_product(head, parts[1], parts[2])
     if head == "operatori":
-        return await _meta_operators_index(parts[1] if len(parts) > 1 else None)
+        # SEO-B (14/9 sera): /operatori/{disciplina|regione}[/{regione}]
+        if len(parts) > 3:
+            return None
+        return await _meta_operators_index(parts[1] if len(parts) > 1 else None,
+                                           parts[2] if len(parts) > 2 else None)
     # ES (25/8) — le due directory vere della fase rete. Nate come
     # anteprime non linkate (29/7) e tenute fuori dagli indici finche'
     # la vetrina conteneva i CAMPIONI del pre-lancio. Rimossi quelli

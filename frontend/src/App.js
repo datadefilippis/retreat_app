@@ -112,26 +112,29 @@ const ManifestoPage = lazy(() => import("./features/network/ManifestoPage"));
 const ChiSiamoPage = lazy(() => import("./features/network/ChiSiamoPage"));
 const CashflowDataPage = lazy(() => import("./features/cashflow/CashflowDataPage"));
 const PosPage = lazy(() => import("./features/stores/PosPage"));
-import StorefrontPage from "./features/storefront/StorefrontPage";
+const StorefrontPage = lazy(() => import("./features/storefront/StorefrontPage"));   // SEO-E: fuori dal bundle iniziale
 import EventLandingPage from "./features/storefront/EventLandingPage";
-import TicketLandingPage from "./features/storefront/TicketLandingPage";
-import AccountLoginPage from './features/account/AccountLoginPage';
-import AccountVerifyEmailPage from './features/account/AccountVerifyEmailPage';
-import AccountResetPasswordPage from './features/account/AccountResetPasswordPage';
-import AccountPage from './features/account/AccountPage';
-import BookingLandingPage from "./features/storefront/BookingLandingPage";
-import ReservationConfirmationPage from "./features/storefront/ReservationConfirmationPage";
-import ProductLandingPage from "./features/storefront/ProductLandingPage";
-import ReservationLandingPage from "./features/storefront/ReservationLandingPage";
-import PhysicalLandingPage from "./features/storefront/PhysicalLandingPage";
-import DigitalLandingPage from "./features/storefront/DigitalLandingPage";
-import CourseLandingPage from "./features/storefront/CourseLandingPage";
+const TicketLandingPage = lazy(() => import("./features/storefront/TicketLandingPage"));   // SEO-E: fuori dal bundle iniziale
+const AccountLoginPage = lazy(() => import("./features/account/AccountLoginPage"));   // SEO-E: fuori dal bundle iniziale
+const AccountVerifyEmailPage = lazy(() => import("./features/account/AccountVerifyEmailPage"));   // SEO-E: fuori dal bundle iniziale
+const AccountResetPasswordPage = lazy(() => import("./features/account/AccountResetPasswordPage"));   // SEO-E: fuori dal bundle iniziale
+const AccountPage = lazy(() => import("./features/account/AccountPage"));   // SEO-E: fuori dal bundle iniziale
+const BookingLandingPage = lazy(() => import("./features/storefront/BookingLandingPage"));   // SEO-E: fuori dal bundle iniziale
+const ReservationConfirmationPage = lazy(() => import("./features/storefront/ReservationConfirmationPage"));   // SEO-E: fuori dal bundle iniziale
+const ProductLandingPage = lazy(() => import("./features/storefront/ProductLandingPage"));   // SEO-E: fuori dal bundle iniziale
+const ReservationLandingPage = lazy(() => import("./features/storefront/ReservationLandingPage"));   // SEO-E: fuori dal bundle iniziale
+const PhysicalLandingPage = lazy(() => import("./features/storefront/PhysicalLandingPage"));   // SEO-E: fuori dal bundle iniziale
+const DigitalLandingPage = lazy(() => import("./features/storefront/DigitalLandingPage"));   // SEO-E: fuori dal bundle iniziale
+const CourseLandingPage = lazy(() => import("./features/storefront/CourseLandingPage"));   // SEO-E: fuori dal bundle iniziale
 // Step 4 of the language-system refactor: wraps every public storefront
 // surface with StoreMetaProvider + locale sync so the i18n resolver has
 // the merchant's allowed-languages list available on first render.
 import PublicStorefrontShell from "./features/storefront/PublicStorefrontShell";
-import DownloadLandingPage from "./features/storefront/DownloadLandingPage";
-import { CheckoutSuccessPage, CheckoutCancelPage, PayLinkUnavailablePage } from "./features/storefront/CheckoutResultPage";
+const DownloadLandingPage = lazy(() => import("./features/storefront/DownloadLandingPage"));   // SEO-E: fuori dal bundle iniziale
+// SEO-E (14/9 sera): le pagine del checkout escono dal bundle iniziale
+const CheckoutSuccessPage = lazy(() => import("./features/storefront/CheckoutResultPage").then(m => ({ default: m.CheckoutSuccessPage })));
+const CheckoutCancelPage = lazy(() => import("./features/storefront/CheckoutResultPage").then(m => ({ default: m.CheckoutCancelPage })));
+const PayLinkUnavailablePage = lazy(() => import("./features/storefront/CheckoutResultPage").then(m => ({ default: m.PayLinkUnavailablePage })));
 const TeamPage = lazy(() => import("./features/team/TeamPage"));
 const SettingsPage = lazy(() => import("./features/settings/SettingsPage"));
 const PublicProfilePage = lazy(() => import("./features/settings/PublicProfilePage"));
@@ -196,8 +199,8 @@ import CustomerLayout from "./features/customer-portal/layout/CustomerLayout";
 // il suo indice): le email "Vai al corso" gia' spedite puntano a
 // /account/courses/<enrollment_id> e il player usa il JWT customer.
 // Ordini e profilo legacy sono rediretti all'account Aurya (/account).
-import CustomerCoursesIndexPage from "./features/customer-portal/pages/CoursesIndexPage";
-import CustomerCoursePlayerPage from "./features/customer-portal/pages/CoursePlayerPage";
+const CustomerCoursesIndexPage = lazy(() => import("./features/customer-portal/pages/CoursesIndexPage"));   // SEO-E: fuori dal bundle iniziale
+const CustomerCoursePlayerPage = lazy(() => import("./features/customer-portal/pages/CoursePlayerPage"));   // SEO-E: fuori dal bundle iniziale
 
 // Protected Route Component
 //
@@ -666,6 +669,8 @@ function AppRoutes() {
       <Route path="/esplora-ritiri/:categoria" element={<EsploraRitiriRedirect />} />
       <Route path="/esplora-ritiri/:categoria/:regione" element={<EsploraRitiriRedirect />} />
       <Route path="/operatori/:categoria" element={<OperatorsGate />} />
+      {/* SEO-B (14/9 sera): /operatori/{disciplina}/{regione} — pagina locale */}
+      <Route path="/operatori/:categoria/:sub" element={<OperatorsGate />} />
       <Route path="/destinazioni" element={<DestinationsGate />} />
       <Route path="/destinazioni/:luogo" element={<DestinationsGate />} />
       {/* DS3 (7/7) teneva /esperienze fuori. P3 (10/9/2026, piano di

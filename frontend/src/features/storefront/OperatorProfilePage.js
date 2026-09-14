@@ -10,7 +10,7 @@
  */
 
 import React, { useEffect, useState } from 'react';
-import { useParams, useLocation, Link } from 'react-router-dom';
+import { useParams, useLocation, Link, Link as RouterLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ArrowRight, Flower2, Play } from 'lucide-react';
 import api from '../../api/client';
@@ -454,8 +454,10 @@ export default function OperatorProfilePage() {
   })();
   useSeoMeta({
     title: titoloSeo,
+    // SEO-C (14/9 sera): la tagline vale come description solo se dice
+    // abbastanza (>= 80 caratteri), altrimenti la bio — stessa regola della shell
     description: (data?.tagline || data?.bio)
-      ? String(data.tagline || data.bio).slice(0, 155)
+      ? String((data.tagline || '').trim().length >= 80 ? data.tagline : (data.bio || data.tagline)).slice(0, 155)
       : (data?.name ? `${data.name}: ${(discSeo.slice(0, 4).join(', ') || 'pratiche olistiche').toLowerCase()}${luogoSeo(data) ? ` ${luogoSeo(data)}` : ''}. Servizi con prezzo, ritiri e recensioni verificate su Aurya.` : undefined),
     image: data?.cover_url || data?.logo_url || undefined,
     canonicalPath: `/o/${org_slug}`,
@@ -815,6 +817,23 @@ export default function OperatorProfilePage() {
               </div>
             )}
           </div>
+          )}
+          {/* SEO-C (14/9 sera) — «Vedi anche»: le pagine locali sopra soglia
+              (Yoga in Puglia, Operatori olistici in Puglia) e il Magazine.
+              Le manda il backend: mai un link verso una pagina noindex. */}
+          {((data.pagine_locali || []).length > 0 || data.categoria_articoli) && (
+            <nav className="rounded-2xl border border-border bg-card p-5" data-testid="profile-vedi-anche"
+                 aria-label="Vedi anche">
+              <h2 className="text-sm font-semibold text-foreground mb-2">Vedi anche</h2>
+              <ul className="space-y-1.5 text-sm">
+                {(data.pagine_locali || []).map(l => (
+                  <li key={l.path}><RouterLink to={l.path} className="text-primary hover:underline">{l.label}</RouterLink></li>
+                ))}
+                {data.categoria_articoli && (
+                  <li><RouterLink to={`/blog/categoria/${data.categoria_articoli}`} className="text-primary hover:underline">Articoli del Magazine</RouterLink></li>
+                )}
+              </ul>
+            </nav>
           )}
         </aside>
         )}

@@ -1465,7 +1465,7 @@ class TestAnteprimaMarketplace:
                / "OperatorsIndexPage.js").read_text()
         assert "q.preview = 1" in ops
         assert "noindex: isPreview ||" not in ops
-        assert "!loading && items.length === 0" in ops
+        assert "!loading && (items.length === 0 ||" in ops   # SEO-B: + soglia delle pagine locali
         # nessun link di menu/footer verso le rotte anteprima
         shell = (FRONTEND_SRC / "features" / "storefront" / "components"
                  / "MarketplaceShell.jsx").read_text()

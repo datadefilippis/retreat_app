@@ -56,7 +56,8 @@ class TestIx1LePorteChiuse:
         assert set(REGISTRO["solo_con_slug"]) == {"co", "dg", "e", "frequenze", "l", "o", "p", "ph", "r", "s"}
         # RB7 (10/9/2026): /come-funziona (guscio vuoto in fase rete) e' un 301 come /ritiri
         # RE (10/9/2026 sera): /ritiri ed /esplora-ritiri rimandano al calendario /esperienze
-        assert REGISTRO["rimandi"] == {"index.html": "/", "ritiri": "/esperienze", "come-funziona": "/manifesto"}
+        # SEO-A (14/9/2026 sera): /magazine rispondeva 200 noindex «Aurya» → 301 /blog
+        assert REGISTRO["rimandi"] == {"index.html": "/", "ritiri": "/esperienze", "come-funziona": "/manifesto", "magazine": "/blog"}
         assert REGISTRO["rimandi_prefisso"] == {"esplora-operatori": "/operatori", "esplora-ritiri": "/esperienze"}
         for seg in REGISTRO["solo_con_slug"]:
             assert seg in REGISTRO["pubblica"], f"{seg} deve restare pubblica (con slug)"
