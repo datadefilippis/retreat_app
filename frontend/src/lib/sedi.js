@@ -18,3 +18,16 @@ export function specchiSede(sedi) {
   return { city: p.citta || p.regione || null, region: p.regione || null,
     latitude: p.lat ?? null, longitude: p.lng ?? null };
 }
+
+/* SEO-L (founder, 14/9 sera) — il complemento di luogo per titolo e
+   description del profilo: «a Lecce», «in Puglia», «nel Lazio», «ad Acri».
+   Stessa regola di services/sedi.py luogo_seo: la shell per i crawler e il
+   client devono produrre lo STESSO titolo. */
+const IN_REGIONE = { Lazio: 'nel Lazio', Marche: 'nelle Marche' };
+export function luogoSeo(data) {
+  const sede = sediDaProfilo(data)[0];
+  if (!sede) return '';
+  if (sede.citta) return `${/^a/i.test(sede.citta) ? 'ad' : 'a'} ${sede.citta}`;
+  if (sede.regione) return IN_REGIONE[sede.regione] || `in ${sede.regione}`;
+  return '';
+}

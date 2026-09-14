@@ -30,6 +30,7 @@ import InlineServiceCheckout from './components/checkout/InlineServiceCheckout';
 // importarla: in produzione ogni profilo /o/{slug} cadeva nell'ErrorBoundary
 // (ReferenceError). Il build CRA con CI=false lo lascia passare come warning.
 import { disciplineLabel } from '../../lib/disciplines';
+import { luogoSeo } from '../../lib/sedi';   // SEO-L: «a Lecce» / «in Puglia»
 
 function fmtPrice(n) {
   if (n == null) return null;
@@ -438,11 +439,13 @@ export default function OperatorProfilePage() {
   const discSeo = (data?.disciplines || []).map(disciplineLabel).filter(Boolean);
   const titoloSeo = (() => {
     if (!data?.name) return undefined;
+    // SEO-L (14/9 sera): «a Lecce» ma «in Puglia»/«nel Lazio» (lib/sedi luogoSeo)
+    const luogo = luogoSeo(data);
     const prova = (n) => {
       const d = discSeo.slice(0, n).join(', ');
-      if (d && data.city) return `${data.name} · ${d} a ${data.city} | Aurya`;
+      if (d && luogo) return `${data.name} · ${d} ${luogo} | Aurya`;
       if (d) return `${data.name} · ${d} | Aurya`;
-      if (data.city) return `${data.name} · operatore olistico a ${data.city} | Aurya`;
+      if (luogo) return `${data.name} · operatore olistico ${luogo} | Aurya`;
       return `${data.name} · operatore olistico su Aurya`;
     };
     let t = prova(3);
@@ -453,7 +456,7 @@ export default function OperatorProfilePage() {
     title: titoloSeo,
     description: (data?.tagline || data?.bio)
       ? String(data.tagline || data.bio).slice(0, 155)
-      : (data?.name ? `${data.name}: ${(discSeo.slice(0, 4).join(', ') || 'pratiche olistiche').toLowerCase()}${data.city ? ` a ${data.city}` : ''}. Servizi con prezzo, ritiri e recensioni verificate su Aurya.` : undefined),
+      : (data?.name ? `${data.name}: ${(discSeo.slice(0, 4).join(', ') || 'pratiche olistiche').toLowerCase()}${luogoSeo(data) ? ` ${luogoSeo(data)}` : ''}. Servizi con prezzo, ritiri e recensioni verificate su Aurya.` : undefined),
     image: data?.cover_url || data?.logo_url || undefined,
     canonicalPath: `/o/${org_slug}`,
     // SEO1 — LocalBusiness geo-taggato allineato allo shell: address + geo

@@ -74,6 +74,21 @@ class TestBonificaProvaGenerale:
         assert 'if dett and _stessa_citta(sede.get("citta"), dett.get("citta")):' in src
 
 
+class TestLuogoSeo:
+    """SEO-L (founder, 14/9 sera): «Breathwork a Puglia» era sbagliato."""
+
+    def test_a_citta_in_regione(self):
+        assert sd.luogo_seo({"city": "Lecce", "region": "Puglia"}) == "a Lecce"
+        assert sd.luogo_seo({"sedi": [{"regione": "Puglia"}]}) == "in Puglia"
+        assert sd.luogo_seo({"city": "Puglia"}) == "in Puglia"          # regione scelta come citta'
+        assert sd.luogo_seo({"sedi": [{"regione": "Lazio"}]}) == "nel Lazio"
+        assert sd.luogo_seo({"sedi": [{"regione": "Marche"}]}) == "nelle Marche"
+        assert sd.luogo_seo({"city": "Acri"}) == "ad Acri"
+        assert sd.luogo_seo({}) == ""
+        lib = (FE / "lib" / "sedi.js").read_text()
+        assert "export function luogoSeo" in lib and "nel Lazio" in lib
+
+
 class TestIntegrazioneNonReset:
     def test_il_profilo_non_migrato_ha_gia_la_sede_principale(self):
         pp = {"city": "Milano", "region": "Lombardia", "latitude": 45.45, "longitude": 9.11}

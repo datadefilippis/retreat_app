@@ -151,6 +151,25 @@ def etichetta_sede(s: Dict[str, Any]) -> str:
     return regione_intera(regione) if regione else ""
 
 
+# SEO-L (founder, 14/9 sera): «a Puglia» e' sbagliato — regione → «in»
+# («nel Lazio», «nelle Marche»), citta' → «a» («ad» davanti ad A)
+_IN_REGIONE = {"Lazio": "nel Lazio", "Marche": "nelle Marche"}
+
+
+def luogo_seo(pp: Optional[Dict[str, Any]]) -> str:
+    """Il complemento di luogo per titoli e description: «a Lecce»,
+    «in Puglia», «nel Lazio», «ad Acri»; '' senza sede. Sede principale."""
+    sedi = sedi_da_profilo(pp)
+    if not sedi:
+        return ""
+    p = sedi[0]
+    if p.get("citta"):
+        c = p["citta"]
+        return f"ad {c}" if c[:1].lower() == "a" else f"a {c}"
+    r = p.get("regione")
+    return _IN_REGIONE.get(r, f"in {r}") if r else ""
+
+
 def dove_testo(pp: Optional[Dict[str, Any]], sep: str = " · ") -> str:
     """La riga «dove» per shell SEO, llms.txt, elenchi: tutte le sedi."""
     return sep.join(etichetta_sede(s) for s in sedi_da_profilo(pp) if etichetta_sede(s))

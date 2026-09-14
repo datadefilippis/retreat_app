@@ -1155,10 +1155,14 @@ class TestSeoRIlConsolidamento:
         shell = (BACKEND_DIR / "routers" / "seo_shell.py").read_text()
         corpo = shell[shell.index("async def _meta_operator("):shell.index("async def _meta_link_page")]
         assert "from models.disciplines import DISCIPLINES" in corpo
-        assert 'f"{name} · {d} a {city} | Aurya"' in corpo and "ritiri a {city}" not in corpo
+        # SEO-L (14/9 sera, founder): «a Lecce» ma «in Puglia» — il luogo
+        # viene da services.sedi.luogo_seo (shell) e lib/sedi luogoSeo (client)
+        assert 'f"{name} · {d} {luogo} | Aurya"' in corpo and "ritiri a {city}" not in corpo
+        assert "luogo_seo" in corpo and 'a {city}' not in corpo
         assert "recensioni verificate su Aurya" in corpo
         client = (FE / "features" / "storefront" / "OperatorProfilePage.js").read_text()
-        assert "`${data.name} · ${d} a ${data.city} | Aurya`" in client and "profilo professionista`" not in client
+        assert "`${data.name} · ${d} ${luogo} | Aurya`" in client and "profilo professionista`" not in client
+        assert "luogoSeo" in client and "a ${data.city}" not in client
 
     def test_la_landing_del_ritiro_ha_descrizione_e_anteprima_vere(self):
         shell = (BACKEND_DIR / "routers" / "seo_shell.py").read_text()

@@ -2344,21 +2344,24 @@ async def _meta_operator(org_slug: str) -> Optional[dict]:
     # titolo lo mette il client (OperatorProfilePage): un documento solo.
     from models.disciplines import DISCIPLINES
     _disc = [DISCIPLINES[d] for d in (profile.get("disciplines") or []) if d in DISCIPLINES]
+    # SEO-L (14/9 sera): «a Lecce» ma «in Puglia»/«nel Lazio» (services.sedi.luogo_seo)
+    from services.sedi import luogo_seo as _luogo_seo
+    luogo = _luogo_seo(profile)
     def _titolo(n):
         d = ", ".join(_disc[:n])
-        if d and city:
-            return f"{name} · {d} a {city} | Aurya"
+        if d and luogo:
+            return f"{name} · {d} {luogo} | Aurya"
         if d:
             return f"{name} · {d} | Aurya"
-        if city:
-            return f"{name} · operatore olistico a {city} | Aurya"
+        if luogo:
+            return f"{name} · operatore olistico {luogo} | Aurya"
         return f"{name} · operatore olistico su Aurya"
     title = _titolo(3)
     for n in (2, 1):
         if len(title) > 68:
             title = _titolo(n)
     desc = bio or (f"{name}: {', '.join(_disc[:4]).lower() or 'pratiche olistiche'}"
-                   + (f" a {city}" if city else "")
+                   + (f" {luogo}" if luogo else "")
                    + ". Servizi con prezzo, ritiri e recensioni verificate su Aurya.")
     crumbs = sx.breadcrumb([("Aurya", f"{base}/"),
                             ("Professionisti", f"{base}/operatori"),
