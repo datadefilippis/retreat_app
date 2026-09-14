@@ -129,6 +129,18 @@ def sedi_da_profilo(pp: Optional[Dict[str, Any]]) -> List[Dict[str, Any]]:
     return [s] if s else []
 
 
+# l'articolo di «tutta la Puglia»: le regioni maschili, plurali e con vocale
+_ARTICOLO = {"Lazio": "tutto il", "Piemonte": "tutto il", "Veneto": "tutto il", "Molise": "tutto il",
+             "Trentino-Alto Adige": "tutto il", "Friuli-Venezia Giulia": "tutto il",
+             "Abruzzo": "tutto l'", "Umbria": "tutta l'", "Emilia-Romagna": "tutta l'", "Marche": "tutte le"}
+
+
+def regione_intera(regione: str) -> str:
+    """«tutta la Puglia», «tutto il Lazio», «tutta l'Umbria», «tutte le Marche»."""
+    art = _ARTICOLO.get(regione, "tutta la")
+    return f"{art}{'' if art.endswith(chr(39)) else ' '}{regione}"
+
+
 def etichetta_sede(s: Dict[str, Any]) -> str:
     """«Ostuni, Puglia» · «Bellinzona, Svizzera» · «tutta la Puglia»."""
     citta, regione, paese = s.get("citta"), s.get("regione"), s.get("paese") or "Italia"
@@ -136,7 +148,7 @@ def etichetta_sede(s: Dict[str, Any]) -> str:
         return f"{citta}, {regione}"
     if citta:
         return citta if paese == "Italia" else f"{citta}, {paese}"
-    return f"tutta la {regione}" if regione else ""
+    return regione_intera(regione) if regione else ""
 
 
 def dove_testo(pp: Optional[Dict[str, Any]], sep: str = " · ") -> str:

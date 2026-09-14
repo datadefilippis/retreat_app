@@ -42,6 +42,20 @@ async def migrate_social_normalizzati_v1() -> None:
     logger.info("migrate_social_normalizzati_v1: %s profili normalizzati: %s", len(cambiati), cambiati)
 
 
+def _stessa_citta(scritta, trovata) -> bool:
+    """«Roma Capitale» ~ «Roma», «Collebeato (BS)» ~ «Collebeato»,
+    «Sappada / Plodn / Sapade» ~ «Sappada»; «Bellinzona» vs «Roma» no."""
+    import re as _re
+    def _base(v):
+        v = (v or "").lower()
+        v = _re.split(r"[/(,]", v)[0]
+        return _re.sub(r"[^a-z0-9àèéìòù]+", " ", v).strip()
+    a, b = _base(scritta), _base(trovata)
+    if not a or not b:
+        return False
+    return a == b or a.startswith(b) or b.startswith(a) or a.split()[0] == b.split()[0]
+
+
 async def migrate_sedi_v1() -> None:
     """SD5 (14/9/2026) — integrazione, non reset: ogni profilo con una
     localita' riceve `sedi = [sede principale]` costruita da
@@ -73,10 +87,17 @@ async def migrate_sedi_v1() -> None:
             continue
         if not sede.get("regione") and sede.get("lat") is not None:
             dett = await reverse_geocode(sede["lat"], sede["lng"])
-            if dett:
+            # la regione si prende dalle coordinate SOLO se raccontano la
+            # stessa citta' scritta dall'operatore: in prod «Bellinzona» ha
+            # il punto a Roma (dato gia' sbagliato) e avrebbe preso «Lazio».
+            # In caso di conflitto la regione resta vuota e si annota.
+            if dett and _stessa_citta(sede.get("citta"), dett.get("citta")):
                 sede = normalizza_sede({**raw, "regione": dett.get("regione"),
                                         "provincia": dett.get("provincia"),
                                         "paese": dett.get("paese")}) or sede
+            elif dett:
+                logger.warning("migrate_sedi_v1: %s — citta' «%s» ma coordinate a «%s»: regione lasciata vuota",
+                               org.get("name"), sede.get("citta"), dett.get("citta"))
         sedi = [sede]
         set_ = {"public_profile.sedi": sedi,
                 "public_profile.sedi_prima": {k: pp.get(k) for k in ("city", "region", "latitude", "longitude")},

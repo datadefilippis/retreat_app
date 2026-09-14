@@ -54,6 +54,26 @@ class TestSede:
         assert sd.MAX_SEDI == 3
 
 
+class TestBonificaProvaGenerale:
+    """Trovato nella prova generale sulla copia di prod (14/9 sera)."""
+
+    def test_l_articolo_della_regione_intera(self):
+        assert sd.regione_intera("Puglia") == "tutta la Puglia"
+        assert sd.regione_intera("Umbria") == "tutta l'Umbria"
+        assert sd.regione_intera("Lazio") == "tutto il Lazio"
+        assert sd.regione_intera("Marche") == "tutte le Marche"
+        assert sd.etichetta_sede({"regione": "Abruzzo"}) == "tutto l'Abruzzo"
+
+    def test_la_regione_dalle_coordinate_solo_se_la_citta_coincide(self):
+        # Gabriella: «Bellinzona» col punto a Roma → niente «Lazio»
+        from services.migrazioni_profilo import _stessa_citta
+        assert _stessa_citta("Roma Capitale", "Roma") and _stessa_citta("Collebeato (BS)", "Collebeato")
+        assert _stessa_citta("Sappada / Plodn / Sapade", "Sappada")
+        assert not _stessa_citta("Bellinzona", "Roma") and not _stessa_citta("", "Roma")
+        src = (BACKEND / "services" / "migrazioni_profilo.py").read_text()
+        assert 'if dett and _stessa_citta(sede.get("citta"), dett.get("citta")):' in src
+
+
 class TestIntegrazioneNonReset:
     def test_il_profilo_non_migrato_ha_gia_la_sede_principale(self):
         pp = {"city": "Milano", "region": "Lombardia", "latitude": 45.45, "longitude": 9.11}
