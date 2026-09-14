@@ -197,6 +197,9 @@ class TestGestionaleSedi:
         mappa = (FE / "features" / "storefront" / "components" / "OperatorsMapView.jsx").read_text()
         assert "op.sedi" in mappa, "un segnaposto per sede"
         hdr = (FE / "features" / "storefront" / "components" / "OperatorIdentityHeader.jsx").read_text()
-        assert "data.sedi" in hdr and "/destinazioni/${" in hdr
+        assert "data.sedi" in hdr
+        # SD4-bis (founder, 14/9 sera): la sede e' testo, non un link —
+        # /destinazioni in fase rete rimanda alla home e il click fuorviava
+        assert "/destinazioni/${" not in hdr and "<Link" not in hdr
         page = (FE / "features" / "storefront" / "OperatorProfilePage.js").read_text()
         assert "areaServed" in page

@@ -16,14 +16,15 @@
  * foto.
  */
 import React from 'react';
-import { Link } from 'react-router-dom';
 import { ChevronDown, Flower2, MapPin } from 'lucide-react';
 import VerifiedAuryaBadge from '../../../components/VerifiedAuryaBadge';
 // DI — label discipline (specchio di models/disciplines.py)
 import { disciplineLabel } from '../../../lib/disciplines';
 
-/* la destinazione: /destinazioni/{regione|città} come link interno
-   (era nell'aside: ora la città ha UNA casa, qui) */
+/* la destinazione: /destinazioni/{regione|città} (slug tenuto per chi
+   lo usa altrove). SD4-bis (founder, 14/9 sera): la sede NON e' piu' un
+   link — in fase rete /destinazioni rimanda alla home (DestinationsGate)
+   e un click che riporta in home e' fuorviante. Testo e basta. */
 export function placeSlugOf(data) {
   const base = data.region || data.city;
   if (!base) return null;
@@ -39,12 +40,11 @@ export default function OperatorIdentityHeader({ data, t }) {
      qualunque proporzione di foto) */
   const avatar = data.logo_url || data.portrait_url;
   const luogo = [data.city, data.region].filter(Boolean).join(', ');
-  const placeSlug = placeSlugOf(data);
-  // SD4 — tutte le sedi, ognuna col link alla sua destinazione; il
-  // profilo non migrato ha la sola localita' storica (stessa riga di ieri)
+  // SD4 — tutte le sedi, in chiaro; il profilo non migrato ha la sola
+  // localita' storica (stessa riga di ieri)
   const sedi = Array.isArray(data.sedi) && data.sedi.length
     ? data.sedi.filter(s => s.etichetta)
-    : (luogo ? [{ etichetta: luogo, destinazione: placeSlug }] : []);
+    : (luogo ? [{ etichetta: luogo }] : []);
   const discipline = Array.isArray(data.disciplines) ? data.disciplines : [];
   return (
     <header className="relative" data-testid="operator-identity">
@@ -86,11 +86,7 @@ export default function OperatorIdentityHeader({ data, t }) {
                   {sedi.map((s, i) => (
                     <React.Fragment key={`${s.etichetta}-${i}`}>
                       {i > 0 && <span aria-hidden className="text-gray-300">·</span>}
-                      {s.destinazione ? (
-                        <Link to={`/destinazioni/${s.destinazione}`} className="hover:text-[#376254] hover:underline">
-                          {s.etichetta}
-                        </Link>
-                      ) : <span>{s.etichetta}</span>}
+                      <span>{s.etichetta}</span>
                     </React.Fragment>
                   ))}
                 </p>
