@@ -52,3 +52,32 @@ ESPRESSIONI RICORRENTI (n-grammi in >= 6 articoli):
 - Tic ricorrenti in decine di articoli: «vale la pena» (24), «ed è il/la» (30+30), «il motivo per cui» (28), «è la parte che» (25), «è il modo più», «vale più di», «il momento in cui», «tutto il resto», «è il punto», «la maggior parte delle persone», «non è… è» nella stessa frase (45), similitudini «come se/come un» (30).
 - I cinque articoli del 14/9 hanno frasi troppo cariche (19-22 parole di media, 11-15% oltre le 35) e paragrafi da 140-176 parole.
 - Funziona già: profondità, fonti, prezzi veri, struttura H2 → FAQ, link interni, Aurya poco presente (0,2 menzioni per articolo).
+
+## Dopo la revisione (14 settembre 2026, sera — NA11, in produzione)
+
+Tutti i 52 articoli sono stati riscritti nella voce del brief e pubblicati con
+`backend/scripts/na11_revisione_voce.py` (testi in `na11_revisioni.json`).
+Vincoli rispettati e verificati a macchina su ogni articolo: titolo invariato,
+link identici (stessi URL, stesso numero), stesso numero di FAQ, nessun numero,
+fonte o dato nuovo, lunghezza fra il 75% e il 110%, menzioni di Aurya non
+aumentate, nessuna frase promozionale. Backup della collezione prima della
+scrittura: `/root/articles_pre_na11.archive` sul server.
+
+Misure sul corpo degli articoli (FAQ escluse dove indicato), prima → dopo:
+
+```
+parole                              74.972 → 69.671  (−7%)
+parole per frase (media)              16,4 → 13,0
+frasi oltre 35 parole                  196 → 29     (4,3% → 0,5%)
+paragrafi oltre 90 parole               51 → 15
+intro prima del primo H2 (media)       109 → 72 parole (max 172 → 108)
+intro oltre 90 parole (la «scena»)      40 → 2 articoli
+domande retoriche nel corpo             81 → 70 (quelle rimaste sono domande da fare all'operatore o al programma)
+tic e formule nel corpo                265 → 84
+```
+
+Due eccezioni accettate a mano: una lista in più in «ciclo mestruale» (i
+segnali da portare dal medico) e in «cerchi di donne», «bagno di gong»,
+«alimentazione ayurvedica», «promuovere un ritiro» (una per articolo, come
+ammesso dal brief); nel «kit pratiche» l'ultima FAQ era una frase senza «?» e
+ora è una domanda (stesso contenuto, ora leggibile dal parser delle FAQ).
