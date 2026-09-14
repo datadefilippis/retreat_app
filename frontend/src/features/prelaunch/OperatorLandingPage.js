@@ -195,7 +195,7 @@ export default function OperatorLandingPage() {
      Sound, gratis. Tre schede piu' il badge per i primi venti. */
   const patto = [
     { title: t('opPro.nowC1t', { defaultValue: "Un’intervista nel Magazine" }),
-      body: t('opPro.nowC1b', { defaultValue: "Raccontaci il tuo percorso e il tuo lavoro. Pubblicheremo la tua storia nel Magazine di Aurya, gratuitamente." }) },
+      body: t('opPro.nowC1b', { defaultValue: "Raccontaci il tuo percorso e il tuo lavoro. Pubblicheremo la tua storia nel Magazine di Aurya e sui nostri social, gratuitamente." }) },
     { title: t('opPro.nowC2t', { defaultValue: "I tuoi eventi sui social di Aurya" }),
       body: t('opPro.nowC2b', { defaultValue: "Possiamo raccontare i tuoi eventi e ritiri sui nostri canali, con la tua foto e il link alla tua pagina." }) },
     { title: t('opPro.nowC3t', { defaultValue: "La Lettera del Cerchio" }),
