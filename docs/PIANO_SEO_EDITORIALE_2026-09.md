@@ -423,6 +423,12 @@ Dalla settimana 13: due pezzi a settimana, con le altre regioni (una
 al mese), i mesi caldi in anticipo (ponti di primavera a marzo, estate
 a maggio, capodanno a novembre) e le discipline scoperte rimaste.
 
+### Stato di avanzamento
+
+- **14/9 (NA10)**: pubblicati i primi cinque, uno per porta: meditazione guidata per dormire (C), corso yoga 200 ore (O), riflessologia plantare (D), welfare aziendale 2026 (A), yoga e ritiri in Toscana (R/L).
+- **16/9 (NA13, lotto 2)**: yoga e ritiri in Puglia (R/L, sett. 4), operatore olistico: chi è, cosa fa, cosa non può fare (O, pilastro sett. 6), benessere organizzativo (A, sett. 5), fiori di Bach per l'ansia (D, sett. 6, con le critiche), respirazione 4-7-8 e quadrata (C, sett. 3). Scritti sotto `docs/AURYA_MAGAZINE_SISTEMA_EDITORIALE.md`, senza firme, con 14 rimandi dagli articoli esistenti. Script: `backend/scripts/na13_nuovi_articoli.py` + `na13_lotto2.json`.
+- Rinviati: la pagina viva «Eventi e festival 2026» (servono date verificate), le espansioni dei pilastri (mappa discipline, guida ritiri, ATECO, Reiki), i pezzi con audio riservato non ancora prodotto.
+
 ## 7. Il formato che rende
 
 - 1.500-2.500 parole per i pilastri, 1.200-1.800 per gli articoli;
