@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { AppLayout, Header } from '../../components/Layout';
+import useDatiFreschi from '../../hooks/useDatiFreschi';
 import { PageSubheader } from '../../components/PageSubheader';
 import { Button } from '../../components/ui/button';
 import { Badge } from '../../components/ui/badge';
@@ -1414,6 +1415,7 @@ export default function OrdersPage() {
   }, []);
 
   useEffect(() => { load(); }, [load]);
+  useDatiFreschi(load);   // DF1 — al ritorno sulla scheda dopo un'assenza
 
   // Re-select order after action-triggered reload (keeps panel open with fresh data)
   useEffect(() => {

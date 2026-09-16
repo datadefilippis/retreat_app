@@ -113,8 +113,8 @@
   "reviews": {
     "title": "Reviews",
     "subtitle": "Cosa dicono di te i tuoi clienti, e come rispondi.",
-    "total_one": "{{visits}} review",
-    "total_other": "{{visits}} reviews",
+    "total_one": "{{count}} review",
+    "total_other": "{{count}} reviews",
     "openToggle": "Accept reviews from people who have not booked yet",
     "openToggleHint": "They will only appear after your approval and without the \"Verified customer\" badge.",
     "openOn": "Now anyone can leave a review (with your approval)",

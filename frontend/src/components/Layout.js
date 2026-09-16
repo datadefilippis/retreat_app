@@ -142,10 +142,14 @@ export const Sidebar = () => {
   const { open, setOpen } = useSidebar();
   const [activeModuleKeys, setActiveModuleKeys] = useState([]);
   const [unseenOrders, setUnseenOrders] = useState(0);
+  const [pendingReviews, setPendingReviews] = useState(0);   // DF1
 
   const resolveName = (item) => item.nameKey ? t(item.nameKey) : item.name;
 
-  // Poll unseen order count every 60s
+  // Poll unseen order count every 60s — DF1 (16/9): con lo stesso giro
+  // anche le recensioni in attesa (solo admin di organizzazione: alla
+  // regia la lista risponde 403 per ruolo), cosi' il menu dice che c'e'
+  // qualcosa da approvare senza dover riaprire la home.
   useEffect(() => {
     if (!user) return;
     const fetchUnseen = async () => {
@@ -154,6 +158,13 @@ export const Sidebar = () => {
         const res = await ordersAPI.getUnseenCount();
         setUnseenOrders(res.data?.unseen_count || 0);
       } catch { /* empty */ }
+      if (user.role === 'admin') {
+        try {
+          const api = (await import('../api/client')).default;
+          const r = await api.get('/reviews', { params: { status: 'pending' } });
+          setPendingReviews(r.data?.pending_count || 0);
+        } catch { /* modulo spento o errore: nessun badge, come prima */ }
+      }
     };
     fetchUnseen();
     const interval = setInterval(fetchUnseen, 60000);
@@ -398,6 +409,11 @@ export const Sidebar = () => {
                     {item.href === '/orders' && unseenOrders > 0 && (
                       <span className="ml-auto flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white">
                         {unseenOrders > 9 ? '9+' : unseenOrders}
+                      </span>
+                    )}
+                    {item.href === '/reviews' && pendingReviews > 0 && (
+                      <span data-testid="nav-reviews-pending" className="ml-auto flex h-5 w-5 items-center justify-center rounded-full bg-amber-400 text-[10px] font-bold text-amber-950">
+                        {pendingReviews > 9 ? '9+' : pendingReviews}
                       </span>
                     )}
                   </NavLink>

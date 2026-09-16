@@ -34,14 +34,15 @@
  *   · /organizations/current/onboarding-status — signals (stripe/ritiri)
  *   · /analytics/visibility          — visite/prenotazioni del mese
  */
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Calendar, Wallet, ListTodo, ArrowRight, Users, Eye, CalendarCheck, Clock } from 'lucide-react';
 import api from '../../api/client';
 import { MiniBars } from '../../components/charts';
 import { formatCurrency } from '../../lib/utils';
-import { useCurrency } from '../../context/AuthContext';
+import { useAuth, useCurrency } from '../../context/AuthContext';
+import useDatiFreschi from '../../hooks/useDatiFreschi';
 
 const fmtDate = (iso, lang) => {
   try {
@@ -113,18 +114,24 @@ export default function OperatorHome() {
   const [reviewsPending, setReviewsPending] = useState(0);
   const [obSteps, setObSteps] = useState(null);
   const [visibility, setVisibility] = useState(null); // VT5 — visite/prenotazioni del mese
+  const { user } = useAuth();
+  // DF1 (16/9) — la regia (system_admin) non e' admin di un'organizzazione:
+  // la lista recensioni le risponde 403 per ruolo. Non si chiede: niente
+  // rumore nei log, nessun cambiamento per gli operatori.
+  const chiediRecensioni = user?.role !== 'system_admin';
 
-  useEffect(() => {
-    let mounted = true;
-    Promise.allSettled([
+  // DF1 — il caricamento e' una funzione riusabile: al montaggio come
+  // prima, e di nuovo quando la scheda torna visibile dopo un'assenza
+  // (useDatiFreschi), cosi' chi riapre il telefono vede i dati di adesso.
+  const carica = useCallback((eVivo = () => true) => Promise.allSettled([
       api.get('/event-occurrences/admin/list', { params: { status: 'published', when: 'upcoming', limit: 4 } }),
       api.get('/orders/payments-overview'),
       api.get('/analytics/cashflow'),
-      api.get('/reviews', { params: { status: 'pending' } }),
+      chiediRecensioni ? api.get('/reviews', { params: { status: 'pending' } }) : Promise.reject(new Error('regia')),
       api.get('/organizations/current/onboarding-status'),
       api.get('/analytics/visibility'),
     ]).then(([occRes, payRes, cfRes, revRes, obRes, visRes]) => {
-      if (!mounted) return;
+      if (!eVivo()) return;
       const occData = occRes.status === 'fulfilled' ? occRes.value.data : null;
       setRetreats(Array.isArray(occData) ? occData : (occData?.events || []));
       setPayments(payRes.status === 'fulfilled' ? payRes.value.data : {});
@@ -137,9 +144,14 @@ export default function OperatorHome() {
       // modulo visibilità spento (403) o errore: le due tessere del
       // mese NON compaiono — mai uno zero finto (false = non disponibile)
       setVisibility(visRes.status === 'fulfilled' ? (visRes.value.data || {}) : false);
-    });
+    }), [chiediRecensioni]);
+
+  useEffect(() => {
+    let mounted = true;
+    carica(() => mounted);
     return () => { mounted = false; };
-  }, []);
+  }, [carica]);
+  useDatiFreschi(carica);
 
   const fmt = (n) => formatCurrency(n || 0, currency);
   const todo = (payments?.needs_action_count || 0);
@@ -290,7 +302,7 @@ export default function OperatorHome() {
             )}
             {reviewsPending > 0 && (
               <li>
-                <Link to="/reviews" className={`${todoRow} border-border bg-muted/40 hover:bg-muted`}>
+                <Link to="/reviews?status=pending" className={`${todoRow} border-border bg-muted/40 hover:bg-muted`}>
                   <span>{t('home.todo_reviews', { defaultValue: 'Recensioni in attesa' })}</span>
                   <span className="font-bold tabular-nums">{reviewsPending}</span>
                 </Link>

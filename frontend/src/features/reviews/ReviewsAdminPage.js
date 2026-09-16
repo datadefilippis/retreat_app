@@ -9,10 +9,14 @@
  */
 
 import React, { useCallback, useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import api from '../../api/client';
 import { AppLayout, Header } from '../../components/Layout';
+import useDatiFreschi from '../../hooks/useDatiFreschi';
+
+const TAB_VALIDI = ['published', 'pending', 'flagged'];
 
 function Stars({ value }) {
   const full = Math.round(value || 0);
@@ -164,7 +168,17 @@ function ReviewCard({ r, onReply, onModerate, onFlag, t, i18n }) {
 export default function ReviewsAdminPage() {
   const { t, i18n } = useTranslation('common');
   const [data, setData] = useState(null);
-  const [tab, setTab] = useState('published');
+  // DF1 (16/9) — la scheda iniziale si legge dall'indirizzo: l'email «hai
+  // una nuova recensione» e la riga della home mandano a
+  // /reviews?status=pending, e prima la pagina apriva comunque su
+  // «Pubblicate», nascondendo proprio la recensione da approvare.
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tabIniziale = TAB_VALIDI.includes(searchParams.get('status')) ? searchParams.get('status') : 'published';
+  const [tab, setTabState] = useState(tabIniziale);
+  const setTab = useCallback((key) => {
+    setTabState(key);
+    setSearchParams(key === 'published' ? {} : { status: key }, { replace: true });
+  }, [setSearchParams]);
   const [loading, setLoading] = useState(true);
 
   const load = useCallback(async (status = tab) => {
@@ -178,6 +192,7 @@ export default function ReviewsAdminPage() {
   }, [tab, t]);
 
   useEffect(() => { load(tab); }, [tab, load]);
+  useDatiFreschi(load);   // DF1 — al ritorno sulla scheda dopo un'assenza
 
   const onReply = async (id, body) => {
     try {

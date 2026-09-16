@@ -113,8 +113,8 @@
   "reviews": {
     "title": "Recensioni",
     "subtitle": "Cosa dicono di te i tuoi clienti, e come rispondi.",
-    "total_one": "{{visits}} recensione",
-    "total_other": "{{visits}} recensioni",
+    "total_one": "{{count}} recensione",
+    "total_other": "{{count}} recensioni",
     "openToggle": "Accetta recensioni da chi non ha ancora prenotato",
     "openToggleHint": "Appariranno solo dopo la tua approvazione e senza il badge \"Cliente verificato\".",
     "openOn": "Ora chiunque può lasciare una recensione (con la tua approvazione)",

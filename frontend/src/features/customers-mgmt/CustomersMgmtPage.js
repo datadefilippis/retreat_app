@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { customersAPI } from '../../api';
 import { toast } from 'sonner';
+import useDatiFreschi from '../../hooks/useDatiFreschi';
 
 export default function CustomersMgmtPage() {
   const { t } = useTranslation('entities');
@@ -33,6 +34,7 @@ export default function CustomersMgmtPage() {
   }, []);
 
   useEffect(() => { load(); }, [load]);
+  useDatiFreschi(load);   // DF1 — al ritorno sulla scheda dopo un'assenza
 
   const filtered = useMemo(() => {
     if (!search.trim()) return items;

@@ -41,6 +41,15 @@ api.interceptors.response.use(
       localStorage.removeItem('token');
       window.location.href = '/login';
     }
+    // DF1 (16/9) — una chiamata SENZA token riceve 403 «Not authenticated»
+    // (HTTPBearer), non 401: l'app restava «dentro» con le liste vuote se
+    // il token spariva mentre era aperta (uscita da un'altra scheda, area
+    // cliente che chiude entrambi i cappelli). Si avvisa l'AuthContext,
+    // che decide: se credeva di essere loggato, chiude la sessione.
+    if (error.response?.status === 403 && error.response?.data?.detail === 'Not authenticated'
+        && !localStorage.getItem('token')) {
+      window.dispatchEvent(new CustomEvent('auth:token-mancante'));
+    }
     // v5.2: Surface READ_ONLY_GRACE 403 to the UI via custom event.
     // Backend returns { detail: { code: "READ_ONLY_GRACE", ... } } when
     // a downgraded org is in the 7-day read-only grace period.

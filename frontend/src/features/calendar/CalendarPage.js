@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { AppLayout, Header } from '../../components/Layout';
 import { useEntitlements } from '../../hooks/useEntitlements';
+import useDatiFreschi from '../../hooks/useDatiFreschi';
 import { PageSubheader } from '../../components/PageSubheader';
 import { Button } from '../../components/ui/button';
 import { Badge } from '../../components/ui/badge';
@@ -806,6 +807,7 @@ export default function CalendarPage() {
   }, [year, month, dateFrom, dateTo, productFilter, calView]);
 
   useEffect(() => { load(); }, [load]);
+  useDatiFreschi(load);   // DF1 — al ritorno sulla scheda dopo un'assenza
 
   const grid = useMemo(() => buildMonthGrid(year, month), [year, month]);
 

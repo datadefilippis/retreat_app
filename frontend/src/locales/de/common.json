@@ -113,8 +113,8 @@
   "reviews": {
     "title": "Bewertungen",
     "subtitle": "Cosa dicono di te i tuoi clienti, e come rispondi.",
-    "total_one": "{{visits}} Bewertung",
-    "total_other": "{{visits}} Bewertungen",
+    "total_one": "{{count}} Bewertung",
+    "total_other": "{{count}} Bewertungen",
     "openToggle": "Bewertungen von Personen annehmen, die noch nicht gebucht haben",
     "openToggleHint": "Sie erscheinen erst nach deiner Freigabe und ohne das Abzeichen „Verifizierter Kunde\".",
     "openOn": "Jetzt kann jeder eine Bewertung hinterlassen (mit deiner Freigabe)",

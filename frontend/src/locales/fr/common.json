@@ -113,8 +113,8 @@
   "reviews": {
     "title": "Avis",
     "subtitle": "Cosa dicono di te i tuoi clienti, e come rispondi.",
-    "total_one": "{{visits}} avis",
-    "total_other": "{{visits}} avis",
+    "total_one": "{{count}} avis",
+    "total_other": "{{count}} avis",
     "openToggle": "Accepter les avis de personnes n'ayant pas encore réservé",
     "openToggleHint": "Ils n’apparaîtront qu’après votre approbation et sans le badge « Client vérifié ».",
     "openOn": "Désormais tout le monde peut laisser un avis (avec votre approbation)",

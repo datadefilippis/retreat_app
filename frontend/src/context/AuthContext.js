@@ -51,6 +51,32 @@ export const AuthProvider = ({ children }) => {
     checkAuth();
   }, [token]);
 
+  // DF1 (16/9/2026) — la sessione e' UNA anche con piu' schede aperte.
+  // `storage` arriva solo alle ALTRE schede: chi esce (o entra) altrove
+  // lo si sa qui, invece di restare «dentro» con le liste vuote finche'
+  // non si esce e rientra a mano. `auth:token-mancante` lo manda il client
+  // API quando una chiamata parte senza token: se l'app credeva di
+  // essere loggata, la sessione si chiude e ProtectedRoute porta al login.
+  useEffect(() => {
+    const onStorage = (e) => {
+      if (e.key !== 'token' && e.key !== null) return;   // null = clear()
+      const nuovo = localStorage.getItem('token');
+      setToken((attuale) => (attuale === nuovo ? attuale : nuovo));
+      if (!nuovo) setUser(null);
+    };
+    const onTokenMancante = () => {
+      if (localStorage.getItem('token')) return;
+      setToken(null);
+      setUser(null);
+    };
+    window.addEventListener('storage', onStorage);
+    window.addEventListener('auth:token-mancante', onTokenMancante);
+    return () => {
+      window.removeEventListener('storage', onStorage);
+      window.removeEventListener('auth:token-mancante', onTokenMancante);
+    };
+  }, []);
+
   // Sync i18n language when user locale changes (after login, auth check, or refreshUser).
   //
   // Storefront / customer-portal routes are EXCLUDED from this writer:
