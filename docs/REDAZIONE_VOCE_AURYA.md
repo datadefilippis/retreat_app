@@ -3,6 +3,12 @@
 Brief del founder per la revisione editoriale completa e per ogni
 articolo futuro. Vale sopra ogni altra indicazione di stile.
 
+> Dal 16 settembre 2026 il riferimento completo è
+> `docs/AURYA_MAGAZINE_SISTEMA_EDITORIALE.md` (master editorial & SEO
+> system): questo brief resta valido per la voce e lo stile, il master
+> aggiunge il filo logico, l'architettura dell'articolo, la SEO invisibile
+> e il controllo qualità obbligatorio.
+
 ## L'obiettivo
 
 Il problema degli articoli non è il contenuto: è come viene raccontato.
