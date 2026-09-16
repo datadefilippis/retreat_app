@@ -76,7 +76,29 @@ domande retoriche nel corpo             81 → 70 (quelle rimaste sono domande d
 tic e formule nel corpo                265 → 84
 ```
 
-Due eccezioni accettate a mano: una lista in più in «ciclo mestruale» (i
+## Secondo giro: il filo logico (16 settembre 2026 — NA12, in produzione)
+
+Applicata la sezione 7 del sistema editoriale (`docs/AURYA_MAGAZINE_SISTEMA_EDITORIALE.md`)
+ai 52 articoli: per ognuno è stato scritto il percorso mentale del lettore e
+confrontato con gli H2. Esito: 34 «ok così» (struttura già nell'ordine delle
+domande; in 12 di questi solo una frase d'intro che anticipa il percorso) e
+18 «riordinati» (sezioni spostate o unite, raccordi riscritti, testo delle
+sezioni parola per parola). Pubblicati 29 articoli (`na12_struttura.json`),
+backup `/root/articles_pre_na12.archive`. Voce intatta: nessun tic in più,
+nessuna domanda retorica in più, link identici, FAQ mai in aumento (5 FAQ
+doppione tolte: assicurazione, bio, promuovere, digiuno), numeri invariati.
+
+Riordinati: assicurazione RC, bio professionale, bagno di gong, cammini
+italiani, cerchi di donne, operatore serio, promuovere un ritiro, insegnante
+di yoga, costellazioni, digiuno, domande da fare, meditazione per chi inizia,
+partita IVA, prezzo giusto, Reiki, shiatsu, tarocchi, Toscana.
+
+Due correzioni fatte a mano nello stesso giro: il link «bagni di foresta»
+nella guida Toscana puntava alla guida dei cammini (ora alla guida giusta);
+«ventidue domande» era un conteggio sbagliato (sono ventotto: corretto in
+description, in «come scegliere un ritiro» e in «quanto costano»).
+
+Due eccezioni accettate a mano nel primo giro: una lista in più in «ciclo mestruale» (i
 segnali da portare dal medico) e in «cerchi di donne», «bagno di gong»,
 «alimentazione ayurvedica», «promuovere un ritiro» (una per articolo, come
 ammesso dal brief); nel «kit pratiche» l'ultima FAQ era una frase senza «?» e
