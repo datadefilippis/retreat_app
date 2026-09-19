@@ -57,6 +57,12 @@ services:
       - JWT_SECRET_KEY=${JWT_SECRET_KEY}
       - CORS_ORIGINS=${CORS_ORIGINS}
       - ENVIRONMENT=production
+      # EP (19/9/2026): i canali della rete nell'email «La tua pagina e' online»
+      - TELEGRAM_BACHECA_URL=${TELEGRAM_BACHECA_URL:-}
+      - TELEGRAM_SUPPORTO_URL=${TELEGRAM_SUPPORTO_URL:-}
+      - TELEGRAM_GRUPPO_URL=${TELEGRAM_GRUPPO_URL:-}
+      - INSTAGRAM_URL=${INSTAGRAM_URL:-https://www.instagram.com/aurya.life}
+      - CONSULENZA_EMAIL=${CONSULENZA_EMAIL:-info@aurya.life}
       # PL — pre-lancio: interruttore runtime della vetrina (flip + restart,
       # niente rebuild). Al lancio: false + wipe dei sample.
       - PRELAUNCH_MODE=${PRELAUNCH_MODE:-}
