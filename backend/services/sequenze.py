@@ -25,7 +25,7 @@ Il disegno:
 
 Operatore (organizations, orologio created_at):
   g2   giorno 2-4   → a noi: aggiungilo al gruppo Telegram, scrivigli
-  profilo_online (evento, entro 60 giorni) → il link, Telegram, l'IBAN
+  profilo_online (evento, entro 60 giorni) → il link, i canali (bacheca, supporto, Instagram), i ritiri e la consulenza (EP 19/9)
   np5  5-9, np10 10-14, np15 15-21 → «pagina non ancora online»
   r14  14-20 (online, nessun ritiro) → il primo ritiro
 Cerchio (aurya_subscribers confermati, orologio confirmed_at):

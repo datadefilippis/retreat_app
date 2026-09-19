@@ -34,10 +34,31 @@ logger = logging.getLogger(__name__)
 
 APP_URL = (os.environ.get("FRONTEND_URL") or os.environ.get("PUBLIC_BASE_URL") or "https://aurya.life").rstrip("/")
 
-# Il gruppo Telegram degli operatori Aurya (landing: «entri nel gruppo
-# Telegram»). Il link lo mette il founder nell'ambiente; finche' manca,
-# l'email dice come chiederlo, senza promettere un bottone che non c'e'.
-TELEGRAM_GRUPPO_URL = (os.environ.get("TELEGRAM_GRUPPO_URL") or "").strip()
+# I canali della rete (EP, 19/9/2026, founder): la BACHECA Telegram (tutto
+# quello che succede nel mondo Aurya, le richieste che arrivano, le info per
+# chi lavora nel benessere), il gruppo di SUPPORTO tecnico e digitale, e
+# Instagram. I link degli inviti Telegram sono privati: stanno
+# nell'ambiente, mai nel codice. Finche' mancano, l'email dice come chiedere
+# l'invito, senza mostrare un link che non c'e'. `TELEGRAM_GRUPPO_URL` (il
+# vecchio gruppo unico) vale come bacheca se la variabile nuova manca.
+def _env(nome: str, default: str = "") -> str:
+    return (os.environ.get(nome) or default).strip()
+
+
+def telegram_bacheca_url() -> str:
+    return _env("TELEGRAM_BACHECA_URL") or _env("TELEGRAM_GRUPPO_URL")
+
+
+def telegram_supporto_url() -> str:
+    return _env("TELEGRAM_SUPPORTO_URL")
+
+
+def instagram_url() -> str:
+    return _env("INSTAGRAM_URL", "https://www.instagram.com/aurya.life")
+
+
+def consulenza_email() -> str:
+    return _env("CONSULENZA_EMAIL", "info@aurya.life")
 
 
 def risposte_a() -> str:
@@ -130,32 +151,84 @@ def op_g2_admin(ctx: dict) -> Tuple[str, str]:
     dove = "ha già la pagina online" if stato.get("online") else "non ha ancora la pagina online"
     return (f"Da 2 giorni su Aurya: {nome_org}",
             f"<p><b>{nome_org}</b> si è registrato due giorni fa ({ctx.get('email')}) e {dove}.</p>"
-            "<p>Due cose da fare: <strong>aggiungerlo al gruppo Telegram</strong> degli operatori "
-            "Aurya, e scrivergli due righe senza copione, per chiedere come va e se serve una "
-            "mano con la pagina.</p>"
+            "<p>Due cose da fare: <strong>controllare che sia entrato nei canali Telegram</strong> "
+            "degli operatori Aurya (bacheca e supporto: i link li ha ricevuti con l'email della "
+            "pagina online), e scrivergli due righe senza copione, per chiedere come va e se "
+            "serve una mano con la pagina.</p>"
             + _bottone(f"{APP_URL}/admin", "Apri il pannello"))
 
 
-def _riga_telegram() -> str:
-    if TELEGRAM_GRUPPO_URL:
-        return (f'<p><strong>La rete.</strong> Il gruppo Telegram degli operatori Aurya è qui: '
-                f'<a href="{TELEGRAM_GRUPPO_URL}">entra nel gruppo</a>. Lì passano le novità, '
-                "le richieste che arrivano, e ci siamo noi.</p>")
-    return ("<p><strong>La rete.</strong> Ora che la pagina è online ti aggiungiamo al gruppo "
-            "Telegram degli operatori Aurya: rispondi a questa email con il tuo numero o il tuo "
-            "nome Telegram, e ti mandiamo l'invito.</p>")
+def _link_in_chiaro(url: str) -> str:
+    """Il link scritto per esteso e cliccabile: si legge anche da chi lo
+    inoltra o lo copia (founder: «link visibili»)."""
+    return f'<br><a href="{url}">{url}</a>'
+
+
+def _blocco_canali() -> str:
+    """EP (19/9): i canali della rete, tre posti tre usi. Ogni canale compare
+    solo se il suo link esiste; senza nessun link Telegram si torna a
+    «rispondi con il tuo nome Telegram», cosi' nessuna email promette un
+    invito che non puo' dare."""
+    bacheca, supporto, ig = telegram_bacheca_url(), telegram_supporto_url(), instagram_url()
+    voci = []
+    if bacheca:
+        voci.append("<p><strong>Bacheca Aurya</strong> — qui condividiamo tutto quello che succede "
+                    "nel mondo Aurya: le novità della piattaforma, le richieste di eventi e ritiri "
+                    "che ci arrivano, le informazioni utili per chi lavora nel benessere. Entra e "
+                    f"resta in ascolto.{_link_in_chiaro(bacheca)}</p>")
+    if supporto:
+        voci.append("<p><strong>Supporto tecnico e digitale</strong> — per ogni domanda sulla tua "
+                    "pagina, sul gestionale o su qualcosa che non funziona. Scrivi lì e rispondiamo "
+                    f"noi.{_link_in_chiaro(supporto)}</p>")
+    if ig:
+        voci.append("<p><strong>Instagram</strong> — se ancora non ci segui, raccontiamo la rete e i "
+                    f"professionisti anche qui.{_link_in_chiaro(ig)}</p>")
+    if not (bacheca or supporto):
+        voci.insert(0, "<p>Ora che la pagina è online ti aggiungiamo ai canali Telegram degli "
+                       "operatori Aurya: rispondi a questa email con il tuo nome Telegram, e ti "
+                       "mandiamo l'invito.</p>")
+    n = len(voci)
+    testa = ("<p><strong>I canali della rete.</strong> "
+             + {1: "Un posto da conoscere.", 2: "Due posti, due usi diversi."}.get(n, "Tre posti, tre usi diversi.")
+             + "</p>")
+    return testa + "".join(voci)
+
+
+def _blocco_ritiri(iban_presente: bool) -> str:
+    """EP (19/9): non solo l'IBAN. Come funziona pubblicare un ritiro e le tre
+    cose che fanno la differenza; la caparra compare solo a chi l'IBAN non
+    l'ha ancora messo."""
+    caparra = ""
+    if not iban_presente:
+        caparra = ("<li><strong>La caparra.</strong> Se la chiedi, le persone la pagano con un "
+                   "bonifico: l'IBAN va nelle Impostazioni, ci vuole un minuto. Senza, chi chiede "
+                   "un posto legge «chi organizza ti scrive per concordare».</li>")
+    quante = "Tre cose" if caparra else "Due cose"
+    return ("<p><strong>Se pubblichi un ritiro.</strong> Dalla tua pagina puoi pubblicare ritiri "
+            "ed eventi con data, luogo, posti e prezzo. Le persone chiedono un posto da lì e tu "
+            f"confermi. {quante} che fanno la differenza:</p>"
+            "<ul>"
+            "<li><strong>I tempi.</strong> I ritiri si riempiono con mesi di anticipo: chi pubblica "
+            "a giugno per settembre arriva tardi. Meglio aprire presto, anche con pochi dettagli, "
+            "e completare dopo.</li>"
+            + caparra +
+            "<li><strong>Il programma.</strong> Chi prenota vuole sapere com'è la giornata, chi "
+            "conduce, dove si dorme, cosa è compreso. Più è chiaro, meno domande ricevi e più "
+            "posti si riempiono.</li>"
+            "</ul>"
+            "<p><strong>Se vuoi una mano.</strong> Aurya affianca chi organizza un ritiro, "
+            "dall'idea alla partenza: la struttura, il programma, il prezzo, la promozione, la "
+            "gestione delle iscrizioni. È una consulenza a pagamento, su misura. Se ti interessa "
+            f"scrivici in privato a <a href=\"mailto:{consulenza_email()}\">{consulenza_email()}</a> "
+            "e ne parliamo.</p>")
 
 
 def op_profilo_online(ctx: dict) -> Tuple[str, str]:
-    """Evento: la pagina e' appena andata online. Il link, cosa farci,
-    la rete, e un'avvertenza sull'IBAN (solo se manca)."""
+    """Evento: la pagina e' appena andata online. Il link e cosa farci, i
+    canali della rete (bacheca, supporto, Instagram), come funzionano i
+    ritiri (con la caparra solo se l'IBAN manca), la consulenza."""
     stato = ctx.get("stato") or {}
     url = f"{APP_URL}/o/{stato.get('slug')}"
-    iban = ""
-    if not stato.get("iban"):
-        iban = ("<p><strong>Una cosa per dopo.</strong> Se pubblicherai un ritiro con la caparra, "
-                "le persone la pagano con un bonifico: l'IBAN va nelle Impostazioni, ci vuole un "
-                "minuto. Senza, chi chiede un posto legge «chi organizza ti scrive per concordare».</p>")
     return ("La tua pagina è online: ecco il link",
             f"<p>{_saluto(ctx.get('nome'))}</p>"
             f"<p>la tua pagina su Aurya è online. È questa: <a href=\"{url}\">{url}</a></p>"
@@ -163,9 +236,9 @@ def op_profilo_online(ctx: dict) -> Tuple[str, str]:
             "stampala sul biglietto. Chi la apre vede chi sei, cosa fai, e può chiederti un "
             "posto. Senza abbonamenti e senza commissioni.</p>"
             + _bottone(url, "Apri la tua pagina")
-            + _riga_telegram()
-            + iban
-            + "<p>Se vuoi che la guardiamo insieme, rispondi qui: la legge Valentina.</p>"
+            + _blocco_canali()
+            + _blocco_ritiri(bool(stato.get("iban")))
+            + "<p>Per tutto il resto rispondi a questa email: la legge Valentina.</p>"
             + _firma())
 
 
