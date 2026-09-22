@@ -148,8 +148,11 @@ const SOUND_MOMENTI = [
   ['rientro', 'Rientro', 'Si torna a casa piano: il ritorno e\u2019 parte del viaggio'],
 ];
 
-const SOUND_CATS = ['Ambient', 'Natura', 'Droni', 'Corpo', 'Campane',
-  'Ritmi', 'Voce', 'Transizioni'];
+/* CI (22/9): tre famiglie in piu' per le esperienze — Melodie (brani con
+   un tema), Danza (brani ritmici che portano il corpo), Respiro (le guide
+   registrate). Gemello di SOUND_CATEGORIES nel backend (guardia). */
+const SOUND_CATS = ['Ambient', 'Melodie', 'Natura', 'Droni', 'Corpo', 'Campane',
+  'Ritmi', 'Danza', 'Voce', 'Respiro', 'Transizioni'];
 
 /* Orientamento della biblioteca: una riga sotto le tab (che cosa sto
    guardando) e tre righe sopra le card (perché è diverso dagli altri).
@@ -164,12 +167,15 @@ const CAT_HINT = {
    cosa serve quella famiglia senza aprire tutte le card. */
 const SOUND_HINT = {
   Ambient: 'Atmosfere lunghe: il tappeto su cui appoggiare tutto il resto.',
+  Melodie: 'Brani con un tema: archi, piano, flauto, orchestra. Portano un’emozione.',
   Natura: 'Ambienti registrati: acqua, uccelli, vento, temporale.',
   Droni: 'Toni tenuti, senza sviluppo. Il letto più semplice sotto una sessione.',
   Corpo: 'Una serie sola, in ordine: dalla radice alla testa.',
   Campane: 'Campane, ciotole e metalli: attacco netto e coda lunga.',
-  Ritmi: 'Il passo del corpo: respiro e battito, e le fasi del breathwork.',
-  Voce: 'Voce come materiale sonoro: vocali tenute e cori.',
+  Ritmi: 'Percussioni e battiti: il passo, senza melodia.',
+  Danza: 'Brani ritmici che portano il corpo: hanno un tempo, e ti muovono.',
+  Voce: 'Voce come materiale sonoro: vocali tenute, cori, canto di gola.',
+  Respiro: 'Le guide del respiro: conteggi, respiro vero, campane di svolta.',
   Transizioni: 'Passaggi brevi per cambiare momento dentro la sessione.',
 };
 const CAT_INTRO = {

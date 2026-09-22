@@ -54,7 +54,7 @@ async def main():
                  f"Lancia prima scripts/censimento_sound_new.py")
 
     from database import audio_assets_collection
-    from models.audio_asset import clean_category, clean_moment
+    from models.audio_asset import clean_category, clean_moment, clean_bpm, clean_energia, clean_tags
     from models.common import utc_now
 
     # cio' che la libreria ha GIA': si riconosce dall'impronta, non dal
@@ -103,6 +103,10 @@ async def main():
                 "title": r["titolo_proposto"][:80],
                 "category": cat,
                 "moment": mom,
+                # CI (22/9): colonne facoltative del CSV (bpm, energia, tags)
+                "bpm": clean_bpm(r.get("bpm")),
+                "energia": clean_energia(r.get("energia")),
+                "tags": clean_tags(r.get("tags")),
                 "duration_sec": round(float(r["durata_sec"] or 0), 1),
                 "size_bytes": len(dati),
                 "mime": MIME.get(ext, "audio/mpeg"),

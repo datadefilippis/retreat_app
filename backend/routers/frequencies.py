@@ -880,6 +880,8 @@ async def remove_favorite(slug: str,
 
 _SOUND_PROJECTION = {"_id": 0, "id": 1, "title": 1, "category": 1,
                      "moment": 1,
+                     # CI (22/9): i campi delle esperienze, facoltativi
+                     "bpm": 1, "energia": 1, "tags": 1,
                      "duration_sec": 1, "size_bytes": 1, "stream_url": 1, "tappeto_url": 1}
 
 
@@ -899,7 +901,11 @@ async def upload_sound(file: UploadFile = File(...),
                        duration_sec: float = Form(0),
                        license_note: str = Form(""),
                        moment: str = Form(""),
+                       bpm: str = Form(""),
+                       energia: str = Form(""),
+                       tags: str = Form(""),
                        admin: dict = Depends(require_system_admin)):
+    from models.audio_asset import clean_bpm, clean_energia, clean_tags
     cat = clean_category(category)
     if not cat:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
@@ -934,6 +940,10 @@ async def upload_sound(file: UploadFile = File(...),
         # il MOMENTO del viaggio (facoltativo): l'asse che dice a che
         # punto della meditazione serve questo suono
         "moment": clean_moment(moment),
+        # CI (22/9): tempo, energia e parole — facoltativi, per le esperienze
+        "bpm": clean_bpm(bpm),
+        "energia": clean_energia(energia),
+        "tags": clean_tags(tags),
         "duration_sec": round(max(0.0, float(duration_sec or 0)), 1),
         "size_bytes": len(data),
         "mime": file.content_type,

@@ -10,14 +10,23 @@ founder 18/8). I byte vivono su disco in uploads/audio/, mai in Mongo.
 # piu' comune al dettaglio piu' raro. `corpo` e' la serie dalla radice
 # alla testa; `transizioni` sono i passaggi brevi tra due momenti.
 # Il frontend tiene la stessa lista (guardia di parita' nei test).
+# CI (22/9/2026, founder): tre categorie in piu' per le ESPERIENZE —
+# `melodie` (brani con un tema: archi, piano, flauto, orchestra; prima
+# finivano in ambient, che era un contenitore da 104 suoni), `danza`
+# (brani ritmici che portano il corpo, con un tempo) e `respiro` (le
+# guide del respiro registrate: conteggi, respiro vero, campane di
+# svolta). L'ordine resta «dal letto al dettaglio».
 SOUND_CATEGORIES = {
     "ambient": "Ambient",
+    "melodie": "Melodie",
     "natura": "Natura",
     "droni": "Droni",
     "corpo": "Corpo",
     "campane": "Campane",
     "ritmi": "Ritmi",
+    "danza": "Danza",
     "voce": "Voce",
+    "respiro": "Respiro",
     "transizioni": "Transizioni",
 }
 
@@ -55,6 +64,46 @@ def clean_moment(raw):
     la libreria di prima non ce l'ha, e resta valida)."""
     v = (raw or "").strip().lower()
     return v if v in SOUND_MOMENTS else None
+
+
+# ── CI (22/9/2026) — i campi che servono alle ESPERIENZE MODELLO ─────
+# Tutti facoltativi (la libreria di prima non li ha e resta valida):
+# `bpm` il tempo del brano quando c'e' (danza, ritmi), `energia` 1-5
+# (quanto spinge: 1 quiete, 5 picco), `tags` parole libere («tribale»,
+# «flauto», «coro»). Servono a scegliere i suoni giusti per momento ed
+# energia senza sfogliare duecento schede.
+BPM_MIN, BPM_MAX = 30, 220
+ENERGIA_MIN, ENERGIA_MAX = 1, 5
+TAGS_MAX, TAG_LEN_MAX = 12, 32
+
+
+def clean_bpm(raw):
+    try:
+        v = int(round(float(raw)))
+    except (TypeError, ValueError):
+        return None
+    return v if BPM_MIN <= v <= BPM_MAX else None
+
+
+def clean_energia(raw):
+    try:
+        v = int(raw)
+    except (TypeError, ValueError):
+        return None
+    return v if ENERGIA_MIN <= v <= ENERGIA_MAX else None
+
+
+def clean_tags(raw):
+    """Lista pulita di parole (o None): da lista o da stringa «a, b, c»."""
+    if raw is None:
+        return None
+    parti = raw if isinstance(raw, (list, tuple)) else str(raw).split(",")
+    puliti = []
+    for p in parti:
+        t = str(p).strip().lower()[:TAG_LEN_MAX]
+        if t and t not in puliti:
+            puliti.append(t)
+    return puliti[:TAGS_MAX] or None
 
 
 def safe_extension(filename: str):
