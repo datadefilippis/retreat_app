@@ -1,0 +1,42 @@
+momento,file,titolo_proposto,durata_sec,durata,categoria_proposta,confidenza,indizio,tappeto_serve,duplicato_di,bpm,energia,tags,cartella_founder
+arrivo,alex-morgan-ambient-background-soft-air-drift-575882.mp3,"Soft Air Drift, pad d'aria",190,3:10,ambient,alta,pad piatto centroide 658,si,,,1,"pad,tappeto-respiro,aria",ambient_pad_c
+arrivo,atlasaudio-ambient-574024.mp3,"Atlas, pad sospeso",150,2:30,ambient,alta,pad piatto centroide 732,no,,,1,"pad,tappeto-respiro",ambient_pad_c
+arrivo,atlasaudio-drone-ambient-518685.mp3,"Atlas, bordone ambient",240,4:00,droni,alta,perc 0.024 arco piatto,si,,,1,"bordone,pad,tappeto-respiro",ambient_pad_c
+arrivo,danamusic-meditation-relaxing-music-293922.mp3,"Meditation, pad lungo",605,10:05,ambient,alta,pad lungo centroide 562,si,,,1,"pad,tappeto-respiro,lungo",ambient_pad_c
+arrivo,kulakovka-cinematic-ambient-274889.mp3,"Cinematic Ambient, respiro largo",118,1:58,ambient,media,arco che sale e scende,no,,,2,"pad,cinematico",ambient_pad_c
+attivazione,kulakovka-medicine-technology-566499.mp3,"Medicine, pad che pulsa",148,2:28,ambient,media,pad con leggero impulso,no,,,2,"pad,pulsazione",ambient_pad_c
+arrivo,paulyudin-ambient-ambient-music-574003.mp3,"Yudin, pad breve",106,1:46,ambient,alta,pad piatto,no,,,1,"pad,tappeto-respiro",ambient_pad_c
+attivazione,psychronic-digital-lifestream-363476.mp3,"Digital Lifestream, pad con battito",195,3:15,ambient,alta,battito netto a 80 bpm sotto un pad,si,,80,2,"pad,pulsazione,elettronico",ambient_pad_c
+attivazione,starostin-ambient-ambient-music-563333.mp3,"Starostin, pad lungo con impulso",823,13:43,ambient,alta,impulso a 81 bpm per 13 minuti,si,,81,2,"pad,pulsazione,lungo",ambient_pad_c
+ascesa,grand_project-wonders-of-the-earth-550792.mp3,"Wonders of the Earth, che sale",150,2:30,melodie,alta,arco da -17 a -5 dB,no,,,3,"orchestra,crescendo,ascesa",ascesa
+ascesa,jonasblakewood-atmospheric-546971.mp3,"Atmospheric, luce che si apre",138,2:18,melodie,media,melodico brillante,no,,,2,"cinematico,luce",ascesa
+ascesa,jonasblakewood-inspiring-517928.mp3,"Inspiring, salita continua",154,2:34,melodie,alta,arco da -9 a -2 dB senza tornare,no,,,3,"cinematico,crescendo,ascesa",ascesa
+ascesa,jonasblakewood-nature-519884.mp3,"Nature, apertura",146,2:26,melodie,media,arco che sale,no,,,3,"cinematico,apertura",ascesa
+ascesa,luceris-study-session-602503.mp3,"Study Session, calma luminosa",186,3:06,ambient,media,piatto centroide 947,no,,,2,"pad,calmo",ascesa
+ascesa,starostin-ambient-ambient-music-484374.mp3,"Starostin, breve salita e discesa",120,2:00,ambient,media,picco al centro poi sfuma,no,,,2,"pad,arco",ascesa
+catarsi,kromaspere-techsonik-magic-night-405113.mp3,"Magic Night, techno morbida",488,8:08,danza,alta,pulsazione forte 124 bpm 8 minuti,si,,124,4,"elettronica,techno,lungo",dance
+arrivo,amurich-amurich-osmotic-time-353917.mp3,"Osmotic Time, bordone profondo",366,6:06,droni,alta,piattezza 0.006 centroide 399,si,,,1,"bordone,profondo",drone
+rientro,aonescape-infinity-604377.mp3,"Infinity, bordone",300,5:00,droni,alta,piattezza 0.033,si,,,1,"bordone",drone
+rientro,aonescape-space-604382.mp3,"Space, bordone spaziale",540,9:00,droni,alta,piattezza 0.014 centroide 442,si,,,1,"bordone,spazio,lungo",drone
+arrivo,siarhei_korbut-drone-soundscape-453795.mp3,"Drone Soundscape, bordone lungo",615,10:15,droni,alta,piattezza 0.011,si,,,1,"bordone,lungo",drone
+ascesa,alan_frijns-mantra-of-siena-heavenly-deep-meditation-mindfull-chillout-music-475435.mp3,"Mantra of Siena, voce e chill",481,8:01,voce,media,titolo mantra centroide alto,si,,,2,"amorevole,voce,mantra",love
+ascesa,alan_frijns-roots-of-the-astral-powerfull-cinematic-melodic-soundtrack-371404.mp3,"Roots of the Astral, orchestra che cresce",304,5:04,melodie,alta,arco da -16 a -5 dB,si,,,4,"amorevole,orchestra,crescendo",love
+ascesa,dominique_garnier-celtic-fantasy-zen-edit-741hz-314850.mp3,"Celtic Fantasy, arpa celtica",302,5:02,melodie,media,melodico morbido,si,,,2,"amorevole,celtico,arpa",love
+ascesa,dominique_garnier-oona-fairy-queen-of-nature-963hz-308634.mp3,"Oona, voce fatata",432,7:12,voce,media,centroide 2520 voce probabile,si,,,2,"amorevole,voce,celtico",love
+attivazione,nakaradaalexander-enchanted-forest-138951.mp3,"Enchanted Forest, fiaba",371,6:11,melodie,alta,arco largo al centro,si,,,3,"amorevole,fiaba,orchestra",love
+catarsi,nakaradaalexander-might-amp-magic-138999.mp3,"Might and Magic, epica",358,5:58,melodie,media,epico con pulsazione 92,si,,92,4,"epico,orchestra",love
+attivazione,alex-morgan-native-american-flute-545535.mp3,"Native Flute, con battito",190,3:10,melodie,alta,flauto con pulsazione 92,si,,92,2,"flauto,pulsazione,nativo",pulsazione
+attivazione,echoes_of_lumen-krishna-flute-596320.mp3,"Krishna Flute, flauto e ritmo",201,3:21,melodie,alta,flauto con pulsazione 89,si,,89,2,"flauto,pulsazione,india",pulsazione
+attivazione,echoes_of_lumen-r-and-b-slow-jam-smooth-groove-589278.mp3,"Slow Jam, groove lento",138,2:18,danza,alta,groove 83 bpm,no,,83,2,"groove,lento,r&b",pulsazione
+arrivo,hdhazard-native-american-flute-277509.mp3,"Native Flute, meditativo",240,4:00,melodie,alta,flauto senza battito,si,,,1,"flauto,nativo",pulsazione
+ascesa,imageaudioteam-a-wedding-168916.mp3,"A Wedding, pulsazione dolce",131,2:11,melodie,alta,pulsazione 92 costante,no,,92,2,"pulsazione,dolce",pulsazione
+attivazione,leberch-slow-zen-255691.mp3,"Slow Zen, che cresce",332,5:32,ambient,alta,pad che sale da -15 a -5,si,,,2,"pad,crescendo",pulsazione
+ascesa,litesaturation-slow-epic-full-15820.mp3,"Slow Epic, crescendo",175,2:55,melodie,alta,arco da -18 a -6 dB,no,,,3,"epico,crescendo",pulsazione
+catarsi,momotmusic-electric-heartbeat-345829.mp3,"Electric Heartbeat, battito",145,2:25,ritmi,alta,battito forte 123 bpm,no,,123,4,"battito,elettronico,cuore",pulsazione
+catarsi,the_mountain-deep-house-483808.mp3,"Deep House, il corpo si muove",147,2:27,danza,alta,house 112 bpm,no,,112,4,"house,elettronica",pulsazione
+attivazione,tristu-first-day-of-spring-instrumental-tristu-8232.mp3,"First Day of Spring, chitarra",147,2:27,melodie,alta,chitarra brillante,no,,,2,"chitarra,primavera",pulsazione
+attivazione,tunetank-slow-motion-beat-348975.mp3,"Slow Motion Beat, battito lento",142,2:22,ritmi,media,battito 99 bpm,no,,99,2,"battito,lento",pulsazione
+arrivo,valerystarfell-the-echo-of-the-flute-587523.mp3,"Echo of the Flute, flauto morbido",220,3:40,melodie,alta,flauto scuro centroide 573,si,,,1,"flauto,morbido",pulsazione
+attivazione,wbmstudio-bedroom-therapy-seductive-lo-fi-hip-hop-595036.mp3,"Bedroom Therapy, lo-fi",150,2:30,danza,alta,lo-fi 65 bpm,no,,65,2,"lo-fi,groove",pulsazione
+nessuno,sdanezis-cinematic-tonal-riser-4-592454.mp3,"Salita cinematica, 8 secondi",8,0:08,transizioni,alta,riser 8 s,no,,,3,"salita,riser",transizioni
+nessuno,sdanezis-smooth-synth-tonal-riser-8-592468.mp3,"Salita morbida synth, 8 secondi",8,0:08,transizioni,alta,riser 8 s,no,,,2,"salita,riser,synth",transizioni

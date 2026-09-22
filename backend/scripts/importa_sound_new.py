@@ -93,7 +93,8 @@ async def main():
         nome_file = f"{asset_id}.{ext}"
 
         if args.prova:
-            print(f"  [prova] {r['titolo_proposto'][:44]:46} {cat:12} {mom:12} {r['durata']}")
+            # una transizione non ha momento (cartella «nessuno» → None)
+            print(f"  [prova] {r['titolo_proposto'][:44]:46} {cat:12} {mom or '-':12} {r['durata']}")
         else:
             os.makedirs(AUDIO_DIR, exist_ok=True)
             shutil.copyfile(origine, os.path.join(AUDIO_DIR, nome_file))
