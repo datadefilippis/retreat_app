@@ -533,6 +533,8 @@ export default function FrequenzePage() {
   const eClipBreve = (asset) => !!asset.guida
     || ((asset.duration_sec || 0) > 0 && (asset.duration_sec || 0) <= CLIP_BREVE_SEC);
   const addSoundToSession = (asset) => {
+    // un ciclo del respiro non e' ne' un tappeto ne' un clip: e' la guida
+    if (asset.guida === 'ciclo') { addGuidaToSession(asset); return; }
     const breve = eClipBreve(asset);
     const start = breve && playing ? Math.max(0, Math.min(elapsed, duration - 1)) : 0;
     const end = breve
@@ -2345,14 +2347,10 @@ export default function FrequenzePage() {
                                   {soundLoadingId === s.id ? <span className="prep">◌</span>
                                     : previewingId === s.id ? 'Ferma' : 'Ascolta'}
                                 </button>
-                                {s.guida === 'ciclo' && (
-                                  <button type="button" className="add" data-testid={`fq-guida-add-${s.id}`}
-                                    title="Aggiunge la guida del respiro alla sessione: il ciclo si ripete, poi decidi respiri e round"
-                                    onClick={() => addGuidaToSession(s)}>+ guida</button>
-                                )}
-                                {/* ogni suono si puo' anche piazzare da solo: i clip
-                                    brevi (parole, soffi, cicli) entrano una volta,
-                                    senza loop, dove stai ascoltando */}
+                                {/* UN pulsante per tutti (founder, 22/9: «solo Ascolta e
+                                    + sessione»): le basi entrano in loop, i clip brevi
+                                    una volta senza loop, un CICLO del respiro entra come
+                                    guida (si ripete, respiri e round nella riga) */}
                                 <button type="button" className="add"
                                   data-testid={`fq-sound-add-${s.id}`}
                                   title={eClipBreve(s)

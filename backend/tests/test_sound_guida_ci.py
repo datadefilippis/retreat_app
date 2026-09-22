@@ -140,10 +140,13 @@ class TestMotore:
 
 class TestCrea:
     def test_piu_guida_sui_cicli_e_niente_basi_dalle_parole(self):
-        assert "fq-guida-add-${s.id}" in PAGE
+        # 22/9 sera (founder): NESSUN «+ guida»: solo «Ascolta» e «+ sessione»;
+        # su un ciclo del respiro «+ sessione» crea la guida
+        assert "fq-guida-add-" not in PAGE and "+ guida" not in PAGE
+        assert "if (asset.guida === 'ciclo') { addGuidaToSession(asset); return; }" in PAGE
         # 22/9 sera (founder): OGNI clip del respiro si aggiunge anche da solo,
         # senza loop, dove stai ascoltando; i cicli hanno in piu' «+ guida»
-        assert "s.guida === 'ciclo' && (" in PAGE and "fq-sound-add-${s.id}" in PAGE
+        assert "fq-sound-add-${s.id}" in PAGE
         assert "const eClipBreve = (asset) => !!asset.guida" in PAGE
         assert "loop: !breve" in PAGE
         # etichetta UNIFORME (founder): «+ sessione» su tutte le schede,
