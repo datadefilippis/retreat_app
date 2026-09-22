@@ -141,7 +141,11 @@ class TestMotore:
 class TestCrea:
     def test_piu_guida_sui_cicli_e_niente_basi_dalle_parole(self):
         assert "fq-guida-add-${s.id}" in PAGE
-        assert "s.guida === 'ciclo' ? (" in PAGE and ") : !s.guida && (" in PAGE
+        # 22/9 sera (founder): OGNI clip del respiro si aggiunge anche da solo,
+        # senza loop, dove stai ascoltando; i cicli hanno in piu' «+ guida»
+        assert "s.guida === 'ciclo' && (" in PAGE and "fq-sound-add-${s.id}" in PAGE
+        assert "const eClipBreve = (asset) => !!asset.guida" in PAGE
+        assert "loop: !breve" in PAGE and "'+ clip' : '+ sessione'" in PAGE
         assert "const addGuidaToSession = (asset, schema = 'continuo')" in PAGE
 
     def test_la_riga_ricalcola_la_fine_e_dice_la_versione(self):

@@ -525,18 +525,32 @@ export default function FrequenzePage() {
   };
   useEffect(() => () => stopSoundPreview(), []); // eslint-disable-line react-hooks/exhaustive-deps
 
+  /* Un CLIP BREVE (i clip del respiro del founder, o qualunque suono
+     sotto i 30 s) non e' un tappeto: entra senza loop, nel punto in
+     cui stai ascoltando, e dura quanto dura. Founder, 22/9 sera: «la
+     categoria respiro non ha l'opzione di aggiungere alla sessione». */
+  const CLIP_BREVE_SEC = 30;
+  const eClipBreve = (asset) => !!asset.guida
+    || ((asset.duration_sec || 0) > 0 && (asset.duration_sec || 0) <= CLIP_BREVE_SEC);
   const addSoundToSession = (asset) => {
+    const breve = eClipBreve(asset);
+    const start = breve && playing ? Math.max(0, Math.min(elapsed, duration - 1)) : 0;
+    const end = breve
+      ? Math.min(durataAuto ? DURATA_MAX_SEC : duration, start + Math.max(1, asset.duration_sec || 1))
+      : duration;
     setLayers((ls) => [...ls, {
       id: ++_uid, kind: 'audio', asset_id: asset.id,
-      name: asset.title, start: 0, end: duration,
-      gain: 0.7, loop: true, mute: false,
+      name: asset.title, start, end,
+      gain: breve ? 0.9 : 0.7, loop: !breve, mute: false,
       /* la durata della base viaggia col livello (chiave privata: le
          `_` non finiscono mai nella ricetta salvata). Serve al campo
          «parte da» per sapere fin dove si puo' tagliare anche prima
          che la libreria sia caricata. */
       _dur: asset.duration_sec || 0,
     }]);
-    setStatus(`«${asset.title}» aggiunta alla sessione, vai a «Crea»`);
+    setStatus(breve
+      ? `«${asset.title}» sulla linea del tempo a ${fmt(start)}, una volta sola (niente loop)`
+      : `«${asset.title}» aggiunta alla sessione, vai a «Crea»`);
   };
 
   /* CI-F1 — LA GUIDA DEL RESPIRO entra dalla libreria come una base,
@@ -2308,7 +2322,7 @@ export default function FrequenzePage() {
                                 {s.guida === 'ciclo'
                                   ? `🫁 Guida del respiro · si ripete ogni ${String((s.ciclo_sec || 0).toFixed(1)).replace('.', ',')} s`
                                   : s.guida
-                                    ? '🫁 Parola di svolta · la usa la guida del respiro'
+                                    ? '🫁 Clip breve della voce · la guida lo usa alle svolte, o lo piazzi tu'
                                     : '🔊 Base sonora · va in loop sotto le frequenze'}
                               </div>
                               {previewingId === s.id && (
@@ -2331,14 +2345,20 @@ export default function FrequenzePage() {
                                   {soundLoadingId === s.id ? <span className="prep">◌</span>
                                     : previewingId === s.id ? 'Ferma' : 'Ascolta'}
                                 </button>
-                                {s.guida === 'ciclo' ? (
+                                {s.guida === 'ciclo' && (
                                   <button type="button" className="add" data-testid={`fq-guida-add-${s.id}`}
                                     title="Aggiunge la guida del respiro alla sessione: il ciclo si ripete, poi decidi respiri e round"
                                     onClick={() => addGuidaToSession(s)}>+ guida</button>
-                                ) : !s.guida && (
-                                  <button type="button" className="add"
-                                    onClick={() => addSoundToSession(s)}>+ sessione</button>
                                 )}
+                                {/* ogni suono si puo' anche piazzare da solo: i clip
+                                    brevi (parole, soffi, cicli) entrano una volta,
+                                    senza loop, dove stai ascoltando */}
+                                <button type="button" className="add"
+                                  data-testid={`fq-sound-add-${s.id}`}
+                                  title={eClipBreve(s)
+                                    ? 'Mette questo clip una volta sola sulla linea del tempo, nel punto in cui stai ascoltando'
+                                    : 'Aggiunge questa base alla sessione, in loop'}
+                                  onClick={() => addSoundToSession(s)}>{eClipBreve(s) ? '+ clip' : '+ sessione'}</button>
                               </div>
                             </div>
                           ))}
