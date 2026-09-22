@@ -226,7 +226,13 @@ export async function resolveAudioLayers(ctx, score, soundsById) {
                  gain: l.gain, loop: l.loop !== false, mute: false,
                  /* il taglio e' gia' DENTRO il buffer (senzaTesta):
                     il motore non deve saltare altro */
-                 clip_in: 0 });
+                 clip_in: 0,
+                 /* CI-F2b (22/9 sera) — IL BUG DEL «NON SENTO NIENTE»:
+                    lo strato risolto si ricostruisce campo per campo, e
+                    `space` non c'era. Il motore (synth/render) chiede
+                    `l.space` allo strato RISOLTO: senza, nessun panner
+                    e' mai nato, e la Stanza non riceveva niente. */
+                 space: l.space });
     } catch (e) {
       /* base saltata: meglio una sessione parziale che muta. Ma se le
          basi sono tutte qui, «parziale» vuol dire MUTA: il silenzio
@@ -269,7 +275,8 @@ export async function resolveVoiceLayers(ctx, score, voiceById) {
                     l'attacco morbido anche in «naturale» (founder:
                     «cambio e non cambia nulla»). */
                  clean_mode: modo,
-                 clip_in: l.clip_in || 0, mute: false });
+                 clip_in: l.clip_in || 0, mute: false,
+                 space: l.space });   // CI-F2b: come per le basi
     } catch (e) { /* spezzone saltato: sessione parziale, mai muta */ }
   }
   return out;

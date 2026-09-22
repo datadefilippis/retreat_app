@@ -149,7 +149,8 @@ class TestAscoltoContinuoAt3:
         portante massima del catalogo e' 963 Hz) e tetto a 30 minuti:
         oltre, il WAV non sta nella memoria di un telefono."""
         assert "CONTINUO_SR = 22050" in CONTINUO
-        assert "CONTINUO_MAX_SEC = 1800" in CONTINUO
+        # CI-F4b (22/9): il WAV resta a 30, oltre si comprime a blocchi
+        assert "CONTINUO_WAV_MAX_SEC = 1800" in CONTINUO
         assert "duration_sec || 0) <= CONTINUO_MAX_SEC" in CONTINUO
 
     def test_media_session_completa(self):

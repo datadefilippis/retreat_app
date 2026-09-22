@@ -13,7 +13,7 @@ import {
   buildVoiceChain, connectVoiceSources, duckEnvelope, tailSeconds, makeImpulse,
 } from './voicefx';
 // CI-F2 — lo spazio e la Stanza: stessa matematica dell'anteprima
-import { creaPanner, creaStanza, mandata, spaceValido, stanzaValida, STANZE } from './spazio';
+import { creaSpazio, creaStanza, mandata, spaceValido, stanzaValida, STANZE } from './spazio';
 
 const sm = (x) => (x <= 0 ? 0 : x >= 1 ? 1 : x * x * (3 - 2 * x));
 
@@ -32,8 +32,8 @@ async function renderWetVoice(l, d, sr) {
   /* CI-F2 — la voce nello spazio SOLO se l'autore l'ha scelto: la
      traiettoria parte dal secondo 0 del clip, come dal vivo */
   if (spaceValido('voice', l.space?.preset)) {
-    const pan = creaPanner(off, l.space.preset, { tA: 0, uA: 0, uB: total });
-    gv.connect(pan); pan.connect(off.destination);
+    const sp = creaSpazio(off, l.space.preset, { tA: 0, uA: 0, uB: total });
+    gv.connect(sp.input); sp.output.connect(off.destination);
   } else {
     gv.connect(off.destination);
   }
@@ -124,13 +124,13 @@ export async function renderPcm(score, { sampleRate = 44100, audioLayers = [],
         if (spaceValido('audio', l.space?.preset)) {
           /* la traiettoria e' funzione del tempo dello STRATO: il
              blocco 37 calcola lo stesso punto dell'anteprima */
-          const pan = creaPanner(off, l.space.preset,
+          const sp = creaSpazio(off, l.space.preset,
             { tA: t0 - cs, uA: t0 - l.start, uB: tE - l.start });
-          g.connect(pan); pan.connect(off.destination);
+          g.connect(sp.input); sp.output.connect(off.destination);
           const send = stanza ? mandata(l.space.preset) : 0;
           if (send > 0) {
             const sg = off.createGain(); sg.gain.value = send;
-            pan.connect(sg); sg.connect(stanza.input);
+            sp.output.connect(sg); sg.connect(stanza.input);
           }
         } else {
           g.connect(off.destination);

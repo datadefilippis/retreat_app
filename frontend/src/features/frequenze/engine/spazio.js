@@ -35,19 +35,37 @@
    alla Stanza. `kinds` dice a quali strati si offre. */
 export const SPACE_PRESETS = Object.freeze({
   fermo: { label: 'fermo', kinds: ['audio', 'voice'], hint: 'Davanti, al centro. Com’e’ sempre stato.' },
-  respira: { label: 'respira', kinds: ['audio', 'voice'], r: 1.5, sway: 20, swayHz: 0.06, send: 0.15,
+  respira: { label: 'respira', kinds: ['audio', 'voice'], r: 1.5, sway: 35, swayHz: 0.06, send: 0.15,
+    mono: true, rinforzo: 0.5,
     hint: 'Oscilla piano a destra e a sinistra, come un respiro.' },
   orbita_lenta: { label: 'orbita lenta', kinds: ['audio', 'voice'], r: 1.6, rate: 1 / 24, send: 0.2,
+    mono: true, rinforzo: 0.6,
     hint: 'Un giro intorno alla testa ogni 24 secondi.' },
   orbita: { label: 'orbita', kinds: ['audio'], r: 1.8, rate: 1 / 8, send: 0.2,
+    mono: true, rinforzo: 0.7,
     hint: 'Un giro ogni 8 secondi: per la danza, non per dormire.' },
   avvolge: { label: 'avvolge', kinds: ['audio'], r: 2.4, rate: 1 / 20, riseY: 1.2, riseSec: 60, send: 0.45,
+    mono: true, rinforzo: 0.55,
     hint: 'Largo, sale sopra la testa e riempie la stanza.' },
   vicina: { label: 'vicina', kinds: ['voice'], r0: 2.2, r1: 0.6, approachSec: 6, send: 0,
     hint: 'Parte lontana e in sei secondi arriva vicino: presenza.' },
-  a_lato: { label: 'a lato', kinds: ['voice'], r: 1.0, angle: 30, send: 0,
+  a_lato: { label: 'a lato', kinds: ['voice'], r: 1.0, angle: 30, send: 0, rinforzo: 0.4,
     hint: 'Fissa a 30 gradi sulla destra: per una seconda voce.' },
 });
+
+/* IL RINFORZO (22/9 sera, founder: «ho ascoltato cambiando lo spazio e
+   non ho notato differenze, anche con le cuffie»). Misurato col banco
+   qui sotto: l'HRTF da solo sposta un tono di 660 Hz di ~6 dB fra i
+   due orecchi, ma su un tappeto GRAVE e LARGO (le basi di Crea: pad,
+   droni, natura in stereo) quasi niente — sotto i 700 Hz la testa non
+   fa ombra, e un file stereo entra nel panner gia' spalmato su
+   entrambi i lati. Due rimedi, entrambi deterministici (funzione dello
+   stesso tempo dello strato, quindi identici nel master):
+   - `mono`: lo strato che si muove entra nel panner come UN punto
+     (downmix), non come due;
+   - `rinforzo`: uno StereoPanner a valle dell'HRTF che segue lo stesso
+     angolo (sin) con profondita' 0..1. E' il «trucco 8D» dei video,
+     ma dosato e sotto l'HRTF, che mantiene davanti/dietro e quota. */
 
 /* La Stanza della sessione: secondi di coda, tono (Hz del filtro che
    scurisce la coda) e livello del ritorno. `asciutta` = nessun nodo. */
@@ -149,6 +167,45 @@ export function creaPanner(ctx, preset, { tA, uA, uB, economico = false }) {
   return pan;
 }
 
+/** Il lato della sorgente al secondo `u`: -1 tutta a sinistra, +1
+    tutta a destra, 0 davanti o dietro. E' il seno dell'angolo. */
+export function lato(preset, u) {
+  const [x, , z] = posizione(preset, u);
+  const r = Math.hypot(x, z);
+  return r > 1e-6 ? x / r : 0;
+}
+
+/**
+ * LO SPAZIO di uno strato, completo: panner HRTF (+ downmix mono e
+ * rinforzo stereo dove il preset li chiede). E' l'unica porta per i tre
+ * consumatori (vivo, master, continuo): chi collega `input` e `output`
+ * non deve sapere quanti nodi ci sono in mezzo.
+ * @returns {{input: AudioNode, output: AudioNode, nodi: AudioNode[]}}
+ */
+export function creaSpazio(ctx, preset, { tA, uA, uB, economico = false }) {
+  const p = SPACE_PRESETS[preset] || {};
+  const pan = creaPanner(ctx, preset, { tA, uA, uB, economico });
+  if (p.mono) {
+    try { pan.channelCount = 1; pan.channelCountMode = 'explicit'; } catch { /* browser vecchio */ }
+  }
+  const nodi = [pan];
+  let output = pan;
+  if (p.rinforzo > 0 && typeof ctx.createStereoPanner === 'function') {
+    const st = ctx.createStereoPanner();
+    const a0 = lato(preset, uA) * p.rinforzo;
+    try { st.pan.setValueAtTime(a0, Math.max(0, tA)); } catch { st.pan.value = a0; }
+    const passo = passoTraiettoria(preset);
+    for (let u = uA + passo; u <= uB + 1e-6; u += passo) {
+      const v = lato(preset, Math.min(u, uB)) * p.rinforzo;
+      try { st.pan.linearRampToValueAtTime(v, Math.max(0, tA + (u - uA))); } catch { /* fuori dal contesto */ }
+    }
+    pan.connect(st);
+    output = st;
+    nodi.push(st);
+  }
+  return { input: pan, output, nodi };
+}
+
 /**
  * La Stanza: un ConvolverNode con impulso sintetico (lo stesso metodo
  * della «voce da sogno»), un filtro che scurisce la coda e il ritorno.
@@ -173,4 +230,40 @@ export function creaStanza(ctx, nome, makeImpulse) {
 export function mandata(preset) {
   const p = SPACE_PRESETS[preset];
   return p && typeof p.send === 'number' ? p.send : 0;
+}
+
+/* Banco di prova (solo in sviluppo): dalla console del browser si
+   misura che un preset sposti davvero il suono fra i due orecchi —
+   `window.__auryaSpazio.misura('orbita', 8)` → RMS sinistra/destra
+   per mezzo secondo. E' come si e' verificato che l'HRTF lavora. */
+if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
+  window.__auryaSpazio = {
+    posizione, creaPanner, creaSpazio, SPACE_PRESETS,
+    /* `soloHrtf` = il panner nudo, per confrontare col rinforzo;
+       `hz` basso (110) mostra perche' il rinforzo serve sui gravi */
+    async misura(preset = 'orbita', secondi = 8, hz = 660, soloHrtf = false) {
+      const sr = 44100;
+      const off = new OfflineAudioContext(2, Math.ceil(secondi * sr), sr);
+      const o = off.createOscillator(); o.type = 'sawtooth'; o.frequency.value = hz;
+      const g = off.createGain(); g.gain.value = 0.3;
+      o.connect(g);
+      if (soloHrtf) {
+        const pan = creaPanner(off, preset, { tA: 0, uA: 0, uB: secondi });
+        g.connect(pan); pan.connect(off.destination);
+      } else {
+        const sp = creaSpazio(off, preset, { tA: 0, uA: 0, uB: secondi });
+        g.connect(sp.input); sp.output.connect(off.destination);
+      }
+      o.start(0); o.stop(secondi);
+      const b = await off.startRendering();
+      const L = b.getChannelData(0), R = b.getChannelData(1), out = [];
+      const win = Math.floor(sr / 2);
+      for (let i = 0; i + win <= L.length; i += win) {
+        let l = 0, r = 0;
+        for (let k = i; k < i + win; k++) { l += L[k] * L[k]; r += R[k] * R[k]; }
+        out.push({ t: (i / sr).toFixed(1), L: Math.sqrt(l / win).toFixed(3), R: Math.sqrt(r / win).toFixed(3) });
+      }
+      return out;
+    },
+  };
 }

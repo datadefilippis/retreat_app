@@ -17,7 +17,7 @@
 
 import { buildVoiceChain, connectVoiceSources, duckEnvelope, makeImpulse } from './voicefx';
 // CI-F2 — lo spazio (panner HRTF) e la Stanza: unica verita' col master
-import { creaPanner, creaStanza, mandata, spaceValido, stanzaValida, MAX_PANNER_VIVI } from './spazio';
+import { creaSpazio, creaStanza, mandata, spaceValido, stanzaValida, MAX_PANNER_VIVI } from './spazio';
 
 const TAU = Math.PI * 2;
 const sm = (x) => (x <= 0 ? 0 : x >= 1 ? 1 : x * x * (3 - 2 * x));
@@ -783,15 +783,15 @@ export function startPreview(ctx, score,
   const spazializza = (l, kind, from, to, s0, span) => {
     if (!spaceValido(kind, l.space?.preset)) { from.connect(to); return; }
     const uA = Math.max(0, ctx.currentTime - s0);        // seek: da dove entra
-    const pan = creaPanner(ctx, l.space.preset,
+    const sp = creaSpazio(ctx, l.space.preset,
       { tA: at(s0 + uA), uA, uB: span, economico: pannerVivi >= MAX_PANNER_VIVI });
     pannerVivi += 1;
-    from.connect(pan); pan.connect(to);
-    nodes.push(pan);
+    from.connect(sp.input); sp.output.connect(to);
+    nodes.push(...sp.nodi);
     const send = kind === 'audio' && stanza ? mandata(l.space.preset) : 0;
     if (send > 0) {
       const sg = ctx.createGain(); sg.gain.value = send;
-      pan.connect(sg); sg.connect(stanza.input);
+      sp.output.connect(sg); sg.connect(stanza.input);
     }
   };
 

@@ -20,9 +20,9 @@
  *   Hz (con le armoniche del timbro caldo ~2,9 kHz) e la voce parlata
  *   vive sotto gli 8 kHz; il limite di banda a 11 kHz toglie solo un
  *   po' d'aria alle basi naturali — prezzo dichiarato, non nascosto;
- * - tetto a 30 minuti: a 22050 Hz stereo sono ~158 MB di file, il
- *   massimo che un telefono regge senza rischiare. Oltre, il pulsante
- *   non compare: meglio un limite onesto di un crash a meta' notte;
+ * - WAV fino a 30 minuti: a 22050 Hz stereo sono ~158 MB di file, il
+ *   massimo che un telefono regge senza rischiare. Oltre (CI-F4b) si
+ *   passa all'MP3 a blocchi: piu' attesa, ma nessuna sessione esclusa;
  * - il render NON parte da solo: e' un'attesa (secondi o minuti, con
  *   il progresso visibile) che l'utente sceglie con un tocco.
  *
@@ -31,11 +31,21 @@
  * l'anteprima sarebbe il cancello demolito da un'altra porta.
  */
 
-import { renderPcm, wavBlob } from './render';
+import { renderPcm, wavBlob, renderMp3Streaming } from './render';
 import { durataAnello, scoreAnello, ritagliaAnello } from './anello';
 
 export const CONTINUO_SR = 22050;
-export const CONTINUO_MAX_SEC = 1800;   // 30 min: ~158 MB di WAV, il tetto del telefono
+/* CI-F4b (22/9 sera, founder: «creo una melodia di 50 minuti, non
+   posso ascoltarla intera? questo non va bene»). Il WAV in memoria
+   resta il percorso fino a 30 minuti (pronto appena renderizzato).
+   Oltre, il file si renderizza e si COMPRIME a blocchi (lo stesso forno
+   del master lungo, render.js): 90 minuti a 96 kbps sono ~65 MB invece
+   di ~475 MB di WAV. Costa minuti di attesa in piu' sul telefono, con
+   il progresso visibile — ma la sessione si ascolta INTERA, a schermo
+   bloccato, anche prima che il master sia pronto. */
+export const CONTINUO_WAV_MAX_SEC = 1800;   // 30 min: ~158 MB di WAV, il tetto del telefono
+export const CONTINUO_MAX_SEC = 5400;       // = DURATION_MAX: nessuna sessione resta fuori
+export const CONTINUO_KBPS = 96;            // a 22050 Hz e' trasparente per il contenuto
 
 export function continuoDisponibile(score) {
   return (score?.duration_sec || 0) <= CONTINUO_MAX_SEC;
@@ -64,10 +74,39 @@ export async function preparaContinuo(
     titolo, autore, onProgress },
   eventi = {},
 ) {
+  const d = score.duration_sec;
+  if (d > CONTINUO_WAV_MAX_SEC) {
+    const blob = await renderMp3Streaming(score, {
+      sampleRate: CONTINUO_SR, audioLayers, voiceLayers, voiceDuck, onProgress,
+    }, CONTINUO_KBPS);
+    const url = URL.createObjectURL(blob);
+    return lettoreDaSrc(url, d, { titolo, autore }, eventi, { ciclico: false, daRevocare: true });
+  }
   const pcm = await renderPcm(score, {
     sampleRate: CONTINUO_SR, audioLayers, voiceLayers, voiceDuck, onProgress,
   });
-  return lettore(pcm, score.duration_sec, { titolo, autore }, eventi, false);
+  return lettore(pcm, d, { titolo, autore }, eventi, false);
+}
+
+/* Banco di prova (solo in sviluppo): dalla console,
+   `await window.__auryaContinuo.prova(1900)` renderizza e comprime una
+   sessione di prova piu' lunga di 30 minuti e restituisce peso e durata
+   decodificata — e' come si e' verificato che l'MP3 a 22050 Hz suona. */
+if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
+  window.__auryaContinuo = {
+    CONTINUO_SR, CONTINUO_WAV_MAX_SEC, CONTINUO_MAX_SEC,
+    async prova(sec = 1900) {
+      const score = { score_version: 1, duration_sec: sec, layers: [
+        { method: 'tone', carrier: 220, f0: 10, f1: 10, start: 0, end: sec, gain: 0.3 }] };
+      const t0 = performance.now();
+      const blob = await renderMp3Streaming(score, { sampleRate: CONTINUO_SR }, CONTINUO_KBPS);
+      const ms = performance.now() - t0;
+      const ctx = new OfflineAudioContext(2, 1, CONTINUO_SR);
+      const buf = await ctx.decodeAudioData(await blob.arrayBuffer());
+      return { mb: (blob.size / 1048576).toFixed(1), renderSec: (ms / 1000).toFixed(1),
+               durataDecodificata: buf.duration.toFixed(1), sr: buf.sampleRate };
+    },
+  };
 }
 
 /**

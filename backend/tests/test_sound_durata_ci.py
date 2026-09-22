@@ -6,7 +6,10 @@ colpo» (PCM intero: 90 minuti = ~950 MB). Qui si tiene fermo il modo in
 cui il tetto e' salito senza rompere niente:
   - modello e compilatore (JS/py) a 5400, in parita';
   - Crea: preset fino a 90', campo max 90, messaggi parlanti;
-  - l'ascolto continuo resta a 30 (CONTINUO_MAX_SEC) e lo dice;
+  - l'ascolto continuo (CI-F4b, 22/9 sera): WAV in memoria fino a 30
+    (CONTINUO_WAV_MAX_SEC), MP3 a blocchi oltre, fino a 90
+    (CONTINUO_MAX_SEC = DURATION_MAX) — «creo una melodia di 50 minuti,
+    non posso ascoltarla intera? questo non va bene» (founder);
   - export e master oltre i 30 passano da renderMp3Streaming (render e
     codifica a blocchi), sotto i 30 il percorso di ieri e' intatto.
 """
@@ -40,13 +43,23 @@ class TestTetto:
     def test_crea_offre_i_preset_lunghi(self):
         assert "[5, 10, 15, 20, 30, 45, 60, 90]" in PAGE
         assert "const CONTINUO_MIN = 30;" in PAGE
-        assert "schermo bloccato prima della pubblicazione" in PAGE
+        # nessuna frase dice piu' che oltre i 30 non si ascolta
+        assert "non è disponibile" not in PAGE.split("const fissaDurata")[1][:900]
+        assert "nessun limite" in PAGE
 
 
-class TestAscoltoContinuoRestaA30:
-    def test_il_wav_in_memoria_ha_ancora_il_suo_tetto(self):
-        assert "CONTINUO_MAX_SEC = 1800" in CONTINUO
+class TestAscoltoContinuoFinoA90:
+    def test_il_wav_in_memoria_ha_ancora_il_suo_tetto_e_oltre_si_comprime(self):
+        assert "CONTINUO_WAV_MAX_SEC = 1800" in CONTINUO
+        assert "CONTINUO_MAX_SEC = 5400" in CONTINUO
         assert "continuoDisponibile" in CONTINUO
+        assert "if (d > CONTINUO_WAV_MAX_SEC) {" in CONTINUO
+        assert "renderMp3Streaming(score, {" in CONTINUO
+        assert "sampleRate: CONTINUO_SR" in CONTINUO.split("if (d > CONTINUO_WAV_MAX_SEC)")[1][:200]
+
+    def test_il_tetto_del_continuo_e_quello_del_modello(self):
+        assert DURATION_MAX == 5400
+        assert "CONTINUO_MAX_SEC = 5400" in CONTINUO
 
 
 class TestRenderABlocchi:

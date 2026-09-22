@@ -119,9 +119,38 @@ class TestMotore:
     def test_master_riporta_la_coda(self):
         assert "tailFrames" in RENDER and "carryL" in RENDER
         assert "new OfflineAudioContext(2, frames + tailFrames, sr)" in RENDER
-        assert "creaPanner(off, l.space.preset" in RENDER
+        assert "creaSpazio(off, l.space.preset" in RENDER
         # la voce spaziale nel pre-render del clip wet
         assert "spaceValido('voice', l.space?.preset)" in RENDER
+
+    def test_lo_strato_risolto_porta_lo_spazio(self):
+        """IL BUG (22/9 sera): resolveAudioLayers/resolveVoiceLayers
+        ricostruiscono lo strato campo per campo e `space` restava fuori
+        — il motore legge `l.space` dallo strato RISOLTO, quindi nessun
+        panner e' mai nato e il founder non ha sentito niente."""
+        assets = (FQ / "engine" / "assets.js").read_text(encoding="utf-8")
+        basi = assets.split("export async function resolveAudioLayers")[1].split("export async function")[0]
+        voce = assets.split("export async function resolveVoiceLayers")[1].split("export async function")[0]
+        assert "space: l.space" in basi
+        assert "space: l.space" in voce
+
+    def test_il_rinforzo_e_unico_per_vivo_e_master(self):
+        """CI-F2b (22/9 sera, founder: «non ho notato differenze, anche
+        con le cuffie»): l'HRTF da solo sui tappeti gravi e larghi non
+        si sente. Il rimedio (downmix mono + StereoPanner che segue lo
+        stesso angolo) vive in UN punto, creaSpazio, e i tre consumatori
+        passano tutti di li' — mai un panner nudo fuori da spazio.js."""
+        assert "export function creaSpazio(ctx, preset" in SPAZIO
+        assert "pan.channelCount = 1; pan.channelCountMode = 'explicit';" in SPAZIO
+        assert "createStereoPanner" in SPAZIO
+        assert "export function lato(preset, u)" in SPAZIO
+        for src in (SYNTH, RENDER):
+            assert "creaPanner(" not in src and "creaSpazio(" in src
+        for preset in ("orbita_lenta", "orbita", "avvolge", "respira"):
+            riga = SPAZIO.split(f"  {preset}: {{")[1].split("hint:")[0]
+            assert "mono: true" in riga and "rinforzo:" in riga, preset
+        # la voce «vicina» non ha rinforzo: si avvicina, non gira
+        assert "rinforzo" not in SPAZIO.split("  vicina: {")[1].split("hint:")[0]
         # senza spazio: coda zero, percorso di ieri
         assert "const tailSec = conSpazio ?" in RENDER
 
@@ -139,3 +168,13 @@ class TestCrea:
         assert "score_version: hasSpace ? 4 :" in PAGE
         assert "setStanza('asciutta')" in PAGE          # reset sessione
         assert 'data-testid="fq-nota-spazio"' in PAGE   # in cuffia, e i binaurali non girano
+
+    def test_spazio_e_stanza_si_sentono_subito(self):
+        """CI-F2b: cambiare spazio o Stanza mentre suona fa ripartire
+        la sessione dal punto in cui era (il grafo si costruisce alla
+        partenza: non c'e' altro modo onesto di farlo sentire)."""
+        assert "const riavviaSeSuona = () => {" in PAGE
+        assert "if (patch.space !== undefined) riavviaSeSuona();" in PAGE
+        blocco_stanza = PAGE.split('data-testid="fq-stanza"')[1][:300]
+        assert "riavviaSeSuona();" in blocco_stanza
+        assert "riparte dal punto in cui era" in PAGE

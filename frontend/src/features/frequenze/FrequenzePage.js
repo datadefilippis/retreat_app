@@ -66,14 +66,15 @@ const fmt = (s) => {
 let _uid = 5000;
 
 /* CI-F4 (22/9, founder) — il tetto della sessione sale a 90 minuti:
-   meditazioni lunghe e breathwork. Restano a 30 SOLO l'ascolto a
-   schermo bloccato prima della pubblicazione (un WAV in memoria) e il
-   render «in un colpo»: oltre, l'export e il master si codificano a
-   blocchi (renderMp3Streaming), e la traccia pubblicata e' un file
-   in streaming senza limiti. Gemello di DURATION_MAX nel backend. */
+   meditazioni lunghe e breathwork. I 30 minuti restano SOLO come
+   soglia tecnica: fin li' il render e' «in un colpo» (PCM intero, WAV
+   per lo schermo bloccato); oltre, export, master e ascolto continuo
+   si renderizzano e codificano a blocchi (renderMp3Streaming). Nessun
+   limite all'ascolto: solo qualche minuto in piu' di attesa. Gemello
+   di DURATION_MAX nel backend. */
 const DURATA_MAX_MIN = 90;
 const DURATA_MAX_SEC = DURATA_MAX_MIN * 60;
-const CONTINUO_MIN = 30;      // = CONTINUO_MAX_SEC / 60
+const CONTINUO_MIN = 30;      // = CONTINUO_WAV_MAX_SEC / 60: soglia del render a blocchi
 
 /* L'EXPORT PESA COME IL MASTER (192 kbps): la meditazione che scarichi
    e quella che pubblichi sono lo stesso file, stesso peso. */
@@ -888,7 +889,24 @@ export default function FrequenzePage() {
   const playGuarded = guard(playSession);
   const seekTo = (t) => { if (layers.length) playGuarded(t); };
 
+  /* CI-F2b (22/9 sera, founder: «ho cambiato lo spazio e non ho notato
+     differenze») — spazio e Stanza si sentono SUBITO: se la sessione
+     sta suonando, riparte da dove era con la ricetta nuova. Non si puo'
+     rifare qui (lo score nuovo esiste solo al prossimo render): si
+     segna il punto e l'effetto sotto riparte quando lo score cambia. */
+  const riavvioRef = useRef(null);
+  const riavviaSeSuona = () => {
+    if (liveRef.current) riavvioRef.current = Math.max(0, liveRef.current.elapsed());
+  };
+  useEffect(() => {
+    if (riavvioRef.current == null) return;
+    const t = riavvioRef.current;
+    riavvioRef.current = null;
+    playGuarded(t);
+  }, [score]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const patchLayer = (id, patch) => {
+    if (patch.space !== undefined) riavviaSeSuona();
     setLayers((ls) => ls.map((l) => (l.id === id ? { ...l, ...patch } : l)));
     /* C5 (audit 21/8) — al vivo agiscono volume E muto: prima il muto
        cambiava solo lo stato, e il livello continuava a suonare — un
@@ -1356,7 +1374,7 @@ export default function FrequenzePage() {
       setStatus(`Il massimo è ${DURATA_MAX_MIN} minuti: oltre, il file pubblicato pesa troppo per chi ascolta`);
       mins = DURATA_MAX_MIN;
     } else if (mins > CONTINUO_MIN) {
-      setStatus(`Oltre ${CONTINUO_MIN} minuti l'ascolto a schermo bloccato prima della pubblicazione non è disponibile: pubblicata, la traccia non ha limiti`);
+      setStatus(`Oltre ${CONTINUO_MIN} minuti master, export e ascolto a schermo bloccato si preparano a blocchi: qualche minuto in più di attesa, nessun limite all'ascolto`);
     }
     setFoglioDurata(false);
     const newD = Math.max(60, mins * 60), oldD = duration;
@@ -2518,10 +2536,10 @@ export default function FrequenzePage() {
                     data-testid="fq-durata-auto" onClick={tornaDurataAuto}>
                     Automatica, segue le tracce
                   </button>
-                  <p className="fd-nota">Fino a 90 minuti. Oltre i 30,
-                  l'ascolto a schermo bloccato prima della pubblicazione
-                  non è disponibile: pubblicata, la traccia è un file e
-                  non ha limiti.</p>
+                  <p className="fd-nota">Fino a 90 minuti. Qui in Crea
+                  la ascolti intera, sempre. Oltre i 30, master, export e
+                  ascolto a schermo bloccato si preparano a blocchi:
+                  qualche minuto in più di attesa, nessun limite.</p>
                 </div>
               )}
               {/* DU, tutto il resto configurabile sta dietro UN tocco */}
@@ -2557,7 +2575,10 @@ export default function FrequenzePage() {
                       altoparlante. */}
                   <label title={STANZE[stanza].hint}>🎧 stanza
                     <select data-testid="fq-stanza" value={stanza}
-                      onChange={(e) => setStanza(STANZE[e.target.value] ? e.target.value : 'asciutta')}>
+                      onChange={(e) => {
+                        riavviaSeSuona();
+                        setStanza(STANZE[e.target.value] ? e.target.value : 'asciutta');
+                      }}>
                       {Object.entries(STANZE).map(([k, s]) => (
                         <option key={k} value={k}>{s.label}</option>
                       ))}
@@ -2567,6 +2588,7 @@ export default function FrequenzePage() {
                 {hasSpace && (
                   <p className="fq-nota" data-testid="fq-nota-spazio">
                     🎧 Spazio e stanza si sentono in cuffia: in altoparlante restano uno stereo largo.
+                    Cambiali pure mentre ascolti: la sessione riparte dal punto in cui era.
                     I binaurali non girano: il battimento vive nella differenza fra i due orecchi.
                   </p>
                 )}
