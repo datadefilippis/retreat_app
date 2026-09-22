@@ -319,3 +319,12 @@ pubblicate non cambiano.
 6. **Ordine**: F0 → F1 → F2 → F3, con deploy unico dopo le tue
    registrazioni; oppure F0 + F2 subito (lo spazio non aspetta le
    registrazioni) e F1 + F3 quando i file ci sono.
+
+---
+
+## Stato (22 settembre, sera)
+
+- **F0 FATTA** (commit 88c951b9): categorie `melodie`, `danza`, `respiro`; campi `bpm`/`energia`/`tags`; 23 tracce importate in locale con momento e licenza Pixabay, 16 tappeti collegati (`scripts/collega_tappeti.py`); proposta di riassegnazione delle 104 ambient in `docs/sound/riassegnazione_ambient_2026-09.csv`.
+- **F2 FATTA** (952a0d76): `engine/spazio.js`, preset per strato e Stanza, score v4, selettori in Crea, master a blocchi con riporto della coda; provato nel browser (ascolto con orbita, export con tempio e un binaurale, bozza v4 salvata e ricaricata).
+- **F4 FATTA** (commit successivo): tetto a 90 minuti, export e master lunghi a blocchi, 30 minuti solo per l'ascolto a schermo bloccato prima della pubblicazione.
+- **F1 e F3** aspettano le registrazioni del founder (specifica in §6). **Deploy** dopo.
