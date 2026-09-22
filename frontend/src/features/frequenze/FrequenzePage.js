@@ -37,6 +37,8 @@ import { renderPcm, mp3Blob } from './engine/render';
 import { schermoAcceso, schermoLibero, sorvegliaContesto } from './engine/veglia';
 import { preparaAnello, continuoSupportato } from './engine/continuo';
 import { creaPonte } from './engine/ponte';
+// CI-F2 — lo spazio (preset per strato) e la Stanza (per sessione)
+import { SPACE_PRESETS, STANZE, presetPerTipo } from './engine/spazio';
 import { creaLettore } from './visual/analisi';
 import AuryaMode from './visual/AuryaMode';
 import StudioScena from './visual/StudioScena';
@@ -382,11 +384,18 @@ export default function FrequenzePage() {
   // ONDA 2 — la versione la decide comunque il server (clean_score), ma
   // il client non deve dichiarare il falso: una marea e' v3.
   const hasWaveLayers = layers.some((l) => l.curve === 'wave');
+  /* CI-F2 — la Stanza della sessione e lo spazio per strato: v4 solo se
+     qualcuno li ha scelti. «asciutta»/«fermo» non si scrivono: una
+     ricetta senza spazio resta identica a com'era. */
+  const [stanza, setStanza] = useState('asciutta');
+  const hasSpace = stanza !== 'asciutta'
+    || layers.some((l) => l.space?.preset && l.space.preset !== 'fermo');
   const score = useMemo(() => ({
-    score_version: hasWaveLayers ? 3 : hasVoiceLayers ? 2 : 1, duration_sec: duration,
+    score_version: hasSpace ? 4 : hasWaveLayers ? 3 : hasVoiceLayers ? 2 : 1, duration_sec: duration,
     fade_in_sec: fadeIn, fade_out_sec: fadeOut, layers, phases,
     ...(hasVoiceLayers ? { voice_duck: voiceDuck } : {}),
-  }), [duration, fadeIn, fadeOut, layers, phases, hasVoiceLayers, hasWaveLayers, voiceDuck]);
+    ...(stanza !== 'asciutta' ? { stanza } : {}),
+  }), [duration, fadeIn, fadeOut, layers, phases, hasVoiceLayers, hasWaveLayers, voiceDuck, stanza, hasSpace]);
 
   // per l'API: via i campi privati di lavoro (_laneEl e' un nodo DOM —
   // serializzarlo manderebbe in circolo JSON.stringify)
@@ -1053,6 +1062,7 @@ export default function FrequenzePage() {
       setLayers((s.layers || []).map((l) => ({ ...l, id: ++_uid })));
       setPhases(s.phases || []);
       setVoiceDuck(!!s.voice_duck);
+      setStanza(STANZE[s.stanza] ? s.stanza : 'asciutta');   // CI-F2
       setVisual(s.visual || null);   // VC3 — la scena torna con la bozza
       // la bozza aperta sta nell'URL: il refresh la ricarica invece di
       // buttarti fuori (nav=false quando e' l'URL stesso a chiederla)
@@ -1289,7 +1299,7 @@ export default function FrequenzePage() {
       msg: `Rimuove tutte le tracce dalla linea del tempo. Non si può annullare.`,
       opts: [['Sì, svuota', () => {
         setLayers([]); setPhases([]); setTrackId(null); setTitle(''); setIntent(null);
-        setTrackStatus('draft'); setTrackSlug(null); setVoiceDuck(false);
+        setTrackStatus('draft'); setTrackSlug(null); setVoiceDuck(false); setStanza('asciutta');
         setFirmaPubblicata(null);
         /* TM6+TM8: sessione nuova = campana muta e leggio vuoto
            (gli spezzoni non adottati li pulisce la scopa del server) */
@@ -1599,6 +1609,23 @@ export default function FrequenzePage() {
           <input className="sl vol" type="range" min="0" max="1" step="0.01" value={l.gain}
             onChange={(e) => patchLayer(l.id, { gain: +e.target.value })} />
           <span className="val v1">{Math.round(l.gain * 100)}%</span>
+          {/* CI-F2 — lo spazio in cuffia, cinque parole: le basi possono
+              girare, la voce ha i suoi preset e non gira di default.
+              I binaurali (neuro) non lo hanno: il battimento vive nella
+              differenza fra i due orecchi e l'HRTF la mescolerebbe. */}
+          {l.kind === 'audio' && (
+            <>
+              <span className="lbl" title="Dove sta questo suono in cuffia (HRTF)">🎧 spazio</span>
+              <select className="minisel" data-testid={`fq-space-${l.id}`}
+                title={SPACE_PRESETS[l.space?.preset || 'fermo'].hint}
+                value={l.space?.preset || 'fermo'}
+                onChange={(e) => patchLayer(l.id, { space: { preset: e.target.value } })}>
+                {presetPerTipo('audio').map((k) => (
+                  <option key={k} value={k}>{SPACE_PRESETS[k].label}</option>
+                ))}
+              </select>
+            </>
+          )}
         </div>
         {/* FV6, la voce ha lo STESSO specchietto degli altri suoni:
             entra a / esce a. Il taglio della registrazione si decide
@@ -1665,6 +1692,17 @@ export default function FrequenzePage() {
               value={l.fx_amount ?? 0.6}
               onChange={(e) => patchLayer(l.id, { fx_amount: +e.target.value })} />
             <span className="val v1">{Math.round((l.fx_amount ?? 0.6) * 100)}%</span>
+            {/* CI-F2 — la voce non gira di default (founder): e' il punto
+                fermo di chi ascolta a occhi chiusi. Chi vuole la sposta. */}
+            <span className="lbl" title="Dove sta la voce in cuffia: ferma davanti, si avvicina, a lato, o si muove">🎧 spazio</span>
+            <select className="minisel" data-testid={`fq-space-${l.id}`}
+              title={SPACE_PRESETS[l.space?.preset || 'fermo'].hint}
+              value={l.space?.preset || 'fermo'}
+              onChange={(e) => patchLayer(l.id, { space: { preset: e.target.value } })}>
+              {presetPerTipo('voice').map((k) => (
+                <option key={k} value={k}>{SPACE_PRESETS[k].label}</option>
+              ))}
+            </select>
             <button type="button" className={`chip m${l.mute ? ' on' : ''}`}
               onClick={() => patchLayer(l.id, { mute: !l.mute })}>muto</button>
             {/* VP-bis (24/8, founder: «cambio pulizia e nel mixer trovo
@@ -2479,7 +2517,25 @@ export default function FrequenzePage() {
                     <input type="number" value={fadeOut} min="0" max="120" step="1"
                       onChange={(e) => setFadeOut(+e.target.value || 0)} /> s
                   </label>
+                  {/* CI-F2 — la Stanza: il riverbero della sessione, quattro
+                      taglie. Riceve le basi che hanno uno spazio; la voce
+                      ha gia' il suo. Si sente in cuffia, non fa danni in
+                      altoparlante. */}
+                  <label title={STANZE[stanza].hint}>🎧 stanza
+                    <select data-testid="fq-stanza" value={stanza}
+                      onChange={(e) => setStanza(STANZE[e.target.value] ? e.target.value : 'asciutta')}>
+                      {Object.entries(STANZE).map(([k, s]) => (
+                        <option key={k} value={k}>{s.label}</option>
+                      ))}
+                    </select>
+                  </label>
                 </div>
+                {hasSpace && (
+                  <p className="fq-nota" data-testid="fq-nota-spazio">
+                    🎧 Spazio e stanza si sentono in cuffia: in altoparlante restano uno stereo largo.
+                    I binaurali non girano: il battimento vive nella differenza fra i due orecchi.
+                  </p>
+                )}
               </div>
               {/* salva/pubblica restano sempre a vista, anche a campi chiusi */}
               <div className="cb-export">

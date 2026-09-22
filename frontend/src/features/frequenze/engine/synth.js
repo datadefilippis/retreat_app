@@ -15,7 +15,9 @@
  * locale: in FQ0 non si persistono (arrivano con FQ2 via audio_assets).
  */
 
-import { buildVoiceChain, connectVoiceSources, duckEnvelope } from './voicefx';
+import { buildVoiceChain, connectVoiceSources, duckEnvelope, makeImpulse } from './voicefx';
+// CI-F2 — lo spazio (panner HRTF) e la Stanza: unica verita' col master
+import { creaPanner, creaStanza, mandata, spaceValido, stanzaValida, MAX_PANNER_VIVI } from './spazio';
 
 const TAU = Math.PI * 2;
 const sm = (x) => (x <= 0 ? 0 : x >= 1 ? 1 : x * x * (3 - 2 * x));
@@ -769,6 +771,30 @@ export function startPreview(ctx, score,
     duckBus = duck;
   }
 
+  /* CI-F2 — LA STANZA e LO SPAZIO (engine/spazio.js, unica verita' col
+     master). Nessun nodo se la ricetta non li chiede: `stanza` assente
+     o «asciutta» e `space` assente o «fermo» lasciano il grafo com'era.
+     La Stanza riceve solo le BASI (la voce ha gia' il suo riverbero);
+     oltre MAX_PANNER_VIVI panner HRTF i restanti passano a equalpower. */
+  const stanza = stanzaValida(score.stanza)
+    ? creaStanza(ctx, score.stanza, makeImpulse) : null;
+  if (stanza) { stanza.output.connect(duckBus); nodes.push(stanza.input); }
+  let pannerVivi = 0;
+  const spazializza = (l, kind, from, to, s0, span) => {
+    if (!spaceValido(kind, l.space?.preset)) { from.connect(to); return; }
+    const uA = Math.max(0, ctx.currentTime - s0);        // seek: da dove entra
+    const pan = creaPanner(ctx, l.space.preset,
+      { tA: at(s0 + uA), uA, uB: span, economico: pannerVivi >= MAX_PANNER_VIVI });
+    pannerVivi += 1;
+    from.connect(pan); pan.connect(to);
+    nodes.push(pan);
+    const send = kind === 'audio' && stanza ? mandata(l.space.preset) : 0;
+    if (send > 0) {
+      const sg = ctx.createGain(); sg.gain.value = send;
+      pan.connect(sg); sg.connect(stanza.input);
+    }
+  };
+
   audioLayers.filter((l) => !l.mute && l.gain > 0 && l.buffer).forEach((l) => {
     const span = Math.max(1, Math.min(l.end, d) - l.start), s0 = t0 + l.start;
     if (s0 + span <= ctx.currentTime) return;
@@ -784,7 +810,8 @@ export function startPreview(ctx, score,
       src.loopStart = Math.min(l.clip_in, Math.max(0, l.buffer.duration - 0.2));
       src.loopEnd = l.buffer.duration;
     }
-    const g = ctx.createGain(); src.connect(g); g.connect(uG);
+    const g = ctx.createGain(); src.connect(g);
+    spazializza(l, 'audio', g, uG, s0, span);   // CI-F2: g → (panner) → uG
     const { a, r } = attackRelease(span);   // TS1a: stessi numeri del render
     g.gain.setValueAtTime(0.0001, at(s0));
     g.gain.linearRampToValueAtTime(l.gain, at(s0 + a));
@@ -815,7 +842,8 @@ export function startPreview(ctx, score,
     const chain = buildVoiceChain(ctx, l.fx, l.fx_amount);
     const uG = ctx.createGain(); uG.gain.value = 1; uG.connect(sess);
     liveG[l.id] = { node: uG, base: l.gain };
-    const vg = ctx.createGain(); vg.connect(uG); vg.gain.value = l.gain;
+    const vg = ctx.createGain(); vg.gain.value = l.gain;
+    spazializza(l, 'voice', vg, uG, s0, playLen);   // CI-F2: la voce, solo se scelto
     chain.output.connect(vg);
     /* L'ATTACCO E' SEMPRE NETTO (24/8). Il fade lungo (120ms) era la
        pezza che mascherava il gate: ora che «pulita» toglie il rumore

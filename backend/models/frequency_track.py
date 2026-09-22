@@ -24,8 +24,40 @@ salvata ieri suona oggi byte per byte com'era.
 SCORE_VERSION = 1
 SCORE_VERSION_VOICE = 2
 SCORE_VERSION_WAVE = 3
+# CI-F2 (22/9/2026) — v4 = lo SPAZIO: `space` per strato audio/voce e
+# `stanza` di sessione. Additivo puro: assenti = ricetta identica a ieri.
+SCORE_VERSION_SPACE = 4
 ACCEPTED_VERSIONS = (None, SCORE_VERSION, SCORE_VERSION_VOICE,
-                     SCORE_VERSION_WAVE)
+                     SCORE_VERSION_WAVE, SCORE_VERSION_SPACE)
+
+# I preset dello spazio (engine/spazio.js e' il gemello: tenerli
+# allineati, guardia nei test). La VOCE non ruota di default e non ha
+# «orbita» ne' «avvolge»; le BASI non hanno «vicina» ne' «a lato».
+# I BINAURALI (layer neuro) non hanno `space` per costruzione.
+SPACE_PRESETS = {
+    "audio": ("fermo", "respira", "orbita_lenta", "orbita", "avvolge"),
+    "voice": ("fermo", "respira", "orbita_lenta", "vicina", "a_lato"),
+}
+STANZE = ("asciutta", "sala", "tempio", "cattedrale")
+
+
+def clean_space(kind, raw):
+    """`{"preset": …}` valido per quel tipo di strato, o None. «fermo»
+    = None: non si scrive, cosi' una ricetta senza spazio resta
+    identica a com'era."""
+    if not isinstance(raw, dict):
+        return None
+    preset = raw.get("preset")
+    if preset in ("fermo", None, ""):
+        return None
+    if preset not in SPACE_PRESETS.get(kind, ()):
+        return None
+    return {"preset": preset}
+
+
+def clean_stanza(raw):
+    v = (raw or "").strip().lower() if isinstance(raw, str) else ""
+    return v if v in STANZE and v != "asciutta" else None
 
 # preset effetto voce (engine/voicefx.js e' il gemello: tenerli allineati)
 VOICE_FX = ("natural", "dream", "temple", "whisper")
@@ -134,7 +166,7 @@ def clean_layer(raw, duration):
         end = _num(raw.get("end"), 0, duration, duration)
         if end - start < 0.5:
             end = min(duration, start + 0.5)
-        return {
+        out = {
             "kind": "audio",
             "asset_id": asset_id,
             "name": str(raw.get("name") or "Base")[:60],
@@ -149,6 +181,10 @@ def clean_layer(raw, duration):
             # o 0 = la base parte da capo, come sempre.
             "clip_in": round(_num(raw.get("clip_in"), 0, 3600, 0), 3),
         }
+        sp = clean_space("audio", raw.get("space"))
+        if sp:
+            out["space"] = sp
+        return out
     if raw.get("kind") == "voice":
         asset_id = raw.get("asset_id")
         if not isinstance(asset_id, str) or not (1 <= len(asset_id) <= 64):
@@ -157,7 +193,7 @@ def clean_layer(raw, duration):
         end = _num(raw.get("end"), 0, duration, duration)
         if end - start < 0.5:
             end = min(duration, start + 0.5)
-        return {
+        out = {
             "kind": "voice",
             "asset_id": asset_id,
             "name": str(raw.get("name") or "Voce")[:60],
@@ -171,6 +207,10 @@ def clean_layer(raw, duration):
             "clip_in": round(_num(raw.get("clip_in"), 0.0, 3600.0, 0.0), 2),
             "mute": bool(raw.get("mute", False)),
         }
+        sp = clean_space("voice", raw.get("space"))
+        if sp:
+            out["space"] = sp
+        return out
     method = raw.get("method")
     if method not in METHODS:
         return None
@@ -290,10 +330,14 @@ def clean_score(raw):
     voice_duck = bool(raw.get("voice_duck", False))
     has_voice = any(l.get("kind") == "voice" for l in layers)
     has_wave = any(l.get("curve") == "wave" for l in layers)
+    # CI-F2 — lo spazio: v4 solo se qualcuno lo chiede davvero
+    stanza = clean_stanza(raw.get("stanza"))
+    has_space = stanza is not None or any("space" in l for l in layers)
     score = {
         # la versione sale SOLO dove serve: il pregresso resta identico.
-        # v3 (marea) ha la precedenza su v2 perche' la include.
-        "score_version": SCORE_VERSION_WAVE if has_wave
+        # v4 (spazio) > v3 (marea) > v2 (voce): ognuna include le precedenti.
+        "score_version": SCORE_VERSION_SPACE if has_space
+                         else SCORE_VERSION_WAVE if has_wave
                          else SCORE_VERSION_VOICE if (has_voice or voice_duck)
                          else SCORE_VERSION,
         "duration_sec": round(duration, 1),
@@ -306,6 +350,8 @@ def clean_score(raw):
     }
     if has_voice or voice_duck:
         score["voice_duck"] = voice_duck
+    if stanza:
+        score["stanza"] = stanza
     # VC1 — la scena viaggia dentro la ricetta: additivo puro, i
     # lettori vecchi la ignorano, chi non l'ha scelta non la scrive
     visual = clean_visual(raw.get("visual"))

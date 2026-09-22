@@ -10,8 +10,10 @@
 
 import { neuroSample, neuroSampleInit, attackRelease } from './synth';
 import {
-  buildVoiceChain, connectVoiceSources, duckEnvelope, tailSeconds,
+  buildVoiceChain, connectVoiceSources, duckEnvelope, tailSeconds, makeImpulse,
 } from './voicefx';
+// CI-F2 — lo spazio e la Stanza: stessa matematica dell'anteprima
+import { creaPanner, creaStanza, mandata, spaceValido, stanzaValida, STANZE } from './spazio';
 
 const sm = (x) => (x <= 0 ? 0 : x >= 1 ? 1 : x * x * (3 - 2 * x));
 
@@ -26,7 +28,15 @@ async function renderWetVoice(l, d, sr) {
   const off = new OfflineAudioContext(2, Math.ceil(total * sr), sr);
   const chain = buildVoiceChain(off, l.fx, l.fx_amount);
   const gv = off.createGain(); gv.gain.value = l.gain;
-  chain.output.connect(gv); gv.connect(off.destination);
+  chain.output.connect(gv);
+  /* CI-F2 — la voce nello spazio SOLO se l'autore l'ha scelto: la
+     traiettoria parte dal secondo 0 del clip, come dal vivo */
+  if (spaceValido('voice', l.space?.preset)) {
+    const pan = creaPanner(off, l.space.preset, { tA: 0, uA: 0, uB: total });
+    gv.connect(pan); pan.connect(off.destination);
+  } else {
+    gv.connect(off.destination);
+  }
   /* lo stesso attacco netto del vivo (12ms): il master non puo'
      suonare diverso da cio' che si ascolta in Crea */
   const dk = Math.min(0.012, playLen / 4);
@@ -73,11 +83,26 @@ export async function renderPcm(score, { sampleRate = 44100, audioLayers = [],
   const cl = (v) => (v > 32767 ? 32767 : v < -32768 ? -32768 : v);
   neuro.forEach(neuroSampleInit);
 
+  /* CI-F2 — LO SPAZIO NEL MASTER A BLOCCHI. Panner e Stanza hanno una
+     coda (HRTF pochi ms, la Stanza fino a 5,5 s): un blocco reso da
+     solo la perderebbe al bordo. Convoluzione e panner sono lineari,
+     quindi la coda del blocco n si SOMMA all'inizio del blocco n+1: ogni
+     blocco si rende piu' lungo di `tailFrames` e l'eccedenza si
+     riporta. Senza spazio ne' Stanza `tailFrames` e' 0 e il percorso e'
+     quello di ieri, campione per campione. */
+  const stanzaNome = stanzaValida(score.stanza) ? score.stanza : null;
+  const conSpazio = !!stanzaNome || audio.some((l) => spaceValido('audio', l.space?.preset));
+  const tailSec = conSpazio ? Math.max(0.05, stanzaNome ? STANZE[stanzaNome].sec + 0.3 : 0) : 0;
+  const tailFrames = Math.ceil(tailSec * sr);
+  let carryL = new Float32Array(tailFrames), carryR = new Float32Array(tailFrames);
+
   for (let cs = 0; cs < d; cs += CHUNK) {
     const len = Math.min(CHUNK, d - cs), frames = Math.floor(len * sr);
     let L = null, R = null;
     if (audio.length || wetClips.length) {
-      const off = new OfflineAudioContext(2, frames, sr);
+      const off = new OfflineAudioContext(2, frames + tailFrames, sr);
+      const stanza = stanzaNome ? creaStanza(off, stanzaNome, makeImpulse) : null;
+      if (stanza) stanza.output.connect(off.destination);
       audio.forEach((l) => {
         const span = Math.max(1, Math.min(l.end, d) - l.start);
         /* TG (24/8) — il taglio della base: `clip_in` sono i secondi
@@ -92,7 +117,21 @@ export async function renderPcm(score, { sampleRate = 44100, audioLayers = [],
         const src = off.createBufferSource();
         src.buffer = l.buffer; src.loop = l.loop;
         if (l.loop && tagl > 0) { src.loopStart = tagl; src.loopEnd = l.buffer.duration; }
-        const g = off.createGain(); src.connect(g); g.connect(off.destination);
+        const g = off.createGain(); src.connect(g);
+        if (spaceValido('audio', l.space?.preset)) {
+          /* la traiettoria e' funzione del tempo dello STRATO: il
+             blocco 37 calcola lo stesso punto dell'anteprima */
+          const pan = creaPanner(off, l.space.preset,
+            { tA: t0 - cs, uA: t0 - l.start, uB: tE - l.start });
+          g.connect(pan); pan.connect(off.destination);
+          const send = stanza ? mandata(l.space.preset) : 0;
+          if (send > 0) {
+            const sg = off.createGain(); sg.gain.value = send;
+            pan.connect(sg); sg.connect(stanza.input);
+          }
+        } else {
+          g.connect(off.destination);
+        }
         const { a, r } = attackRelease(span);   // TS1a: stessi numeri ovunque
         const ev = (t) => {
           const u = t - l.start;
@@ -128,6 +167,20 @@ export async function renderPcm(score, { sampleRate = 44100, audioLayers = [],
       const rb = await off.startRendering();
       L = rb.getChannelData(0);
       R = rb.numberOfChannels > 1 ? rb.getChannelData(1) : L;
+      if (tailFrames > 0) {
+        /* riporto della coda: quella del blocco precedente si somma qui,
+           quella di questo blocco viaggia al prossimo */
+        const nL = new Float32Array(tailFrames), nR = new Float32Array(tailFrames);
+        for (let n = 0; n < frames; n++) {
+          if (n < carryL.length) { L[n] += carryL[n]; R[n] += carryR[n]; }
+        }
+        for (let k = 0; k < tailFrames; k++) {
+          const j = frames + k;
+          nL[k] = L[j] + (j < carryL.length ? carryL[j] : 0);
+          nR[k] = R[j] + (j < carryR.length ? carryR[j] : 0);
+        }
+        carryL = nL; carryR = nR;
+      }
     }
     const base = Math.floor(cs * sr);
     for (let n = 0; n < frames; n++) {
