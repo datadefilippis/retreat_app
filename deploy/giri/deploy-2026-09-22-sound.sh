@@ -21,7 +21,8 @@ IP=$(dig +short aurya.life A | tail -1)
 [ -f "$PACCHETTO/documenti.json" ] || { echo "manca il pacchetto $PACCHETTO"; exit 1; }
 
 echo "== [1] backup delle collezioni toccate (audio_assets, frequency_tracks)"
-$SSH 'cd /opt/aurya && mkdir -p backups && docker exec ms-mongodb sh -c "mongodump --username=\$MONGO_INITDB_ROOT_USERNAME --password=\$MONGO_INITDB_ROOT_PASSWORD --authenticationDatabase=admin --db=\$MONGO_INITDB_DATABASE --collection=audio_assets --archive" > backups/predeploy-'"$GIRO"'-audio_assets.archive && docker exec ms-mongodb sh -c "mongodump --username=\$MONGO_INITDB_ROOT_USERNAME --password=\$MONGO_INITDB_ROOT_PASSWORD --authenticationDatabase=admin --db=\$MONGO_INITDB_DATABASE --collection=frequency_tracks --archive" > backups/predeploy-'"$GIRO"'-frequency_tracks.archive && ls -la backups/predeploy-'"$GIRO"'*'
+# il nome del db vive in .env.production (DB_NAME), non nel container mongo
+$SSH 'cd /opt/aurya && mkdir -p backups && DB=$(grep -E "^DB_NAME=" .env.production | cut -d= -f2) && [ -n "$DB" ] && docker exec ms-mongodb sh -c "mongodump --username=\$MONGO_INITDB_ROOT_USERNAME --password=\$MONGO_INITDB_ROOT_PASSWORD --authenticationDatabase=admin --db='"'"'$DB'"'"' --collection=audio_assets --archive" > backups/predeploy-'"$GIRO"'-audio_assets.archive && docker exec ms-mongodb sh -c "mongodump --username=\$MONGO_INITDB_ROOT_USERNAME --password=\$MONGO_INITDB_ROOT_PASSWORD --authenticationDatabase=admin --db='"'"'$DB'"'"' --collection=frequency_tracks --archive" > backups/predeploy-'"$GIRO"'-frequency_tracks.archive && ls -la backups/predeploy-'"$GIRO"'*'
 
 echo "== [2] rsync del codice (gli exclude di deploy/deploy-prod.sh + uploads/audio: viaggia col pacchetto)"
 rsync -avz --delete \
@@ -67,7 +68,9 @@ echo "== [5] pacchetto libreria nel volume (docker cp) e import idempotente"
 $SSH "cd /opt/aurya && docker cp pacchetto-$GIRO ms-backend:/app/uploads/pacchetto && \
   docker compose -f docker-compose.prod.yml --env-file .env.production exec -T backend python scripts/pacchetto_libreria.py importa /app/uploads/pacchetto --prova | tail -3 && \
   docker compose -f docker-compose.prod.yml --env-file .env.production exec -T backend python scripts/pacchetto_libreria.py importa /app/uploads/pacchetto | tail -3 && \
-  docker exec ms-backend rm -rf /app/uploads/pacchetto && rm -rf pacchetto-$GIRO"
+  docker exec -u root ms-backend rm -rf /app/uploads/pacchetto && rm -rf pacchetto-$GIRO"
+# (-u root: i file entrati con docker cp sono di root, l'utente dell'app
+#  non li puo' cancellare — successo al giro del 22/9, import gia' fatto)
 
 echo "== [6] verifica sul vivo"
 N=$(curl -s https://aurya.life/api/frequencies/sounds | python3 -c "import sys,json; d=json.load(sys.stdin)['items']; print(len(d), sum(1 for s in d if s.get('guida')), sum(1 for s in d if s.get('tappeto_url')))")
