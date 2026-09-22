@@ -1873,7 +1873,8 @@ class TestRefinementCrea:
         assert "src.loopStart = Math.min(l.clip_in" in syn
         ren = (FQ_DIR / "engine" / "render.js").read_text()
         assert "src.loopStart = tagl" in ren
-        assert "tagl + ((t0 - l.start) % utile)" in ren
+        # 22/9: il primo giro salta la cucitura in testa (`salto`), come dal vivo
+        assert "tagl + (((t0 - l.start) + salto) % utile)" in ren
 
 
 class TestMomentiDelViaggio:

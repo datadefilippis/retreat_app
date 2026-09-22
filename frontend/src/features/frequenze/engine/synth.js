@@ -825,7 +825,11 @@ export function startPreview(ctx, score,
     const seek = off > l.start ? off - l.start : 0;
     const utile = Math.max(0.2, l.buffer.duration - tagl);
     const when = at(s0);
-    src.start(when, l.loop ? tagl + (seek % utile)
+    /* l'anello ha la cucitura in testa: il primo giro la salta
+       (anello.js, `incrocioSec`), cosi' si parte dalla testa vera e
+       non dalla coda che si spegne. Stesso numero in render.js. */
+    const salto = l.loop ? (l.buffer.incrocioSec || 0) : 0;
+    src.start(when, l.loop ? tagl + ((seek + salto) % utile)
                            : Math.min(tagl + seek, l.buffer.duration - 0.001));
     src.stop(at(s0 + span));
     nodes.push(src);

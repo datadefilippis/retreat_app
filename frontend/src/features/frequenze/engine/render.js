@@ -166,7 +166,9 @@ export async function renderPcm(score, { sampleRate = 44100, audioLayers = [],
             if (pt > t0 && pt < tE) g.gain.linearRampToValueAtTime(ev(pt), pt - cs);
           });
         g.gain.linearRampToValueAtTime(ev(tE), tE - cs);
-        const offst = l.loop ? tagl + ((t0 - l.start) % utile) : tagl + (t0 - l.start);
+        // il primo giro salta la cucitura in testa (anello.js): come dal vivo
+        const salto = l.loop ? (l.buffer.incrocioSec || 0) : 0;
+        const offst = l.loop ? tagl + (((t0 - l.start) + salto) % utile) : tagl + (t0 - l.start);
         src.start(t0 - cs, Math.min(offst, Math.max(0, l.buffer.duration - 0.001)));
         src.stop(tE - cs);
       });

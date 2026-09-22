@@ -209,6 +209,28 @@ class TestSpezzoneEs3:
         curve = [b for b in ANELLO.split("0.5 * (1 + Math.cos((Math.PI * i) / x))")]
         assert len(curve) == 3, "le due dissolvenze non usano piu' la stessa curva"
 
+    def test_il_verso_della_cucitura(self):
+        """22/9 sera (founder: «parte, si ferma dopo un secondo, riparte
+        dall'inizio»): al giro si arriva dalla CODA, quindi la coda pesa
+        `a` (1 → 0) e la testa `1 − a`. Col verso invertito il primo
+        ascolto apriva con la coda del tappeto e poi saltava alla testa,
+        e ogni giro aveva due discontinuita'."""
+        assert "dst[i] = src[n + i] * a + dst[i] * (1 - a);" in ANELLO
+        assert "out[i * 2] = Math.round(pcm[src] * a + out[i * 2] * (1 - a));" in ANELLO
+        assert "dst[i] * a + src[n + i] * (1 - a)" not in ANELLO
+        # e il silenzio digitale in testa non entra nel giro
+        assert "export function inizioSuono(buffer" in ANELLO
+        assert "const testa = inizioSuono(buffer);" in ANELLO
+        # il PRIMO giro salta la cucitura (che sta in testa): dal vivo e
+        # nel master con lo stesso numero
+        assert "out.incrocioSec = incrocio;" in ANELLO
+        synth = (FQ_DIR / "engine" / "synth.js").read_text()
+        render = (FQ_DIR / "engine" / "render.js").read_text()
+        assert "const salto = l.loop ? (l.buffer.incrocioSec || 0) : 0;" in synth
+        assert "tagl + ((seek + salto) % utile)" in synth
+        assert "const salto = l.loop ? (l.buffer.incrocioSec || 0) : 0;" in render
+        assert "tagl + (((t0 - l.start) + salto) % utile)" in render
+
     def test_si_scarta_la_coda_prima_di_incrociare(self):
         """Un troncamento a meta' frame lascia spesso silenzio o sporco
         negli ultimi decimi: incrociarci sopra li stamperebbe nel giro."""

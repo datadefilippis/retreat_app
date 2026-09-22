@@ -135,8 +135,16 @@ export function ritagliaAnello(pcm, sr, durataSec) {
     const a = 0.5 * (1 + Math.cos((Math.PI * i) / x));   // 1 → 0
     const src = (off + n + i) * 2;
     if (src + 1 >= pcm.length) break;
-    out[i * 2] = Math.round(out[i * 2] * a + pcm[src] * (1 - a));
-    out[i * 2 + 1] = Math.round(out[i * 2 + 1] * a + pcm[src + 1] * (1 - a));
+    /* IL VERSO GIUSTO (22/9 sera, founder: «parte, si ferma dopo un
+       secondo, riparte dall'inizio»). Al giro si arriva dalla CODA: la
+       testa dell'anello deve CONTINUARE la coda (peso a: 1 → 0) mentre
+       la testa vera entra (1 − a: 0 → 1), cosi' a i = x si e' gia'
+       sulla testa e non c'e' salto. Prima i pesi erano invertiti: si
+       partiva dalla testa, si finiva sulla coda e a i = x si saltava
+       di nuovo sulla testa — due discontinuita' per giro, e il primo
+       ascolto apriva con la coda. */
+    out[i * 2] = Math.round(pcm[src] * a + out[i * 2] * (1 - a));
+    out[i * 2 + 1] = Math.round(pcm[src + 1] * a + out[i * 2 + 1] * (1 - a));
   }
   return out;
 }
@@ -160,9 +168,26 @@ export function ritagliaAnello(pcm, sr, durataSec) {
  *              troncamento a meta' frame lascia spesso silenzio o
  *              sporco negli ultimi decimi.
  */
+/* Il silenzio digitale in testa a un brano (molti file di libreria
+   partono con mezzo secondo di zeri) dentro un anello e' un buco a ogni
+   giro: si salta, fino a `maxSec`. Soglia −80 dBFS: solo zeri veri. */
+export const SILENZIO_TESTA_MAX_SEC = 5;
+export function inizioSuono(buffer, soglia = 1e-4, maxSec = SILENZIO_TESTA_MAX_SEC) {
+  const tetto = Math.min(buffer.length, Math.floor(maxSec * buffer.sampleRate));
+  let primo = tetto;
+  for (let c = 0; c < buffer.numberOfChannels; c++) {
+    const d = buffer.getChannelData(c);
+    for (let i = 0; i < primo; i++) {
+      if (Math.abs(d[i]) > soglia) { primo = i; break; }
+    }
+  }
+  return primo >= tetto ? 0 : primo;
+}
+
 export function anelloDaBuffer(ctx, buffer, incrocio = INCROCIO_SEC, coda = 0.5) {
   const sr = buffer.sampleRate;
-  const utile = Math.floor((buffer.duration - coda) * sr);
+  const testa = inizioSuono(buffer);
+  const utile = Math.floor((buffer.duration - coda) * sr) - testa;
   const x = Math.floor(incrocio * sr);
   // senza spazio per incrociare si restituisce il buffer com'e':
   // meglio un salto che un tappeto lungo un respiro
@@ -170,13 +195,45 @@ export function anelloDaBuffer(ctx, buffer, incrocio = INCROCIO_SEC, coda = 0.5)
   const n = utile - x;
   const out = ctx.createBuffer(buffer.numberOfChannels, n, sr);
   for (let c = 0; c < buffer.numberOfChannels; c++) {
-    const src = buffer.getChannelData(c);
+    const src = buffer.getChannelData(c).subarray(testa);
     const dst = out.getChannelData(c);
     dst.set(src.subarray(0, n));
     for (let i = 0; i < x; i++) {
       const a = 0.5 * (1 + Math.cos((Math.PI * i) / x));   // 1 → 0
-      dst[i] = dst[i] * a + src[n + i] * (1 - a);
+      /* stesso verso di ritagliaAnello: la coda continua e si spegne,
+         la testa entra. Col verso invertito (fino al 22/9) il primo
+         ascolto apriva con la CODA del tappeto per 1,5 s e poi saltava
+         alla testa: su un brano con l'intro in silenzio era «parte, si
+         ferma, riparte dall'inizio» (founder). */
+      dst[i] = src[n + i] * a + dst[i] * (1 - a);
     }
   }
+  /* La cucitura vive in TESTA al buffer (e' li' che il giro atterra),
+     quindi il PRIMO ascolto partirebbe con la coda che si spegne. Il
+     motore (synth/render) legge questo campo e parte dopo l'incrocio:
+     il primo giro comincia dalla testa vera, i successivi atterrano
+     sulla cucitura. Stesso salto dal vivo e nel master. */
+  out.incrocioSec = incrocio;
   return out;
+}
+
+/* Banco di prova (solo in sviluppo): `window.__auryaAnello.misura(url)`
+   → livello nei primi 3 s, salto al giro e a fine incrocio. */
+if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
+  window.__auryaAnello = {
+    anelloDaBuffer, inizioSuono,
+    async misura(url) {
+      const ctx = new AudioContext();
+      const raw = await ctx.decodeAudioData(await (await fetch(url)).arrayBuffer());
+      const out = anelloDaBuffer(ctx, raw);
+      const L = out.getChannelData(0), sr = out.sampleRate, win = Math.floor(sr / 10);
+      const db = (i0) => { let s = 0; for (let k = i0; k < i0 + win; k++) s += L[k] * L[k]; return Math.round(20 * Math.log10(Math.sqrt(s / win) + 1e-9)); };
+      const testa = []; for (let i = 0; i < 30; i++) testa.push(db(i * win));
+      const n = L.length, xi = Math.floor(INCROCIO_SEC * sr);
+      return { silenzioSaltatoSec: (inizioSuono(raw) / raw.sampleRate).toFixed(2),
+               durata: out.duration.toFixed(1), testaDb: testa.join(' '),
+               saltoAlGiro: Math.abs(L[n - 1] - L[0]).toFixed(4),
+               saltoAFineIncrocio: Math.abs(L[xi - 1] - L[xi]).toFixed(4) };
+    },
+  };
 }
