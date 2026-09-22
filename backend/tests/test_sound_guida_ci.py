@@ -145,7 +145,11 @@ class TestCrea:
         # senza loop, dove stai ascoltando; i cicli hanno in piu' «+ guida»
         assert "s.guida === 'ciclo' && (" in PAGE and "fq-sound-add-${s.id}" in PAGE
         assert "const eClipBreve = (asset) => !!asset.guida" in PAGE
-        assert "loop: !breve" in PAGE and "'+ clip' : '+ sessione'" in PAGE
+        assert "loop: !breve" in PAGE
+        # etichetta UNIFORME (founder): «+ sessione» su tutte le schede,
+        # mai un «+ clip» diverso dagli altri suoni
+        assert "'+ clip'" not in PAGE
+        assert "onClick={() => addSoundToSession(s)}>+ sessione</button>" in PAGE
         assert "const addGuidaToSession = (asset, schema = 'continuo')" in PAGE
 
     def test_la_riga_ricalcola_la_fine_e_dice_la_versione(self):

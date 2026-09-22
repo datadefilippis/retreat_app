@@ -2358,7 +2358,7 @@ export default function FrequenzePage() {
                                   title={eClipBreve(s)
                                     ? 'Mette questo clip una volta sola sulla linea del tempo, nel punto in cui stai ascoltando'
                                     : 'Aggiunge questa base alla sessione, in loop'}
-                                  onClick={() => addSoundToSession(s)}>{eClipBreve(s) ? '+ clip' : '+ sessione'}</button>
+                                  onClick={() => addSoundToSession(s)}>+ sessione</button>
                               </div>
                             </div>
                           ))}
