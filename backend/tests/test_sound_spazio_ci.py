@@ -151,6 +151,18 @@ class TestMotore:
             assert "mono: true" in riga and "rinforzo:" in riga, preset
         # la voce «vicina» non ha rinforzo: si avvicina, non gira
         assert "rinforzo" not in SPAZIO.split("  vicina: {")[1].split("hint:")[0]
+
+    def test_la_compensazione_del_volume(self):
+        """22/9 sera (founder: «nei suoni spaziali il volume diventa molto
+        piu' basso»): ogni preset che muove o allontana porta un `comp`
+        che riporta la potenza media di un giro a quella di «fermo»;
+        applicato in creaSpazio, quindi identico dal vivo e nel master."""
+        for preset in ("respira", "orbita_lenta", "orbita", "avvolge", "vicina", "a_lato"):
+            riga = SPAZIO.split(f"  {preset}: {{")[1].split("hint:")[0]
+            assert "comp:" in riga, preset
+        assert "comp:" not in SPAZIO.split("  fermo: {")[1].split("hint:")[0]
+        assert "comp.gain.value = p.comp;" in SPAZIO
+        assert "output.connect(comp);" in SPAZIO
         # senza spazio: coda zero, percorso di ieri
         assert "const tailSec = conSpazio ?" in RENDER
 

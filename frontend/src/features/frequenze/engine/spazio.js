@@ -36,22 +36,39 @@
 export const SPACE_PRESETS = Object.freeze({
   fermo: { label: 'fermo', kinds: ['audio', 'voice'], hint: 'Davanti, al centro. Com’e’ sempre stato.' },
   respira: { label: 'respira', kinds: ['audio', 'voice'], r: 1.5, sway: 35, swayHz: 0.06, send: 0.15,
-    mono: true, rinforzo: 0.5,
+    mono: true, rinforzo: 0.5, comp: 1.41,
     hint: 'Oscilla piano a destra e a sinistra, come un respiro.' },
   orbita_lenta: { label: 'orbita lenta', kinds: ['audio', 'voice'], r: 1.6, rate: 1 / 24, send: 0.2,
-    mono: true, rinforzo: 0.6,
+    mono: true, rinforzo: 0.6, comp: 1.6,
     hint: 'Un giro intorno alla testa ogni 24 secondi.' },
   orbita: { label: 'orbita', kinds: ['audio'], r: 1.8, rate: 1 / 8, send: 0.2,
-    mono: true, rinforzo: 0.7,
+    mono: true, rinforzo: 0.7, comp: 1.7,
     hint: 'Un giro ogni 8 secondi: per la danza, non per dormire.' },
   avvolge: { label: 'avvolge', kinds: ['audio'], r: 2.4, rate: 1 / 20, riseY: 1.2, riseSec: 60, send: 0.45,
-    mono: true, rinforzo: 0.55,
+    mono: true, rinforzo: 0.55, comp: 1.7,
     hint: 'Largo, sale sopra la testa e riempie la stanza.' },
-  vicina: { label: 'vicina', kinds: ['voice'], r0: 2.2, r1: 0.6, approachSec: 6, send: 0,
+  vicina: { label: 'vicina', kinds: ['voice'], r0: 2.2, r1: 0.6, approachSec: 6, send: 0, comp: 1.15,
     hint: 'Parte lontana e in sei secondi arriva vicino: presenza.' },
-  a_lato: { label: 'a lato', kinds: ['voice'], r: 1.0, angle: 30, send: 0, rinforzo: 0.4,
+  a_lato: { label: 'a lato', kinds: ['voice'], r: 1.0, angle: 30, send: 0, rinforzo: 0.4, comp: 1.05,
     hint: 'Fissa a 30 gradi sulla destra: per una seconda voce.' },
 });
+
+/* LA COMPENSAZIONE (22/9 sera, founder: «nei suoni spaziali il volume
+   diventa molto piu' basso rispetto a fermo, e' corretto?»). E' fisica
+   — una sorgente a 1,6 m e' piu' piana di una «nella testa»: l'HRTF
+   toglie in media 2-3 dB, il modello di distanza 3-5, il downmix mono
+   di uno stereo largo altri 2-3 — ma per chi compone e' sbagliato:
+   scegliere un preset non deve cambiare il volume, il volume ha il suo
+   cursore. `comp` riporta la POTENZA MEDIA su un giro intero a quella
+   di «fermo», misurata su due basi vere (un pad stereo e una melodia):
+   respira −2,3/−3,8 dB, orbita lenta −4,0/−4,9, orbita −6,3/−6,4,
+   avvolge −3,5/−7,3, vicina −1,1/−2,2 (solo la partenza lontana),
+   a lato −0,4. Un guadagno fisso: identico dal vivo e nel master.
+   Tetto a 1,7 (+4,6 dB): con la compensazione piena, un file gia' a
+   fondo scala spinto su un orecchio solo passava 1,0 di picco (pad:
+   1,67 su «avvolge»); cosi' orbita e avvolge restano ~1 dB sotto
+   «fermo», che non si sente, e i picchi restano nel margine del
+   volume di strato (0,7 di default). */
 
 /* IL RINFORZO (22/9 sera, founder: «ho ascoltato cambiando lo spazio e
    non ho notato differenze, anche con le cuffie»). Misurato col banco
@@ -202,6 +219,13 @@ export function creaSpazio(ctx, preset, { tA, uA, uB, economico = false }) {
     pan.connect(st);
     output = st;
     nodi.push(st);
+  }
+  if (p.comp && Math.abs(p.comp - 1) > 0.01) {
+    const comp = ctx.createGain();
+    comp.gain.value = p.comp;
+    output.connect(comp);
+    output = comp;
+    nodi.push(comp);
   }
   return { input: pan, output, nodi };
 }
