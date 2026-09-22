@@ -70,6 +70,14 @@ una coda di integrazione (10:00-11:38) in dissolvenza. È esattamente la
 struttura da riprodurre come ricetta: **round = respirazione ritmica →
 ritenzione a polmoni vuoti → ritenzione a polmoni pieni → recupero**.
 
+Il secondo file (Week 2, 4 round, 22:30) conferma e aggiunge la
+progressione: 42 s di arrivo, round 1 di quasi 4 minuti di ritmo, poi round
+via via più corti (1-2 minuti) con ritenzioni da 1 a 3,5 minuti, coda di
+integrazione di 2,5 minuti; il periodo di fase scende a **1,5 s** (respiro
+più rapido della settimana 1). Quindi la ricetta del respiro deve permettere
+**per ogni round** un ritmo, una durata di respirazione e una durata di
+ritenzione diversi, non un solo schema ripetuto.
+
 ---
 
 ## 2. Dove vanno le 23 tracce (proposta, da confermare all'ascolto)
