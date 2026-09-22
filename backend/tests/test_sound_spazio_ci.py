@@ -165,7 +165,7 @@ class TestCrea:
         assert "fq-space-${l.id}" in PAGE
         assert 'data-testid="fq-stanza"' in PAGE
         assert "presetPerTipo('audio')" in PAGE and "presetPerTipo('voice')" in PAGE
-        assert "score_version: hasSpace ? 4 :" in PAGE
+        assert "hasSpace ? 4 :" in PAGE      # CI-F1: davanti c'e' la guida (v5)
         assert "setStanza('asciutta')" in PAGE          # reset sessione
         assert 'data-testid="fq-nota-spazio"' in PAGE   # in cuffia, e i binaurali non girano
 

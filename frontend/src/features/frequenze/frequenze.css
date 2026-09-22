@@ -454,6 +454,10 @@
 .fqz .vd-duck{display:flex;align-items:center;gap:7px;margin-top:10px;
   font-size:12px;opacity:.85;cursor:pointer}
 .fqz .row .bar.voice{background:rgba(216,169,78,.28);border-color:rgba(216,169,78,.55)}
+/* CI-F1 — la guida del respiro: verde acqua, come un respiro */
+.fqz .row .bar.guida{background:rgba(94,196,178,.26);border-color:rgba(94,196,178,.6)}
+.fqz .row .guida-riassunto{font-size:11px;opacity:.75;margin-left:6px}
+.fqz .row input.mini.num{width:52px}
 
 /* FV6 — spinner di preparazione audio (aggiunte Aurya) */
 .fqz .prep{display:inline-block;animation:fqzspin 0.9s linear infinite}

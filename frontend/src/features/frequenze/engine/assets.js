@@ -245,6 +245,50 @@ export async function resolveAudioLayers(ctx, score, soundsById) {
 }
 
 /**
+ * CI-F1 — risolve gli strati GUIDA DEL RESPIRO: il clip del ciclo
+ * (intero, mai in anello: e' il motore a ripeterlo ogni `ciclo_sec`)
+ * e le parole di svolta, tutte dalla libreria. `ciclo` viene dall'asset
+ * (misurato sulla registrazione); se manca, la durata del clip piu'
+ * un respiro di pausa.
+ */
+export async function resolveGuidaLayers(ctx, score, soundsById) {
+  const out = [];
+  const strati = (score.layers || []).filter((l) => l.kind === 'guida');
+  if (!strati.length) return out;
+  const inUso = new Set((score.layers || [])
+    .flatMap((l) => {
+      const ids = [l.asset_id, ...Object.values(l.parole || {})];
+      return ids.map((id) => soundsById[id]?.stream_url).filter(Boolean);
+    }));
+  for (const l of strati) {
+    if (l.mute || !l.gain) continue;
+    const asset = soundsById[l.asset_id];
+    if (!asset || !asset.stream_url) continue;
+    try {
+      const buffer = await loadAssetBuffer(ctx, asset.stream_url, inUso);
+      const parole = {};
+      for (const [k, id] of Object.entries(l.parole || {})) {
+        const p = soundsById[id];
+        if (!p || !p.stream_url) continue;
+        try { parole[k] = await loadAssetBuffer(ctx, p.stream_url, inUso); } catch { /* svolta muta */ }
+      }
+      out.push({
+        id: l.id, kind: 'guida', buffer, parole,
+        ciclo: asset.ciclo_sec || (buffer.duration + 0.4),
+        start: l.start, end: l.end, gain: l.gain, mute: false,
+        respiri: l.respiri, round: l.round, vuoto_sec: l.vuoto_sec,
+        pieno_sec: l.pieno_sec, recupero_sec: l.recupero_sec,
+        campana: l.campana !== false,
+      });
+    } catch (e) {
+      console.warn('[aurya] GUIDA SALTATA:', (asset.stream_url || '').split('/').pop(),
+        e && e.message ? e.message : e);
+    }
+  }
+  return out;
+}
+
+/**
  * FV2 — risolve i layer VOCE di uno score: [{...layer, buffer}].
  * `voiceById` mappa asset_id → {stream_url} (gli spezzoni dell'org nel
  * compositore, o quelli della traccia nel player pubblico). Il buffer e'

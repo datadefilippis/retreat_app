@@ -71,19 +71,19 @@ export function continuoSupportato() {
  */
 export async function preparaContinuo(
   { score, audioLayers = [], voiceLayers = [], voiceDuck = false,
-    titolo, autore, onProgress },
+    guidaLayers = [], titolo, autore, onProgress },
   eventi = {},
 ) {
   const d = score.duration_sec;
   if (d > CONTINUO_WAV_MAX_SEC) {
     const blob = await renderMp3Streaming(score, {
-      sampleRate: CONTINUO_SR, audioLayers, voiceLayers, voiceDuck, onProgress,
+      sampleRate: CONTINUO_SR, audioLayers, voiceLayers, voiceDuck, guidaLayers, onProgress,
     }, CONTINUO_KBPS);
     const url = URL.createObjectURL(blob);
     return lettoreDaSrc(url, d, { titolo, autore }, eventi, { ciclico: false, daRevocare: true });
   }
   const pcm = await renderPcm(score, {
-    sampleRate: CONTINUO_SR, audioLayers, voiceLayers, voiceDuck, onProgress,
+    sampleRate: CONTINUO_SR, audioLayers, voiceLayers, voiceDuck, guidaLayers, onProgress,
   });
   return lettore(pcm, d, { titolo, autore }, eventi, false);
 }

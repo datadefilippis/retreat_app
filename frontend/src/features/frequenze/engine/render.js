@@ -14,6 +14,7 @@ import {
 } from './voicefx';
 // CI-F2 — lo spazio e la Stanza: stessa matematica dell'anteprima
 import { creaSpazio, creaStanza, mandata, spaceValido, stanzaValida, STANZE } from './spazio';
+import { montaGuida } from './guida';
 
 const sm = (x) => (x <= 0 ? 0 : x >= 1 ? 1 : x * x * (3 - 2 * x));
 
@@ -61,6 +62,7 @@ async function renderWetVoice(l, d, sr) {
  */
 export async function renderPcm(score, { sampleRate = 44100, audioLayers = [],
                                          voiceLayers = [], voiceDuck = false,
+                                         guidaLayers = [],
                                          onProgress, sink = null } = {}) {
   /* CI-F4 — `sink(Int16Array)`: se c'e', ogni blocco viene consegnato
      appena pronto e il PCM intero NON si alloca (90 minuti sarebbero
@@ -69,9 +71,11 @@ export async function renderPcm(score, { sampleRate = 44100, audioLayers = [],
   const total = Math.floor(d * sr);
   const audio = audioLayers.filter((l) => !l.mute && l.gain > 0 && l.buffer);
   const voice = voiceLayers.filter((l) => !l.mute && l.gain > 0 && l.buffer);
+  // CI-F1 — la guida del respiro: clip montati sulla partitura, a blocchi
+  const guide = guidaLayers.filter((g) => !g.mute && g.gain > 0 && g.buffer);
   const neuro = (score.layers || []).filter(
     (l) => (l.kind || 'neuro') === 'neuro' && !l.mute && l.gain > 0);
-  if (!audio.length && !neuro.length && !voice.length) {
+  if (!audio.length && !neuro.length && !voice.length && !guide.length) {
     throw new Error('Nessun livello udibile');
   }
   // spezzoni voce: pre-render con effetto (coda inclusa, volume cotto)
@@ -102,8 +106,20 @@ export async function renderPcm(score, { sampleRate = 44100, audioLayers = [],
   for (let cs = 0; cs < d; cs += CHUNK) {
     const len = Math.min(CHUNK, d - cs), frames = Math.floor(len * sr);
     let L = null, R = null;
-    if (audio.length || wetClips.length) {
+    if (audio.length || wetClips.length || guide.length) {
       const off = new OfflineAudioContext(2, frames + tailFrames, sr);
+      /* CI-F1 — la guida nel blocco: la stessa partitura del vivo, nella
+         finestra [cs, cs+len) del tempo dello strato; un clip a cavallo
+         del bordo parte con l'offset giusto */
+      guide.forEach((g) => {
+        const fineStrato = Math.min(g.end, d);
+        if (fineStrato <= cs || g.start >= cs + len) return;
+        const gg = off.createGain(); gg.gain.value = g.gain; gg.connect(off.destination);
+        montaGuida(off, gg, g, {
+          da: cs - g.start, a: Math.min(cs + len, fineStrato) - g.start,
+          quando: (u) => Math.max(0, u + g.start - cs),
+        });
+      });
       const stanza = stanzaNome ? creaStanza(off, stanzaNome, makeImpulse) : null;
       if (stanza) stanza.output.connect(off.destination);
       audio.forEach((l) => {

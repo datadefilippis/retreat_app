@@ -14,7 +14,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { frequenciesAPI } from '../../api/frequencies';
 import { startPreview } from './engine/synth';
-import { resolveAudioLayers, resolveVoiceLayers } from './engine/assets';
+import { resolveAudioLayers, resolveVoiceLayers, resolveGuidaLayers } from './engine/assets';
 import { avvisoCuffieScore } from './engine/altoparlante';
 import { schermoAcceso, schermoLibero, sorvegliaContesto } from './engine/veglia';
 import {
@@ -245,7 +245,14 @@ export default function PublicFrequencyPage() {
       voiceLayers = await resolveVoiceLayers(ctx, track.score, voiceById);
       setLoadingAudio(false);
     }
-    return { audioLayers, voiceLayers };
+    // CI-F1 — la guida del respiro: clip della libreria, come le basi
+    let guidaLayers = [];
+    if ((track.score.layers || []).some((l) => l.kind === 'guida')) {
+      setLoadingAudio(true);
+      guidaLayers = await resolveGuidaLayers(ctx, track.score, soundsRef.current);
+      setLoadingAudio(false);
+    }
+    return { audioLayers, voiceLayers, guidaLayers };
   };
 
   const play = async (fromT = 0) => {
@@ -362,10 +369,10 @@ export default function PublicFrequencyPage() {
       setLettore(l);
     }
     await ctx.resume();
-    const { audioLayers, voiceLayers } = await caricaLayers(ctx);
+    const { audioLayers, voiceLayers, guidaLayers } = await caricaLayers(ctx);
     segnaAscolto();
     liveRef.current = startPreview(ctx, track.score,
-      { fromT, audioLayers, voiceLayers,
+      { fromT, audioLayers, voiceLayers, guidaLayers,
         voiceDuck: !!track.score.voice_duck,
         sbocco: ctx._fqzPonte?.nodo,
         uscita: lettoreRef.current?.analyser });
@@ -390,9 +397,9 @@ export default function PublicFrequencyPage() {
     setContErrore('');
     try {
       ctxRef.current = ctxRef.current || new (window.AudioContext || window.webkitAudioContext)();
-      const { audioLayers, voiceLayers } = await caricaLayers(ctxRef.current);
+      const { audioLayers, voiceLayers, guidaLayers } = await caricaLayers(ctxRef.current);
       const h = await preparaContinuo({
-        score: track.score, audioLayers, voiceLayers,
+        score: track.score, audioLayers, voiceLayers, guidaLayers,
         voiceDuck: !!track.score.voice_duck,
         titolo: track.title, autore: track.operator?.name,
         onProgress: (p) => setContProg(p),

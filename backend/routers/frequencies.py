@@ -882,6 +882,8 @@ _SOUND_PROJECTION = {"_id": 0, "id": 1, "title": 1, "category": 1,
                      "moment": 1,
                      # CI (22/9): i campi delle esperienze, facoltativi
                      "bpm": 1, "energia": 1, "tags": 1,
+                     # CI-F1: la guida del respiro (clip del founder)
+                     "guida": 1, "ciclo_sec": 1,
                      "duration_sec": 1, "size_bytes": 1, "stream_url": 1, "tappeto_url": 1}
 
 

@@ -27,8 +27,22 @@ SCORE_VERSION_WAVE = 3
 # CI-F2 (22/9/2026) — v4 = lo SPAZIO: `space` per strato audio/voce e
 # `stanza` di sessione. Additivo puro: assenti = ricetta identica a ieri.
 SCORE_VERSION_SPACE = 4
+# CI-F1 (22/9/2026) — v5 = LA GUIDA DEL RESPIRO: strato `kind:'guida'`
+# che monta i clip registrati dal founder (libreria, categoria
+# `respiro`) su un ciclo, a round, con le ritenzioni. Additivo puro.
+SCORE_VERSION_GUIDA = 5
 ACCEPTED_VERSIONS = (None, SCORE_VERSION, SCORE_VERSION_VOICE,
-                     SCORE_VERSION_WAVE, SCORE_VERSION_SPACE)
+                     SCORE_VERSION_WAVE, SCORE_VERSION_SPACE, SCORE_VERSION_GUIDA)
+
+# La guida del respiro (engine/guida.js e' il gemello: guardia di parita').
+# Un round = `respiri` cicli del clip, poi (se > 0) la ritenzione a
+# VUOTO (silenzio di voce, campana all'inizio), la ritenzione a PIENO
+# (la parola «inspira», campana), il RECUPERO (campana, respiro libero).
+# I secondi hanno tetti da buon senso: nessuno trattiene 5 minuti.
+GUIDA_RESPIRI_MIN, GUIDA_RESPIRI_MAX, GUIDA_RESPIRI_DEFAULT = 1, 200, 20
+GUIDA_ROUND_MIN, GUIDA_ROUND_MAX, GUIDA_ROUND_DEFAULT = 1, 10, 1
+GUIDA_VUOTO_MAX, GUIDA_PIENO_MAX, GUIDA_RECUPERO_MAX = 300, 120, 180
+GUIDA_PAROLE = ("inspira", "espira")
 
 # I preset dello spazio (engine/spazio.js e' il gemello: tenerli
 # allineati, guardia nei test). La VOCE non ruota di default e non ha
@@ -217,6 +231,39 @@ def clean_layer(raw, duration):
         if sp:
             out["space"] = sp
         return out
+    if raw.get("kind") == "guida":
+        asset_id = raw.get("asset_id")
+        if not isinstance(asset_id, str) or not (1 <= len(asset_id) <= 64):
+            return None
+        start = _num(raw.get("start"), 0, duration, 0)
+        end = _num(raw.get("end"), 0, duration, duration)
+        if end - start < 0.5:
+            end = min(duration, start + 0.5)
+        out = {
+            "kind": "guida",
+            "asset_id": asset_id,
+            "name": str(raw.get("name") or "Guida del respiro")[:60],
+            "start": round(start, 3),
+            "end": round(end, 3),
+            "gain": _num(raw.get("gain"), 0.0, 1.0, 0.9),
+            "respiri": int(_num(raw.get("respiri"), GUIDA_RESPIRI_MIN,
+                                GUIDA_RESPIRI_MAX, GUIDA_RESPIRI_DEFAULT)),
+            "round": int(_num(raw.get("round"), GUIDA_ROUND_MIN,
+                              GUIDA_ROUND_MAX, GUIDA_ROUND_DEFAULT)),
+            "vuoto_sec": int(_num(raw.get("vuoto_sec"), 0, GUIDA_VUOTO_MAX, 0)),
+            "pieno_sec": int(_num(raw.get("pieno_sec"), 0, GUIDA_PIENO_MAX, 0)),
+            "recupero_sec": int(_num(raw.get("recupero_sec"), 0, GUIDA_RECUPERO_MAX, 0)),
+            "campana": bool(raw.get("campana", True)),
+            "mute": bool(raw.get("mute", False)),
+        }
+        # le parole delle svolte: clip della libreria, per id; solo
+        # quelle note, e solo se sono stringhe sensate
+        parole = raw.get("parole") if isinstance(raw.get("parole"), dict) else {}
+        puliti = {k: v for k, v in parole.items()
+                  if k in GUIDA_PAROLE and isinstance(v, str) and 1 <= len(v) <= 64}
+        if puliti:
+            out["parole"] = puliti
+        return out
     method = raw.get("method")
     if method not in METHODS:
         return None
@@ -339,10 +386,13 @@ def clean_score(raw):
     # CI-F2 — lo spazio: v4 solo se qualcuno lo chiede davvero
     stanza = clean_stanza(raw.get("stanza"))
     has_space = stanza is not None or any("space" in l for l in layers)
+    has_guida = any(l.get("kind") == "guida" for l in layers)
     score = {
         # la versione sale SOLO dove serve: il pregresso resta identico.
-        # v4 (spazio) > v3 (marea) > v2 (voce): ognuna include le precedenti.
-        "score_version": SCORE_VERSION_SPACE if has_space
+        # v5 (guida) > v4 (spazio) > v3 (marea) > v2 (voce): ognuna
+        # include le precedenti.
+        "score_version": SCORE_VERSION_GUIDA if has_guida
+                         else SCORE_VERSION_SPACE if has_space
                          else SCORE_VERSION_WAVE if has_wave
                          else SCORE_VERSION_VOICE if (has_voice or voice_duck)
                          else SCORE_VERSION,

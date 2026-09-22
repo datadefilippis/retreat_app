@@ -1,0 +1,11 @@
+file,titolo,guida,ciclo_sec,picco_dbfs,note
+Inspira-espira 1234.m4a,Respiro guidato 4-4 · inspira ed espira con conteggio,ciclo,8.4,-3,"«inspira 1 2 3 4» [0.18-4.56] «espira 1 2 3 4» [4.94-8.04]: ciclo 8.4 s"
+Dentro-fuori 1234.m4a,Respiro guidato 4-4 · dentro e fuori con conteggio,ciclo,7.8,-3,"«dentro 1 2 3 4» [0.34-3.28] «fuori 1 2 3 4» [5.02-7.64]: ciclo 7.8 s"
+Conta 1-2-3-4 -ripetizione.m4a,Conteggio 4-4 · solo i numeri,ciclo,6.8,-3,"«1 2 3 4» [0.00-3.98] «1 2 3 4» [4.24-6.48]: ciclo 6.8 s; parte a 0.00 (nessun silenzio in testa)"
+Inspira-espira-bocca.m4a,Respiro vero 4-4 · bocca,ciclo,7.0,-6,"soffio dentro + soffio fuori [0.12-6.96]; registrato a -35 dBFS, normalizzato"
+Breath 3-3.m4a,Respiro vero 3-3,ciclo,6.8,-6,"inspiro sotto soglia [0-3.3], espiro [3.36-6.16]; normalizzato"
+Inspira- parola.m4a,Parola · inspira,inspira,,-3,"[0.08-1.42]"
+Espira -parola.m4a,Parola · espira,espira,,-3,"[0.30-1.70]"
+Conta 1-2-3-4 1 volta.m4a,Conteggio 1-2-3-4 · una volta,conta,,-3,"[0.00-3.10]; parte a 0.00"
+Inspira bocca.m4a,Soffio dentro · bocca,soffio_in,,-6,"3.0 s, registrato a -37 dBFS, normalizzato"
+Espira-bocca.m4a,Soffio fuori · bocca,soffio_out,,-6,"4.1 s, registrato a -35 dBFS, normalizzato"

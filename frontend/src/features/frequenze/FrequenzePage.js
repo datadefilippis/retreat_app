@@ -25,9 +25,10 @@ import {
   startPreview, startCardLive,
 } from './engine/synth';
 import {
-  loadAssetBuffer, resolveAudioLayers, resolveVoiceLayers, fileDuration,
-  memoriaStimataMB,
+  loadAssetBuffer, resolveAudioLayers, resolveVoiceLayers, resolveGuidaLayers,
+  fileDuration, memoriaStimataMB,
 } from './engine/assets';
+import { GUIDA_SCHEMI, durataGuida, riassuntoGuida, normalizzaGuida } from './engine/guida';
 import {
   VOICE_PRESETS, CLEAN_MODES, CLEAN_ALIAS, buildVoiceChain, cleanVoiceBuffer,
   connectVoiceSources, ultimaPulizia,
@@ -401,12 +402,14 @@ export default function FrequenzePage() {
   const [stanza, setStanza] = useState('asciutta');
   const hasSpace = stanza !== 'asciutta'
     || layers.some((l) => l.space?.preset && l.space.preset !== 'fermo');
+  // CI-F1 — la guida del respiro e' v5 (il server ridecide comunque)
+  const hasGuida = layers.some((l) => l.kind === 'guida');
   const score = useMemo(() => ({
-    score_version: hasSpace ? 4 : hasWaveLayers ? 3 : hasVoiceLayers ? 2 : 1, duration_sec: duration,
+    score_version: hasGuida ? 5 : hasSpace ? 4 : hasWaveLayers ? 3 : hasVoiceLayers ? 2 : 1, duration_sec: duration,
     fade_in_sec: fadeIn, fade_out_sec: fadeOut, layers, phases,
     ...(hasVoiceLayers ? { voice_duck: voiceDuck } : {}),
     ...(stanza !== 'asciutta' ? { stanza } : {}),
-  }), [duration, fadeIn, fadeOut, layers, phases, hasVoiceLayers, hasWaveLayers, voiceDuck, stanza, hasSpace]);
+  }), [duration, fadeIn, fadeOut, layers, phases, hasVoiceLayers, hasWaveLayers, voiceDuck, stanza, hasSpace, hasGuida]);
 
   // per l'API: via i campi privati di lavoro (_laneEl e' un nodo DOM —
   // serializzarlo manderebbe in circolo JSON.stringify)
@@ -534,6 +537,38 @@ export default function FrequenzePage() {
       _dur: asset.duration_sec || 0,
     }]);
     setStatus(`«${asset.title}» aggiunta alla sessione, vai a «Crea»`);
+  };
+
+  /* CI-F1 — LA GUIDA DEL RESPIRO entra dalla libreria come una base,
+     ma e' uno strato suo: il clip del ciclo si RIPETE ogni `ciclo_sec`
+     (il tempo della registrazione), le parole di svolta si cercano da
+     sole fra i clip del founder. Parte dal punto in cui stai
+     ascoltando; la fine e' calcolata dalla partitura. */
+  const parolaId = (tipo) => (sounds.find((s) => s.guida === tipo) || {}).id;
+  const addGuidaToSession = (asset, schema = 'continuo') => {
+    const sch = GUIDA_SCHEMI[schema] || GUIDA_SCHEMI.continuo;
+    const base = { respiri: 20, round: sch.round, vuoto_sec: sch.vuoto_sec,
+                   pieno_sec: sch.pieno_sec, recupero_sec: sch.recupero_sec, campana: true };
+    const start = playing ? Math.max(0, Math.min(elapsed, duration - 1)) : 0;
+    const tetto = durataAuto ? DURATA_MAX_SEC : duration;
+    const end = Math.min(tetto, start + durataGuida(base, asset.ciclo_sec || 8));
+    const parole = {};
+    ['inspira', 'espira'].forEach((k) => { const id = parolaId(k); if (id) parole[k] = id; });
+    setLayers((ls) => [...ls, {
+      id: ++_uid, kind: 'guida', asset_id: asset.id, name: asset.title,
+      start, end, gain: 0.9, mute: false, ...base,
+      ...(Object.keys(parole).length ? { parole } : {}),
+      _ciclo: asset.ciclo_sec || 8,
+    }]);
+    setStatus(`«${asset.title}» sulla linea del tempo: ${riassuntoGuida(base, asset.ciclo_sec || 8)}`);
+  };
+  /* i numeri della guida cambiano la sua durata: la fine segue */
+  const patchGuida = (l, patch) => {
+    const next = { ...l, ...patch };
+    const ciclo = l._ciclo || soundsById[l.asset_id]?.ciclo_sec || 8;
+    const tetto = durataAuto ? DURATA_MAX_SEC : duration;
+    const end = Math.min(tetto, l.start + durataGuida(next, ciclo));
+    patchLayer(l.id, { ...patch, end });
   };
 
   const uploadSound = async (file) => {
@@ -855,6 +890,12 @@ export default function FrequenzePage() {
       vLayers = await resolveVoiceLayers(ctx, score, voiceById);
       if (playTokenRef.current !== token) { setPreparing(false); return; }
     }
+    let gLayers = [];
+    if (hasGuida) {
+      setStatus('Carico la guida del respiro…');
+      gLayers = await resolveGuidaLayers(ctx, score, soundsById);
+      if (playTokenRef.current !== token) { setPreparing(false); return; }
+    }
     // VC2 — la scena beve dal mix intero (voce compresa: tutto passa
     // dal nodo di sessione). L'analizzatore e' trasparente al suono.
     if (!lettoreRef.current) {
@@ -871,7 +912,7 @@ export default function FrequenzePage() {
          cio' che sentira' chi ascolta — dissolvenze comprese. Coi
          default nuovi (5s, non 10x12 moltiplicati) il play non sembra
          piu' rotto, e l'uniformita' vale piu' della partenza secca. */
-      { fromT, audioLayers, voiceLayers: vLayers, voiceDuck,
+      { fromT, audioLayers, voiceLayers: vLayers, voiceDuck, guidaLayers: gLayers,
         sbocco: ponte.nodo,
         uscita: lettoreRef.current.analyser });
     setPreparing(false);
@@ -1247,17 +1288,21 @@ export default function FrequenzePage() {
         ? await resolveAudioLayers(ctx, score, soundsById) : [];
       const vLayers = hasVoiceLayers
         ? await resolveVoiceLayers(ctx, score, voiceById) : [];
+      const gLayers = hasGuida
+        ? await resolveGuidaLayers(ctx, score, soundsById) : [];
       let blob;
       if (score.duration_sec > CONTINUO_MIN * 60) {
         /* CI-F4 — oltre i 30 minuti il PCM intero non sta in memoria
            (90 min = ~950 MB): si renderizza e si codifica a blocchi */
         blob = await renderMp3Streaming(score, {
           sampleRate: 44100, audioLayers: aLayers, voiceLayers: vLayers, voiceDuck,
+          guidaLayers: gLayers,
           onProgress: (pr) => setEsportando({ pct: pr, fase: 'Renderizzo e comprimo' }),
         }, EXPORT_KBPS);
       } else {
         const pcm = await renderPcm(score, {
           sampleRate: 44100, audioLayers: aLayers, voiceLayers: vLayers, voiceDuck,
+          guidaLayers: gLayers,
           onProgress: (pr) => setEsportando({ pct: pr, fase: 'Renderizzo' }),
         });
         blob = await mp3Blob(pcm, 44100,
@@ -1292,19 +1337,21 @@ export default function FrequenzePage() {
         ? await resolveAudioLayers(ctx, ricetta, soundsById) : [];
       const vLayers = strati.some((l) => l.kind === 'voice')
         ? await resolveVoiceLayers(ctx, ricetta, voiceById) : [];
+      const gLayers = strati.some((l) => l.kind === 'guida')
+        ? await resolveGuidaLayers(ctx, ricetta, soundsById) : [];
       let blob;
       if ((ricetta.duration_sec || 0) > CONTINUO_MIN * 60) {
         /* CI-F4 — master lungo: render e codifica a blocchi, mai il
            PCM intero in memoria */
         blob = await renderMp3Streaming(ricetta, {
           sampleRate: 44100, audioLayers: aLayers, voiceLayers: vLayers,
-          voiceDuck: !!ricetta.voice_duck,
+          voiceDuck: !!ricetta.voice_duck, guidaLayers: gLayers,
           onProgress: (pr) => setStatus(`Master: renderizzo e comprimo… ${Math.round(pr * 100)}%`),
         }, 192);
       } else {
         const pcm = await renderPcm(ricetta, {
           sampleRate: 44100, audioLayers: aLayers, voiceLayers: vLayers,
-          voiceDuck: !!ricetta.voice_duck,
+          voiceDuck: !!ricetta.voice_duck, guidaLayers: gLayers,
           onProgress: (pr) => setStatus(`Master: renderizzo… ${Math.round(pr * 100)}%`),
         });
         blob = await mp3Blob(pcm, 44100,
@@ -1642,6 +1689,10 @@ export default function FrequenzePage() {
       return `🎙 ${l.name} · ${(VOICE_PRESETS[l.fx] || VOICE_PRESETS.natural).label}`;
     }
     if (l.kind === 'audio') return `♫ ${l.name}`;
+    if (l.kind === 'guida') {
+      const g = normalizzaGuida(l);
+      return `🫁 ${l.name} · ${g.respiri} respiri${g.round > 1 ? ` × ${g.round} round` : ''}`;
+    }
     if (l.method === 'tone') return `${l.name} · ${l.carrier} Hz`;
     const f = l.f0 === l.f1 ? `${l.f0} Hz` : `${l.f0}→${l.f1} Hz`;
     return `${l.name} · ${METHOD_LABELS[l.method]} · ${f}`;
@@ -1777,6 +1828,49 @@ export default function FrequenzePage() {
                 + (voiceById[l.asset_id]?.trim_end || 0)) > 0 ? ' · tagliata' : ''}
             </span>
           </div>
+        ) : l.kind === 'guida' ? (
+          /* CI-F1 — la guida del respiro: schema, respiri, round, le tre
+             pause e la campana. Ogni numero ricalcola la fine. */
+          <div className="ctrls r3" data-testid={`fq-guida-${l.id}`}>
+            <span className="lbl" title="Respiro continuo, o a round con le ritenzioni (come una sessione di breathwork)">schema</span>
+            <select className="minisel" data-testid={`fq-guida-schema-${l.id}`}
+              value={(l.vuoto_sec || l.pieno_sec || l.recupero_sec || (l.round || 1) > 1) ? 'round' : 'continuo'}
+              title={GUIDA_SCHEMI[(l.vuoto_sec || l.pieno_sec || l.recupero_sec || (l.round || 1) > 1) ? 'round' : 'continuo'].hint}
+              onChange={(e) => {
+                const sch = GUIDA_SCHEMI[e.target.value] || GUIDA_SCHEMI.continuo;
+                patchGuida(l, { round: sch.round, vuoto_sec: sch.vuoto_sec,
+                                pieno_sec: sch.pieno_sec, recupero_sec: sch.recupero_sec });
+              }}>
+              {Object.entries(GUIDA_SCHEMI).map(([k, s]) => (
+                <option key={k} value={k}>{s.label}</option>
+              ))}
+            </select>
+            <span className="lbl" title="Quanti cicli di respiro per round">respiri</span>
+            <input className="mini num" type="number" min="1" max="200" value={l.respiri ?? 20}
+              data-testid={`fq-guida-respiri-${l.id}`}
+              onChange={(e) => patchGuida(l, { respiri: +e.target.value || 1 })} />
+            <span className="lbl" title="Quante volte si ripete tutto">round</span>
+            <input className="mini num" type="number" min="1" max="10" value={l.round ?? 1}
+              onChange={(e) => patchGuida(l, { round: +e.target.value || 1 })} />
+            <span className="lbl" title="Secondi di ritenzione a polmoni vuoti (0 = nessuna)">vuoto</span>
+            <input className="mini num" type="number" min="0" max="300" value={l.vuoto_sec ?? 0}
+              onChange={(e) => patchGuida(l, { vuoto_sec: +e.target.value || 0 })} />
+            <span className="lbl" title="Secondi di ritenzione a polmoni pieni (0 = nessuna)">pieno</span>
+            <input className="mini num" type="number" min="0" max="120" value={l.pieno_sec ?? 0}
+              onChange={(e) => patchGuida(l, { pieno_sec: +e.target.value || 0 })} />
+            <span className="lbl" title="Secondi di respiro libero prima del round successivo">recupero</span>
+            <input className="mini num" type="number" min="0" max="180" value={l.recupero_sec ?? 0}
+              onChange={(e) => patchGuida(l, { recupero_sec: +e.target.value || 0 })} />
+            <button type="button" className={`chip${l.campana !== false ? ' on' : ''}`}
+              title="Una campana segna ogni svolta (ritenzioni e recupero)"
+              onClick={() => patchLayer(l.id, { campana: l.campana === false })}>campana</button>
+            <button type="button" className={`chip m${l.mute ? ' on' : ''}`}
+              onClick={() => patchLayer(l.id, { mute: !l.mute })}>muto</button>
+            <span className="guida-riassunto" data-testid={`fq-guida-riassunto-${l.id}`}>
+              {riassuntoGuida(l, l._ciclo || soundsById[l.asset_id]?.ciclo_sec || 8)}
+              {!(l.parole && l.parole.inspira) && ' · senza parole di svolta (clip «inspira» non in libreria)'}
+            </span>
+          </div>
         ) : l.kind === 'audio' ? (
           <div className="ctrls r3">
             <button type="button" className={`chip${l.loop !== false ? ' on' : ''}`}
@@ -1908,7 +2002,7 @@ export default function FrequenzePage() {
             <i key={i} style={{ left: `${((i + 1) * gstep / duration) * 100}%` }} />
           ))}
         </div>
-        <div className={l.kind === 'voice' ? 'bar voice' : 'bar'}
+        <div className={l.kind === 'voice' ? 'bar voice' : l.kind === 'guida' ? 'bar guida' : 'bar'}
           style={{ left: `${(l.start / duration) * 100}%`, width: `${((l.end - l.start) / duration) * 100}%` }}
           title={`${fmt(l.start)} → ${fmt(l.end)}`}
           onPointerDown={(e) => {
@@ -2208,7 +2302,15 @@ export default function FrequenzePage() {
                             <div key={s.id} className={`card${previewingId === s.id ? ' playing' : ''}`}>
                               <div className="head"><h3>{s.title}</h3></div>
                               <div className="hz">{fmt(s.duration_sec || 0)} · {(s.size_bytes / 1048576).toFixed(1)} MB</div>
-                              <div className="listen">🔊 Base sonora · va in loop sotto le frequenze</div>
+                              {/* CI-F1 — i clip del respiro non sono basi in loop: il
+                                  ciclo diventa una GUIDA, le parole servono alle svolte */}
+                              <div className="listen">
+                                {s.guida === 'ciclo'
+                                  ? `🫁 Guida del respiro · si ripete ogni ${String((s.ciclo_sec || 0).toFixed(1)).replace('.', ',')} s`
+                                  : s.guida
+                                    ? '🫁 Parola di svolta · la usa la guida del respiro'
+                                    : '🔊 Base sonora · va in loop sotto le frequenze'}
+                              </div>
                               {previewingId === s.id && (
                                 <SeekBar cur={previewT}
                                   tot={s.duration_sec || previewAudioRef.current?.duration || 0}
@@ -2229,8 +2331,14 @@ export default function FrequenzePage() {
                                   {soundLoadingId === s.id ? <span className="prep">◌</span>
                                     : previewingId === s.id ? 'Ferma' : 'Ascolta'}
                                 </button>
-                                <button type="button" className="add"
-                                  onClick={() => addSoundToSession(s)}>+ sessione</button>
+                                {s.guida === 'ciclo' ? (
+                                  <button type="button" className="add" data-testid={`fq-guida-add-${s.id}`}
+                                    title="Aggiunge la guida del respiro alla sessione: il ciclo si ripete, poi decidi respiri e round"
+                                    onClick={() => addGuidaToSession(s)}>+ guida</button>
+                                ) : !s.guida && (
+                                  <button type="button" className="add"
+                                    onClick={() => addSoundToSession(s)}>+ sessione</button>
+                                )}
                               </div>
                             </div>
                           ))}

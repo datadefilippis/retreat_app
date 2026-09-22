@@ -106,6 +106,33 @@ def clean_tags(raw):
     return puliti[:TAGS_MAX] or None
 
 
+# ── CI-F1 (22/9/2026) — LA GUIDA DEL RESPIRO ───────────────────────────
+# I clip registrati dal founder (categoria `respiro`) portano due campi:
+# `guida` dice COSA sono per il motore — `ciclo` (un respiro intero da
+# ripetere: «inspira 1 2 3 4, espira 1 2 3 4»), `inspira`/`espira` (la
+# parola sola, per le svolte delle ritenzioni), `conta` (i numeri una
+# volta), `soffio_in`/`soffio_out` (il respiro vero, senza parole);
+# `ciclo_sec` vale solo per i `ciclo`: ogni quanti secondi ricomincia.
+# Il tempo e' quello della registrazione, non un numero da inventare:
+# lo misura prepara_respiro.py sulla forma d'onda. engine/guida.js e'
+# il gemello (guardia di parita').
+GUIDA_TIPI = ("ciclo", "inspira", "espira", "conta", "soffio_in", "soffio_out")
+CICLO_MIN, CICLO_MAX = 2.0, 60.0
+
+
+def clean_guida(raw):
+    v = (raw or "").strip().lower() if isinstance(raw, str) else ""
+    return v if v in GUIDA_TIPI else None
+
+
+def clean_ciclo_sec(raw):
+    try:
+        v = round(float(raw), 2)
+    except (TypeError, ValueError):
+        return None
+    return v if CICLO_MIN <= v <= CICLO_MAX else None
+
+
 def safe_extension(filename: str):
     """Estensione consentita del file, o None."""
     ext = (filename or "").rsplit(".", 1)[-1].lower()

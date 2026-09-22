@@ -18,6 +18,7 @@
 import { buildVoiceChain, connectVoiceSources, duckEnvelope, makeImpulse } from './voicefx';
 // CI-F2 — lo spazio (panner HRTF) e la Stanza: unica verita' col master
 import { creaSpazio, creaStanza, mandata, spaceValido, stanzaValida, MAX_PANNER_VIVI } from './spazio';
+import { montaGuida } from './guida';
 
 const TAU = Math.PI * 2;
 const sm = (x) => (x <= 0 ? 0 : x >= 1 ? 1 : x * x * (3 - 2 * x));
@@ -722,7 +723,7 @@ const rampCurve = (param, t0, span, fn, steps = 160, now = 0) => {
  */
 export function startPreview(ctx, score,
   { fromT = 0, audioLayers = [], voiceLayers = [], voiceDuck = false,
-    uscita = null, sbocco = null } = {}) {
+    guidaLayers = [], uscita = null, sbocco = null } = {}) {
   const d = score.duration_sec;
   const off = Math.max(0, Math.min(fromT || 0, d - 1));
   const t0 = ctx.currentTime + 0.15 - off;
@@ -863,6 +864,19 @@ export function startPreview(ctx, score,
       src.stop(at(s0 + playLen));
       nodes.push(src);
     });
+  });
+
+  /* CI-F1 — LA GUIDA DEL RESPIRO: i clip del founder montati sulla
+     partitura (engine/guida.js, la stessa del master). Davanti, ferma,
+     fuori dal duck e dallo spazio: e' la voce che guida. */
+  guidaLayers.filter((g) => !g.mute && g.gain > 0 && g.buffer).forEach((g) => {
+    const span = Math.max(1, Math.min(g.end, d) - g.start), s0 = t0 + g.start;
+    if (s0 + span <= ctx.currentTime) return;
+    const uG = ctx.createGain(); uG.gain.value = 1; uG.connect(sess);
+    liveG[g.id] = { node: uG, base: g.gain };
+    const gg = ctx.createGain(); gg.gain.value = g.gain; gg.connect(uG);
+    const uA = Math.max(0, ctx.currentTime - s0);
+    nodes.push(...montaGuida(ctx, gg, g, { da: uA, a: span, quando: (u) => at(s0 + u) }));
   });
 
   (score.layers || []).filter((l) => (l.kind || 'neuro') === 'neuro' && !l.mute && l.gain > 0).forEach((l) => {
