@@ -83,7 +83,13 @@ INTENTS = ("dormire", "meditare", "rilassare", "concentrare",
            "elaborare", "energizzare")
 
 # limiti fisici/di buon senso: gli stessi del prototipo, arrotondati.
-DURATION_MIN, DURATION_MAX = 60, 1800          # 1 min .. 30 min
+# CI-F4 (22/9/2026, founder): il tetto sale da 30 a 90 minuti — servono
+# meditazioni lunghe e sessioni di breathwork. Il vincolo che aveva
+# fissato i 30 (l'ascolto a schermo bloccato prima della pubblicazione,
+# un WAV in memoria) resta SOLO su quella funzione (CONTINUO_MAX_SEC nel
+# client); la traccia pubblicata e' un file in streaming e non ha
+# limiti; il master oltre i 30 si codifica a blocchi (render.js).
+DURATION_MIN, DURATION_MAX = 60, 5400          # 1 min .. 90 min
 # 30 e non due ore (decisione founder 21/8): l'ascolto a schermo
 # bloccato — la funzione piu' preziosa su telefono — regge fino a 30
 # minuti (CONTINUO_MAX_SEC). Col tetto, NESSUNA traccia pubblicata

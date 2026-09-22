@@ -183,7 +183,7 @@ def compila(steps) -> dict:
                                 f"il minimo è {_num_fmt(DURATION_MIN)}s (un minuto)")
     if durata > DURATION_MAX:
         raise ErrorePasso(None, f"il protocollo dura {_num_fmt(durata)}s: "
-                                f"il massimo è {_num_fmt(DURATION_MAX)}s (trenta minuti)")
+                                f"il massimo è {_num_fmt(DURATION_MAX)}s (novanta minuti)")
 
     return {
         "score_version": 1,

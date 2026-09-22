@@ -734,7 +734,7 @@ class TestScenaDellAutoreVc:
             "il default deve essere AUTO (null), non un numero nascosto"
         assert 'data-testid="fq-durata"' in self.CREA          # la pill
         assert 'data-testid="fq-foglio-durata"' in self.CREA   # il foglio
-        assert "Il massimo è 30 minuti" in self.CREA           # il tetto spiegato
+        assert "Il massimo è ${DURATA_MAX_MIN} minuti" in self.CREA   # il tetto spiegato (CI-F4: 90)
         assert "onDurationChange" not in self.CREA, \
             "e' tornato il commit per-cifra che apriva il popup sulla tastiera"
         # il protocollo porta la SUA durata (non il pavimento dell'AUTO)

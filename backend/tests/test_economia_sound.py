@@ -323,21 +323,25 @@ class TestFinestraETetto30:
         blocco = ASSETS.split("export function memoriaStimataMB")[1][:800]
         assert "l.end" in blocco and "l.start" in blocco
 
-    def test_tetto_trenta_nel_modello(self):
+    def test_tetto_nel_modello(self):
+        """CI-F4 (22/9/2026, founder): il tetto della sessione sale a
+        90 minuti (meditazioni lunghe, breathwork). I 30 restano SOLO
+        sull'ascolto a schermo bloccato (CONTINUO_MAX_SEC)."""
         from models.frequency_track import DURATION_MAX
-        assert DURATION_MAX == 1800
+        assert DURATION_MAX == 5400
 
-    def test_tetto_trenta_in_crea(self):
-        """Il tetto e' 1800s ovunque si calcoli la durata. La formula
-        e' cambiata col ciclo DU (durataFissaMin: null = AUTO, la
-        durata segue le tracce) — la guardia protegge il TETTO, non
+    def test_tetto_in_crea(self):
+        """Il tetto e' DURATA_MAX_SEC ovunque si calcoli la durata. La
+        formula e' cambiata col ciclo DU (durataFissaMin: null = AUTO,
+        la durata segue le tracce) — la guardia protegge il TETTO, non
         una sintassi particolare."""
         pagina = (FQ_DIR / "FrequenzePage.js").read_text()
-        assert 'max="30"' in pagina
-        assert "Math.min(1800, Math.max(60," in pagina
+        assert "const DURATA_MAX_MIN = 90;" in pagina
+        assert 'max="90"' in pagina
+        assert "Math.min(DURATA_MAX_SEC, Math.max(60," in pagina
         # e nessuno puo' scrivere un numero piu' alto a mano: il
         # campo si riporta dentro il tetto e lo dice
-        assert "MAX_MIN" in pagina or "> 30" in pagina
+        assert "mins > DURATA_MAX_MIN" in pagina
 
     def test_la_libreria_e_standard_a_trenta(self):
         """Guardia VIVA. 21/8 sera: il founder ritratta la tolleranza —

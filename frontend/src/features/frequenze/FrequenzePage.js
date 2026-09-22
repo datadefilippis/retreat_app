@@ -33,7 +33,7 @@ import {
   connectVoiceSources, ultimaPulizia,
 } from './engine/voicefx';
 import { avvisoCuffie, avvisoCuffieScore } from './engine/altoparlante';
-import { renderPcm, mp3Blob } from './engine/render';
+import { renderPcm, mp3Blob, renderMp3Streaming } from './engine/render';
 import { schermoAcceso, schermoLibero, sorvegliaContesto } from './engine/veglia';
 import { preparaAnello, continuoSupportato } from './engine/continuo';
 import { creaPonte } from './engine/ponte';
@@ -64,6 +64,16 @@ const fmt = (s) => {
   return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
 };
 let _uid = 5000;
+
+/* CI-F4 (22/9, founder) — il tetto della sessione sale a 90 minuti:
+   meditazioni lunghe e breathwork. Restano a 30 SOLO l'ascolto a
+   schermo bloccato prima della pubblicazione (un WAV in memoria) e il
+   render «in un colpo»: oltre, l'export e il master si codificano a
+   blocchi (renderMp3Streaming), e la traccia pubblicata e' un file
+   in streaming senza limiti. Gemello di DURATION_MAX nel backend. */
+const DURATA_MAX_MIN = 90;
+const DURATA_MAX_SEC = DURATA_MAX_MIN * 60;
+const CONTINUO_MIN = 30;      // = CONTINUO_MAX_SEC / 60
 
 /* L'EXPORT PESA COME IL MASTER (192 kbps): la meditazione che scarichi
    e quella che pubblichi sono lo stesso file, stesso peso. */
@@ -360,7 +370,7 @@ export default function FrequenzePage() {
   /* la fine dell'ultima traccia: in AUTO e' LEI la durata */
   const maxEndSec = layers.length
     ? Math.max(...layers.map((l) => l.end || 0)) : 0;
-  const duration = Math.min(1800, Math.max(60,
+  const duration = Math.min(DURATA_MAX_SEC, Math.max(60,
     durataFissaMin != null ? durataFissaMin * 60 : (maxEndSec || 60)));
   const durataAuto = durataFissaMin == null;
 
@@ -1219,12 +1229,22 @@ export default function FrequenzePage() {
         ? await resolveAudioLayers(ctx, score, soundsById) : [];
       const vLayers = hasVoiceLayers
         ? await resolveVoiceLayers(ctx, score, voiceById) : [];
-      const pcm = await renderPcm(score, {
-        sampleRate: 44100, audioLayers: aLayers, voiceLayers: vLayers, voiceDuck,
-        onProgress: (pr) => setEsportando({ pct: pr, fase: 'Renderizzo' }),
-      });
-      const blob = await mp3Blob(pcm, 44100,
-        (pr) => setEsportando({ pct: pr, fase: 'Comprimo' }), EXPORT_KBPS);
+      let blob;
+      if (score.duration_sec > CONTINUO_MIN * 60) {
+        /* CI-F4 — oltre i 30 minuti il PCM intero non sta in memoria
+           (90 min = ~950 MB): si renderizza e si codifica a blocchi */
+        blob = await renderMp3Streaming(score, {
+          sampleRate: 44100, audioLayers: aLayers, voiceLayers: vLayers, voiceDuck,
+          onProgress: (pr) => setEsportando({ pct: pr, fase: 'Renderizzo e comprimo' }),
+        }, EXPORT_KBPS);
+      } else {
+        const pcm = await renderPcm(score, {
+          sampleRate: 44100, audioLayers: aLayers, voiceLayers: vLayers, voiceDuck,
+          onProgress: (pr) => setEsportando({ pct: pr, fase: 'Renderizzo' }),
+        });
+        blob = await mp3Blob(pcm, 44100,
+          (pr) => setEsportando({ pct: pr, fase: 'Comprimo' }), EXPORT_KBPS);
+      }
       const nome = nomeExport();
       scaricaBlob(blob, nome);
       setStatus(`Scaricato «${nome}» · ${(blob.size / 1048576).toFixed(0)} MB`);
@@ -1254,13 +1274,24 @@ export default function FrequenzePage() {
         ? await resolveAudioLayers(ctx, ricetta, soundsById) : [];
       const vLayers = strati.some((l) => l.kind === 'voice')
         ? await resolveVoiceLayers(ctx, ricetta, voiceById) : [];
-      const pcm = await renderPcm(ricetta, {
-        sampleRate: 44100, audioLayers: aLayers, voiceLayers: vLayers,
-        voiceDuck: !!ricetta.voice_duck,
-        onProgress: (pr) => setStatus(`Master: renderizzo… ${Math.round(pr * 100)}%`),
-      });
-      const blob = await mp3Blob(pcm, 44100,
-        (pr) => setStatus(`Master: comprimo… ${Math.round(pr * 100)}%`), 192);
+      let blob;
+      if ((ricetta.duration_sec || 0) > CONTINUO_MIN * 60) {
+        /* CI-F4 — master lungo: render e codifica a blocchi, mai il
+           PCM intero in memoria */
+        blob = await renderMp3Streaming(ricetta, {
+          sampleRate: 44100, audioLayers: aLayers, voiceLayers: vLayers,
+          voiceDuck: !!ricetta.voice_duck,
+          onProgress: (pr) => setStatus(`Master: renderizzo e comprimo… ${Math.round(pr * 100)}%`),
+        }, 192);
+      } else {
+        const pcm = await renderPcm(ricetta, {
+          sampleRate: 44100, audioLayers: aLayers, voiceLayers: vLayers,
+          voiceDuck: !!ricetta.voice_duck,
+          onProgress: (pr) => setStatus(`Master: renderizzo… ${Math.round(pr * 100)}%`),
+        });
+        blob = await mp3Blob(pcm, 44100,
+          (pr) => setStatus(`Master: comprimo… ${Math.round(pr * 100)}%`), 192);
+      }
       setStatus(`Master: carico ${(blob.size / 1048576).toFixed(0)} MB…`);
       await frequenciesAPI.uploadMaster(id, blob);
       setStatus('Master pronto: da ora chi ascolta riceve il file, leggero.');
@@ -1321,9 +1352,11 @@ export default function FrequenzePage() {
      prima si poteva vedere 35 a schermo mentre il motore suonava 30. */
   const fissaDurata = (mins) => {
     if (!Number.isFinite(mins) || mins < 1) return;
-    if (mins > 30) {
-      setStatus('Il massimo è 30 minuti: è il limite dell\'ascolto a schermo bloccato, così ogni sessione pubblicata resta ascoltabile ovunque');
-      mins = 30;
+    if (mins > DURATA_MAX_MIN) {
+      setStatus(`Il massimo è ${DURATA_MAX_MIN} minuti: oltre, il file pubblicato pesa troppo per chi ascolta`);
+      mins = DURATA_MAX_MIN;
+    } else if (mins > CONTINUO_MIN) {
+      setStatus(`Oltre ${CONTINUO_MIN} minuti l'ascolto a schermo bloccato prima della pubblicazione non è disponibile: pubblicata, la traccia non ha limiti`);
     }
     setFoglioDurata(false);
     const newD = Math.max(60, mins * 60), oldD = duration;
@@ -1661,10 +1694,10 @@ export default function FrequenzePage() {
               /* DU3 — il tetto PARLA, non taglia in silenzio. In AUTO
                  la fine della traccia PUO' allungare la sessione (fino
                  a 30); in FISSA si ferma alla durata scelta. */
-              const tetto = durataAuto ? 1800 : duration;
+              const tetto = durataAuto ? DURATA_MAX_SEC : duration;
               const ok = Math.max(l.start + 0.5, Math.min(v, tetto));
               if (v > tetto) setStatus(durataAuto
-                ? 'Il massimo è 30 minuti: è il limite dell\'ascolto a schermo bloccato'
+                ? `Il massimo è ${DURATA_MAX_MIN} minuti: oltre, il file pubblicato pesa troppo per chi ascolta`
                 : `La sessione è fissata a ${fmt(duration)}: allungala dalla pill della durata, o riporta la traccia dentro`);
               else if (ok !== v) setStatus(
                 `«${l.name || 'il livello'}» entra a ${fmt(l.start)}: l'uscita deve venire dopo`);
@@ -1674,7 +1707,7 @@ export default function FrequenzePage() {
             <button type="button" className="chip mini-t"
               title="Porta l'uscita al punto in cui stai ascoltando"
               onClick={() => patchLayer(l.id, {
-                end: Math.max(l.start + 0.5, Math.min(elapsed, durataAuto ? 1800 : duration)) })}>fin qui ⟶</button>
+                end: Math.max(l.start + 0.5, Math.min(elapsed, durataAuto ? DURATA_MAX_SEC : duration)) })}>fin qui ⟶</button>
           )}
           <span className="lbl dur-tot">({fmt(l.end - l.start)})</span>
         </div>
@@ -2470,12 +2503,12 @@ export default function FrequenzePage() {
               {foglioDurata && (
                 <div className="foglio-durata" data-testid="fq-foglio-durata">
                   <div className="fd-riga">
-                    {[5, 10, 15, 20, 30].map((m) => (
+                    {[5, 10, 15, 20, 30, 45, 60, 90].map((m) => (
                       <button key={m} type="button"
                         className={durataFissaMin === m ? 'su' : ''}
                         onClick={() => fissaDurata(m)}>{m}′</button>
                     ))}
-                    <input type="number" min="1" max="30" step="1"
+                    <input type="number" min="1" max="90" step="1"
                       placeholder="min" data-testid="fq-durata-min"
                       defaultValue={durataAuto ? '' : durataFissaMin}
                       onKeyDown={(e) => { if (e.key === 'Enter') fissaDurata(+e.currentTarget.value); }}
@@ -2485,9 +2518,10 @@ export default function FrequenzePage() {
                     data-testid="fq-durata-auto" onClick={tornaDurataAuto}>
                     Automatica, segue le tracce
                   </button>
-                  <p className="fd-nota">Massimo 30 minuti: è il limite
-                  dell'ascolto a schermo bloccato, così ogni sessione
-                  pubblicata resta ascoltabile ovunque.</p>
+                  <p className="fd-nota">Fino a 90 minuti. Oltre i 30,
+                  l'ascolto a schermo bloccato prima della pubblicazione
+                  non è disponibile: pubblicata, la traccia è un file e
+                  non ha limiti.</p>
                 </div>
               )}
               {/* DU, tutto il resto configurabile sta dietro UN tocco */}

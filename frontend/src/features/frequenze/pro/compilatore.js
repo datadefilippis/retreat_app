@@ -46,7 +46,7 @@
 /*, gemelli di frequency_track.py (guardia di parita' nel backend), */
 export const PASSI_MAX = 24;              // LAYERS_MAX
 export const DURATA_MIN = 60;             // DURATION_MIN
-export const DURATA_MAX = 1800;           // DURATION_MAX
+export const DURATA_MAX = 5400;           // DURATION_MAX (CI-F4: 90 minuti)
 export const PORTANTE_MIN = 20;           // CARRIER_MIN
 export const PORTANTE_MAX = 2000;         // CARRIER_MAX
 export const BATTITO_MIN = 0.05;          // BEAT_MIN
@@ -161,7 +161,7 @@ export function compila(steps) {
   }
   if (durata > DURATA_MAX) {
     throw new ErrorePasso(null,
-      `il protocollo dura ${durata}s: il massimo è ${DURATA_MAX}s (trenta minuti)`);
+      `il protocollo dura ${durata}s: il massimo è ${DURATA_MAX}s (novanta minuti)`);
   }
 
   return {

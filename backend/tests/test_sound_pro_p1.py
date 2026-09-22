@@ -193,7 +193,7 @@ class TestRifiuti:
         ([{"metodo": "tone", "hz": 220, "durata_sec": 60,
            "pausa_dopo_sec": -5, "gain": 0.3}], "pausa"),
         ([{"metodo": "tone", "hz": 220, "durata_sec": 30, "gain": 0.3}], "minimo è 60"),
-        ([{"metodo": "tone", "hz": 220, "durata_sec": 1900, "gain": 0.3}], "massimo è 1800"),
+        ([{"metodo": "tone", "hz": 220, "durata_sec": 5500, "gain": 0.3}], "massimo è 5400"),
     ])
     def test_rifiutato_con_messaggio(self, steps, pezzo):
         score, err = _esegui(steps)

@@ -61,7 +61,10 @@ async function renderWetVoice(l, d, sr) {
  */
 export async function renderPcm(score, { sampleRate = 44100, audioLayers = [],
                                          voiceLayers = [], voiceDuck = false,
-                                         onProgress } = {}) {
+                                         onProgress, sink = null } = {}) {
+  /* CI-F4 — `sink(Int16Array)`: se c'e', ogni blocco viene consegnato
+     appena pronto e il PCM intero NON si alloca (90 minuti sarebbero
+     ~950 MB). Senza sink, il comportamento di sempre. */
   const sr = sampleRate, d = score.duration_sec, dt = 1 / sr;
   const total = Math.floor(d * sr);
   const audio = audioLayers.filter((l) => !l.mute && l.gain > 0 && l.buffer);
@@ -78,7 +81,7 @@ export async function renderPcm(score, { sampleRate = 44100, audioLayers = [],
   const duckPts = denv ? voice.flatMap(
     (l) => [l.start - 1, l.start, l.end, l.end + 1]) : [];
   const fi = score.fade_in_sec || 0, fo = score.fade_out_sec || 0;
-  const pcm = new Int16Array(total * 2);
+  const pcm = sink ? null : new Int16Array(total * 2);
   const CHUNK = 20;
   const cl = (v) => (v > 32767 ? 32767 : v < -32768 ? -32768 : v);
   neuro.forEach(neuroSampleInit);
@@ -183,6 +186,8 @@ export async function renderPcm(score, { sampleRate = 44100, audioLayers = [],
       }
     }
     const base = Math.floor(cs * sr);
+    const dest = sink ? new Int16Array(frames * 2) : pcm;
+    const offsetIdx = sink ? 0 : base * 2;
     for (let n = 0; n < frames; n++) {
       const t = cs + n / sr;
       let m = 1;
@@ -193,15 +198,48 @@ export async function renderPcm(score, { sampleRate = 44100, audioLayers = [],
         const [a2, b2] = neuroSample(nl, t, dt);
         sL += a2; sR += b2;
       }
-      const idx = (base + n) * 2;
-      if (idx + 1 >= pcm.length) break;
-      pcm[idx] = cl(sL * m * 32767);
-      pcm[idx + 1] = cl(sR * m * 32767);
+      const idx = offsetIdx + n * 2;
+      if (idx + 1 >= dest.length) break;
+      dest[idx] = cl(sL * m * 32767);
+      dest[idx + 1] = cl(sR * m * 32767);
     }
+    if (sink) sink(dest);
     if (onProgress) onProgress(Math.min(1, (cs + len) / d));
     await new Promise((r) => setTimeout(r, 0));
   }
-  return pcm;
+  return sink ? null : pcm;
+}
+
+/**
+ * CI-F4 — render e codifica MP3 A BLOCCHI: ogni blocco di PCM entra
+ * nell'encoder appena pronto, e si tiene in memoria solo l'MP3 (per 90
+ * minuti a 192 kbps ~125 MB, contro ~950 MB di PCM). Stessa pipeline di
+ * renderPcm + mp3Blob: stesso suono, stessi numeri.
+ */
+export async function renderMp3Streaming(score, opts = {}, kbps = 192) {
+  const sr = opts.sampleRate || 44100;
+  const { default: lamejs } = await import('./lamejs.vendor');
+  const enc = new lamejs.Mp3Encoder(2, sr, kbps);
+  const parts = [];
+  const BLK = 1152 * 64;
+  const Lb = new Int16Array(BLK), Rb = new Int16Array(BLK);
+  const sink = (chunk) => {
+    const frames = chunk.length / 2;
+    for (let i = 0; i < frames; i += BLK) {
+      const n = Math.min(BLK, frames - i);
+      for (let j = 0; j < n; j++) {
+        Lb[j] = chunk[(i + j) * 2];
+        Rb[j] = chunk[(i + j) * 2 + 1];
+      }
+      const sub = enc.encodeBuffer(n === BLK ? Lb : Lb.subarray(0, n),
+                                   n === BLK ? Rb : Rb.subarray(0, n));
+      if (sub.length) parts.push(new Uint8Array(sub));
+    }
+  };
+  await renderPcm(score, { ...opts, sampleRate: sr, sink });
+  const end = enc.flush();
+  if (end.length) parts.push(new Uint8Array(end));
+  return new Blob(parts, { type: 'audio/mpeg' });
 }
 
 export function wavBlob(pcm, sr) {

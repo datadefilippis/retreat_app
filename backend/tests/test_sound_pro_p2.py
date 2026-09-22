@@ -432,7 +432,7 @@ class TestGemelliDeiCompilatori:
         [{"metodo": "iso", "hz": 400, "battito_hz": 90,
           "durata_sec": 90, "gain": 0.3}],
         [{"metodo": "tone", "hz": 220, "durata_sec": 30, "gain": 0.3}],
-        [{"metodo": "tone", "hz": 220, "durata_sec": 1900, "gain": 0.3}],
+        [{"metodo": "tone", "hz": 220, "durata_sec": 5500, "gain": 0.3}],
         [{"metodo": "tone", "hz": 220, "battito_hz": 7,
           "durata_sec": 90, "gain": 0.3}],
         [{"metodo": "tone", "hz": 220, "durata_sec": 90, "gain": 2}],
