@@ -118,8 +118,8 @@ def benvenuto_operatore(email: str, nome: str, verification_token: str, locale: 
             {_link_block(url)}
             <p><strong>Cosa trovi dentro, in tre passi.</strong></p>
             <ol>
-                <li><strong>La tua pagina.</strong> Una foto, due righe su di te, il primo
-                servizio con il prezzo. Dieci minuti, e sei online con un link da mettere
+                <li><strong>La tua pagina.</strong> Una foto, chi sei e come lavori, il primo
+                servizio con il prezzo. Un quarto d'ora, e sei online con un link da mettere
                 nella bio.</li>
                 <li><strong>I tuoi ritiri ed eventi.</strong> Data, luogo, posti e prezzo:
                 le persone chiedono un posto dalla tua pagina e tu confermi. Senza
@@ -282,7 +282,8 @@ def op_np5(ctx: dict) -> Tuple[str, str]:
             "<p>il tuo spazio su Aurya è aperto, ma la tua pagina non è ancora online. "
             "Per andarci servono tre cose, e ci si mette dieci minuti:</p>"
             "<ul>"
-            "<li><strong>due righe su di te</strong>, come le diresti a chi ti chiede cosa fai;</li>"
+            "<li><strong>chi sei e come lavori</strong>, come lo diresti a chi ti chiede cosa fai: "
+            "di cosa ti occupi, per chi, cosa può aspettarsi chi inizia con te;</li>"
             "<li><strong>una foto</strong>, anche dal telefono, o il link al tuo Instagram;</li>"
             "<li><strong>un servizio con il prezzo</strong>: quello che proponi più spesso.</li>"
             "</ul>"
@@ -317,7 +318,8 @@ def op_np10(ctx: dict) -> Tuple[str, str]:
             "<p>quando una pagina resta a metà, quasi sempre è per una di queste tre cose. "
             "Le diciamo perché a tutte c'è una risposta corta.</p>"
             "<p><strong>«Non so cosa scrivere.»</strong> Scrivi come parli: chi sei, cosa fai, per "
-            "chi. Due righe bastano; le lunghe le leggono in pochi.</p>"
+            "chi, come lavori, cosa può aspettarsi chi inizia con te. Non serve essere brevi: "
+            "chi apre la tua pagina vuole conoscerti.</p>"
             "<p><strong>«Non ho una foto adatta.»</strong> Va bene una foto normale, con la luce del "
             "giorno, dove si vede il tuo viso. Non serve un fotografo.</p>"
             "<p><strong>«Non so che prezzo mettere.»</strong> Metti il prezzo che chiedi già oggi "

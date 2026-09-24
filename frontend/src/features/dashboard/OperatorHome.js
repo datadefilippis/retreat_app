@@ -119,6 +119,18 @@ export default function OperatorHome() {
   // la lista recensioni le risponde 403 per ruolo. Non si chiede: niente
   // rumore nei log, nessun cambiamento per gli operatori.
   const chiediRecensioni = user?.role !== 'system_admin';
+  // P3 — il recapito: una GET a parte, solo per chi e' admin della sua org
+  const [telefonoMancante, setTelefonoMancante] = useState(false);
+  const [telefono, setTelefono] = useState('');
+  const [telefonoStato, setTelefonoStato] = useState('');
+  useEffect(() => {
+    if (!chiediRecensioni) return undefined;
+    let vivo = true;
+    api.get('/organizations/current/public-profile')
+      .then((r) => { if (vivo) setTelefonoMancante(!(r.data || {}).public_phone); })
+      .catch(() => { /* niente riga: mai un avviso su un dato che non si conosce */ });
+    return () => { vivo = false; };
+  }, [chiediRecensioni]);
 
   // DF1 — il caricamento e' una funzione riusabile: al montaggio come
   // prima, e di nuovo quando la scheda torna visibile dopo un'assenza
@@ -199,6 +211,38 @@ export default function OperatorHome() {
 
   return (
     <div className="space-y-5" data-testid="operator-home">
+    {/* P3 (24/9, founder) — chi si e' iscritto prima del telefono obbligatorio
+        non ha un recapito: una riga finche' non lo mette, qui, senza
+        cambiare pagina. Resta privato (show_contacts spento). */}
+    {telefonoMancante && (
+      <form className="rounded-2xl border border-[#376254]/30 bg-[#376254]/5 p-4 flex flex-wrap items-center gap-3"
+        data-testid="home-telefono"
+        onSubmit={async (e) => {
+          e.preventDefault();
+          if (!telefono.trim()) return;
+          setTelefonoStato('salvo');
+          try {
+            await api.patch('/organizations/current/public-profile', { public_phone: telefono.trim() });
+            setTelefonoMancante(false);
+          } catch { setTelefonoStato('errore'); }
+        }}>
+        <div className="text-sm flex-1 min-w-[220px]">
+          <p className="font-semibold text-[#2e4b3f]">
+            {t('home.telefono_titolo', { defaultValue: 'Aurya non ha un tuo recapito' })}
+          </p>
+          <p className="text-[#2e4b3f]/80 mt-0.5">
+            {t('home.telefono_corpo', { defaultValue: 'Un telefono per raggiungerti se serve. Resta privato: non compare sulla tua pagina finché non lo decidi tu.' })}
+          </p>
+          {telefonoStato === 'errore' && <p className="text-xs text-red-700 mt-1">Non sembra un numero valido: da 8 a 15 cifre.</p>}
+        </div>
+        <input type="tel" value={telefono} onChange={(e) => setTelefono(e.target.value)} inputMode="tel"
+          placeholder="+39 …" className="rounded-lg border border-gray-300 px-3 py-2 text-sm w-44" />
+        <button type="submit" className="rounded-lg bg-[#376254] text-white text-sm font-semibold px-4 py-2 disabled:opacity-60"
+          disabled={telefonoStato === 'salvo'}>
+          {t('home.telefono_salva', { defaultValue: 'Salva' })}
+        </button>
+      </form>
+    )}
     {calendarBlocked && (
       <div className="rounded-2xl border border-[#C97B5D]/50 bg-[#C97B5D]/10 p-4 flex items-start gap-3">
         <span aria-hidden>⚠️</span>

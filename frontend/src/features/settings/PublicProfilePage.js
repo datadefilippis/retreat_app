@@ -28,11 +28,25 @@ import OnboardingStrip from '../onboarding/OnboardingStrip';
 import LinkPageCard from './LinkPageCard';
 // DI — tassonomia discipline (specchio di models/disciplines.py)
 import { DISCIPLINE_FAMILIES, DISCIPLINES_MAX, disciplineLabel } from '../../lib/disciplines';
+// P1 — il nome pubblico si compone come sul server (specchio di services/nome_pubblico.py)
+import { nomePubblico, NOME_PERSONA_MAX } from '../../lib/nomePubblico';
 
 const FIELDS = ['bio', 'city', 'region', 'cover_url', 'instagram', 'website', 'facebook', 'public_email', 'public_phone',
   // PR1 — carta d'identità
-  'tagline', 'portrait_url', 'founded_year'];
+  'tagline', 'portrait_url', 'founded_year',
+  // P1 (24/9/2026) — la persona dietro il profilo: «Nome · Marchio»
+  'nome_persona'];
 const PROFILE_LANGS = ['it', 'en', 'de', 'fr', 'es', 'pt'];
+// P2 (24/9/2026) — la bio: tetto e soglie (gemelli del backend: whitelist 1000,
+// check di completezza «bio_completa» a 300)
+const BIO_MAX = 1000;
+const BIO_BUONA = 300;
+const BIO_COMPLETA = 600;
+const BIO_GUIDA_DEFAULT = [
+  'di cosa ti occupi', 'quali pratiche o percorsi proponi', 'a chi ti rivolgi',
+  'qual è la tua visione del benessere', 'qual è il tuo approccio e il tuo modo di lavorare',
+  'cosa può aspettarsi chi decide di intraprendere un percorso con te',
+];
 
 // AC3 — la fotografia dei soli campi che il Salva persiste: serve al
 // confronto "ci sono modifiche non salvate?" (la barra fissa in basso).
@@ -185,10 +199,19 @@ export default function PublicProfilePage() {
   };
   const rimuoviSede = (i) => scriviSedi(sediDaProfilo(form).filter((_, k) => k !== i));
 
+  // P2 — quanto dice la bio: breve (< 300), buona, completa (≥ 600)
+  const bioLivello = useMemo(() => {
+    const n = (form?.bio || '').trim().length;
+    return n >= BIO_COMPLETA ? 'completa' : n >= BIO_BUONA ? 'buona' : 'breve';
+  }, [form?.bio]);
+
   const completeness = useMemo(() => {
     if (!form) return 0;
+    // P2: quinto check «bio di almeno 300 caratteri» (stesso del server,
+    // onboarding-status.profile_checks.bio_completa: una verita' per numero)
     const checks = [form.cover_url, form.bio, form.city || (form.sedi || []).length,
-      form.instagram || form.website || form.facebook];
+      form.instagram || form.website || form.facebook,
+      (form.bio || '').trim().length >= BIO_BUONA];
     return Math.round(checks.filter(Boolean).length / checks.length * 100);
   }, [form]);
 
@@ -490,6 +513,46 @@ export default function PublicProfilePage() {
                 continuano a uscire in pubblico: qui si scrive solo
                 l'italiano. (Sostituisce il consolidato OP4c-bis.) */}
               <div className="space-y-3">
+                {/* P1 (24/9/2026, founder) — PRIMA la persona, poi il marchio.
+                    Il profilo era intestato solo all'organizzazione e 7 su 20
+                    in produzione erano nomi impersonali: qui il nome sale
+                    nell'essenziale, l'attivita' e' facoltativa, e l'anteprima
+                    mostra «Nome · Marchio» come lo vedra' il pubblico. */}
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div>
+                    <Label>{t('publicProfile.nomePersona', { defaultValue: 'Il tuo nome' })}</Label>
+                    <input
+                      value={form.nome_persona || ''}
+                      onChange={e => set('nome_persona', e.target.value.slice(0, NOME_PERSONA_MAX))}
+                      maxLength={NOME_PERSONA_MAX}
+                      placeholder="Nome e cognome"
+                      data-testid="profile-nome-persona"
+                      className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                    />
+                    <p className="text-[11px] text-muted-foreground mt-1">
+                      {t('publicProfile.nomePersonaHint', { defaultValue: 'È la prima cosa che le persone leggono: il profilo è tuo, non di un marchio.' })}
+                    </p>
+                  </div>
+                  <div>
+                    <Label>{t('publicProfile.marchio', { defaultValue: 'La tua attività (se ne hai una)' })}</Label>
+                    <input
+                      value={orgName}
+                      onChange={e => setOrgName(e.target.value.slice(0, 120))}
+                      maxLength={120}
+                      placeholder="Es. Il Sole Dentro"
+                      data-testid="profile-marchio"
+                      className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                    />
+                    <p className="text-[11px] text-muted-foreground mt-1">
+                      {t('publicProfile.marchioHint', { defaultValue: 'Compare accanto al tuo nome. È lo stesso nome azienda delle Impostazioni.' })}
+                    </p>
+                  </div>
+                </div>
+                {(form.nome_persona || orgName) && (
+                  <p className="text-xs text-gray-600" data-testid="profile-nome-pubblico">
+                    Il pubblico leggerà: <strong>{nomePubblico(form.nome_persona, orgName)}</strong>
+                  </p>
+                )}
                 <div>
                   <Label>{t('publicProfile.tagline', { defaultValue: 'Una frase che ti presenta' })}</Label>
                   <input
@@ -502,14 +565,27 @@ export default function PublicProfilePage() {
                 </div>
                 <div>
                   <Label>{t('publicProfile.bio', { defaultValue: 'Chi sei (bio)' })}</Label>
+                  {/* P2 (24/9/2026, founder) — la bio deve PRESENTARE: l'hint «2-3
+                      frasi bastano» aveva prodotto bio da 130 caratteri (8 su 20 in
+                      prod sotto i 300). Ora: 1000 caratteri, la guida in sei punti
+                      sempre visibile, un contatore che dice se basta. Il gate
+                      «online» NON cambia: una bio corta non toglie dalla directory. */}
                   <textarea
                     value={form.bio || ''}
-                    onChange={e => set('bio', e.target.value.slice(0, 600))}
-                    rows={4} maxLength={600}
-                    placeholder={t('publicProfile.bioPlaceholder', { defaultValue: 'Racconta chi sei e che esperienze crei: 2-3 frasi bastano.' })}
+                    onChange={e => set('bio', e.target.value.slice(0, BIO_MAX))}
+                    rows={7} maxLength={BIO_MAX}
+                    placeholder={t('publicProfile.bioPlaceholder', { defaultValue: 'Scrivi come parli: chi sei, cosa proponi, per chi, come lavori.' })}
                     className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring resize-y"
                   />
-                  <p className="text-right text-[11px] text-muted-foreground">{(form.bio || '').length}/600</p>
+                  <p className="flex justify-between text-[11px]" data-testid="bio-contatore">
+                    <span className={bioLivello === 'breve' ? 'text-amber-700' : bioLivello === 'buona' ? 'text-muted-foreground' : 'text-[#376254]'}>
+                      {bioLivello === 'breve' && (form.bio || '').trim()
+                        ? t('publicProfile.bioBreve', { defaultValue: 'Troppo breve per farti conoscere' })
+                        : bioLivello === 'buona' ? t('publicProfile.bioBuona', { defaultValue: 'Buona' })
+                          : bioLivello === 'completa' ? t('publicProfile.bioCompleta', { defaultValue: 'Completa' }) : ''}
+                    </span>
+                    <span className="text-muted-foreground">{(form.bio || '').length}/{BIO_MAX}</span>
+                  </p>
                   {/* AC6 — per l'operatore poco digitale lo scoglio
                       non e' tecnico: e' scrivere di se'. Tre domande e
                       un esempio vero sbloccano piu' di qualsiasi campo.
@@ -528,6 +604,25 @@ export default function PublicProfilePage() {
                       </p>
                     </div>
                   )}
+                  {/* P2 — la guida del founder, sempre a vista: sei cose che chi non
+                      ti conosce deve capire leggendo la tua pagina */}
+                  <details className="mt-2 rounded-lg border border-[#376254]/25 bg-[#376254]/5 px-3 py-2 text-xs text-gray-700"
+                    open={(form.bio || '').length < BIO_BUONA} data-testid="bio-guida">
+                    <summary className="cursor-pointer font-medium text-[#2e4b3f]">
+                      {t('publicProfile.bioGuidaTitolo', { defaultValue: 'La descrizione dovrebbe aiutare chi non ti conosce a capire:' })}
+                    </summary>
+                    <ul className="mt-1.5 list-disc pl-5 space-y-0.5">
+                      <li>{t('publicProfile.bioGuidaCosa', { defaultValue: BIO_GUIDA_DEFAULT[0] })}</li>
+                      <li>{t('publicProfile.bioGuidaPratiche', { defaultValue: BIO_GUIDA_DEFAULT[1] })}</li>
+                      <li>{t('publicProfile.bioGuidaChi', { defaultValue: BIO_GUIDA_DEFAULT[2] })}</li>
+                      <li>{t('publicProfile.bioGuidaVisione', { defaultValue: BIO_GUIDA_DEFAULT[3] })}</li>
+                      <li>{t('publicProfile.bioGuidaApproccio', { defaultValue: BIO_GUIDA_DEFAULT[4] })}</li>
+                      <li>{t('publicProfile.bioGuidaAspettarsi', { defaultValue: BIO_GUIDA_DEFAULT[5] })}</li>
+                    </ul>
+                    <p className="mt-1.5 text-gray-600">
+                      {t('publicProfile.bioGuidaChiusa', { defaultValue: "L'obiettivo è semplice: permettere a chi arriva sul tuo profilo di conoscerti meglio." })}
+                    </p>
+                  </details>
                 </div>
               </div>
             {/* SD2 (14/9/2026, founder) — «Dove lavori»: da una localita' a
@@ -805,21 +900,8 @@ export default function PublicProfilePage() {
             {advancedOpen && (
               <div className="space-y-5 border-t px-4 py-4" data-testid="profile-advanced-body">
 
-                {/* OP4 — Nome pubblico: LA stessa riga delle Impostazioni.
-                    E' il titolo che il pubblico vede su directory, profilo
-                    e nei risultati di ricerca. */}
-                <div className="space-y-2">
-                  <Label>{t('publicProfile.publicName', { defaultValue: 'Nome pubblico' })}</Label>
-                  <input
-                    value={orgName}
-                    onChange={e => setOrgName(e.target.value.slice(0, 120))}
-                    maxLength={120}
-                    className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-                  />
-                  <p className="text-[11px] text-muted-foreground">
-                    {t('publicProfile.publicNameHint', { defaultValue: 'Compare su directory, profilo e motori di ricerca. Coincide con il nome azienda delle Impostazioni: cambiarlo qui lo cambia ovunque.' })}
-                  </p>
-                </div>
+                {/* P1 (24/9) — il «Nome pubblico» non vive piu' qui: nome della
+                    persona e attivita' stanno in cima all'essenziale. */}
 
                 {/* PR1 — Carta d'identità: ritratto, galleria, anno, lingue */}
                 <div className="grid grid-cols-2 gap-3">
@@ -887,10 +969,10 @@ export default function PublicProfilePage() {
                            className="mt-0.5 h-4 w-4 rounded border-input" />
                     <div>
                       <span className="block text-sm font-medium">
-                        {t('publicProfile.showContacts', { defaultValue: 'Mostra contatti sul profilo' })}
+                        {t('publicProfile.showContactsPubblico', { defaultValue: 'Mostra telefono ed email sul profilo pubblico' })}
                       </span>
                       <span className="block text-xs text-muted-foreground">
-                        {t('publicProfile.showContactsHint', { defaultValue: 'Decidi tu cosa esporre pubblicamente.' })}
+                        {t('publicProfile.showContactsPrivato', { defaultValue: 'Spento, il numero resta privato: lo vede solo Aurya, per contattarti.' })}
                       </span>
                     </div>
                   </label>
@@ -955,7 +1037,7 @@ export default function PublicProfilePage() {
               </div>
             </div>
             <div className="pt-9 px-5 pb-5">
-              <h3 className="font-bold text-gray-900">{orgName || '—'}</h3>
+              <h3 className="font-bold text-gray-900">{nomePubblico(form.nome_persona, orgName) || '—'}</h3>
               {(sedi.length > 0 || form.city || form.region) && (
                 <p className="text-xs text-gray-500">
                   {sedi.length ? sedi.map(s => s.etichetta).join(' · ')

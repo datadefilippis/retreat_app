@@ -25,7 +25,8 @@
     "name_required": "Organization name cannot be empty",
     "save_error": "Error saving settings",
     "load_error": "Failed to load settings",
-    "admin_only": "Only admins can modify organization settings."
+    "admin_only": "Only admins can modify organization settings.",
+    "nameHintMarchio": "It is your business name: in public it appears next to your name, which you set in the Public profile."
   },
   "plan": {
     "card_title": "Status and Plan",
@@ -708,7 +709,7 @@
     "cover": "Cover photo",
     "coverHint": "Click to upload a photo",
     "bio": "Who you are (bio)",
-    "bioPlaceholder": "Tell who you are and what experiences you create — 2-3 sentences.",
+    "bioPlaceholder": "Write as you speak: who you are, what you offer, for whom, how you work.",
     "bioEmpty": "Your bio will appear here…",
     "city": "City",
     "region": "Region",
@@ -766,6 +767,23 @@
     "sedePrincipale": "principale",
     "sedeSenzaMappa": "senza posizione sulla mappa",
     "sedeAggiungi": "Aggiungi una sede: cerca e scegli dalla lista…",
-    "sedeNessuna": "Scegli dalla lista: senza una sede non compari nelle ricerche per zona."
+    "sedeNessuna": "Scegli dalla lista: senza una sede non compari nelle ricerche per zona.",
+    "nomePersona": "Your name",
+    "nomePersonaHint": "It is the first thing people read: the profile is yours, not a brand's.",
+    "marchio": "Your business (if you have one)",
+    "marchioHint": "Shown next to your name. It is the same company name as in Settings.",
+    "showContactsPubblico": "Show phone and email on the public profile",
+    "showContactsPrivato": "Off, the number stays private: only Aurya sees it, to reach you.",
+    "bioGuidaTitolo": "The description should help someone who does not know you understand:",
+    "bioGuidaChiusa": "The goal is simple: let whoever lands on your profile get to know you better.",
+    "bioBreve": "Too short to be known",
+    "bioBuona": "Good",
+    "bioCompleta": "Complete",
+    "bioGuidaCosa": "what you do",
+    "bioGuidaPratiche": "which practices or paths you offer",
+    "bioGuidaChi": "who you work with",
+    "bioGuidaVisione": "your vision of wellbeing",
+    "bioGuidaApproccio": "your approach and the way you work",
+    "bioGuidaAspettarsi": "what someone starting a path with you can expect"
   }
 }

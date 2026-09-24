@@ -25,7 +25,8 @@
     "name_required": "Il nome organizzazione non puo essere vuoto",
     "save_error": "Errore nel salvataggio",
     "load_error": "Impossibile caricare le impostazioni",
-    "admin_only": "Solo gli admin possono modificare le impostazioni dell'organizzazione."
+    "admin_only": "Solo gli admin possono modificare le impostazioni dell'organizzazione.",
+    "nameHintMarchio": "È il nome della tua attività: in pubblico compare accanto al tuo nome, che imposti nel Profilo pubblico."
   },
   "plan": {
     "card_title": "Stato e piano",
@@ -717,7 +718,7 @@
     "cover": "Foto di copertina",
     "coverHint": "Clicca per caricare una foto",
     "bio": "Chi sei (bio)",
-    "bioPlaceholder": "Racconta chi sei e che esperienze crei — 2-3 frasi bastano.",
+    "bioPlaceholder": "Scrivi come parli: chi sei, cosa proponi, per chi, come lavori.",
     "bioEmpty": "La tua bio apparirà qui…",
     "city": "Città",
     "region": "Regione",
@@ -775,6 +776,23 @@
     "sedePrincipale": "principale",
     "sedeSenzaMappa": "senza posizione sulla mappa",
     "sedeAggiungi": "Aggiungi una sede: cerca e scegli dalla lista…",
-    "sedeNessuna": "Scegli dalla lista: senza una sede non compari nelle ricerche per zona."
+    "sedeNessuna": "Scegli dalla lista: senza una sede non compari nelle ricerche per zona.",
+    "nomePersona": "Il tuo nome",
+    "nomePersonaHint": "È la prima cosa che le persone leggono: il profilo è tuo, non di un marchio.",
+    "marchio": "La tua attività (se ne hai una)",
+    "marchioHint": "Compare accanto al tuo nome. È lo stesso nome azienda delle Impostazioni.",
+    "showContactsPubblico": "Mostra telefono ed email sul profilo pubblico",
+    "showContactsPrivato": "Spento, il numero resta privato: lo vede solo Aurya, per contattarti.",
+    "bioGuidaTitolo": "La descrizione dovrebbe aiutare chi non ti conosce a capire:",
+    "bioGuidaChiusa": "L'obiettivo è semplice: permettere a chi arriva sul tuo profilo di conoscerti meglio.",
+    "bioBreve": "Troppo breve per farti conoscere",
+    "bioBuona": "Buona",
+    "bioCompleta": "Completa",
+    "bioGuidaCosa": "di cosa ti occupi",
+    "bioGuidaPratiche": "quali pratiche o percorsi proponi",
+    "bioGuidaChi": "a chi ti rivolgi",
+    "bioGuidaVisione": "qual è la tua visione del benessere",
+    "bioGuidaApproccio": "qual è il tuo approccio e il tuo modo di lavorare",
+    "bioGuidaAspettarsi": "cosa può aspettarsi chi decide di intraprendere un percorso con te"
   }
 }

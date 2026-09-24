@@ -129,7 +129,7 @@ export const AuthProvider = ({ children }) => {
     return userData;
   }, []);
 
-  const signup = useCallback(async (email, password, name, organizationName, inviteToken, acceptedTerms, locale, website) => {
+  const signup = useCallback(async (email, password, name, organizationName, inviteToken, acceptedTerms, locale, website, phone) => {
     const apiUrl = getApiUrl();
     const payload = {
       email,
@@ -139,6 +139,8 @@ export const AuthProvider = ({ children }) => {
       accepted_terms: acceptedTerms || false,
     };
     if (inviteToken) payload.invite_token = inviteToken;
+    // P3 (24/9) — il telefono del professionista: privato, per raggiungerlo
+    if (phone) payload.phone = phone;
     if (locale) payload.locale = locale;
     // Track O Step 5.1 — honeypot anti-bot field (corresponds to
     // hidden input in SignupPage). Always send the value (even empty

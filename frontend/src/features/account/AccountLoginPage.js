@@ -79,6 +79,7 @@ export default function AccountLoginPage() {
   const proParam = params.get('pro');
   useEffect(() => { setIsPro(proParam === '1'); }, [proParam]);
   const [orgName, setOrgName] = useState('');
+  const [phone, setPhone] = useState('');   // P3: obbligatorio per il professionista, privato
   const [website, setWebsite] = useState('');   // honeypot: gli umani non lo vedono
   const togglePro = (on) => {
     setIsPro(on); setError(null);
@@ -365,7 +366,7 @@ export default function AccountLoginPage() {
     if (isPro) {
       try {
         await operatorSignup(email.trim(), password, name.trim(), orgName.trim(),
-          undefined, !!signupConsent, emailLang() || 'it', website);
+          undefined, !!signupConsent, emailLang() || 'it', website, phone.trim());
         // RU (founder) — la spunta del Cerchio vale anche qui: viaggia
         // sul SUO flusso (double opt-in), mai come effetto silenzioso
         // dello spazio appena aperto. Best-effort: se fallisce, lo
@@ -702,20 +703,43 @@ export default function AccountLoginPage() {
               <input
                 type="text" value={name} autoComplete="name" required={isPro}
                 onChange={e => setName(e.target.value)}
-                placeholder={t('landings:account.namePlaceholder', { defaultValue: 'Il tuo nome' })}
+                placeholder={isPro
+                  ? t('landings:account.nomeCognomePlaceholder', { defaultValue: 'Nome e cognome' })
+                  : t('landings:account.namePlaceholder', { defaultValue: 'Il tuo nome' })}
                 className={inputCls}
               />
+              {isPro && name.trim() && name.trim().split(/\s+/).length < 2 && (
+                /* P1 — avviso morbido, non un blocco: e' il nome che le persone leggeranno */
+                <p className="text-xs text-amber-700" data-testid="signup-nome-avviso">
+                  Meglio nome e cognome: è quello che le persone leggeranno sulla tua pagina.
+                </p>
+              )}
               {isPro && (
                 <>
-                  {/* RU — il nome dell'attivita' e' cio' che diventa il
-                      profilo pubblico: obbligatorio come in /entra-nella-rete */}
+                  {/* P1 (24/9, founder) — l'attivita' e' FACOLTATIVA: obbligatoria
+                      produceva marchi inventati («Cerchio Angelico») al posto
+                      della persona. Senza, il profilo porta il tuo nome. */}
                   <input
-                    type="text" required value={orgName} autoComplete="organization"
+                    type="text" value={orgName} autoComplete="organization"
                     onChange={e => setOrgName(e.target.value)}
-                    placeholder={t('landings:account.proOrgPlaceholder', { defaultValue: 'Nome della tua attività' })}
+                    placeholder={t('landings:account.proOrgPlaceholder', { defaultValue: 'Nome della tua attività (facoltativo)' })}
                     className={inputCls}
                     data-testid="signup-org"
                   />
+                  {/* P3 (24/9, founder) — il telefono e' obbligatorio per il
+                      professionista e PRIVATO: serve ad Aurya per raggiungerlo,
+                      non compare sulla pagina finche' non lo decide lui */}
+                  <input
+                    type="tel" required value={phone} autoComplete="tel" inputMode="tel"
+                    onChange={e => setPhone(e.target.value)}
+                    pattern="[+]?[0-9 .()\-]{8,20}"
+                    placeholder="Il tuo telefono"
+                    className={inputCls}
+                    data-testid="signup-phone"
+                  />
+                  <p className="text-xs text-muted-foreground -mt-1" data-testid="signup-phone-nota">
+                    Serve a noi di Aurya per contattarti. Non compare sulla tua pagina finché non lo decidi tu.
+                  </p>
                   {/* honeypot: fuori dalla vista, i bot lo compilano e il
                       backend li scarta (identico a /entra-nella-rete) */}
                   <input type="text" value={website} onChange={e => setWebsite(e.target.value)}

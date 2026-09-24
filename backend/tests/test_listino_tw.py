@@ -331,13 +331,18 @@ class TestAc2ProfiloEssenziale:
         # lista.
         # SD2 (14/9/2026): «region» non e' piu' un campo — la regione
         # arriva dalla sede scelta dalla lista (services/sedi.py)
-        for chiave in ("publicName", "foundedYear",
+        # P1 (24/9/2026, founder): il NOME e' risalito di proposito — «Il tuo
+        # nome» e «La tua attivita'» aprono l'essenziale (7 profili su 20 in
+        # prod erano marchi impersonali); il vecchio «publicName» non c'e' piu'
+        for chiave in ("foundedYear",
                        "gallery", "showContacts",
                        "visibilityTitle"):
             assert f"publicProfile.{chiave}" in avanzato, \
                 f"{chiave} deve vivere in Per approfondire"
             assert f"publicProfile.{chiave}" not in prima, \
                 f"{chiave} e' risalito nell'essenziale"
+        assert "publicProfile.publicName" not in render
+        assert "publicProfile.nomePersona" in prima and "publicProfile.marchio" in prima
         # LK6 — ritratto accanto alla copertina, PRIMA dell'avanzato
         assert "publicProfile.portraitShort" in prima, \
             "il ritratto deve stare in primo piano, vicino alla copertina"

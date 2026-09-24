@@ -1790,11 +1790,16 @@ async def reactivate_team_member(
 # la legge da /public/operator/{slug}.
 
 _PUBLIC_PROFILE_FIELDS = {
-    "bio": 600, "city": 80, "region": 40, "cover_url": 500,
+    # P2 (24/9/2026, founder): la bio deve PRESENTARE, non riassumere:
+    # da 600 a 1000 caratteri (l'hint «2-3 frasi» aveva prodotto bio da 130)
+    "bio": 1000, "city": 80, "region": 40, "cover_url": 500,
     "instagram": 120, "website": 200, "facebook": 200,
     "public_email": 254, "public_phone": 40,
     # PR1 — carta d'identità
     "tagline": 80, "portrait_url": 500, "founded_year": 4,
+    # P1 (24/9/2026) — la PERSONA dietro il profilo (services/nome_pubblico.py):
+    # il nome pubblico diventa «Nome · Marchio»; assente = com'era
+    "nome_persona": 80,
 }
 
 # PR1 — campi LISTA (validati a parte: la whitelist sopra è solo stringhe)
@@ -1899,10 +1904,13 @@ async def get_public_profile(current_user: dict = Depends(require_admin)):
     from routers.public import _resolve_public_slug_for_org
     resolved_slug = await _resolve_public_slug_for_org(
         current_user["organization_id"])
+    from services.nome_pubblico import nome_pubblico
     return {**{k: pp.get(k) for k in _PUBLIC_PROFILE_FIELDS},
             # OP4 — il titolo pubblico E' il nome org (settings):
             # esposto qui cosi' l'editor profilo lo mostra e lo salva
             "name": org_doc.get("name"),
+            # P1 — come lo vede il pubblico, composto dal server (una regola sola)
+            "nome_pubblico": nome_pubblico(org_doc),
             "photos": pp.get("photos") or [],
             "languages": pp.get("languages") or [],
             # DI — le discipline dichiarate (slug; le label le risolve
@@ -1944,6 +1952,10 @@ async def update_public_profile(
                 updates[f"public_profile.{field}"] = None
             elif isinstance(val, str):
                 updates[f"public_profile.{field}"] = val.strip()[:max_len]
+    # P1 — il nome della persona si salva pulito (spazi doppi via): e' la
+    # stringa che compone il titolo pubblico
+    if isinstance(updates.get("public_profile.nome_persona"), str):
+        updates["public_profile.nome_persona"] = " ".join(updates["public_profile.nome_persona"].split())[:80] or None
     # LS (14/9/2026) — i social si salvano in forma canonica: «nome_utente»,
     # «@nome» o l'URL incollato dall'app diventano https://instagram.com/nome;
     # sito con https davanti; via il tracciamento (services.social_links)
@@ -2463,6 +2475,10 @@ async def onboarding_status(current_user: dict = Depends(require_admin)):
             "city": bool(pp.get("city")),
             "social": bool(pp.get("instagram") or pp.get("website")
                            or pp.get("facebook")),
+            # P2 (24/9/2026): la bio che PRESENTA (>= 300 caratteri). Entra
+            # nella percentuale (stesso quinto check dell'editor), NON nel
+            # gate profile_ok/online: una bio corta non toglie dalla directory
+            "bio_completa": len((pp.get("bio") or "").strip()) >= 300,
         }
         profile_detail = {
             "percent": round(

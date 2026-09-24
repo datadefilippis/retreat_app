@@ -84,12 +84,15 @@ class TestRegistrazioneOperatoreDallaScheda:
         assert "const { signup } = useAuth();" in landing, \
             "/entra-nella-rete non usa piu' la signup condivisa"
 
-    def test_nome_attivita_obbligatorio_e_honeypot(self):
-        """Decisione founder: il nome dell'attivita' e' obbligatorio come
-        in /entra-nella-rete; il campo-esca c'e' anche qui."""
+    def test_nome_attivita_facoltativo_telefono_obbligatorio_e_honeypot(self):
+        """P1/P3 (24/9/2026, founder): il nome dell'attivita' e' FACOLTATIVO
+        (obbligatorio produceva marchi inventati al posto della persona), il
+        telefono e' obbligatorio e privato; il campo-esca c'e' anche qui."""
         vista = _vista_signup(PORTA.read_text())
         org = vista.split('data-testid="signup-org"')[0].rsplit("<input", 1)[1]
-        assert "required" in org and "value={orgName}" in org
+        assert "required" not in org and "value={orgName}" in org
+        tel = vista.split('data-testid="signup-phone"')[0].rsplit("<input", 1)[1]
+        assert 'type="tel" required' in tel and "value={phone}" in tel
         assert 'name="website"' in vista and "tabIndex={-1}" in vista
 
     def test_il_ramo_pro_sta_dentro_submit_signup(self):

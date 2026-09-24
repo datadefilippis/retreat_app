@@ -310,6 +310,10 @@ export const SettingsPage = () => {
                 <div className="space-y-1.5">
                   <Label htmlFor="org-name">{t('organization.name')}</Label>
                   <Input id="org-name" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} disabled={!isAdmin} data-testid="org-name-input" />
+                  {/* P1 (24/9) — e' il marchio: in pubblico compare accanto al nome della persona */}
+                  <p className="text-[11px] text-muted-foreground">
+                    {t('organization.nameHintMarchio', { defaultValue: 'È il nome della tua attività: in pubblico compare accanto al tuo nome, che imposti nel Profilo pubblico.' })}
+                  </p>
                 </div>
                 <div className="space-y-1.5">
                   <Label htmlFor="org-industry">{t('organization.industry')}</Label>

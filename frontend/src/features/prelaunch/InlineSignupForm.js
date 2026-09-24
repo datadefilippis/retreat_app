@@ -34,6 +34,7 @@ export default function InlineSignupForm() {
 
   const [name, setName] = useState('');
   const [organizationName, setOrganizationName] = useState('');
+  const [phone, setPhone] = useState('');   // P3: privato, per raggiungere il professionista
   // ID-quater — dal ponte «diventa professionista» in /account l'email
   // arriva gia' scritta: e' la STESSA che collegherà i due cappelli
   const [params] = useSearchParams();
@@ -56,7 +57,7 @@ export default function InlineSignupForm() {
     setLoading(true);
     try {
       const result = await signup(email, password, name, organizationName,
-        undefined, acceptedTerms && acceptedPrivacy, i18n.language, website);
+        undefined, acceptedTerms && acceptedPrivacy, i18n.language, website, phone.trim());
       if (result === 'verification_required') {
         setVerificationRequired(true);
         return;
@@ -112,18 +113,32 @@ export default function InlineSignupForm() {
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            {t('signup.name', { defaultValue: 'Nome' })}
+            {t('signup.nomeCognome', { defaultValue: 'Nome e cognome' })}
           </label>
           <input type="text" required value={name} autoComplete="name"
             onChange={(e) => setName(e.target.value)} className={FIELD_CLS} />
         </div>
         <div>
+          {/* P1 (24/9, founder) — l'attivita' e' facoltativa: senza, il
+              profilo porta il nome della persona */}
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            {tl('opPro.orgField', { defaultValue: 'Nome della tua attività' })}
+            {tl('opPro.orgFieldFacoltativo', { defaultValue: 'Nome della tua attività (facoltativo)' })}
           </label>
-          <input type="text" required value={organizationName} autoComplete="organization"
+          <input type="text" value={organizationName} autoComplete="organization"
             onChange={(e) => setOrganizationName(e.target.value)} className={FIELD_CLS} />
         </div>
+      </div>
+      <div>
+        {/* P3 (24/9, founder) — obbligatorio e privato */}
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          {t('signup.phone', { defaultValue: 'Telefono' })}
+        </label>
+        <input type="tel" required value={phone} autoComplete="tel" inputMode="tel"
+          pattern="[+]?[0-9 .()\-]{8,20}"
+          onChange={(e) => setPhone(e.target.value)} className={FIELD_CLS} data-testid="signup-phone" />
+        <p className="mt-1 text-xs text-gray-500">
+          Serve a noi di Aurya per contattarti. Non compare sulla tua pagina finché non lo decidi tu.
+        </p>
       </div>
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>

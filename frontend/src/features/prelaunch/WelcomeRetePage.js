@@ -35,6 +35,7 @@ export default function WelcomeRetePage() {
   const [city, setCity] = useState('');
   const [sede, setSede] = useState(null);   // SD2 — la sede scelta dalla lista
   const [phone, setPhone] = useState('');
+  const [phonePresente, setPhonePresente] = useState(false);   // P3: dato alla registrazione
   const [instagram, setInstagram] = useState('');
   const [disciplines, setDisciplines] = useState([]);
   const [saving, setSaving] = useState(false);
@@ -55,7 +56,7 @@ export default function WelcomeRetePage() {
       const pp = r.data || {};
       if (pp.city) setCity(pp.city);
       if (Array.isArray(pp.sedi) && pp.sedi[0]) { setSede(pp.sedi[0]); setCity(etichettaSede(pp.sedi[0])); }
-      if (pp.public_phone) setPhone(pp.public_phone);
+      if (pp.public_phone) { setPhone(pp.public_phone); setPhonePresente(true); }   // P3: gia' dato alla registrazione
       if (pp.instagram) setInstagram(pp.instagram);
       if (Array.isArray(pp.disciplines) && pp.disciplines.length) {
         setDisciplines(pp.disciplines);
@@ -159,14 +160,17 @@ export default function WelcomeRetePage() {
                   : t('welcomeRete.cityHint', { defaultValue: 'Scegli dalla lista per comparire sulla mappa.' })}
               </p>
             </div>
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-                {t('welcomeRete.phone', { defaultValue: 'Telefono' })}
-              </label>
-              <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)}
-                maxLength={40} placeholder="Facoltativo"
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-[#376254] focus:outline-none" />
-            </div>
+            {/* P3 (24/9): il telefono si chiede alla registrazione; qui solo a chi non l'ha dato */}
+            {!phonePresente && (
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                  {t('welcomeRete.phone', { defaultValue: 'Telefono' })}
+                </label>
+                <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)}
+                  maxLength={40} placeholder="Resta privato"
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-[#376254] focus:outline-none" />
+              </div>
+            )}
           </div>
 
           <div>

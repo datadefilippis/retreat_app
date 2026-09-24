@@ -27,6 +27,7 @@ logger = logging.getLogger(__name__)
 
 from services import sedi as _sd   # SD (14/9/2026): le sedi dell'operatore
 from services import pagine_locali as _pl   # SEO-B (14/9 sera): pagine locali
+from services.nome_pubblico import nome_pubblico as _nome_pubblico, parti_nome as _parti_nome   # P1 (24/9)
 
 router = APIRouter(prefix="/public", tags=["Public Storefront"])
 
@@ -3646,7 +3647,7 @@ async def list_public_retreats(
         if o.get("is_sample"):
             sample_orgs.add(o["id"])
         # OP4 — stessa fonte del profilo: nome org prima dei nomi store
-        org_name[o["id"]] = o.get("name") or (o.get("store_settings") or {}).get("display_name") or ""
+        org_name[o["id"]] = _nome_pubblico(o, fallback=(o.get("store_settings") or {}).get("display_name") or "")
         org_featured[o["id"]] = bool(o.get("directory_featured"))
         # AN7 — stelle sulla card: solo avg+count, mai la distribuzione
         rs = o.get("reviews_stats") or {}
@@ -4387,8 +4388,10 @@ async def public_operators_index(
             # (settings), unica fonte; i nomi store restano fallback
             # PL9 — identita' campione redatta lato server (il
             # frontend rende segnaposto sfocati al suo posto)
-            "name": "" if _is_sample else (org.get("name")
-                     or ss.get("display_name") or s.get("name") or s["slug"]),
+            # P1 (24/9) — «Nome · Marchio» quando c'e' la persona
+            # (services/nome_pubblico.py); senza nome_persona = org.name com'era
+            "name": "" if _is_sample else _nome_pubblico(
+                org, fallback=ss.get("display_name") or s.get("name") or s["slug"]),
             "bio": None if _is_sample else (((_tr.get("bio") or pp.get("bio")
                      or s.get("description") or "")[:200]) or None),
             "logo_url": s.get("logo_url") or ss.get("logo_url")
@@ -4646,7 +4649,10 @@ async def public_operator_profile(org_slug: str, lang: Optional[str] = None):
         "profile_langs": profile_langs,
         # OP4 — nome pubblico = nome org (settings): stessa fonte
         # dell'editor profilo, mai piu' incongruenze col nome store
-        "name": org.get("name") or store.get("name") or store.get("display_name") or ss.get("display_name") or "",
+        "name": _nome_pubblico(org, fallback=store.get("name") or store.get("display_name") or ss.get("display_name") or ""),
+        # P1 — le due parti, per l'intestazione (persona grande, marchio sotto)
+        "nome_persona": _parti_nome(org)["persona"],
+        "marchio": _parti_nome(org)["marchio"],
         "bio": _tr.get("bio") or pp.get("bio") or store.get("description") or ss.get("store_description"),
         "logo_url": store.get("logo_url") or ss.get("logo_url"),
         "cover_url": pp.get("cover_url"),

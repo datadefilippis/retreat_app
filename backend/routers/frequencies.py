@@ -566,10 +566,12 @@ async def public_track(slug: str):
     org = await organizations_collection.find_one(
         {"id": track.pop("organization_id")},
         {"_id": 0, "name": 1, "public_slug": 1,
-         "public_profile.display_name": 1})
-    profile = (org or {}).get("public_profile") or {}
+         "public_profile.nome_persona": 1})
+    from services.nome_pubblico import nome_pubblico as _np
     track["operator"] = {
-        "name": profile.get("display_name") or (org or {}).get("name"),
+        # P1 (24/9): la stessa regola del profilo pubblico (display_name
+        # era un campo fantasma, letto e mai scritto)
+        "name": _np(org or {}),
         # lo slug pubblico vive in cima al doc org (non nel profilo)
         "slug": (org or {}).get("public_slug"),
     }
@@ -740,18 +742,18 @@ async def catalog(request: Request):
     orgs = {o["id"]: o async for o in organizations_collection.find(
         {"id": {"$in": list(org_ids)}},
         {"_id": 0, "id": 1, "name": 1, "public_slug": 1,
-         "public_profile.display_name": 1})}
+         "public_profile.nome_persona": 1})}
+    from services.nome_pubblico import nome_pubblico as _np
     out = []
     for it in items:
         org = orgs.get(it.pop("organization_id")) or {}
-        profile = org.get("public_profile") or {}
         score = it.pop("score", None) or {}
         # materializzati alla pubblicazione; il fallback copre le
         # tracce pubblicate prima di ES4
         it["duration_sec"] = it.get("duration_sec") or score.get("duration_sec")
         it["layers_count"] = it.get("layers_count") or 0
         it["operator"] = {
-            "name": profile.get("display_name") or org.get("name"),
+            "name": _np(org),   # P1: stessa regola del profilo pubblico
             "slug": org.get("public_slug"),
         }
         it["plays_total"] = it.get("plays_total") or 0

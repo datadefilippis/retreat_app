@@ -79,7 +79,11 @@ async def signup(
     if existing_user:
         raise ValueError("Email already registered")
 
-    org_name = user_data.organization_name or f"{user_data.name}'s Organization"
+    # P1 (24/9/2026, founder): il nome dell'attivita' e' FACOLTATIVO. Senza,
+    # l'organizzazione prende il nome della persona (prima era
+    # «{nome}'s Organization», in inglese) e il profilo nasce personale.
+    nome_persona = " ".join((user_data.name or "").split()).strip()
+    org_name = (user_data.organization_name or "").strip() or nome_persona
     organization = Organization(
         name=org_name,
         # Phase-2: seed sensible defaults for new orgs
@@ -92,6 +96,14 @@ async def signup(
     org_doc["created_at"] = org_doc["created_at"].isoformat()
     org_doc["updated_at"] = org_doc["updated_at"].isoformat()
     org_doc["schema_version"] = _SCHEMA_VERSION
+    # P1: la persona dietro il profilo, dal primo giorno (services/nome_pubblico.py):
+    # il pubblico vedra' «Nome · Marchio», o solo il nome se il marchio manca
+    if nome_persona:
+        org_doc["public_profile"] = {"nome_persona": nome_persona[:80]}
+    # P3: il telefono (gia' canonico dal modello) entra PRIVATO: show_contacts
+    # resta assente/spento, quindi sul profilo pubblico non compare
+    if getattr(user_data, "phone", None):
+        org_doc.setdefault("public_profile", {})["public_phone"] = user_data.phone
     from database import organizations_collection
     await organizations_collection.insert_one(org_doc)
 

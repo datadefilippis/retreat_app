@@ -248,7 +248,10 @@ async def org_business_profile(
         {"_id": 0, "id": 1, "name": 1, "commercial_plan_slug": 1,
          "application_fee_percent": 1, "directory_featured": 1,
          "public_slug": 1, "created_at": 1, "reviews_stats": 1,
-         "store_settings.is_storefront_published": 1})
+         "store_settings.is_storefront_published": 1,
+         # P1/P3 (24/9): la persona e il recapito privato, per la regia
+         "public_profile.nome_persona": 1, "public_profile.public_phone": 1,
+         "public_profile.show_contacts": 1})
     if not org:
         raise HTTPException(status_code=404, detail="Organization not found")
 
@@ -379,6 +382,11 @@ async def org_business_profile(
             "profile_slug": profile_slug,
             "future_events": future_events,
             "directory": dir_row,   # listed/reasons/retreats (GT1b)
+            # P1/P3 (24/9): la persona e il recapito PRIVATO (la regia lo vede
+            # anche quando il profilo non lo mostra: e' il motivo per cui lo chiediamo)
+            "nome_persona": (org.get("public_profile") or {}).get("nome_persona"),
+            "telefono": (org.get("public_profile") or {}).get("public_phone"),
+            "telefono_pubblico": bool((org.get("public_profile") or {}).get("show_contacts")),
         },
         "transactions": {
             "gmv_12m": round(total_gmv, 2),

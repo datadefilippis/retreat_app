@@ -73,7 +73,11 @@ export default function OnboardingStrip({ step, refreshKey = 0, className = '' }
   const missing = status.steps_detail?.profile?.missing || [];
   const profileHint = missing.includes('bio')
     ? t('onboarding.hint_bio', { defaultValue: 'racconta chi sei nella bio' })
-    : t('onboarding.hint_cover_social', { defaultValue: 'aggiungi una foto di copertina o un link social (basta uno dei due)' });
+    : (missing.includes('cover') && missing.includes('social'))
+      ? t('onboarding.hint_cover_social', { defaultValue: 'aggiungi una foto di copertina o un link social (basta uno dei due)' })
+      // P2 — il passo e' spuntato dal gate (bio + foto/social); qui resta
+      // solo il consiglio: la bio corta non blocca, ma non presenta
+      : t('onboarding.hint_bio_completa', { defaultValue: 'allunga la bio: chi non ti conosce deve capire cosa fai, per chi e come' });
 
   let done = false; let Icon = Sparkles; let title; let hint; let cta = null;
   if (step === 'profile') {

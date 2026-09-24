@@ -73,9 +73,17 @@ export default function OperatorIdentityHeader({ data, t }) {
                               ring-2 ring-[#c9b37e]/70 shadow-md" />
             )}
             <div className="min-w-0 flex-1 pt-0.5">
+              {/* P1 (24/9) — persona grande, marchio sotto quando ci sono
+                  entrambi; altrimenti il nome com'e' (il server compone
+                  `name`, qui si sceglie solo il layout) */}
               <h1 className="font-display text-2xl sm:text-3xl font-bold text-foreground leading-tight">
-                {data.name}
+                {data.nome_persona && data.marchio ? data.nome_persona : data.name}
               </h1>
+              {data.nome_persona && data.marchio && (
+                <p className="text-[#376254] font-medium text-sm sm:text-base mt-0.5" data-testid="operator-marchio">
+                  {data.marchio}
+                </p>
+              )}
               {data.tagline && (
                 <p className="text-gray-600 mt-1 text-sm sm:text-base line-clamp-2">
                   {data.tagline}

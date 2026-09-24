@@ -25,7 +25,8 @@
     "name_required": "Organisationsname darf nicht leer sein",
     "save_error": "Fehler beim Speichern",
     "load_error": "Einstellungen konnten nicht geladen werden",
-    "admin_only": "Nur Admins koennen Organisationseinstellungen aendern."
+    "admin_only": "Nur Admins koennen Organisationseinstellungen aendern.",
+    "nameHintMarchio": "Der Name deiner Tätigkeit: öffentlich erscheint er neben deinem Namen, den du im öffentlichen Profil festlegst."
   },
   "plan": {
     "card_title": "Status und Plan",
@@ -690,7 +691,7 @@
     "coverUploaded": "Titelbild hochgeladen",
     "coverError": "Fehler beim Hochladen",
     "bio": "Wer du bist (Bio)",
-    "bioPlaceholder": "Erzähle, wer du bist und welche Erlebnisse du schaffst: 2-3 Sätze genügen.",
+    "bioPlaceholder": "Schreib, wie du sprichst: wer du bist, was du anbietest, für wen, wie du arbeitest.",
     "bioEmpty": "Noch keine Bio: schreibe 2-3 Sätze über dich.",
     "region": "Region",
     "socials": "Social und Web",
@@ -733,6 +734,23 @@
     "sedePrincipale": "principale",
     "sedeSenzaMappa": "senza posizione sulla mappa",
     "sedeAggiungi": "Aggiungi una sede: cerca e scegli dalla lista…",
-    "sedeNessuna": "Scegli dalla lista: senza una sede non compari nelle ricerche per zona."
+    "sedeNessuna": "Scegli dalla lista: senza una sede non compari nelle ricerche per zona.",
+    "nomePersona": "Dein Name",
+    "nomePersonaHint": "Das Erste, was Menschen lesen: das Profil gehört dir, nicht einer Marke.",
+    "marchio": "Deine Tätigkeit (falls vorhanden)",
+    "marchioHint": "Erscheint neben deinem Namen. Es ist derselbe Firmenname wie in den Einstellungen.",
+    "showContactsPubblico": "Telefon und E-Mail im öffentlichen Profil zeigen",
+    "showContactsPrivato": "Aus bleibt die Nummer privat: nur Aurya sieht sie, um dich zu erreichen.",
+    "bioGuidaTitolo": "Die Beschreibung sollte jemandem, der dich nicht kennt, verständlich machen:",
+    "bioGuidaChiusa": "Das Ziel ist einfach: wer auf dein Profil kommt, soll dich besser kennenlernen.",
+    "bioBreve": "Zu kurz, um dich kennenzulernen",
+    "bioBuona": "Gut",
+    "bioCompleta": "Vollständig",
+    "bioGuidaCosa": "womit du dich beschäftigst",
+    "bioGuidaPratiche": "welche Praktiken oder Wege du anbietest",
+    "bioGuidaChi": "an wen du dich richtest",
+    "bioGuidaVisione": "deine Vorstellung von Wohlbefinden",
+    "bioGuidaApproccio": "deinen Ansatz und deine Arbeitsweise",
+    "bioGuidaAspettarsi": "was jemand erwarten kann, der einen Weg mit dir beginnt"
   }
 }

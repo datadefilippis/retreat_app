@@ -26,8 +26,23 @@ class UserCreate(BaseModel):
     email: EmailStr
     name: str
     password: str = Field(min_length=12)
-    organization_name: Optional[str] = None  # For signup
+    organization_name: Optional[str] = None  # For signup (P1: facoltativo)
+    # P3 (24/9/2026, founder) — il telefono del professionista: i moduli lo
+    # chiedono obbligatorio, il server lo accetta quando c'e' e lo rifiuta
+    # se malformato (services/telefono.py). Resta PRIVATO (show_contacts off).
+    phone: Optional[str] = None
     invite_token: Optional[str] = None       # Platform invite token (invite-only mode)
+
+    @field_validator("phone")
+    @classmethod
+    def _telefono_canonico(cls, v):
+        if v is None or not str(v).strip():
+            return None
+        from services.telefono import normalizza_telefono
+        norm = normalizza_telefono(str(v))
+        if not norm:
+            raise ValueError("Numero di telefono non valido: servono da 8 a 15 cifre.")
+        return norm
     accepted_terms: bool = False             # Must be True to register (not stored in DB)
     locale: Optional[str] = "it"             # Language preference from signup form
     # Track O Step 4.1 — honeypot field for anti-bot. Frontend renders

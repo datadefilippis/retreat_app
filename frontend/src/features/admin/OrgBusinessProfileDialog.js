@@ -140,6 +140,13 @@ export default function OrgBusinessProfileDialog({ orgId, open, onOpenChange }) 
                     ? <a href={`/o/${p.profile_slug}`} target="_blank" rel="noreferrer" className="text-primary hover:underline">/o/{p.profile_slug} <ExternalLink className="inline h-3 w-3" /></a>
                     : <span className="text-muted-foreground">nessuna vetrina</span>}
                 </p>
+                {/* P3 (24/9) — il recapito privato dell'operatore: e' il motivo per
+                    cui lo chiediamo alla registrazione; e P1, la persona */}
+                <p data-testid="business-recapito">
+                  Persona: <strong>{p.nome_persona || '—'}</strong>
+                  {' · '}Telefono (privato): <strong>{p.telefono || '—'}</strong>
+                  {p.telefono && !p.telefono_pubblico && <span className="text-muted-foreground text-xs ml-1">non mostrato sul profilo</span>}
+                </p>
                 <p>
                   Ritiri futuri: <strong>{p.future_events ?? 0}</strong>
                   {p.directory && (

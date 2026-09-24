@@ -2304,10 +2304,10 @@ async def _meta_operator(org_slug: str) -> Optional[dict]:
     if not org:
         return None
     profile = org.get("public_profile") or {}
-    # OP4 — stessa risoluzione del pubblico: nome org (settings) prima
-    name = (org.get("name")
-            or (org.get("store_settings") or {}).get("display_name")
-            or org_slug)
+    # OP4 — stessa risoluzione del pubblico: nome org (settings) prima;
+    # P1 (24/9) — con la persona diventa «Nome · Marchio» (services/nome_pubblico.py)
+    from services.nome_pubblico import nome_pubblico as _np
+    name = _np(org, fallback=(org.get("store_settings") or {}).get("display_name") or org_slug)
     # SEO-C (14/9 sera): la tagline vale come description solo se dice
     # abbastanza (>= 80 caratteri); altrimenti la bio, che e' sempre
     # piu' ricca («Ilaria» aveva una description di 35 caratteri)

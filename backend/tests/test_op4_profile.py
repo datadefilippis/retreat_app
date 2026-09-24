@@ -119,14 +119,15 @@ class TestPublicName:
         """La risoluzione 'org.name prima dei nomi store' deve restare
         su tutte e 4 le superfici (regressione = incongruenza)."""
         pub = (BACKEND_DIR / "routers" / "public.py").read_text()
-        # PL9: davanti c'è la redazione dei campioni, ma la risoluzione
-        # resta org-first (org.name → display_name → store name → slug)
-        assert '"name": "" if _is_sample else (org.get("name")' in pub
-        assert 'or ss.get("display_name") or s.get("name") or s["slug"])' in pub
-        assert '"name": org.get("name") or store.get("name")' in pub
-        assert 'org_name[o["id"]] = o.get("name") or' in pub
+        # P1 (24/9/2026): UNA funzione, services/nome_pubblico.nome_pubblico
+        # (org.name → «Nome · Marchio» quando c'e' la persona; i nomi store
+        # restano il fallback), su tutte e 4 le superfici
+        assert '"name": "" if _is_sample else _nome_pubblico(' in pub
+        assert 'fallback=ss.get("display_name") or s.get("name") or s["slug"])' in pub
+        assert '"name": _nome_pubblico(org, fallback=store.get("name")' in pub
+        assert 'org_name[o["id"]] = _nome_pubblico(o, fallback=' in pub
         shell = (BACKEND_DIR / "routers" / "seo_shell.py").read_text()
-        assert 'name = (org.get("name")' in shell
+        assert "name = _np(org, fallback=" in shell
 
 
 # ─── 4. i18n: chiavi operators nelle 4 lingue ────────────────────────────

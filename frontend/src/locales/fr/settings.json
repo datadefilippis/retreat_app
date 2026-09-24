@@ -25,7 +25,8 @@
     "name_required": "Le nom de l'organisation ne peut pas etre vide",
     "save_error": "Erreur lors de l'enregistrement",
     "load_error": "Impossible de charger les parametres",
-    "admin_only": "Seuls les admins peuvent modifier les parametres de l'organisation."
+    "admin_only": "Seuls les admins peuvent modifier les parametres de l'organisation.",
+    "nameHintMarchio": "C'est le nom de ton activité : en public il apparaît à côté de ton nom, défini dans le Profil public."
   },
   "plan": {
     "card_title": "Statut et plan",
@@ -690,7 +691,7 @@
     "coverUploaded": "Couverture téléchargée",
     "coverError": "Erreur de téléchargement",
     "bio": "Qui tu es (bio)",
-    "bioPlaceholder": "Raconte qui tu es et quelles expériences tu crées : 2-3 phrases suffisent.",
+    "bioPlaceholder": "Écris comme tu parles : qui tu es, ce que tu proposes, pour qui, comment tu travailles.",
     "bioEmpty": "Pas encore de bio : écris 2-3 phrases sur toi.",
     "region": "Région",
     "socials": "Réseaux sociaux et web",
@@ -733,6 +734,23 @@
     "sedePrincipale": "principale",
     "sedeSenzaMappa": "senza posizione sulla mappa",
     "sedeAggiungi": "Aggiungi una sede: cerca e scegli dalla lista…",
-    "sedeNessuna": "Scegli dalla lista: senza una sede non compari nelle ricerche per zona."
+    "sedeNessuna": "Scegli dalla lista: senza una sede non compari nelle ricerche per zona.",
+    "nomePersona": "Ton nom",
+    "nomePersonaHint": "C'est la première chose que les gens lisent : le profil est le tien, pas celui d'une marque.",
+    "marchio": "Ton activité (si tu en as une)",
+    "marchioHint": "Affiché à côté de ton nom. C'est le même nom d'entreprise que dans les Paramètres.",
+    "showContactsPubblico": "Afficher téléphone et email sur le profil public",
+    "showContactsPrivato": "Désactivé, le numéro reste privé : seule Aurya le voit, pour te joindre.",
+    "bioGuidaTitolo": "La description devrait aider quelqu'un qui ne te connaît pas à comprendre :",
+    "bioGuidaChiusa": "L'objectif est simple : permettre à qui arrive sur ton profil de mieux te connaître.",
+    "bioBreve": "Trop court pour te connaître",
+    "bioBuona": "Bien",
+    "bioCompleta": "Complète",
+    "bioGuidaCosa": "de quoi tu t'occupes",
+    "bioGuidaPratiche": "quelles pratiques ou quels parcours tu proposes",
+    "bioGuidaChi": "à qui tu t'adresses",
+    "bioGuidaVisione": "ta vision du bien-être",
+    "bioGuidaApproccio": "ton approche et ta façon de travailler",
+    "bioGuidaAspettarsi": "ce que peut attendre une personne qui commence un parcours avec toi"
   }
 }
