@@ -108,7 +108,8 @@ class TestLiveFlow:
                                 "source": "blog_yoga",
                                 "topics": ["yoga", "operatori"]},
                           timeout=10)
-        assert r.status_code == 201 and r.json() == {"ok": True}
+        # 24/9: la risposta porta anche `modalita` (dal solo interruttore, identica per tutti)
+        assert r.status_code == 201 and r.json()["ok"] is True and r.json()["modalita"] in ("conferma", "benvenuto")
 
         # confirm col token firmato
         r = requests.post(f"{BASE_URL}/api/public/newsletter/confirm",
@@ -230,7 +231,8 @@ class TestAccessMagicLink:
         confirmed_branch = src.split('existing.get("status") == "confirmed"')[1]
         confirmed_branch = confirmed_branch.split("# nuovo, pending")[0]
         assert "_send_access_email(" in confirmed_branch
-        assert 'return {"ok": True}' in confirmed_branch
+        # 24/9: stessa risposta del ramo nuovo/pending (modalita dal solo interruttore): nessun oracolo
+        assert 'return {"ok": True, "modalita": _modalita_risposta()}' in confirmed_branch
         # il magic link porta il return_to (si torna alla guida)
         assert "_safe_return_to(payload.return_to)" in confirmed_branch
 
