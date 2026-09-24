@@ -24,10 +24,17 @@ Il disegno:
   ANTEPRIMA usano lo stesso codice che invia.
 
 Operatore (organizations, orologio created_at):
-  g2   giorno 2-4   → a noi: aggiungilo al gruppo Telegram, scrivigli
-  profilo_online (evento, entro 60 giorni) → il link, i canali (bacheca, supporto, Instagram), i ritiri e la consulenza (EP 19/9)
-  np5  5-9, np10 10-14, np15 15-21 → «pagina non ancora online»
+  profilo_online (evento, entro 60 giorni) → parte quando NASCE la pagina
+       (slug + bio), non al primo servizio (PE2, 24/9): il link, il
+       listino come prossimo passo se manca, i canali, i ritiri
+  np5  5-9, np10 10-14, np15 15-21 → «non online», in DUE varianti
+       decise dal template sullo stato: senza pagina («ti manca la
+       pagina») oppure pagina senza listino («manca il listino»); chi ha
+       pubblicato solo un ritiro ha la pagina e riceve la seconda (PE3)
   r14  14-20 (online, nessun ritiro) → il primo ritiro
+  (PE1, 24/9, founder: VIA «g2», il promemoria a noi «Da 2 giorni su
+   Aurya»: era l'email piu' inviata di tutte e non serviva; la coda di
+   lavoro vive nel pannello admin)
 Cerchio (aurya_subscribers confermati, orologio confirmed_at):
   benvenuto, in tre varianti esclusive, subito alla conferma (il giro
   ogni 6h e' la rete di sicurezza, finestra 0-1 giorni):
@@ -71,6 +78,7 @@ class Passo:
 
 CONDIZIONI: Dict[str, Callable[[dict], bool]] = {
     "sempre": lambda s: True,
+    "pagina": lambda s: bool(s.get("pagina")),
     "online": lambda s: bool(s.get("online")),
     "non_online": lambda s: not s.get("online"),
     "online_senza_ritiro": lambda s: bool(s.get("online")) and not s.get("ritiro"),
@@ -83,8 +91,7 @@ _BENVENUTI = ("benvenuto_ritiri", "benvenuto_meditazioni", "benvenuto_altro")
 
 PASSI: Dict[str, Tuple[Passo, ...]] = {
     "operatore": (
-        Passo("g2", 2, 5, "sempre", T.op_g2_admin, a=_ADMIN),
-        Passo("profilo_online", None, None, "online", T.op_profilo_online),
+        Passo("profilo_online", None, None, "pagina", T.op_profilo_online),
         Passo("np5", 5, 10, "non_online", T.op_np5, equivalenti=("g7",)),
         Passo("np10", 10, 15, "non_online", T.op_np10, equivalenti=("g7",)),
         Passo("np15", 15, 22, "non_online", T.op_np15),
@@ -149,8 +156,8 @@ async def stato_operatore(org: dict) -> Dict[str, Any]:
     pp = org.get("public_profile") or {}
     profilo_ok = bool(pp.get("bio")) and bool(
         pp.get("cover_url") or pp.get("instagram") or pp.get("website") or pp.get("facebook"))
-    servizio = await products_collection.find_one(
-        {"organization_id": org_id, "item_type": "service", "is_published": True}, {"_id": 1})
+    n_servizi = await products_collection.count_documents(
+        {"organization_id": org_id, "item_type": "service", "is_published": True})
     ritiro = await products_collection.find_one(
         {"organization_id": org_id, "item_type": "event_ticket", "is_published": True}, {"_id": 1})
     slug = org.get("public_slug")
@@ -158,7 +165,13 @@ async def stato_operatore(org: dict) -> Dict[str, Any]:
         store = await stores_collection.find_one(
             {"organization_id": org_id, "is_active": True}, {"_id": 0, "slug": 1})
         slug = (store or {}).get("slug")
-    return {"online": bool(slug) and profilo_ok and bool(servizio),
+    # PE (24/9): tre fatti separati, cosi' ogni email parla dello stato vero.
+    # `pagina` = la pagina esiste (slug + bio); `listino` = un servizio
+    # pubblicato; `online` = pagina completa + listino (invariato: guida
+    # r14 e la compatibilita' col pregresso).
+    pagina = bool(slug) and bool(pp.get("bio"))
+    return {"pagina": pagina, "listino": n_servizi > 0, "n_servizi": n_servizi,
+            "online": bool(slug) and profilo_ok and n_servizi > 0,
             "ritiro": bool(ritiro), "slug": slug, "iban": bool(org.get("bank_iban"))}
 
 
@@ -425,8 +438,9 @@ async def anteprima(pubblico: str, nome: str, email: Optional[str] = None) -> Di
             stato = await stato_operatore(org)
         else:
             org, dest, nome_dest = _FITTIZIO_ORG, email or "giulia@esempio.it", "Giulia Serra"
-            stato = {"online": passo.condizione != "non_online", "ritiro": False,
-                     "slug": "studio-sole", "iban": False}
+            acceso = passo.condizione != "non_online"
+            stato = {"pagina": acceso, "listino": acceso, "n_servizi": 2 if acceso else 0,
+                     "online": acceso, "ritiro": False, "slug": "studio-sole", "iban": False}
         ctx = {"nome": nome_dest, "email": dest, "org": org, "stato": stato, "fondatori": await _fondatori()}
     else:
         sub = None

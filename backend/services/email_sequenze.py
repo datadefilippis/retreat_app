@@ -143,19 +143,14 @@ def benvenuto_operatore(email: str, nome: str, verification_token: str, locale: 
 # OPERATORE — i passi della sequenza
 # ─────────────────────────────────────────────────────────────────────────────
 
-def op_g2_admin(ctx: dict) -> Tuple[str, str]:
-    """Il promemoria a noi: aggiungilo al gruppo Telegram e scrivigli due righe."""
-    org = ctx.get("org") or {}
-    nome_org = org.get("name") or "Un professionista"
-    stato = ctx.get("stato") or {}
-    dove = "ha già la pagina online" if stato.get("online") else "non ha ancora la pagina online"
-    return (f"Da 2 giorni su Aurya: {nome_org}",
-            f"<p><b>{nome_org}</b> si è registrato due giorni fa ({ctx.get('email')}) e {dove}.</p>"
-            "<p>Due cose da fare: <strong>controllare che sia entrato nei canali Telegram</strong> "
-            "degli operatori Aurya (bacheca e supporto: i link li ha ricevuti con l'email della "
-            "pagina online), e scrivergli due righe senza copione, per chiedere come va e se "
-            "serve una mano con la pagina.</p>"
-            + _bottone(f"{APP_URL}/admin", "Apri il pannello"))
+# (PE1, 24/9, founder) — il promemoria del giorno 2 a noi non esiste piu':
+# era l'email piu' inviata di tutte e la coda di lavoro vive nel pannello
+# admin.
+
+
+def _pagina_esiste(ctx: dict) -> bool:
+    """PE3: la pagina c'e' (slug + bio) anche se manca il listino."""
+    return bool((ctx.get("stato") or {}).get("pagina"))
 
 
 def _link_in_chiaro(url: str) -> str:
@@ -223,10 +218,28 @@ def _blocco_ritiri(iban_presente: bool) -> str:
             "e ne parliamo.</p>")
 
 
+def _blocco_listino(stato: dict) -> str:
+    """PE2 (24/9, founder): l'email della pagina parte quando la pagina
+    NASCE, quindi spesso il listino ancora non c'e'. Un blocco che dice il
+    vero: se manca, e' il prossimo passo (un link, non un secondo bottone:
+    l'email fa una cosa sola); se c'e', quanti servizi ci sono."""
+    n = int(stato.get("n_servizi") or 0)
+    url = f"{APP_URL}/listino"
+    if n > 0:
+        quanti = "un servizio" if n == 1 else f"{n} servizi"
+        return (f"<p><strong>Il tuo listino.</strong> In pagina hai già {quanti}: chi arriva sa cosa "
+                f"può prenotare. Quando cambia qualcosa lo aggiorni da <a href=\"{url}\">Il tuo "
+                "listino</a>.</p>")
+    return ("<p><strong>Il prossimo passo è il listino.</strong> Una riga, un prezzo, una durata: "
+            "senza, chi arriva sulla tua pagina vede chi sei ma non sa cosa può prenotare. Per "
+            "esempio «Trattamento individuale · 60 min · 60 €». Si scrive in un minuto e si cambia "
+            f"quando vuoi: <a href=\"{url}\">aggiungi il primo servizio</a>.</p>")
+
+
 def op_profilo_online(ctx: dict) -> Tuple[str, str]:
-    """Evento: la pagina e' appena andata online. Il link e cosa farci, i
-    canali della rete (bacheca, supporto, Instagram), come funzionano i
-    ritiri (con la caparra solo se l'IBAN manca), la consulenza."""
+    """Evento: la pagina e' appena nata. Il link e cosa farci, il listino
+    se manca, i canali della rete (bacheca, supporto, Instagram), come
+    funzionano i ritiri (con la caparra solo se l'IBAN manca), la consulenza."""
     stato = ctx.get("stato") or {}
     url = f"{APP_URL}/o/{stato.get('slug')}"
     return ("La tua pagina è online: ecco il link",
@@ -236,6 +249,7 @@ def op_profilo_online(ctx: dict) -> Tuple[str, str]:
             "stampala sul biglietto. Chi la apre vede chi sei, cosa fai, e può chiederti un "
             "posto. Senza abbonamenti e senza commissioni.</p>"
             + _bottone(url, "Apri la tua pagina")
+            + _blocco_listino(stato)
             + _blocco_canali()
             + _blocco_ritiri(bool(stato.get("iban")))
             + "<p>Per tutto il resto rispondi a questa email: la legge Valentina.</p>"
@@ -243,7 +257,25 @@ def op_profilo_online(ctx: dict) -> Tuple[str, str]:
 
 
 def op_np5(ctx: dict) -> Tuple[str, str]:
-    """Giorno 5 senza pagina: cosa serve, in concreto."""
+    """Giorno 5: senza pagina, cosa serve; con la pagina ma senza listino,
+    il listino (PE3: mai dire «non hai la pagina» a chi ce l'ha)."""
+    if _pagina_esiste(ctx):
+        stato = ctx.get("stato") or {}
+        pagina = f"{APP_URL}/o/{stato.get('slug')}"
+        return ("La tua pagina c'è: manca il listino",
+                f"<p>{_saluto(ctx.get('nome'))}</p>"
+                f"<p>la tua pagina su Aurya è online (<a href=\"{pagina}\">{pagina}</a>), ma non ha "
+                "ancora un servizio con il prezzo. Chi la apre vede chi sei e non sa cosa può "
+                "prenotare.</p>"
+                "<p>Basta una riga, e ci si mette un minuto:</p>"
+                "<ul>"
+                "<li><strong>il nome</strong> del servizio che proponi più spesso;</li>"
+                "<li><strong>la durata</strong>, anche indicativa;</li>"
+                "<li><strong>il prezzo</strong>, quello che chiedi già oggi. Si cambia quando vuoi.</li>"
+                "</ul>"
+                + _bottone(f"{APP_URL}/listino", "Aggiungi il primo servizio")
+                + "<p>Se qualcosa ti blocca, rispondi a questa email: la legge Valentina.</p>"
+                + _firma())
     url = f"{APP_URL}/public-profile"
     return ("Ti manca solo la pagina",
             f"<p>{_saluto(ctx.get('nome'))}</p>"
@@ -261,7 +293,24 @@ def op_np5(ctx: dict) -> Tuple[str, str]:
 
 
 def op_np10(ctx: dict) -> Tuple[str, str]:
-    """Giorno 10 senza pagina: gli ostacoli veri, e l'offerta di farlo insieme."""
+    """Giorno 10: gli ostacoli veri (della pagina, o del listino se la
+    pagina c'e'), e l'offerta di farlo insieme."""
+    if _pagina_esiste(ctx):
+        url = f"{APP_URL}/listino"
+        return ("Il listino, in un minuto",
+                f"<p>{_saluto(ctx.get('nome'))}</p>"
+                "<p>quando un listino resta vuoto, quasi sempre è per una di queste tre cose. "
+                "Le diciamo perché a tutte c'è una risposta corta.</p>"
+                "<p><strong>«Non so che prezzo mettere.»</strong> Metti il prezzo che chiedi già oggi "
+                "a chi ti contatta. Si cambia in un secondo.</p>"
+                "<p><strong>«Faccio tante cose diverse.»</strong> Parti da quella che ti chiedono di "
+                "più. Le altre le aggiungi dopo, una riga alla volta.</p>"
+                "<p><strong>«Lavoro solo su richiesta.»</strong> Va bene: il servizio nasce «su "
+                "richiesta», chi vuole un posto ti scrive e il prezzo lo concordate.</p>"
+                + _bottone(url, "Apri il listino")
+                + "<p>Se preferisci farlo insieme, rispondi a questa email con «insieme»: Valentina "
+                  "ti scrive e in dieci minuti il listino è fatto.</p>"
+                + _firma())
     url = f"{APP_URL}/public-profile"
     return ("Cosa blocca, di solito",
             f"<p>{_saluto(ctx.get('nome'))}</p>"
@@ -280,12 +329,29 @@ def op_np10(ctx: dict) -> Tuple[str, str]:
 
 
 def op_np15(ctx: dict) -> Tuple[str, str]:
-    """Giorno 15 senza pagina: l'ultima, onesta. Lo spazio resta aperto."""
+    """Giorno 15: l'ultima, onesta, su questo passo (pagina o listino).
+    Lo spazio resta aperto."""
+    if _pagina_esiste(ctx):
+        url = f"{APP_URL}/listino"
+        return ("Un'ultima cosa sul listino, poi non insistiamo",
+                f"<p>{_saluto(ctx.get('nome'))}</p>"
+                "<p>questa è l'ultima email che ti mandiamo sul listino. La tua pagina resta online "
+                "com'è, e il listino lo aggiungi quando vuoi: un minuto, una riga.</p>"
+                "<p>Solo due cose, per chiarezza:</p>"
+                "<ul>"
+                "<li>se vuoi una mano, rispondi <strong>«insieme»</strong>: Valentina ti scrive e lo "
+                "fate in dieci minuti;</li>"
+                "<li>se ti manca solo il tempo di sederti, il bottone è qui sotto.</li>"
+                "</ul>"
+                + _bottone(url, "Aggiungi il primo servizio")
+                + "<p>Grazie di essere su Aurya. Buon lavoro davvero.</p>"
+                + _firma())
     url = f"{APP_URL}/public-profile"
     return ("Un'ultima cosa, poi non insistiamo",
             f"<p>{_saluto(ctx.get('nome'))}</p>"
-            "<p>questa è l'ultima email che ti mandiamo sulla pagina. Non perché ci sia una "
-            "scadenza: il tuo spazio resta aperto, gratis, e quando vorrai lo trovi com'era.</p>"
+            "<p>questa è l'ultima email che ti mandiamo su questo passo, la pagina. Non perché ci "
+            "sia una scadenza: il tuo spazio resta aperto, gratis, e quando vorrai lo trovi com'era. "
+            "Se poi la pagina va online, ti scriviamo il link: quella sola.</p>"
             "<p>Solo tre cose, per chiarezza:</p>"
             "<ul>"
             "<li>se non è il momento, rispondi <strong>«più avanti»</strong> e ci risentiamo fra "

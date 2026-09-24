@@ -586,22 +586,30 @@ class TestFv2LeSequenze:
     def test_i_passi_partono_solo_nella_loro_finestra(self):
         sys.path.insert(0, str(BACKEND_DIR))
         from services.sequenze import passi_dovuti, PASSI, passo_dovuto
-        assert [p.nome for p in PASSI["operatore"]] == ["g2", "profilo_online", "np5", "np10", "np15", "r14"], \
-            "via g30 (founder 10/9 sera)"
+        # PE1 (24/9, founder): via «g2», il promemoria a noi
+        assert [p.nome for p in PASSI["operatore"]] == ["profilo_online", "np5", "np10", "np15", "r14"], \
+            "via g30 (founder 10/9 sera) e via g2 (founder 24/9)"
+        assert not any(p.a == "admin" for p in PASSI["operatore"]), "nessuna email a noi nella sequenza operatore"
         assert [p.nome for p in PASSI["cerchio"]] == ["benvenuto_ritiri", "benvenuto_meditazioni", "benvenuto_altro"]
         nomi = lambda g, s, m={}: [p.nome for p in passi_dovuti("operatore", g, s, m)]   # noqa: E731
-        spento = {"online": False, "ritiro": False}
-        acceso = {"online": True, "ritiro": False}
+        spento = {"pagina": False, "listino": False, "online": False, "ritiro": False}
+        acceso = {"pagina": True, "listino": True, "online": True, "ritiro": False}
+        # PE3: la pagina c'e' ma il listino no → stesse finestre np, testi diversi
+        meta = {"pagina": True, "listino": False, "online": False, "ritiro": False}
         assert nomi(0, spento) == [] and nomi(1, spento) == []
-        assert nomi(2, spento) == ["g2"] and nomi(4, spento) == ["g2"]
+        assert nomi(2, spento) == [] and nomi(4, spento) == [], "niente email nei giorni 2-4"
         assert nomi(5, spento) == ["np5"] and nomi(9, spento) == ["np5"]
         assert nomi(10, spento) == ["np10"] and nomi(15, spento) == ["np15"] and nomi(21, spento) == ["np15"]
         assert nomi(25, spento) == [] and nomi(30, spento) == [], "niente email a 30 giorni"
         assert nomi(5, acceso) == ["profilo_online"]
+        # PE2: la pagina online parte quando NASCE la pagina, anche senza listino
+        assert nomi(1, meta) == ["profilo_online"]
+        assert nomi(5, meta, {"profilo_online": "x"}) == ["np5"]
         assert nomi(14, acceso, {"profilo_online": "x"}) == ["r14"]
-        assert nomi(14, {"online": True, "ritiro": True}, {"profilo_online": "x"}) == []
+        assert nomi(14, meta, {"profilo_online": "x"}) == ["np10"], "senza listino niente r14"
+        assert nomi(14, {**acceso, "ritiro": True}, {"profilo_online": "x"}) == []
         assert nomi(7, spento, {"g7": "x"}) == [], "le marcature vecchie di RB8 valgono"
-        assert passo_dovuto(2) == "g2" and passo_dovuto(30) is None
+        assert passo_dovuto(2) is None and passo_dovuto(30) is None
 
     def test_il_benvenuto_del_cerchio_sceglie_la_variante(self):
         sys.path.insert(0, str(BACKEND_DIR))
@@ -662,8 +670,19 @@ class TestFv2LeSequenze:
         assert "IBAN" not in c_iban
         _, c14 = T.op_r14(ctx_on)
         assert "senza commissioni" in c14 and "bonifico" in c14 and "/events/new" in c14
-        o2, c2 = T.op_g2_admin(ctx)
-        assert "Telegram" in c2 and "Studio" in o2
+        assert not hasattr(T, "op_g2_admin"), "PE1: il promemoria a noi non esiste piu'"
+        # PE3: con la pagina ma senza listino, np5/10/15 parlano del LISTINO
+        ctx_meta = {**ctx, "stato": {"pagina": True, "listino": False, "n_servizi": 0,
+                                     "online": False, "ritiro": False, "slug": "giulia", "iban": False}}
+        for fn in (T.op_np5, T.op_np10, T.op_np15):
+            o, c = fn(ctx_meta)
+            assert "/listino" in c and c.count('class="btn"') == 1 and "/public-profile" not in c
+            assert "non è ancora online" not in c and "Ti manca solo la pagina" not in o
+        # PE2: la pagina online dice il listino se manca, i servizi se ci sono
+        _, c_senza = T.op_profilo_online(ctx_meta)
+        assert "prossimo passo è il listino" in c_senza and "/listino" in c_senza and c_senza.count('class="btn"') == 1
+        _, c_con = T.op_profilo_online({**ctx_on, "stato": {**ctx_on["stato"], "n_servizi": 3}})
+        assert "3 servizi" in c_con and "prossimo passo è il listino" not in c_con
 
     def test_il_benvenuto_del_cerchio_parla_solo_di_quello_che_ha_chiesto(self):
         sys.path.insert(0, str(BACKEND_DIR))
@@ -683,7 +702,9 @@ class TestFv2LeSequenze:
         for corpo in (c, c_m, c_a):
             assert "/newsletter/preferenze/tok" in corpo, "ci si cancella da ogni email"
         subs = (BACKEND_DIR / "routers" / "subscribers.py").read_text()
-        assert "Benvenuto nel Cerchio: un clic e sei dentro" in subs
+        # PE8 (24/9): la conferma non si chiama piu' «Benvenuto», il benvenuto arriva al clic
+        assert "Un clic per entrare nel Cerchio di Aurya" in subs
+        assert "Benvenuto nel Cerchio: un clic e sei dentro" not in subs
 
     def test_le_risposte_e_i_moduli_arrivano_alla_casella_di_aurya(self):
         """FV6 (10/9 sera, founder): Reply-To = aurya.life@gmail.com su OGNI

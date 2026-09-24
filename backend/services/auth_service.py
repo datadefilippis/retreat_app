@@ -34,7 +34,7 @@ from core.lockout_helpers import (
     is_account_locked as _is_locked,
 )
 from repositories import user_repository, organization_repository, audit_repository
-from services.email_service import send_welcome
+
 from database import users_collection
 
 # Track S Step 2.1 — timing-constant guard against email enumeration via

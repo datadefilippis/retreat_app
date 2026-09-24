@@ -124,7 +124,8 @@ async def create_lead(request: Request, payload: LeadPayload):
                 f"<p><b>Disponibilità a spostarsi:</b> {doc_set['travel'] or '—'}</p>"
                 f"<p><b>Messaggio:</b> {doc_set['message'] or '—'}</p>"
             )
-            send_email("info@aurya.life",
+            from services.email_service import CASELLA_AURYA
+            send_email(CASELLA_AURYA,   # PE7 (24/9): la casella Aurya, come ogni modulo
                        f"Nuovo lead {label}: {email}", html,
                        reply_to=email)
         except Exception as exc:           # noqa: BLE001

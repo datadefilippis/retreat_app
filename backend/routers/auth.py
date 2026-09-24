@@ -27,7 +27,7 @@ from models import (
 from auth import get_current_user, get_verified_user, require_admin, verify_password, get_password_hash, validate_password_strength
 from services import auth_service
 from repositories import user_repository, audit_repository, platform_settings_repository, invite_repository, organization_repository
-from services.email_service import send_password_reset, send_welcome, send_password_changed, send_verification, send_deactivation_notice, send_invite_request_notification, send_invite_request_confirmation
+from services.email_service import send_password_reset, send_password_changed, send_verification, send_deactivation_notice, send_invite_request_notification, send_invite_request_confirmation
 
 logger = logging.getLogger(__name__)
 

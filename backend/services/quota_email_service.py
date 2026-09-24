@@ -222,8 +222,12 @@ async def notify_quota_warning_email(
     settings_url = f"{APP_URL}/settings/billing"
     plans_url = f"{APP_URL}/plans"
 
-    subject = _t(f"quota_{level}_subject", locale, metric=metric_label)
-    intro = _t(f"quota_{level}_intro", locale, metric=metric_label, used=used, limit=effective_limit)
+    # PE4 (24/9): le chiavi i18n sono `quota_warning_*` e `quota_exceeded_*`;
+    # con level == "warn_80" si cercava `quota_warn_80_subject`, inesistente,
+    # e l'operatore riceveva l'oggetto letterale della chiave.
+    chiave = "quota_warning" if level == "warn_80" else "quota_exceeded"
+    subject = _t(f"{chiave}_subject", locale, metric=metric_label)
+    intro = _t(f"{chiave}_intro", locale, metric=metric_label, used=used, limit=effective_limit)
 
     if level == "warn_80":
         outro = _t("quota_warning_outro", locale)

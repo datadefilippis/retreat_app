@@ -122,12 +122,15 @@ async def send_at_risk_to_operator(
                    label=row.get("label", ""), amount=amount, due_date=due,
                    order_ref=order_ref)}</p>
             <p>{_t("pay_atrisk_merchant_actions", locale)}</p>
-        """, locale, reply_to=None, store_name=ctx["store_name"])
+        """, locale, reply_to=order.get("customer_email") or None, store_name=ctx["store_name"])
 
         subject = _t("pay_atrisk_merchant_subject", locale,
                      customer=customer, amount=amount)
+        # PE5 (24/9): l'email parla di un cliente, quindi si risponde al
+        # cliente (come «Nuova richiesta», FV7), non alla casella Aurya
         for r in recipients:
-            send_email(r, subject, html, sender_name=ctx["sender_name"])
+            send_email(r, subject, html, sender_name=ctx["sender_name"],
+                       reply_to=order.get("customer_email") or None)
         logger.info("payment_email: at_risk sent to=%s order=%s row=%s",
                     recipients, order.get("id"), row.get("seq"))
     except Exception as exc:

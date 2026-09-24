@@ -2,7 +2,7 @@
 Transactional email service via Brevo HTTP API.
 
 Usage:
-    from services.email_service import send_email, send_password_reset, send_welcome
+    from services.email_service import send_email, send_password_reset
 
 If BREVO_API_KEY is not set, emails are logged but not sent.
 This ensures the app never crashes due to missing email config.
@@ -1716,32 +1716,21 @@ def send_password_reset(to_email: str, reset_token: str, locale: str = "it") -> 
     return send_email(to_email, _t("reset_subject", locale), html)
 
 
-def send_welcome(to_email: str, user_name: str, verification_token: str = "", locale: str = "it") -> bool:
-    """Send welcome email after registration, with verification link if token provided."""
-    if verification_token:
-        verify_url = f"{APP_URL}/verify-email?token={verification_token}&lang={locale}"
-        html = _wrap_template(f"""
-            <p>{_t("greeting_name", locale, name=user_name)}</p>
-            <p>{_t("welcome_body", locale)}</p>
-            <p>{_t("welcome_verify", locale)}</p>
-            <p style="text-align: center;">
-                <a href="{verify_url}" class="btn">{_t("welcome_cta", locale)}</a>
-            </p>
-            {_link_block(verify_url, locale)}
-            <p>{_t("welcome_expiry", locale)}</p>
-        """, locale)
-        return send_email(to_email, _t("welcome_subject", locale), html)
-    else:
-        login_url = f"{APP_URL}/login?lang={locale}"
-        html = _wrap_template(f"""
-            <p>{_t("greeting_name", locale, name=user_name)}</p>
-            <p>{_t("welcome_body", locale)}</p>
-            <p>{_t("welcome_no_token_body", locale)}</p>
-            <p style="text-align: center;">
-                <a href="{login_url}" class="btn">{_t("welcome_no_token_cta", locale)}</a>
-            </p>
-        """, locale)
-        return send_email(to_email, _t("welcome_subject_no_token", locale), html)
+# (PE9, 24/9) — `send_welcome` («Benvenuto su Aurya — Verifica la tua
+# email») non esiste piu': dal 10/9 il giorno zero dell'operatore e'
+# services/email_sequenze.benvenuto_operatore, e questa era importata e
+# mai chiamata.
+
+
+def send_admin_notification(subject: str, body: str) -> bool:
+    """PE6 (24/9) — una nota interna alla casella Aurya (CASELLA_AURYA),
+    testo semplice. Nata per la richiesta GDPR di cancellazione account
+    (routers/customer_portal.py), che la importava senza che esistesse:
+    l'ImportError era ingoiato e nessuna email partiva. Salta il gate:
+    la casella e' nostra."""
+    righe = "".join(f"<p>{r}</p>" if r.strip() else "" for r in (body or "").split("\n\n"))
+    righe = righe.replace("\n", "<br>")
+    return bool(send_email(CASELLA_AURYA, subject, _wrap_template(righe, "it"), bypass_gate=True))
 
 
 def send_verification(to_email: str, verification_token: str, locale: str = "it") -> bool:

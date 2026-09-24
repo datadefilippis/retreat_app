@@ -87,7 +87,10 @@ class TestRitiriEConsulenza:
 
 
 class TestPromemoriaInterno:
-    def test_il_giorno_2_a_noi_dice_di_controllare_non_di_aggiungere(self):
+    def test_il_promemoria_a_noi_non_esiste_piu(self):
+        """PE1 (24/9, founder): «Da 2 giorni su Aurya» era l'email piu'
+        inviata di tutte e non serviva. La coda di lavoro vive in admin."""
         T = _mod()
-        _, c = T.op_g2_admin({"org": {"name": "Studio Sole"}, "email": "x@y.it", "stato": {"online": True}})
-        assert "Telegram" in c and "controllare che sia entrato" in c and "aggiungerlo al gruppo" not in c
+        assert not hasattr(T, "op_g2_admin")
+        import pathlib
+        assert "Da 2 giorni su Aurya" not in pathlib.Path(T.__file__).read_text(encoding="utf-8")

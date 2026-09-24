@@ -325,17 +325,18 @@ async def _send_notifications(
 
 
 async def _collect_recipients(org_id: str) -> list:
-    """Return a deduped list of emails: org admins + OPS_ALERT_EMAIL."""
+    """Return a deduped list of emails: the FIRST org admin + OPS_ALERT_EMAIL.
+    PE10 (24/9): prima andava a tutti gli admin dell'org, N+1 copie
+    identiche dello stesso incidente; una all'organizzazione basta."""
     from database import users_collection
 
     recipients = []
-    async for user in users_collection.find(
+    primo = await users_collection.find_one(
         {"organization_id": org_id, "role": "admin", "is_active": {"$ne": False}},
-        {"_id": 0, "email": 1},
-    ):
-        email = user.get("email")
-        if email:
-            recipients.append(email)
+        {"_id": 0, "email": 1}, sort=[("created_at", 1)],
+    )
+    if primo and primo.get("email"):
+        recipients.append(primo["email"])
 
     ops_email = os.environ.get("OPS_ALERT_EMAIL", "").strip()
     if ops_email and ops_email not in recipients:
