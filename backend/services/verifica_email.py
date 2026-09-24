@@ -150,4 +150,14 @@ async def segna_verificato(email: str, tipo: str, dettaglio: str = "") -> dict:
     except Exception as exc:                # noqa: BLE001
         logger.warning("email_verified non aggiornato per %s: %s", _mask(email), exc)
         esito["account_verificato_ora"] = False
+    # E6: la pagina dell'operatore, pronta ma ferma in attesa della
+    # verifica, esce al primo clic verificante. Best-effort.
+    if esito.get("account_verificato_ora"):
+        try:
+            u = await users_collection.find_one({"email": email}, {"_id": 0, "organization_id": 1})
+            if u and u.get("organization_id"):
+                from routers.organizations import _ensure_public_surface
+                await _ensure_public_surface(u["organization_id"])
+        except Exception as exc:            # noqa: BLE001
+            logger.warning("pagina dopo verifica non aggiornata per %s: %s", _mask(email), exc)
     return esito

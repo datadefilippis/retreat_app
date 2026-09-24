@@ -2089,6 +2089,20 @@ async def _ensure_public_surface(org_id: str) -> None:
          "store_settings": 1})
     if not org or not (org.get("public_profile") or {}).get("bio"):
         return
+    # E6 (24/9/2026) — col login senza verifica si costruisce la pagina
+    # subito, ma va ONLINE solo con l'email confermata: da una pagina
+    # pubblica partono email a clienti veri. Al primo clic verificante
+    # (verify-email o segna_verificato) si richiama questa funzione e
+    # la pagina esce senza un altro salvataggio. Interruttore spento:
+    # chi non e' verificato non entra nemmeno, quindi nulla cambia.
+    from core.flags import login_senza_verifica
+    if login_senza_verifica():
+        from database import users_collection
+        titolare = await users_collection.find_one(
+            {"organization_id": org_id, "role": "admin"},
+            {"_id": 0, "email_verified": 1}, sort=[("created_at", 1)])
+        if titolare and not titolare.get("email_verified", False):
+            return
     # Il cancello dello store vale solo se lo store offre DAVVERO una
     # superficie pubblica (pubblicato e con slug). Le org storiche
     # portano store attivi mai pubblicati e senza slug (visto in prod

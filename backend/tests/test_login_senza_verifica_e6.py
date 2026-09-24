@@ -56,6 +56,16 @@ class TestDoveRestaRigido:
         # l'embed resta rigido per conto suo
         assert "async def require_verified_admin" in src
 
+    def test_la_pagina_va_online_solo_con_email_verificata(self):
+        org = (BACKEND / "routers" / "organizations.py").read_text(encoding="utf-8")
+        i = org.index("async def _ensure_public_surface")
+        blocco = org[i:i + 2200]
+        assert "login_senza_verifica()" in blocco
+        assert 'if titolare and not titolare.get("email_verified", False):\n            return' in blocco
+        # e al primo clic verificante la pagina esce da sola, dai due punti
+        assert "from routers.organizations import _ensure_public_surface" in (BACKEND / "routers" / "auth.py").read_text()
+        assert "from routers.organizations import _ensure_public_surface" in (BACKEND / "services" / "verifica_email.py").read_text()
+
     def test_login_rispetta_il_flag(self):
         src = (BACKEND / "services" / "auth_service.py").read_text(encoding="utf-8")
         assert 'if not is_sysadmin and not login_senza_verifica():' in src

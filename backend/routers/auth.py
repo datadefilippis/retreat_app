@@ -962,6 +962,14 @@ async def verify_email(request: Request, body: VerifyEmailRequest):
             "updated_at": now_iso,
         },
     )
+    # E6 (24/9): se col login senza verifica la pagina era pronta ma
+    # ferma, ora esce. Best-effort: la verifica non deve mai fallire per questo.
+    try:
+        if user_doc.get("organization_id"):
+            from routers.organizations import _ensure_public_surface
+            await _ensure_public_surface(user_doc["organization_id"])
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("pagina dopo verifica non aggiornata: %s", exc)
 
     # Audit log (non-blocking)
     # FV1 (10/9/2026) — la sessione parte qui: chi clicca e' dentro
