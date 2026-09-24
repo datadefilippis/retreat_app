@@ -29,6 +29,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import LeadForm from '../../prelaunch/LeadForm';
+import { testoConsenso } from '../../../lib/testiConsenso';
 import { DisplayTitle, Lede, EditorialCta } from '../../../components/editorial';
 
 const GREEN = '#376254';
@@ -89,7 +90,9 @@ export default function BlogNewsletterCTA({ category = null }) {
           type="traveler" compact subscribe accent={GREEN}
           experiencesOptIn
           context={category ? `blog_${category}` : 'blog'}
-          consentText={t('blogCta.consent', { defaultValue: 'Acconsento a ricevere la lettera di Aurya via email.' })}
+          /* Lotto D (24/9/2026): il testo della casella e' UNO su tutte le
+             porte, versionato in lib/testiConsenso.js */
+          consentText={testoConsenso().testo}
           ctaLabel={isRetreat
             ? t('blogCta.rtCta', { defaultValue: 'Tienimi aggiornato' })
             : t('blogCta.prCta', { defaultValue: 'Iscrivimi alla lettera' })}

@@ -321,7 +321,9 @@ _HOME_COPY = {
     # CN3 — la sezione vende l'appartenenza (il Cerchio), non «una
     # lettera ogni tanto»: stessa pila di valore della pagina
     "letterTitle": "Entra nel Cerchio di Aurya.",
-    "letterP6": "Una conferma via email, poi sei dentro. Ti cancelli con un clic.",
+    # Lotto D (24/9/2026): niente promessa di un passo di conferma (vera
+    # con o senza doppio opt-in) — allineata al locale nwHome.letterP6
+    "letterP6": "Gratis, e ti cancelli con un clic.",
 }
 
 

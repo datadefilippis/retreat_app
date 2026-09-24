@@ -14,6 +14,7 @@
  */
 import React, { useState } from 'react';
 import { prova, iscriviESblocca } from '../../lib/cerchio';
+import { testoConsenso } from '../../lib/testiConsenso';
 import { PLATFORM_TOKEN_KEY } from '../../api/platformClient';
 import AvvisamiRitiri, { useAvvisamiRitiri } from '../prelaunch/AvvisamiRitiri';
 
@@ -99,8 +100,10 @@ export default function InvitoSound({ fonte, dove = '/sound', variante = 'scuro'
           <input type="checkbox" checked={consent}
             onChange={(e) => setConsent(e.target.checked)}
             style={{ width: 18, height: 18, flex: 'none', marginTop: 1, accentColor: chiaro ? '#2f5749' : '#d6c49a' }} />
-          <span>Acconsento a ricevere la newsletter; disiscrizione in
-            un click. <a href="/privacy" target="_blank" rel="noreferrer">Privacy</a></span>
+          {/* Lotto D (24/9/2026): il testo della casella e' UNO su tutte
+              le porte, versionato in lib/testiConsenso.js */}
+          <span>{testoConsenso().testo}
+            {' '}<a href="/privacy" target="_blank" rel="noreferrer">Privacy</a></span>
         </label>
       </form>
       {stato && stato !== 'attesa' && stato !== 'dentro' && (

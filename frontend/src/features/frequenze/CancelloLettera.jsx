@@ -17,6 +17,7 @@
  */
 import React, { useState } from 'react';
 import { sblocca, iscriviESblocca } from '../../lib/cerchio';
+import { testoConsenso } from '../../lib/testiConsenso';
 import { creaAccount, entraInAurya } from '../../utils/authLinks';
 import AvvisamiRitiri, { useAvvisamiRitiri } from '../prelaunch/AvvisamiRitiri';
 
@@ -137,9 +138,9 @@ export default function CancelloLettera({
             onChange={(e) => setConsent(e.target.checked)}
             style={{ width: 18, height: 18, flex: 'none', marginTop: 1, accentColor: chiaro ? '#2f5749' : ORO }}
             data-testid="cancello-consenso" />
-          <span>Acconsento a ricevere le email del Cerchio di Aurya
-            (meditazioni, anteprime, la Lettera). Confermerai
-            dall&rsquo;email che ti arriva; ti cancelli con un clic.
+          {/* Lotto D (24/9/2026): il testo della casella e' UNO su tutte
+              le porte, versionato in lib/testiConsenso.js */}
+          <span>{testoConsenso().testo}
             {' '}<a href="/privacy" target="_blank" rel="noreferrer"
               style={chiaro ? undefined : { color: 'var(--water)' }}
               className={chiaro ? 'underline' : undefined}>Privacy</a></span>

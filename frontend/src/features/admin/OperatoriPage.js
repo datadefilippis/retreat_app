@@ -14,13 +14,29 @@ import DirectoryAdminTab from './DirectoryAdminTab';
 import InterviewsTab from './InterviewsTab';
 import FlaggedReviewsTab from './FlaggedReviewsTab';
 import UsersTab from './UsersTab';
+import LeadsTab from './LeadsTab';
+
+/* Lotto D (24/9/2026) — i lead professionisti delle landing stanno
+   QUI, sotto gli account (stessa componente del Cerchio, filtrata):
+   sono candidature alla rete, non iscritti alla Lettera. */
+function AccountETab() {
+  return (
+    <div className="space-y-10">
+      <UsersTab />
+      <section data-testid="admin-lead-professionisti">
+        <h2 className="mb-4 font-heading text-lg font-semibold">Contatti dalle landing (professionisti)</h2>
+        <LeadsTab tipo="operator" />
+      </section>
+    </div>
+  );
+}
 
 const TABS = [
   { value: 'organizzazioni', label: 'Organizzazioni', icon: Building2, element: <OrganizationsTab /> },
   { value: 'directory', label: 'Directory', icon: Globe2, element: <DirectoryAdminTab /> },
   { value: 'interviste', label: 'Interviste', icon: Mic, element: <InterviewsTab /> },
   { value: 'segnalazioni', label: 'Segnalazioni', icon: ShieldAlert, element: <FlaggedReviewsTab /> },
-  { value: 'account', label: 'Account operatori', icon: Users, element: <UsersTab /> },
+  { value: 'account', label: 'Account operatori', icon: Users, element: <AccountETab /> },
 ];
 
 export default function OperatoriPage() {

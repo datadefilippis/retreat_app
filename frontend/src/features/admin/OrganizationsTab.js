@@ -109,6 +109,14 @@ const OrganizationsTab = () => {
   const [schedaOrgId, setSchedaOrgId] = useState(null);
   const [schedaFoglio, setSchedaFoglio] = useState('scheda');
   const apriScheda = (orgId, foglio = 'scheda') => { setSchedaFoglio(foglio); setSchedaOrgId(orgId); };
+  // Lotto D (24/9/2026) — dal link «Account» dei lead (/admin/operatori?
+  // tab=organizzazioni&org=<id>) la scheda 360° si apre da sola
+  useEffect(() => {
+    let org = null;
+    try { org = new URLSearchParams(window.location.search).get('org'); } catch { /* niente */ }
+    if (org) apriScheda(org);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Detail dialog
   const [detailOpen, setDetailOpen]       = useState(false);

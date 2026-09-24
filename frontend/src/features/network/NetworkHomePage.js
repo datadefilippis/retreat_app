@@ -108,6 +108,7 @@ import useSeoMeta from '../storefront/lib/useSeoMeta';
 import BrandPayoff from '../../components/BrandPayoff';
 import HeroVideo from '../../components/HeroVideo';
 import LeadForm from '../prelaunch/LeadForm';
+import { testoConsenso } from '../../lib/testiConsenso';
 import {
   Section, DisplayTitle, TitleLine, Lede, ArticleCard, PillarCard, EditorialCta,
   PhotoBand, PhotoSplit,
@@ -779,7 +780,9 @@ export default function NetworkHomePage() {
             <div aria-hidden className="gold-rule mt-8 w-24" />
             <Lede size="body" tone="inherit" className="mt-7 max-w-[46ch] text-hero-shadow opacity-90">
               <TitleLine>
-                {t('nwHome.letterP6', { defaultValue: "Una conferma via email, poi sei dentro. Ti cancelli con un clic." })}
+                {/* Lotto D (24/9/2026): niente promessa di un passo di
+                    conferma, vera con o senza doppio opt-in */}
+                {t('nwHome.letterP6', { defaultValue: "Gratis, e ti cancelli con un clic." })}
               </TitleLine>
             </Lede>
             {/* LC5 — il form al posto del link: un passo in meno per
@@ -796,7 +799,7 @@ export default function NetworkHomePage() {
                 type="traveler" compact subscribe accent={SAGE}
                 experiencesOptIn experiencesDefault
                 context="home_letter"
-                consentText={t('blogCta.consent', { defaultValue: 'Acconsento a ricevere le email del Cerchio di Aurya.' })}
+                consentText={testoConsenso().testo}
                 ctaLabel={t('nwHome.letterCta', { defaultValue: 'Entra nel Cerchio' })}
                 thanksBody={t('blogCta.thanksDoi', { defaultValue: 'Quasi dentro: apri la tua casella e clicca «Entro nel Cerchio» nell’email che ti abbiamo appena mandato.' })}
               />

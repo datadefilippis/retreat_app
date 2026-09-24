@@ -72,6 +72,7 @@ import BlogNewsletterCTA from './components/BlogNewsletterCTA';
 import { prova, sblocca, emailDellaProva } from '../../lib/cerchio';
 import { creaAccount } from '../../utils/authLinks';
 import LeadForm from '../prelaunch/LeadForm';
+import { testoConsenso } from '../../lib/testiConsenso';
 import { Lock } from 'lucide-react';
 import useSeoMeta from './lib/useSeoMeta';
 import { useSiteConfig } from '../../context/SiteConfigContext';
@@ -396,7 +397,9 @@ export default function BlogArticlePage() {
                       context={`gate_${article.category || slug}`}
                       returnTo={`/blog/${slug}`}
                       onSbloccato={() => window.location.reload()}
-                      consentText={t('blogCta.consent', { defaultValue: 'Acconsento a ricevere la lettera di Aurya via email.' })}
+                      /* Lotto D (24/9/2026): il testo della casella e' UNO
+                         su tutte le porte, versionato in lib/testiConsenso.js */
+                      consentText={testoConsenso().testo}
                       ctaLabel={t('blog.gateCta', { defaultValue: 'Sblocca la guida completa' })}
                       thanksBody={t('blog.gateThanks', { defaultValue: 'Controlla la tua casella: il link di conferma sblocca la guida.' })}
                     />

@@ -16,7 +16,9 @@ import SequenzeTab from './SequenzeTab';
 
 const TABS = [
   { value: 'iscritti', label: 'Iscritti', icon: Users, element: <IscrittiTab /> },
-  { value: 'contatti', label: 'Contatti dalle landing', icon: Inbox, element: <LeadsTab /> },
+  // Lotto D (24/9/2026): qui solo i viaggiatori; i lead professionisti
+  // vivono nella regia operatori (/admin/operatori, tab Account)
+  { value: 'contatti', label: 'Contatti dalle landing', icon: Inbox, element: <LeadsTab tipo="traveler" /> },
   { value: 'email', label: 'Email automatiche', icon: Mail, element: <SequenzeTab /> },
 ];
 

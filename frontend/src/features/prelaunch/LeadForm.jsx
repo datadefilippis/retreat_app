@@ -27,6 +27,7 @@ import { useAuth } from '../../context/AuthContext';
 import { trackEvent } from '../../lib/analytics';
 import { creaAccount } from '../../utils/authLinks';
 import { sblocca } from '../../lib/cerchio';
+import { VERSIONE_CORRENTE, provenienzaCorrente, testoConsenso } from '../../lib/testiConsenso';
 
 // FV5 (10/9/2026 sera) — le vie, il raggio, il budget e la mappa verso
 // il vocabolario del backend vivono in PreferenzeRitiri: UN blocco per
@@ -177,6 +178,10 @@ export default function LeadForm({ type = 'traveler', accent = '#376254', contex
           // il cancello di una guida (onSbloccato presente) sblocca
           // con la chiamata successiva: niente magic link ridondante
           unlock_flow: !!onSbloccato,
+          // Lotto D (24/9/2026) — provenienza (url, referrer, utm) e
+          // versione del testo di consenso letto: il registro le conserva
+          ...provenienzaCorrente(),
+          consenso_versione: VERSIONE_CORRENTE,
         });
         trackEvent('generate_lead', { lead_type: 'subscriber', lead_context: context || 'landing', porta: porta || '(nessuna)' });
         // SB2 (20/8) — gia' confermato? La prova arriva subito e il
@@ -402,8 +407,12 @@ export default function LeadForm({ type = 'traveler', accent = '#376254', contex
                onChange={(e) => setConsent(e.target.checked)}
                className="mt-0.5 h-5 w-5 shrink-0" style={{ accentColor: accent }} required />
         <span>
+          {/* Lotto D: sulle porte del Cerchio (subscribe) il testo e' UNO,
+              versionato in lib/testiConsenso.js; la candidatura
+              professionista e i lead del prelancio tengono il loro */}
           {consentText
-            || t('form.consent', { defaultValue: 'Acconsento a essere contattato via email sul lancio di Aurya.' })}{' '}
+            || (subscribe ? testoConsenso().testo
+              : t('form.consent', { defaultValue: 'Acconsento a essere contattato via email sul lancio di Aurya.' }))}{' '}
           <a href="/privacy" target="_blank" rel="noreferrer" className="underline">
             {t('form.privacy', { defaultValue: 'Privacy' })}
           </a>

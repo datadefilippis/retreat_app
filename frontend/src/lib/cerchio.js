@@ -19,6 +19,7 @@
  * divergevano.
  */
 import api from '../api/client';
+import { VERSIONE_CORRENTE, provenienzaCorrente } from './testiConsenso';
 
 export const PROVA_KEY = 'aurya_nl_token';
 
@@ -93,6 +94,11 @@ export async function iscriviESblocca({ email, source, returnTo,
     // arriva dalla riga sotto, niente magic link via email
     unlock_flow: true,
     ...(name ? { name } : {}),
+    // Lotto D (24/9/2026) — la provenienza scritta all'iscrizione (url,
+    // referrer, utm) e la VERSIONE del testo di consenso che la casella
+    // mostrava: e' quello che il registro del consenso conserva.
+    ...provenienzaCorrente(),
+    consenso_versione: VERSIONE_CORRENTE,
   });
   try {
     await sblocca(email);

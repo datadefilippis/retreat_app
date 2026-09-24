@@ -51,6 +51,7 @@ import { Headphones, CalendarHeart, Mail } from 'lucide-react';
 import MarketplaceShell from '../storefront/components/MarketplaceShell';
 import useSeoMeta from '../storefront/lib/useSeoMeta';
 import LeadForm from './LeadForm';
+import { testoConsenso } from '../../lib/testiConsenso';
 import {
   Section, DisplayTitle, Lede, PhotoOpener, EditorialCta,
 } from '../../components/editorial';
@@ -83,11 +84,15 @@ function SchedaForm({ t, id, context, titolo }) {
         accent={SAGE}
         context="newsletter"
         ctaLabel={t('nl.cta', { defaultValue: 'Entra nel Cerchio' })}
-        consentText={t('nl.consent', { defaultValue: 'Acconsento a ricevere le email del Cerchio di Aurya.' })}
+        /* Lotto D (24/9/2026): il testo della casella e' UNO su tutte le
+           porte, versionato in lib/testiConsenso.js (non passa da i18n) */
+        consentText={testoConsenso().testo}
         thanksBody={t('nl.thanksDoi', { defaultValue: 'Quasi dentro: apri la tua casella e clicca «Entro nel Cerchio» nell’email che ti abbiamo appena mandato.' })}
       />
+      {/* Lotto D: la riga di fiducia non promette piu' un passo di conferma
+          (vera con o senza doppio opt-in) */}
       <p className="mt-4 text-xs leading-relaxed text-foreground/60">
-        {t('nl.trust', { defaultValue: 'Una conferma via email, poi sei dentro. Gratis, e ti cancelli con un clic.' })}
+        {t('nl.trust', { defaultValue: 'Gratis, e ti cancelli con un clic.' })}
       </p>
     </div>
   );

@@ -17,6 +17,7 @@ import { frequenciesAPI } from '../../api/frequencies';
 import { SafetyCurtain, SafetyLine } from './SafetyCurtain';
 import { creaAccount, entraInAurya } from '../../utils/authLinks';
 import { prova, emailDellaProva, sblocca, iscriviESblocca, migraVecchieChiavi } from '../../lib/cerchio';
+import { testoConsenso } from '../../lib/testiConsenso';
 import AvvisamiRitiri, { useAvvisamiRitiri } from '../prelaunch/AvvisamiRitiri';
 import './frequenze.css';
 import './meditazioni.css';
@@ -217,9 +218,10 @@ export default function MeditazioniPage() {
                   onChange={(e) => setConsent(e.target.checked)}
                   style={{ width: 18, height: 18, flex: 'none', marginTop: 1, accentColor: '#d6c49a' }}
                   data-testid="med-consenso" />
-                <span>Acconsento a ricevere le email del Cerchio di Aurya:
-                  meditazioni, ritiri in anteprima e la Lettera. Ti cancelli
-                  con un clic. <a href="/privacy" target="_blank" rel="noreferrer"
+                {/* Lotto D (24/9/2026): il testo della casella e' UNO su
+                    tutte le porte, versionato in lib/testiConsenso.js */}
+                <span>{testoConsenso().testo}
+                  {' '}<a href="/privacy" target="_blank" rel="noreferrer"
                     style={{ color: 'var(--water)' }}>Privacy</a></span>
               </label>
             </form>

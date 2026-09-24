@@ -37,6 +37,7 @@ import { Headphones, Mail, CalendarHeart, Leaf, ShieldCheck, MapPin } from 'luci
 import MarketplaceShell from '../storefront/components/MarketplaceShell';
 import useSeoMeta from '../storefront/lib/useSeoMeta';
 import LeadForm from './LeadForm';
+import { testoConsenso } from '../../lib/testiConsenso';
 
 // RB12 (10/9/2026) — dal Magazine si arriva con ?tema=<categoria>: il
 // chip corrispondente parte acceso (vocabolario dei chip di LeadForm).
@@ -80,11 +81,15 @@ function SchedaForm({ t, id, context, titolo }) {
         accent={SAGE}
         context="cerca-ritiro"
         ctaLabel={t('tr.cta', { defaultValue: 'Trovami il mio ritiro' })}
-        consentText={t('tr.consent', { defaultValue: 'Acconsento a ricevere le email del Cerchio di Aurya, con ritiri ed esperienze selezionati in base alle mie preferenze.' })}
+        /* Lotto D (24/9/2026): il testo della casella e' UNO su tutte le
+           porte, versionato in lib/testiConsenso.js (non passa da i18n) */
+        consentText={testoConsenso().testo}
         thanksBody={t('tr.thanksDoi', { defaultValue: 'Quasi dentro: apri la tua casella e conferma. Appena confermi si aprono le meditazioni riservate, e da lì in poi ricevi ritiri ed esperienze pensati sui tuoi interessi e le tue preferenze.' })}
       />
+      {/* Lotto D: la riga di fiducia non promette piu' un passo di conferma
+          (vera con o senza doppio opt-in) */}
       <p className="mt-4 text-xs leading-relaxed text-foreground/60">
-        {t('tr.trust', { defaultValue: 'Una conferma via email, poi sei dentro. Gratis e puoi cancellarti con un clic.' })}
+        {t('tr.trust', { defaultValue: 'Gratis, e ti cancelli con un clic.' })}
       </p>
       {/* PL22 — il canale diretto resta: c'e' chi i form non li ama */}
       <p className="mt-2 text-xs text-foreground/60">
