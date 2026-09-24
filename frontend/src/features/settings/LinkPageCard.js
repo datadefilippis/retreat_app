@@ -45,7 +45,7 @@ const BLOCK_META = {
 };
 
 export default function LinkPageCard({
-  slug, initial, hasSocials, hasPhone, onGoToSocials, onGoToContacts,
+  slug, initial, nome, hasSocials, hasPhone, onGoToSocials, onGoToContacts,
 }) {
   const { t } = useTranslation('settings');
   const [lp, setLp] = useState(initial || {
@@ -150,7 +150,7 @@ export default function LinkPageCard({
   const copyUrl = async () => {
     try {
       await navigator.clipboard.writeText(pageUrl);
-      toast.success(t('linkPage.copied', { defaultValue: 'Link copiato: incollalo nella bio di Instagram.' }));
+      toast.success(t('linkPage.copied', { defaultValue: 'Link copiato: incollalo in bio o mandalo a chi ti chiede informazioni.' }));
     } catch {
       toast.error(t('linkPage.copyError', { defaultValue: 'Copia non riuscita.' }));
     }
@@ -181,6 +181,8 @@ export default function LinkPageCard({
       hint = t('linkPage.hintUpcoming', { defaultValue: 'Apparirà quando pubblichi il prossimo ritiro.' });
     } else if (meta.key === 'listino' && !hasListino) {
       hint = t('linkPage.hintListino', { defaultValue: 'Apparirà quando aggiungi un servizio al listino.' });
+    } else if (meta.key === 'profile') {
+      hint = t('linkPage.hintProfile', { defaultValue: 'Porta al tuo profilo Aurya: racconto, recensioni, servizi.' });
     }
     return (
       <li key={key} data-testid={`linkpage-row-${meta.key}`}
@@ -254,15 +256,22 @@ export default function LinkPageCard({
 
   return (
     <div className="rounded-2xl border bg-white shadow-sm lg:col-span-2" data-testid="linkpage-card">
+      {/* LK-pitch (24/9/2026, founder): la sezione non veniva usata
+          perche' non veniva capita («pagina link» per la bio di
+          Instagram diceva poco). Ora si spiega col VALORE: un solo
+          link che raccoglie tutto (sito, profilo Aurya, ritiro,
+          listino, WhatsApp, social, link liberi) da mandare ovunque,
+          non solo in bio. Da spenta e' una vetrina che invita; da
+          accesa resta l'editor di sempre. */}
       <div className="flex items-start justify-between gap-4 px-5 pt-5">
         <div>
           <h3 className="flex items-center gap-2 font-bold text-gray-900">
             <Link2 className="h-4 w-4 text-primary" aria-hidden />
-            {t('linkPage.title', { defaultValue: 'La tua pagina link' })}
+            {t('linkPage.title', { defaultValue: 'Un solo link per tutto' })}
             {saving && <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />}
           </h3>
           <p className="mt-1 text-sm text-muted-foreground">
-            {t('linkPage.subtitle', { defaultValue: 'Un solo link per la bio di Instagram: dentro ci sono il tuo prossimo ritiro, il listino e i link che vuoi tu. Ogni modifica si salva da sola.' })}
+            {t('linkPage.subtitle', { defaultValue: 'Una pagina tua, con un indirizzo corto, che raccoglie in un posto solo il tuo sito, il profilo Aurya, il prossimo ritiro, il listino, WhatsApp e i social. Lo mandi a chi ti chiede informazioni e lo metti in bio: chi lo apre trova tutto.' })}
           </p>
         </div>
         <Switch checked={!!lp.enabled} disabled={!slug}
@@ -277,9 +286,103 @@ export default function LinkPageCard({
       )}
 
       {slug && !lp.enabled && (
-        <p className="px-5 pb-5 pt-3 text-sm text-muted-foreground">
-          {t('linkPage.offHint', { defaultValue: 'Attivala e ottieni subito il link da mettere in bio: la pagina si riempie da sola con quello che hai già configurato.' })}
-        </p>
+        <div className="px-5 pb-5 pt-4" data-testid="linkpage-pitch">
+          <div className="grid gap-5 lg:grid-cols-[1fr_260px]">
+            <div className="space-y-4">
+              <div className="rounded-xl border border-dashed border-primary/40 bg-primary/5 p-4">
+                <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                  {t('linkPage.pitchUrl', { defaultValue: 'Il tuo indirizzo sarà' })}
+                </p>
+                <p className="mt-1 break-all font-mono text-sm font-semibold text-foreground">
+                  {pageUrl.replace(/^https?:\/\//, '')}
+                </p>
+                <p className="mt-2 text-xs text-muted-foreground">
+                  {t('linkPage.pitchUrlHint', { defaultValue: 'Corto da dettare, facile da ricordare, sempre lo stesso anche quando cambi i contenuti.' })}
+                </p>
+              </div>
+
+              <div>
+                <p className="text-sm font-semibold text-foreground">
+                  {t('linkPage.pitchCosa', { defaultValue: 'Cosa trova chi lo apre' })}
+                </p>
+                <ul className="mt-2 grid gap-1.5 text-sm text-gray-700 sm:grid-cols-2" data-testid="linkpage-pitch-cosa">
+                  {[
+                    t('linkPage.pitchCosa1', { defaultValue: 'Il tuo sito e il tuo profilo Aurya' }),
+                    t('linkPage.pitchCosa2', { defaultValue: 'Il prossimo ritiro, con data e prenotazione' }),
+                    t('linkPage.pitchCosa3', { defaultValue: 'Il listino: i tuoi servizi con il prezzo' }),
+                    t('linkPage.pitchCosa4', { defaultValue: 'Un tasto per scriverti su WhatsApp' }),
+                    t('linkPage.pitchCosa5', { defaultValue: 'Instagram, Facebook e gli altri social' }),
+                    t('linkPage.pitchCosa6', { defaultValue: 'I link che vuoi tu: YouTube, Telegram, Spotify, un evento…' }),
+                  ].map((riga) => (
+                    <li key={riga} className="flex items-start gap-2">
+                      <Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" aria-hidden />
+                      <span>{riga}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <div>
+                <p className="text-sm font-semibold text-foreground">
+                  {t('linkPage.pitchDove', { defaultValue: 'Dove usarlo' })}
+                </p>
+                <p className="mt-1 text-sm text-gray-700">
+                  {t('linkPage.pitchDoveTesto', { defaultValue: 'Nella bio di Instagram e TikTok. Nella risposta su WhatsApp a chi ti chiede «cosa fai e quanto costa». In firma alle email, sul biglietto da visita, nella locandina di un evento. Un link solo, al posto di cinque.' })}
+                </p>
+              </div>
+
+              <p className="text-xs text-muted-foreground">
+                {t('linkPage.pitchAuto', { defaultValue: 'Si riempie da sola con quello che hai già scritto in questa pagina e si aggiorna quando pubblichi un ritiro o cambi il listino. Niente da tenere aggiornato a mano. Se non ti piace la spegni con un tocco.' })}
+              </p>
+
+              <div className="flex flex-wrap items-center gap-3">
+                <Button onClick={() => persist({ ...lp, enabled: true })}
+                        disabled={saving} data-testid="linkpage-attiva">
+                  <Link2 className="mr-1.5 h-4 w-4" />
+                  {t('linkPage.attiva', { defaultValue: 'Attiva il mio link' })}
+                </Button>
+                <span className="text-xs text-muted-foreground">
+                  {t('linkPage.attivaHint', { defaultValue: 'Un secondo: poi lo copi e lo mandi.' })}
+                </span>
+              </div>
+            </div>
+
+            {/* l'anteprima anche da spenta: vedere e' capire. Da spenta
+                /l/{slug} rimanda al profilo, quindi niente iframe: un
+                bozzetto statico nell'atmosfera «salvia», col nome vero */}
+            <div className="hidden lg:block">
+              <p className="text-sm font-semibold text-foreground">
+                {t('linkPage.pitchAnteprima', { defaultValue: 'Così la vedranno' })}
+              </p>
+              <div className="mt-2 overflow-hidden rounded-[28px] border-[6px] border-gray-900 bg-gray-900 shadow-lg"
+                   data-testid="linkpage-pitch-preview" aria-hidden>
+                <div className="flex h-[440px] w-full flex-col items-center rounded-[22px] bg-gradient-to-b from-[#f2f5ee] via-[#edf1e8] to-[#e2e9d8] px-5 pt-9 text-stone-800">
+                  <div className="h-14 w-14 rounded-full bg-[#376254]/15 ring-4 ring-white" />
+                  <p className="mt-3 max-w-full truncate font-display text-base font-bold text-stone-900">
+                    {nome || t('linkPage.pitchNome', { defaultValue: 'Il tuo nome' })}
+                  </p>
+                  <div className="mt-2 flex gap-1.5">
+                    {[0, 1, 2].map((i) => <span key={i} className="h-5 w-5 rounded-full bg-white/85 shadow-sm" />)}
+                  </div>
+                  <div className="mt-5 w-full space-y-2">
+                    {[
+                      t('linkPage.pitchRiga1', { defaultValue: 'Il prossimo ritiro' }),
+                      t('linkPage.pitchRiga2', { defaultValue: 'Prenota una seduta' }),
+                      t('linkPage.pitchRiga3', { defaultValue: 'Scrivimi su WhatsApp' }),
+                      t('linkPage.pitchRiga4', { defaultValue: 'Il mio sito' }),
+                      t('linkPage.pitchRiga5', { defaultValue: 'Scopri chi sono' }),
+                    ].map((riga) => (
+                      <div key={riga}
+                           className="rounded-full bg-white px-4 py-2.5 text-center text-xs font-medium shadow-[0_2px_10px_rgba(55,98,84,0.08)]">
+                        {riga}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
 
       {slug && lp.enabled && (
@@ -294,6 +397,9 @@ export default function LinkPageCard({
               </p>
               <p className="mt-1 break-all font-mono text-sm font-semibold text-foreground">
                 {pageUrl.replace(/^https?:\/\//, '')}
+              </p>
+              <p className="mt-1.5 text-xs text-muted-foreground" data-testid="linkpage-dove">
+                {t('linkPage.doveUsarlo', { defaultValue: 'Mettilo nella bio di Instagram, mandalo su WhatsApp a chi ti chiede informazioni, scrivilo in firma alle email: è sempre lo stesso e si aggiorna da solo.' })}
               </p>
               <div className="mt-3 flex flex-wrap gap-2">
                 <Button size="sm" onClick={copyUrl} data-testid="linkpage-copy">
@@ -370,7 +476,7 @@ export default function LinkPageCard({
               <div className="flex items-center gap-2">
                 <div className="min-w-0 flex-1">
                   <p className="text-sm font-medium">
-                    {t('linkPage.block_socials', { defaultValue: 'Icone social sotto al nome' })}
+                    {t('linkPage.block_socials', { defaultValue: 'Icone social e sito sotto al nome' })}
                   </p>
                   {!hasSocials && (
                     <button type="button" onClick={onGoToSocials}

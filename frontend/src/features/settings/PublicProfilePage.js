@@ -1045,6 +1045,7 @@ export default function PublicProfilePage() {
           <LinkPageCard
             slug={slug}
             initial={form.link_page}
+            nome={nomePubblico(form.nome_persona, orgName)}
             hasSocials={!!(form.instagram || form.facebook || form.website)}
             hasPhone={!!form.public_phone}
             onGoToSocials={() => {
