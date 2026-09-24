@@ -205,3 +205,66 @@ Vincoli che restano fermi: gli operatori in prod non cambiano stato né ricevono
 4. Il campo **«quando»** (orizzonte del ritiro) nel form di cerca-ritiro: aggiungerlo? È una domanda in più nel form, ma è quella che trasforma un iscritto in una domanda qualificata.
 5. **Lead professionisti** fuori dal Cerchio e dentro la regia operatori: ok?
 6. Nel tab «Profilo» dell'admin, il **motivo della modifica** obbligatorio (finisce nell'audit e resta a futura memoria): ok?
+
+---
+
+## 6. Approfondimento (24/9 sera): un solo consenso, verifica «per uso», più iscritti
+
+Domanda del founder: perché sconsigliare il singolo opt-in totale? Vuole semplificare, scrivere anche a chi non verifica, chiedere la conferma solo per le meditazioni, applicare la stessa logica agli operatori, e iscrivere al Cerchio anche chi fa un ordine a un operatore.
+
+### 6.1 Chiarimento: quello che descrivi È la strada B
+
+La C nel testo sopra era «anche le meditazioni e le guide si aprono senza conferma». La tua richiesta (email da subito, conferma solo per i contenuti riservati) è esattamente la B. Quindi non c'è disaccordo: si va di B. Il punto da aggiungere è **come** si ottiene la conferma senza far fare alla gente un passo in più.
+
+### 6.2 Verifica «per uso», non «per rito»
+
+Oggi la verifica è un rito: un'email apposta, un clic apposta. Chi non lo compie resta fuori (44% degli iscritti, e 4 operatori su 31 non riescono nemmeno a entrare: il login richiede `email_verified`).
+
+Proposta: **qualsiasi clic su qualsiasi link di qualsiasi email che gli mandiamo dimostra che l'indirizzo è suo**. Ogni link delle nostre email porta già o può portare un token firmato per quell'indirizzo; al primo clic si scrive `verificato_at` e l'indirizzo diventa «verificato» per sempre. Conseguenze:
+
+- l'email di conferma non serve più come passo obbligato: la **prima Lettera** (o la prima meditazione) arriva subito e ogni suo link è la conferma;
+- chi apre le meditazioni dal sito senza aver mai cliccato nulla vede il cancello di oggi, con un bottone «Mandami il link»: una sola email, e il clic apre e verifica insieme;
+- per gli **operatori** vale lo stesso: si entra subito dopo la registrazione (niente più «Email not verified» al login), si costruisce la pagina, e la verifica arriva dal primo clic su una qualunque delle email di accompagnamento (benvenuto, «la tua pagina è online», np5). Restano **dietro verifica** solo le azioni che toccano soldi o terzi: mettere la pagina online (perché da lì partono email a clienti veri), IBAN/Stripe, embed (già così con `require_verified_admin`).
+- Un'unica funzione `segna_verificato(email, prova)` usata da entrambi i mondi, con la prova salvata (quale email, quale link, quando).
+
+Costo: token nei link delle sequenze (già esiste il token dell'iscritto a 5 anni; per gli operatori si usa il token di verifica già generato), una colonna in più in admin («verificato: sì/no, da cosa»), e il cancello delle meditazioni che dice «ti mando il link» invece di «iscriviti».
+
+### 6.3 Iscrivere al Cerchio chi fa un ordine: cosa si può e cosa no
+
+Il cliente che compra un ritiro è **cliente dell'operatore**, non di Aurya: la nostra informativa (v2.3, «legal a due livelli») lo dice espressamente, e al checkout esiste già la casella per il marketing **dell'operatore** (`gdpr_marketing_accepted` → `merchant_marketing`, con audit). Il Cerchio è marketing **di Aurya**, un altro titolare.
+
+Per l'email marketing in Italia (art. 130 Codice privacy) serve il consenso; il legittimo interesse non basta. L'unica eccezione («soft spam», art. 130 c. 4) permette a **chi ha venduto** di scrivere ai propri clienti su servizi **analoghi**: vale per l'operatore, non per Aurya. Quindi:
+
+| modalità | lecita? | resa attesa |
+|---|---|---|
+| Iscrizione automatica silenziosa | **no** | — |
+| Casella preselezionata | **no** (consenso non valido: sentenza Planet49, sanzioni del Garante proprio su questo) | — |
+| Casella **non** preselezionata al checkout, testo che dice cosa ricevi | sì | 20–40% se il beneficio è concreto |
+| Casella al momento in cui il cliente crea l'account Aurya | sì | simile |
+| Una riga nell'email di conferma ordine: «Vuoi la Lettera del Cerchio? Un clic» (link con token: il clic è consenso + verifica) | sì, se resta una riga e non un volantino | 5–15% |
+| Nella richiesta di recensione dopo l'evento (l'email è già verificata via OTP) | sì, stessa forma | 5–15% |
+| Nel post-acquisto sul sito (pagina «grazie»), un bottone «Entra nel Cerchio» | sì | 10–20% |
+
+Sommando le porte lecite si arriva a una quota comparabile con l'automatismo, senza il rischio. Il rischio non è teorico: una segnalazione di un solo cliente basta per un'istruttoria, e la sanzione colpisce Aurya, non l'operatore.
+
+Nota: **non** unire le due caselle (operatore + Aurya) in una sola: due titolari, due consensi. Si possono mettere una sotto l'altra con lo stesso stile.
+
+### 6.4 Come si semplifica davvero l'iscrizione (e si prendono più persone)
+
+1. **Solo l'email, ovunque, come primo passo.** Nome, città, budget, vie si chiedono dopo, dalla pagina preferenze (esiste già, `/newsletter/preferenze/{token}`) linkata nella prima Lettera, e dal cancello delle meditazioni. Cerca-ritiro può tenere il form lungo perché lì la persona sta cercando: è motivata.
+2. **Un testo di consenso unico, versionato**, identico su tutte le porte: «Sì, mandami la Lettera del Cerchio di Aurya (meditazioni, guide, ritiri). Ti cancelli con un clic.» Casella non preselezionata, vicina al bottone, con il beneficio scritto accanto.
+3. **Singolo opt-in + registro del consenso** (sezione 2.4). L'email parte subito.
+4. **Verifica per uso** (6.2): la conferma sparisce come passo e resta come effetto.
+5. **Tutte le porte portano la casella**: registrazione operatore (c'è già, `signup_pro`), account cliente, checkout, cancelli Sound, gate delle guide, pagina grazie, richiesta recensione, email ordine.
+6. **Igiene** che protegge il mittente: controllo MX del dominio all'iscrizione (taglia gli errori di battitura), honeypot e rate limit (ci sono), rimbalzi dal webhook Brevo anche sugli iscritti, header List-Unsubscribe, sospensione di chi in 6 mesi non ha mai aperto né cliccato (Brevo ci manda gli eventi di apertura e clic via webhook: da collegare). Senza questa parte, il singolo opt-in su Gmail finisce in spam nel giro di qualche mese e si perdono anche i buoni.
+7. **Misura per porta**: iscritti → verificati → aperture, per canale e superficie (sezione 3). Si scopre in due settimane quali porte rendono.
+
+### 6.5 I 17 in attesa di oggi
+
+Con la B, dopo la versione legale, i 13 che hanno spuntato una casella del Cerchio ricevono la prima Lettera: il loro consenso c'è (`consent_at`, sorgente con casella). I **4 lead del prelancio** hanno accettato «essere contattati via email sul lancio di Aurya»: una sola email di invito al Cerchio rientra in quel perimetro; se non cliccano, restano fuori.
+
+### 6.6 Cosa cambia nel piano
+
+- Giro B guadagna **CB6 · verifica per uso** (token nei link, `segna_verificato`, cancello «Mandami il link») e **CB7 · porte nuove** (casella al checkout e all'account cliente, riga nell'email ordine e nella richiesta recensione, bottone nella pagina grazie).
+- Giro C (legale v2.7 + interruttore) diventa **necessario**, non opzionale, e include il login operatore senza verifica con le tre azioni che la richiedono.
+- Le decisioni 1 e 2 della sezione 5 si considerano prese (B, v2.7) salvo tuo contrordine; restano le 3, 4, 5, 6 più una nuova: **7. le azioni operatore che restano dietro verifica** (pagina online, IBAN/Stripe, embed): confermi la lista?
