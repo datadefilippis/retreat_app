@@ -28,20 +28,8 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from services.nome_pubblico import nome_pubblico, contiene_persona  # noqa: E402
 
-PARTICELLE = {"di", "de", "del", "della", "da", "dal", "la", "le", "lo", "e", "van", "von"}
-
-
-def ripulisci(nome: str) -> str:
-    parole = [p for p in re.split(r"\s+", (nome or "").strip()) if p]
-    out = []
-    for p in parole:
-        if out and out[-1].casefold() == p.casefold():
-            continue                      # «Barbaccia Barbaccia»
-        if p.casefold() in PARTICELLE and out:
-            out.append(p.lower())
-        else:
-            out.append("-".join(x[:1].upper() + x[1:].lower() for x in p.split("-")))
-    return " ".join(out)
+# 24/9 sera: la pulizia del nome vive in services/nome_persona.py (una sola)
+from services.nome_persona import ripulisci  # noqa: E402
 
 
 async def proponi(percorso: str) -> None:

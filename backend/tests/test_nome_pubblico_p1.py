@@ -89,7 +89,8 @@ class TestRegola:
 class TestModelloEPayload:
     def test_whitelist_e_get(self):
         assert '"nome_persona": 80' in ORGS
-        assert '"nome_pubblico": nome_pubblico(org_doc)' in ORGS
+        # 24/9 sera: composto sul nome EFFETTIVO (profilo, o account se manca)
+        assert '"nome_pubblico": nome_pubblico(org_eff)' in ORGS
 
     def test_tutte_le_superfici_usano_la_regola(self):
         assert PUB.count("_nome_pubblico(") >= 3

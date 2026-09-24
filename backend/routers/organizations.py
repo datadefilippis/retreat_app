@@ -1905,12 +1905,19 @@ async def get_public_profile(current_user: dict = Depends(require_admin)):
     resolved_slug = await _resolve_public_slug_for_org(
         current_user["organization_id"])
     from services.nome_pubblico import nome_pubblico
+    # 24/9 sera (founder) — UNA variabile nome: se il profilo non ce l'ha
+    # ancora (registrati prima del campo), l'editor mostra quello
+    # dell'account, e il nome pubblico si compone con quello.
+    from services.nome_persona import nome_persona_effettivo
+    persona = await nome_persona_effettivo(org_doc)
+    org_eff = {**org_doc, "public_profile": {**pp, "nome_persona": persona}}
     return {**{k: pp.get(k) for k in _PUBLIC_PROFILE_FIELDS},
+            "nome_persona": persona,
             # OP4 — il titolo pubblico E' il nome org (settings):
             # esposto qui cosi' l'editor profilo lo mostra e lo salva
             "name": org_doc.get("name"),
             # P1 — come lo vede il pubblico, composto dal server (una regola sola)
-            "nome_pubblico": nome_pubblico(org_doc),
+            "nome_pubblico": nome_pubblico(org_eff),
             "photos": pp.get("photos") or [],
             "languages": pp.get("languages") or [],
             # DI — le discipline dichiarate (slug; le label le risolve

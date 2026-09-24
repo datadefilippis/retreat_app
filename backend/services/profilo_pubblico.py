@@ -21,7 +21,11 @@ Le costanti (whitelist, tetti, temi della pagina link) restano definite
 in routers/organizations.py: i test le leggono li' e altri moduli le
 importano da li'. Qui si importano in modo pigro per evitare il ciclo.
 """
+import logging
+
 from typing import Any, Dict, Optional
+
+logger = logging.getLogger(__name__)
 
 
 def pulisci(body: dict, org: Optional[dict] = None) -> Dict[str, Any]:
@@ -165,3 +169,12 @@ async def dopo_salvataggio(org_id: str, updates: Optional[dict] = None) -> None:
     # solo publish di ritiri/prodotti pingava; l'operatore che cura la
     # scheda LocalBusiness merita reindex rapido). Best-effort, mai blocca.
     await _ping_operator_indexnow(org_id)
+    # 24/9 sera — UNA variabile nome: il profilo ha un nome persona nuovo
+    # → l'account di chi si e' registrato lo segue (operatore o admin,
+    # stessa strada). Best-effort, mai blocca.
+    if updates and updates.get("public_profile.nome_persona"):
+        try:
+            from services.nome_persona import allinea_account
+            await allinea_account(org_id, updates["public_profile.nome_persona"])
+        except Exception as exc:  # noqa: BLE001
+            logger.warning("nome persona non allineato sull'account per %s: %s", org_id, exc)
