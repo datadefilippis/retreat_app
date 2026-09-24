@@ -1,0 +1,152 @@
+# Registrazione e profilo pubblico: analisi e piano di rifinitura
+
+24 settembre 2026. Analisi in sola lettura del codice e dei 20 operatori reali in produzione, dopo le inefficienze viste dal founder: profili intestati a un nome impersonale, bio corte, telefono assente, listino mai compilato, nessun modo per l'admin di correggere un profilo se l'operatore non risponde.
+
+Regola del piano: **niente si rompe per chi è già dentro**. Ogni cambiamento è additivo, i profili esistenti restano identici finché il founder non approva una lista di correzioni una per una.
+
+---
+
+## 1. Come funziona oggi (fatti dal codice)
+
+### 1.1 Registrazione (`/accedi?vista=crea`, interruttore «Sono un professionista»)
+
+| Campo | Obbligatorio | Dove finisce |
+|---|---|---|
+| «Il tuo nome» (un campo solo) | sì | `users.name` |
+| «Nome della tua attività» | **sì** | `organizations.name` |
+| Email, password (≥12, maiuscola, cifra) | sì | `users` |
+| Consenso termini + privacy | sì | `users.accepted_terms_*` |
+| Telefono | **non esiste** | — |
+
+File: `frontend/src/features/account/AccountLoginPage.js` 701-805, `backend/services/auth_service.py` 82-159. Non esistono nome e cognome separati, né telefono, né nel modello `User` né in `Organization`.
+
+**È qui che nasce il problema dei nomi impersonali**: il campo «Nome della tua attività» è obbligatorio, quindi chi non ha un marchio se ne inventa uno («La Nuova Alba», «Casa Coco», «Cerchio Angelico») o ci scrive il proprio mestiere («Life Coach e Insegnante di Yoga»). E quel campo è **l'unico nome pubblico**: `organizations.name` va sulla pagina `/o/{slug}`, sulle card della directory, nel titolo SEO «Nome · Discipline a Città | Aurya», nella pagina link, nelle email. Il nome della persona (`users.name`) non compare mai in pubblico (`backend/routers/public.py` 4390, 4649; `seo_shell.py` 2308-2416; guardia `test_op4_profile.py`).
+
+### 1.2 /benvenuto (subito dopo la verifica email)
+
+Chiede, tutto facoltativo e saltabile: discipline, città, **telefono**, Instagram. Il telefono va in `public_profile.public_phone` (max 40). Chi salta non viene più richiamato. File: `WelcomeRetePage.js` 25-203.
+
+### 1.3 Editor del profilo pubblico (`/public-profile`)
+
+- Sezione essenziale: copertina, ritratto, tagline (80), **bio (max 600, nessun minimo)**, sedi (3), discipline (10), social.
+- Hint della bio oggi: **«Racconta chi sei e che esperienze crei — 2-3 frasi bastano.»** (`locales/it/settings.json` 720) più un aiutino a bio vuota con tre domande. È il testo che ha prodotto bio da 130-300 caratteri.
+- Il **nome pubblico è modificabile anche qui**, ma dentro l'accordion «Per approfondire», chiuso di default (`PublicProfilePage.js` 811-822), e coincide con il nome azienda delle Impostazioni. Il founder non lo trovava perché è nascosto.
+- Telefono e email pubblici sono nello stesso accordion, con la spunta `show_contacts` (default spento): il numero, se c'è, è già privato finché non lo si espone.
+- Completezza: 4 check (copertina, bio non vuota, sede, un social). **La qualità della bio non conta**, contano solo i byte > 0.
+
+### 1.4 Stato «online» e sequenze email
+
+`online = slug AND bio non vuota AND (copertina o social) AND almeno un servizio pubblicato`. Guida le email np5/np10/np15 («ti manca solo la pagina») e la «pagina online». Le email chiedono già «un servizio con il prezzo», ma **nessuna email è dedicata al listino** e la home dell'operatore (`OperatorHome.js`) **non mostra nessun promemoria**: la striscia-guida vive solo dentro `/public-profile` e `/listino`.
+
+### 1.5 System admin
+
+Può: rete Aurya, badge, lucchetto directory, intervista (5 campi), stato org, impersonare. **Non può modificare nome, bio, telefono, tagline, discipline, sedi di un operatore.** L'unica via è l'impersonation (`admin.py` 2451), che non lascia traccia di «modificato da Aurya».
+
+---
+
+## 2. Cosa dicono i dati di produzione (20 operatori reali, 24/9)
+
+| Misura | Valore |
+|---|---|
+| Nome pubblico = solo marchio, senza la persona | **7 su 20** (Metodo Oltre, Life Coach e Insegnante di Yoga, Studio ZENITH, essenzaluce, La Nuova Alba, Casa Coco, Cerchio Angelico) |
+| Nome pubblico misto (persona + marchio) | 6 su 20 (spesso per intervento manuale del founder) |
+| Nome pubblico = solo persona | 7 su 20 |
+| Bio sotto 300 caratteri | **8 su 20** |
+| Bio sotto 500 caratteri | 15 su 20 |
+| Nessun servizio a listino | **4 su 20**; altri 5 hanno un solo servizio |
+| Nessun telefono | **9 su 20** |
+| Contatti mostrati (`show_contacts`) | 6 su 20 |
+| Nella rete Aurya (`network_member`) | 10 su 20, tutti iscritti prima del 15/9 |
+
+Il campo `users.name` è a qualità mista: «Valentina», «Esther» (solo nome), «Ilaria Barbaccia Barbaccia» (doppio cognome per errore), «claudia Rossato» (minuscola), «Anpoche» (marchio nel campo persona). Quindi **un ricalcolo automatico del nome pubblico dai dati esistenti non è affidabile**: va proposto e rivisto a mano, una volta, per i 20 di oggi. Per i nuovi il flusso deve produrre il dato giusto da solo.
+
+Il peggioramento è recente: i 9 iscritti dal 17/9 hanno bio medie più corte (126-533) e 5 di loro zero o un servizio. Il flusso «unico» è più veloce e produce profili più vuoti.
+
+---
+
+## 3. Diagnosi in cinque righe
+
+1. Il nome pubblico è l'organizzazione perché il modello non ha mai avuto una persona: il campo obbligatorio sbagliato al momento sbagliato.
+2. La bio è corta perché glielo diciamo noi («2-3 frasi bastano») e perché niente misura la qualità.
+3. Il telefono manca perché è facoltativo, chiesto una sola volta, nella pagina che si salta.
+4. Il listino resta vuoto perché il promemoria vive nelle due pagine che chi non compila non apre; la home, che aprono tutti, tace.
+5. L'admin non può correggere perché non esiste l'endpoint: si è sempre supplito con l'impersonation.
+
+---
+
+## 4. Il piano, a fasi rilasciabili e reversibili
+
+### P1 · Identità: la persona prima del marchio (2 giorni)
+
+**Modello.** Nuovo campo `public_profile.nome_persona` (max 80, whitelist). `organizations.name` resta e diventa «il marchio» (facoltativo nel nuovo flusso). Una sola funzione backend `nome_pubblico(org)` decide cosa si mostra:
+
+- persona e marchio presenti e diversi → «Valentina · Brillare | Il Sole Dentro»;
+- solo persona → «Valentina»;
+- solo marchio (operatori di oggi, senza `nome_persona`) → il marchio, **identico a oggi**;
+- marchio che contiene già la persona → il marchio così com'è, senza duplicare.
+
+Il payload pubblico porta `name` (già composto, così card, pagina, link e SEO non cambiano codice) più `nome_persona` e `marchio` separati per il layout dell'intestazione: nome grande, marchio sotto. Lo slug non cambia mai da solo.
+
+**Editor.** «Il tuo nome» e «La tua attività (se ne hai una)» salgono nella sezione essenziale, prima della tagline. L'accordion perde il «Nome pubblico». Le Impostazioni mantengono il nome azienda (fatturazione, email), con la nota «è il marchio che compare accanto al tuo nome».
+
+**Registrazione.** «Nome e cognome» obbligatorio (con controllo morbido: se una parola sola, un avviso «meglio nome e cognome», non un blocco). «Nome della tua attività» diventa **facoltativo**: se vuoto, `organizations.name` = nome della persona, e il profilo nasce già personale. Nessun campo nuovo obbligatorio oltre al telefono (P3).
+
+**Operatori esistenti.** Uno script propone `nome_persona` per i 20 da `users.name` ripulito (maiuscole, doppioni) in un CSV; il founder lo rivede riga per riga; si applica solo il CSV approvato. Fino ad allora tutti i profili restano come sono. Poi il founder smette di scrivere agli operatori uno a uno.
+
+**Rischi e guardie.** Il titolo SEO cambia per chi avrà persona + marchio: è voluto. Le guardie `test_op4_profile` vanno estese a `nome_pubblico()`. `display_name` fantasma in `frequencies.py` si allinea alla stessa funzione.
+
+### P2 · La bio che presenta davvero (1 giorno)
+
+- Hint nuovo, con i sei punti del founder, sopra il campo: di cosa ti occupi, quali pratiche o percorsi proponi, a chi ti rivolgi, la tua visione del benessere, il tuo approccio, cosa può aspettarsi chi inizia un percorso con te. Chiusura: «l'obiettivo è permettere a chi arriva sul tuo profilo di conoscerti meglio».
+- Limite da 600 a **1000** caratteri (la guardia esistente ammette ≤ 1000), contatore che cambia colore: sotto 300 «troppo breve per farti conoscere», 300-600 «buona», oltre «completa».
+- L'aiutino a bio vuota diventa sei micro-domande cliccabili che inseriscono un capoverso vuoto con l'attacco («Mi occupo di…», «Mi rivolgo a…»).
+- **Il gate «online» non cambia**: una bio corta non toglie nessuno dalla directory. La qualità entra solo nella barra di completezza (quinto check «bio di almeno 300 caratteri») e nel punteggio interno della directory (ordinamento, non esclusione).
+- Le email np5/np10 e la «pagina online» ricevono la stessa formula in una riga.
+
+### P3 · Il telefono, privato di default (mezza giornata)
+
+- Alla registrazione: campo «Telefono» obbligatorio, con la riga «serve ad Aurya per contattarti; non compare sul profilo finché non lo decidi tu». Validazione: solo cifre, `+`, spazi; da 8 a 15 cifre.
+- Si salva in `public_profile.public_phone` con `show_contacts` che resta spento: **nessun numero diventa pubblico**. Nell'editor la spunta cambia etichetta: «Mostra il telefono sul profilo pubblico».
+- /benvenuto smette di chiederlo se c'è già.
+- Per i 9 operatori senza numero: una riga nella home «Aurya non ha un tuo recapito: aggiungi un telefono, resta privato» con il campo inline, finché non lo mettono.
+- La scheda 360° dell'admin mostra il numero anche quando è privato (è il motivo per cui lo chiediamo).
+
+### P4 · Il listino come passo naturale (1 giornata)
+
+- **Home dell'operatore**: se il profilo è pubblicato e non c'è nessun servizio, una card in testa «La tua pagina è online ma non ha ancora un servizio: le persone non sanno cosa possono prenotare» con «Aggiungi il primo servizio». Se c'è un solo servizio, la stessa card in tono più leggero. Scompare da sola.
+- **Dopo «Salva profilo»** in `/public-profile`, la striscia già esistente mostra il passo listino come prossima azione anche a profilo incompleto.
+- **Email nuova `op_listino`** nella sequenza: giorni 7-12, condizione «online senza servizi» (oggi non esiste), tre esempi concreti di riga di listino con prezzo, risposta «insieme» come nelle altre.
+- **Tre righe di esempio pre-compilate** in `/listino` vuoto, per disciplina dichiarata (es. Reiki: «Trattamento Reiki 60 min», «Percorso di 4 incontri»), da confermare con un tocco: abbatte il foglio bianco.
+
+### P5 · Regia dell'admin: modificare quando l'operatore non risponde (1 giornata)
+
+- Endpoint `PATCH /admin/organizations/{id}/public-profile` che riusa **la stessa funzione di pulizia** della PATCH dell'operatore (da estrarre in `services/profilo_pubblico.py`): niente seconda logica. Campi: nome persona, marchio, tagline, bio, telefono, `show_contacts`, discipline, sedi.
+- Ogni salvataggio scrive un audit «modificato da Aurya (admin, motivo)» e, a scelta, manda all'operatore l'email «abbiamo sistemato la tua pagina: ecco cosa».
+- UI: nel cassetto dell'organizzazione in `/admin/operatori`, tab «Profilo» con gli stessi campi dell'editor e la lista dei profili «da rivedere» (bio < 300, senza telefono, senza listino, nome solo marchio) come coda di lavoro.
+- Il founder oggi fa questo a mano via chat: la coda gli dice dove intervenire e l'endpoint gli evita l'impersonation.
+
+### P6 · Misura e deploy
+
+- Un cruscotto in admin con le quattro misure di §2, ricalcolate ogni giorno: è il modo per vedere se il flusso nuovo produce profili migliori senza rincorrere gli operatori.
+- Deploy in due giri: P1+P2+P3 (registrazione ed editor, con il CSV dei 20 applicato dopo il go) e P4+P5. Suite completa, prova generale sulla copia di produzione per lo script del CSV.
+
+---
+
+## 5. Cosa non cambia (invarianza dichiarata)
+
+- Nessun profilo esistente cambia nome, bio o visibilità senza il CSV approvato.
+- Slug e URL restano quelli di oggi.
+- Il gate «online» e le sequenze email esistenti non cambiano condizione: si aggiunge solo `op_listino`.
+- Nessun numero di telefono diventa pubblico per effetto del piano.
+- La registrazione aggiunge un campo obbligatorio (telefono) e ne rende uno facoltativo (attività): il tempo per iscriversi non aumenta.
+
+## 6. Ordine consigliato e stima
+
+P1 (2 gg) → P3 (½) → P2 (1) → primo deploy → P4 (1) → P5 (1) → P6 (½) → secondo deploy. Circa sei giornate di lavoro, due giri di produzione.
+
+## 7. Decisioni per il founder
+
+1. Formato del nome composto: «Valentina · Brillare» (punto mediano, come i titoli SEO) oppure «Valentina — Brillare» (trattino, come nella tua richiesta)?
+2. Telefono obbligatorio anche per chi si iscrive solo come ascoltatore di Aurya Sound? Proposta: no, solo per il professionista.
+3. La coda «da rivedere» in admin: vuoi anche l'email automatica all'operatore quando Aurya gli corregge la pagina, o preferisci scrivergli tu?
+4. Le tre righe di esempio del listino per disciplina: te le propongo io in un CSV (47 discipline × 3 righe) da rivedere, oppure partiamo con dieci discipline più comuni?
