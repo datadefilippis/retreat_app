@@ -55,6 +55,10 @@ def _attributes(doc: dict) -> dict:
         "AURYA_INTERESTS": ",".join(profile.get("interests") or []),
         "AURYA_CITY": profile.get("city") or "",
         "AURYA_TRAVEL": profile.get("travel") or "",
+        # Lotto B4 (24/9/2026) — gli stessi assi della lista iscritti,
+        # cosi' le liste Brevo si segmentano per budget e per canale
+        "AURYA_BUDGET": profile.get("budget") or "",
+        "AURYA_CANALE": (doc.get("provenienza") or {}).get("canale") or "",
     }
 
 
@@ -91,7 +95,10 @@ async def sync_subscriber(email: str) -> None:
         doc = await db.aurya_subscribers.find_one(
             {"email": email},
             {"_id": 0, "status": 1, "preferences": 1, "source": 1,
-             "language": 1})
+             "language": 1,
+             # B4 (24/9): la proiezione non portava `profile`, quindi
+             # AURYA_INTERESTS/CITY/TRAVEL arrivavano sempre vuoti
+             "profile": 1, "provenienza": 1})
         if not doc:
             return
         await asyncio.to_thread(
@@ -99,6 +106,23 @@ async def sync_subscriber(email: str) -> None:
             doc.get("status") == "unsubscribed")
     except Exception as exc:                # noqa: BLE001 — best-effort
         logger.warning("brevo sync error: %s", exc)
+
+
+async def blacklist_subscriber(email: str) -> None:
+    """B4 — dopo una cancellazione GDPR il documento non c'e' piu':
+    Brevo va messo in blacklist a mano, senza attributi. Mai un raise."""
+    try:
+        await asyncio.to_thread(
+            _push_to_brevo, email, {"AURYA_STATUS": "deleted"}, True)
+    except Exception as exc:                # noqa: BLE001
+        logger.warning("brevo blacklist error: %s", exc)
+
+
+def blacklist_subscriber_background(email: str) -> None:
+    try:
+        asyncio.get_running_loop().create_task(blacklist_subscriber(email))
+    except RuntimeError:
+        asyncio.run(blacklist_subscriber(email))
 
 
 def sync_subscriber_background(email: str) -> None:

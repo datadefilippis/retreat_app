@@ -65,6 +65,10 @@ _VALID_DOCUMENT_TYPES = {
     "merchant_privacy", "merchant_terms",
     "merchant_marketing",
     "merchant_dpa",
+    # Lotto B2 (24/9/2026) — la casella del Cerchio di Aurya (newsletter
+    # di Aurya, titolare Aurya): version_tag = versione del testo
+    # (services/testi_consenso.py), version_hash = hash del testo
+    "aurya_newsletter",
 }
 _VALID_SOURCES = {
     # Phase A/B/E (afianco admin)
@@ -80,6 +84,10 @@ _VALID_SOURCES = {
     # alla creazione con password (signup) e alla nascita da acquisto
     # guest (checkout). Documento: privacy_terms (bundle Aurya).
     "platform_signup", "platform_checkout",
+    # Lotto B2 (24/9/2026) — eventi del Cerchio di Aurya (customer_email,
+    # niente user_id: l'iscritto spesso non ha un account)
+    "newsletter_subscribe", "newsletter_confirm",
+    "newsletter_unsubscribe", "newsletter_admin_confirm",
 }
 
 

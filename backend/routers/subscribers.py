@@ -126,6 +126,12 @@ class SubscribePayload(BaseModel):
     # gia'-confermato non riceve il magic link (la prova arriva
     # dalla chiamata unlock subito dopo)
     unlock_flow: Optional[bool] = False
+    # Lotto B1/B2 (24/9/2026) — la provenienza scritta all'iscrizione
+    # (non piu' derivata) e la versione del testo di consenso letto
+    url: Optional[str] = Field(default=None, max_length=500)
+    referrer: Optional[str] = Field(default=None, max_length=500)
+    utm: Optional[dict] = None
+    consenso_versione: Optional[str] = Field(default=None, max_length=30)
 
 
 class TokenPayload(BaseModel):
@@ -270,6 +276,18 @@ async def subscribe(request: Request, payload: SubscribePayload):
         "consent_at": now,
         "updated_at": now,
     }
+    # Lotto B1 (24/9) — la provenienza si scrive ADESSO, a tre livelli,
+    # con URL, referrer, UTM e dispositivo: `source` resta com'e' (le
+    # sequenze e i test la leggono), questa e' la sua traduzione leggibile
+    user_agent = (request.headers.get("user-agent") or "")[:300]
+    doc_set["provenienza"] = _provenienza_da_payload(payload, user_agent)
+    # Lotto B2 (24/9) — il registro del consenso: quale testo, quando, da
+    # dove, con quale prova. Solo se la casella e' spuntata (senza, non
+    # c'e' un consenso da registrare). `modalita` parte da «singolo» e
+    # diventa «doppio» alla conferma (segna_verificato).
+    consenso = _consenso_da_payload(payload, request, user_agent, now) if payload.consent else None
+    if consenso:
+        doc_set["consenso"] = consenso
     # preferenze: si scrivono solo se il form le manda (il compact del
     # blog manda solo l'email: non azzeriamo quelle esistenti)
     if payload.topics is not None:
@@ -296,8 +314,14 @@ async def subscribe(request: Request, payload: SubscribePayload):
         existing = await db.aurya_subscribers.find_one(
             {"email": email}, {"_id": 0, "status": 1})
         if existing and existing.get("status") == "confirmed":
+            # B2: chi e' gia' confermato ha gia' dato la prova doppia, un
+            # nuovo consenso non la abbassa a «singolo»
+            if consenso:
+                doc_set["consenso"] = {**consenso, "modalita": "doppio"}
             await db.aurya_subscribers.update_one(
                 {"email": email}, {"$set": doc_set})
+            if consenso:
+                await _audit_consenso_subscribe(email, doc_set["consenso"], payload.language)
             # Gia' confermato che rimette la email. DUE contesti diversi
             # (founder, 24/8): (a) un FORM della Lettera senza seguito →
             # magic link di accesso, come sempre; (b) un CANCELLO di
@@ -334,10 +358,68 @@ async def subscribe(request: Request, payload: SubscribePayload):
         raise HTTPException(status_code=503,
                             detail="Non riusciamo a salvarti ora, riprova")
 
-    _send_confirm_email(email, payload.name,
-                        generate_subscriber_token(email),
-                        _safe_return_to(payload.return_to))
+    if consenso:
+        await _audit_consenso_subscribe(email, consenso, payload.language)
+    # C4/B (24/9): con CERCHIO_SINGOLO_OPTIN acceso la prima email e' il
+    # BENVENUTO (i suoi link sono verificanti: il clic conferma), non
+    # l'email di conferma. Se il benvenuto non parte (gia' ricevuto in
+    # passato) si ripiega sulla conferma di sempre. Spento: come oggi.
+    from services.sequenze import invia_subito_se_singolo, singolo_optin
+    inviato = await invia_subito_se_singolo(email) if singolo_optin() else None
+    if not inviato:
+        _send_confirm_email(email, payload.name,
+                            generate_subscriber_token(email),
+                            _safe_return_to(payload.return_to))
     return {"ok": True}
+
+
+def _provenienza_da_payload(payload: "SubscribePayload", user_agent: str) -> dict:
+    """B1 — il blocco `provenienza` dell'iscritto, dalla fonte e da quello
+    che il form ci manda in piu' (url, referrer, utm)."""
+    from services.provenienza import classifica, dispositivo, pulisci_utm
+    url = (payload.url or "").strip()[:500] or None
+    referrer = (payload.referrer or "").strip()[:500] or None
+    utm = pulisci_utm(payload.utm)
+    base = classifica(payload.source, None, url)
+    if not base.get("porta") and utm and utm.get("source"):
+        # senza ?porta= la porta e' l'utm_source (traffico esterno)
+        base["porta"] = utm["source"][:20].lower()
+    return {**base, "url": url, "referrer": referrer, "utm": utm,
+            "dispositivo": dispositivo(user_agent)}
+
+
+def _consenso_da_payload(payload: "SubscribePayload", request: Request,
+                         user_agent: str, now: datetime) -> dict:
+    """B2 — il registro del consenso: testo letto (per versione), quando,
+    ip, user-agent, pagina e modalita' iniziale «singolo»."""
+    from urllib.parse import urlsplit
+
+    from core.rate_limiting import get_real_ip
+    from services.testi_consenso import testo, versione_valida
+    versione = versione_valida(payload.consenso_versione)
+    pagina = None
+    if payload.url:
+        try:
+            pagina = urlsplit(payload.url.strip()).path[:200] or None
+        except ValueError:
+            pagina = None
+    try:
+        ip = get_real_ip(request)
+    except Exception:                        # noqa: BLE001
+        ip = None
+    return {"at": now, "testo": testo(versione), "versione": versione,
+            "ip": ip, "user_agent": user_agent or None,
+            "pagina": pagina or (payload.source or "").strip()[:60] or None,
+            "modalita": "singolo"}
+
+
+async def _audit_consenso_subscribe(email: str, consenso: dict, language: Optional[str]) -> None:
+    """B2 — riga in consent_audit all'iscrizione (best effort)."""
+    from services.verifica_email import registra_consenso_audit
+    await registra_consenso_audit(
+        email, "newsletter_subscribe",
+        {"consenso": consenso, "language": language},
+        ip=consenso.get("ip"), user_agent=consenso.get("user_agent"))
 
 
 @router.post("/public/newsletter/confirm")
@@ -372,7 +454,43 @@ async def confirm(request: Request, payload: TokenPayload):
             await invia_subito("cerchio", email)
         except Exception as exc:            # noqa: BLE001 — la conferma non si rompe per un'email
             logger.warning("benvenuto Cerchio non inviato a %s: %s", _mask_email(email), exc)
+    # Lotto B3 (24/9) — il clic e' anche la prova che l'indirizzo e' suo:
+    # verificato_at, consenso.modalita → doppio, email_verified sull'account
+    # con la stessa email. Lo status e' gia' confirmed qui sopra, quindi
+    # segna_verificato NON rimanda il benvenuto.
+    try:
+        from services.verifica_email import registra_consenso_audit, segna_verificato
+        await segna_verificato(email, "conferma", "email di conferma")
+        if not prima or prima.get("status") != "confirmed":
+            await registra_consenso_audit(email, "newsletter_confirm")
+    except Exception as exc:                # noqa: BLE001
+        logger.warning("verifica alla conferma non annotata per %s: %s", _mask_email(email), exc)
     return {"ok": True, "status": "confirmed"}
+
+
+@router.get("/public/newsletter/v/{token}")
+@limiter.limit("30/minute")
+async def verifica_e_vai(request: Request, token: str, to: Optional[str] = None):
+    """Lotto B3 (24/9) — il link «verificante» delle email del Cerchio:
+    un clic qualunque (Lettera, promemoria, benvenuto) dimostra che
+    l'indirizzo e' suo, e porta dove voleva andare. Solo percorsi
+    interni; un token rotto non blocca la lettura (si va lo stesso a
+    `to`, senza annotare niente)."""
+    from fastapi.responses import RedirectResponse
+
+    from services.verifica_email import percorso_interno, segna_verificato
+    dove = percorso_interno(to)
+    try:
+        email = decode_subscriber_token(token)["email"]
+    except (TokenExpiredError, TokenInvalidError):
+        email = None
+    if email:
+        try:
+            await segna_verificato(email, "clic", dove)
+        except Exception as exc:            # noqa: BLE001 — il clic porta comunque alla pagina
+            logger.warning("verifica al clic fallita per %s: %s", _mask_email(email), exc)
+    from services.url_builder import build_public_url
+    return RedirectResponse(url=build_public_url(dove), status_code=302)
 
 
 class UnlockPayload(BaseModel):
@@ -445,6 +563,24 @@ async def newsletter_stats(
             {"created_at": {"$gte": start, "$lt": end}})
         weekly.append({"week_start": start.date().isoformat(), "n": n})
 
+    # Lotto B4 (24/9) — le ripartizioni cliccabili della pagina Iscritti:
+    # budget, dove, canale (con etichetta), regione dell'avviso, verificati
+    async def _conta(campo: str, unwind: bool = False, limite: int = 20) -> list:
+        pipeline = [{"$unwind": f"${campo}"}] if unwind else []
+        pipeline += [{"$group": {"_id": f"${campo}", "n": {"$sum": 1}}},
+                     {"$sort": {"n": -1}}, {"$limit": limite}]
+        return [{"valore": r["_id"], "n": r["n"]}
+                async for r in db.aurya_subscribers.aggregate(pipeline) if r["_id"]]
+
+    from services.provenienza import ETICHETTE
+    by_budget = [{"budget": r["valore"], "n": r["n"]} for r in await _conta("profile.budget")]
+    by_travel = [{"travel": r["valore"], "n": r["n"]} for r in await _conta("profile.travel")]
+    by_canale = [{"canale": r["valore"], "label": ETICHETTE.get(r["valore"], r["valore"]), "n": r["n"]}
+                 for r in await _conta("provenienza.canale")]
+    by_regione = [{"regione": r["valore"], "n": r["n"]}
+                  for r in await _conta("preferences.retreat_alert.regions", unwind=True, limite=25)]
+    verificati = await db.aurya_subscribers.count_documents({"verificato_at": {"$exists": True}})
+
     total = sum(by_status.values())
     confirmed = by_status.get("confirmed", 0)
     return {
@@ -454,6 +590,11 @@ async def newsletter_stats(
         "by_source": by_source,
         "by_topic": by_topic,
         "weekly_new": weekly,
+        "by_budget": by_budget,
+        "by_travel": by_travel,
+        "by_canale": by_canale,
+        "by_regione": by_regione,
+        "verificati": verificati,
     }
 
 
@@ -462,9 +603,18 @@ def _riga_iscritto(d: dict) -> dict:
     per il pannello «Iscritti al Cerchio»: stato e date, porta e fonte,
     le vie, la citta', il raggio, il budget, l'avviso ritiri, i temi, le
     email delle sequenze ricevute."""
+    from services.provenienza import classifica
     from services.sequenze import porta_cerchio
     prefs = d.get("preferences") or {}
     profile = d.get("profile") or {}
+    # B4 (24/9) — provenienza a tre livelli (se il documento non l'ha
+    # ancora, la si legge al volo dalla fonte: lo script la scrive), il
+    # registro del consenso SENZA ip in lista, la prova di verifica, la
+    # salute dell'indirizzo, quante email ha ricevuto, tag e note.
+    provenienza = d.get("provenienza") or {**classifica(d.get("source")), "url": None,
+                                           "referrer": None, "utm": None, "dispositivo": None}
+    consenso = {k: v for k, v in (d.get("consenso") or {}).items() if k != "ip"} or None
+    n_email, ultima = _conta_email(d)
     return {
         "email": d["email"],
         "name": d.get("name"),
@@ -485,15 +635,80 @@ def _riga_iscritto(d: dict) -> dict:
         "travel": profile.get("travel") if profile.get("travel") in TRAVEL_OPTIONS else None,
         "budget": profile.get("budget"),
         "sequenza": [k for k, v in (d.get("sequenza") or {}).items() if v and not str(v).startswith("saltato")],
+        "provenienza": provenienza,
+        "consenso": consenso,
+        "verificato_at": d.get("verificato_at"),
+        "verificato_da": d.get("verificato_da"),
+        "email_status": d.get("email_status"),
+        "n_email": n_email,
+        "ultima_email_at": ultima,
+        "tag": list(d.get("tag") or []),
+        "n_note": len(d.get("note_admin") or []),
     }
+
+
+def _conta_email(d: dict):
+    """Quante email editoriali ha ricevuto (passi delle sequenze mandati
+    + promemoria) e quando l'ultima. I passi «saltato» non contano."""
+    when: list = []
+    for v in (d.get("sequenza") or {}).values():
+        if v and not str(v).startswith("saltato"):
+            when.append(str(v))
+    if d.get("reminder_sent_at"):
+        r = d["reminder_sent_at"]
+        when.append(r.isoformat() if hasattr(r, "isoformat") else str(r))
+    return len(when), (max(when) if when else None)
+
+
+async def _audit_iscritto(current_user: dict, action: str, email: str, metadata: dict) -> None:
+    """La riga di audit (forma canonica di admin.py:3201, target
+    «subscriber»). Ogni scrittura da admin sugli iscritti la chiama."""
+    try:
+        from database import audit_logs_collection
+        from models.common import generate_id, utc_now
+        now_dt = utc_now()
+        await audit_logs_collection.insert_one({
+            "id": generate_id(),
+            "actor_user_id": current_user.get("user_id"),
+            "actor_role": "system_admin",
+            "organization_id": None,
+            "action": action,
+            "target_type": "subscriber",
+            "target_id": email,
+            "metadata": {**(metadata or {}), "attore": current_user.get("email")},
+            "created_at": now_dt.isoformat(),
+            "expire_at": now_dt,      # TTL 365 giorni, come gli altri
+        })
+    except Exception as exc:                # noqa: BLE001 — l'audit non rompe il gesto
+        logger.warning("audit %s non scritto per %s: %s", action, _mask_email(email), exc)
 
 
 _PORTE_MEDITAZIONI_RX = r"^(meditazioni|gate_meditazione|cancello:|frequenze|sound|guardia-fq|invito)"
 
 
+def _data_filtro(raw: Optional[str], fine: bool = False) -> Optional[datetime]:
+    """«2026-09-01» → datetime UTC (a fine giornata se `fine`)."""
+    s = (raw or "").strip()[:25]
+    if not s:
+        return None
+    try:
+        dt = datetime.fromisoformat(s.replace("Z", "+00:00"))
+    except ValueError:
+        return None
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=timezone.utc)
+    if fine and len(s) <= 10:
+        dt = dt.replace(hour=23, minute=59, second=59)
+    return dt
+
+
 def _query_iscritti(status: Optional[str], source: Optional[str], q: Optional[str],
                     experiences: Optional[str], region: Optional[str], interest: Optional[str],
-                    porta: Optional[str]) -> dict:
+                    porta: Optional[str],
+                    canale: Optional[str] = None, superficie: Optional[str] = None,
+                    budget: Optional[str] = None, travel: Optional[str] = None,
+                    dal: Optional[str] = None, al: Optional[str] = None,
+                    verificato: Optional[str] = None, tag: Optional[str] = None) -> dict:
     import re as _re
     query: dict = {}
     if status in ("pending", "confirmed", "unsubscribed"):
@@ -502,6 +717,29 @@ def _query_iscritti(status: Optional[str], source: Optional[str], q: Optional[st
         query["source"] = source[:60]
     if q:
         query["email"] = {"$regex": _re.escape(q.strip()[:80]), "$options": "i"}
+    # B4 (24/9) — i filtri nuovi: canale › superficie (dalla provenienza
+    # scritta o migrata), budget, dove, periodo, verificato, tag
+    if canale:
+        query["provenienza.canale"] = canale.strip()[:30]
+    if superficie:
+        query["provenienza.superficie"] = superficie.strip()[:30]
+    if budget:
+        query["profile.budget"] = budget.strip()[:40]
+    if travel in TRAVEL_OPTIONS:
+        query["profile.travel"] = travel
+    periodo: dict = {}
+    if _data_filtro(dal):
+        periodo["$gte"] = _data_filtro(dal)
+    if _data_filtro(al, fine=True):
+        periodo["$lte"] = _data_filtro(al, fine=True)
+    if periodo:
+        query["created_at"] = periodo
+    if verificato == "si":
+        query["verificato_at"] = {"$exists": True}
+    elif verificato == "no":
+        query["verificato_at"] = {"$exists": False}
+    if tag:
+        query["tag"] = tag.strip().lower()[:30]
     if experiences == "yes":
         query["preferences.retreat_alert.enabled"] = True
     elif experiences == "no":
@@ -519,7 +757,10 @@ def _query_iscritti(status: Optional[str], source: Optional[str], q: Optional[st
 
 _PROIEZIONE_ISCRITTO = {"_id": 0, "email": 1, "name": 1, "status": 1, "source": 1, "language": 1,
                         "created_at": 1, "confirmed_at": 1, "unsubscribed_at": 1, "unsubscribed_by": 1,
-                        "reminder_sent_at": 1, "preferences": 1, "profile": 1, "sequenza": 1}
+                        "reminder_sent_at": 1, "preferences": 1, "profile": 1, "sequenza": 1,
+                        # B4 (24/9)
+                        "provenienza": 1, "consenso": 1, "verificato_at": 1, "verificato_da": 1,
+                        "email_status": 1, "email_status_at": 1, "tag": 1, "note_admin": 1}
 
 
 @router.get("/admin/subscribers")
@@ -531,14 +772,26 @@ async def list_subscribers(
         region: Optional[str] = None,
         interest: Optional[str] = None,
         porta: Optional[str] = None,
+        canale: Optional[str] = None,
+        superficie: Optional[str] = None,
+        budget: Optional[str] = None,
+        travel: Optional[str] = None,
+        dal: Optional[str] = None,
+        al: Optional[str] = None,
+        verificato: Optional[str] = None,
+        tag: Optional[str] = None,
         skip: int = 0,
         limit: int = 50,
         current_user: dict = Depends(require_system_admin)):
     """NW3 — la lista iscritti con FONTE, stato, preferenze e date.
     SA-R (10/9 sera): tutti i campi, i filtri per porta / regione / via /
-    «vuole i ritiri», e le fonti distinte per il filtro."""
+    «vuole i ritiri», e le fonti distinte per il filtro.
+    B4 (24/9): filtri canale › superficie, budget, dove, periodo,
+    verificato, tag; la tassonomia dei canali con le etichette."""
     from database import db
-    query = _query_iscritti(status, source, q, experiences, region, interest, porta)
+    from services.provenienza import canali_per_admin
+    query = _query_iscritti(status, source, q, experiences, region, interest, porta,
+                            canale, superficie, budget, travel, dal, al, verificato, tag)
     limit = max(1, min(int(limit or 50), 200))
     skip = max(0, int(skip or 0))
     total = await db.aurya_subscribers.count_documents(query)
@@ -546,7 +799,8 @@ async def list_subscribers(
                                                .find(query, _PROIEZIONE_ISCRITTO)
                                                .sort("created_at", -1).skip(skip).limit(limit))]
     fonti = sorted(f for f in await db.aurya_subscribers.distinct("source") if f)
-    return {"total": total, "items": rows, "skip": skip, "limit": limit, "sources": fonti}
+    return {"total": total, "items": rows, "skip": skip, "limit": limit, "sources": fonti,
+            "canali": canali_per_admin()}
 
 
 @router.get("/admin/subscribers/export.csv")
@@ -554,24 +808,37 @@ async def export_subscribers(
         status: Optional[str] = None, source: Optional[str] = None, q: Optional[str] = None,
         experiences: Optional[str] = None, region: Optional[str] = None,
         interest: Optional[str] = None, porta: Optional[str] = None,
+        canale: Optional[str] = None, superficie: Optional[str] = None,
+        budget: Optional[str] = None, travel: Optional[str] = None,
+        dal: Optional[str] = None, al: Optional[str] = None,
+        verificato: Optional[str] = None, tag: Optional[str] = None,
         current_user: dict = Depends(require_system_admin)):
     """SA-R — lo stesso elenco, in CSV (max 5000 righe), con gli stessi filtri."""
     import csv, io
     from fastapi.responses import Response
     from database import db
-    query = _query_iscritti(status, source, q, experiences, region, interest, porta)
+    query = _query_iscritti(status, source, q, experiences, region, interest, porta,
+                            canale, superficie, budget, travel, dal, al, verificato, tag)
     buf = io.StringIO()
     w = csv.writer(buf, delimiter=";")
     w.writerow(["email", "nome", "stato", "porta", "fonte", "iscritto_il", "confermato_il", "disiscritto_il",
-                "vie", "citta", "dove", "budget", "avviso_ritiri", "regioni", "temi", "email_ricevute"])
+                "vie", "citta", "dove", "budget", "avviso_ritiri", "regioni", "temi", "email_ricevute",
+                # B4 (24/9) — le colonne nuove in coda (le vecchie restano dove sono)
+                "canale", "superficie", "porta_arrivo", "consenso_modalita", "consenso_versione",
+                "verificato_at", "n_email"])
     async for d in db.aurya_subscribers.find(query, _PROIEZIONE_ISCRITTO).sort("created_at", -1).limit(5000):
         r = _riga_iscritto(d)
         a = r["retreat_alert"]
+        p = r["provenienza"] or {}
+        c = r["consenso"] or {}
         w.writerow([r["email"], r["name"] or "", r["status"], r["porta"], r["source"],
                     r["created_at"] or "", r["confirmed_at"] or "", r["unsubscribed_at"] or "",
                     " ".join(r["interests"]), r["city"] or "", r["travel"] or "", r["budget"] or "",
                     "si" if a.get("enabled") else "no", " ".join(a.get("regions") or []),
-                    " ".join(r["topics"]), " ".join(r["sequenza"])])
+                    " ".join(r["topics"]), " ".join(r["sequenza"]),
+                    p.get("canale") or "", p.get("superficie") or "", p.get("porta") or "",
+                    c.get("modalita") or "", c.get("versione") or "",
+                    r["verificato_at"] or "", r["n_email"]])
     return Response(content="\ufeff" + buf.getvalue(), media_type="text/csv; charset=utf-8",
                     headers={"Content-Disposition": 'attachment; filename="iscritti-cerchio.csv"'})
 
@@ -597,7 +864,257 @@ async def disiscrivi_da_admin(payload: DisiscriviPayload,
         raise HTTPException(status_code=404, detail="Questo indirizzo non e' fra gli iscritti.")
     from services.subscriber_brevo_sync import sync_subscriber_background
     sync_subscriber_background(email)
+    from services.verifica_email import registra_consenso_audit
+    await registra_consenso_audit(email, "newsletter_unsubscribe", r)
+    await _audit_iscritto(current_user, "SUBSCRIBER_UNSUBSCRIBED", email, {})
     return _riga_iscritto(r)
+
+
+# ── B4 (24/9/2026) — le azioni dell'admin sugli iscritti ─────────────────────
+# ATTENZIONE all'ordine: le rotte con percorso fisso (/export.csv,
+# /disiscrivi, /reinvia-conferma, /conferma) stanno PRIMA di
+# /admin/subscribers/{email}, altrimenti «conferma» diventa un'email.
+
+class EmailPayload(BaseModel):
+    email: EmailStr
+
+
+class ConfermaPayload(BaseModel):
+    email: EmailStr
+    motivo: str = Field(min_length=3, max_length=300)
+
+
+class MotivoPayload(BaseModel):
+    motivo: str = Field(min_length=3, max_length=300)
+
+
+class NotaPayload(BaseModel):
+    testo: str = Field(min_length=1, max_length=2000)
+
+
+class TagPayload(BaseModel):
+    tag: list[str] = Field(default_factory=list, max_length=20)
+
+
+class PreferenzeAdminPayload(BaseModel):
+    """Gli stessi campi di PUT /public/newsletter/preferences, senza token."""
+    topics: Optional[list[str]] = Field(default=None, max_length=20)
+    format: Optional[str] = Field(default=None, max_length=20)
+    retreat_alert: Optional[dict] = None
+    interests: Optional[list[str]] = Field(default=None, max_length=10)
+    city: Optional[str] = Field(default=None, max_length=120)
+    travel: Optional[str] = Field(default=None, max_length=40)
+    budget: Optional[str] = Field(default=None, max_length=40)
+    name: Optional[str] = Field(default=None, max_length=120)
+
+
+async def _iscritto_o_404(email: str) -> dict:
+    from database import db
+    d = await db.aurya_subscribers.find_one({"email": email}, _PROIEZIONE_ISCRITTO)
+    if not d:
+        raise HTTPException(status_code=404, detail="Questo indirizzo non e' fra gli iscritti.")
+    return d
+
+
+@router.post("/admin/subscribers/reinvia-conferma")
+async def reinvia_conferma(payload: EmailPayload,
+                           current_user: dict = Depends(require_system_admin)):
+    """Rimanda l'email di doppio opt-in a chi e' ancora in attesa. A chi e'
+    confermato non serve; a chi si e' cancellato non si scrive."""
+    email = payload.email.lower().strip()
+    d = await _iscritto_o_404(email)
+    if d.get("status") != "pending":
+        raise HTTPException(status_code=409, detail=f"L'iscritto e' «{d.get('status')}»: niente da riconfermare.")
+    _send_confirm_email(email, d.get("name"), generate_subscriber_token(email))
+    await _audit_iscritto(current_user, "SUBSCRIBER_CONFIRM_RESENT", email, {})
+    return {"ok": True, "email": email}
+
+
+@router.post("/admin/subscribers/conferma")
+async def conferma_da_admin(payload: ConfermaPayload,
+                            current_user: dict = Depends(require_system_admin)):
+    """La conferma a mano (iscrizione a voce, via WhatsApp): con motivo,
+    passa da segna_verificato(admin) → status confirmed, modalita
+    «manuale», benvenuto come alla conferma dal link."""
+    email = payload.email.lower().strip()
+    d = await _iscritto_o_404(email)
+    from services.verifica_email import segna_verificato
+    esito = await segna_verificato(email, "admin", payload.motivo)
+    await _audit_iscritto(current_user, "SUBSCRIBER_ADMIN_CONFIRMED", email,
+                          {"motivo": payload.motivo, "stato_prima": d.get("status"),
+                           "confermato_ora": esito.get("confermato_ora")})
+    return {"ok": True, **esito, "item": _riga_iscritto(await _iscritto_o_404(email))}
+
+
+@router.get("/admin/subscribers/{email}")
+async def scheda_iscritto(email: str, current_user: dict = Depends(require_system_admin)):
+    """La scheda completa: i sei blocchi (identita', consenso col suo ip,
+    provenienza, interessi, ritiri, ciclo di vita), i legami (account,
+    lead, organizzazione), le note, e la cronologia in ordine di tempo."""
+    from database import db
+    email = email.lower().strip()
+    d = await _iscritto_o_404(email)
+    riga = _riga_iscritto(d)
+    riga["consenso"] = d.get("consenso")          # nella scheda l'ip si vede
+    riga["note"] = list(d.get("note_admin") or [])
+    riga["email_status_at"] = d.get("email_status_at")
+    riga["sequenza_dettaglio"] = d.get("sequenza") or {}
+
+    # legami: lo stesso essere umano nelle altre liste
+    utente = await db.users.find_one({"email": email}, {"_id": 0, "id": 1, "role": 1,
+                                                        "organization_id": 1, "email_verified": 1})
+    lead = await db.prelaunch_leads.find_one({"email": email}, {"_id": 0, "type": 1, "created_at": 1,
+                                                                "phone": 1, "activity": 1})
+    riga["legami"] = {
+        "account": utente,
+        "lead": lead,
+        "organizzazione_id": (utente or {}).get("organization_id") if (utente or {}).get("role") == "admin" else None,
+    }
+
+    def _iso(v):
+        return v.isoformat() if hasattr(v, "isoformat") else (str(v) if v else None)
+
+    cron = []
+    if d.get("created_at"):
+        cron.append({"at": _iso(d["created_at"]), "tipo": "iscritto",
+                     "testo": f"Iscritto da {riga['provenienza'].get('canale')} › {riga['provenienza'].get('superficie')}"})
+    c = d.get("consenso") or {}
+    if c.get("at"):
+        cron.append({"at": _iso(c["at"]), "tipo": "consenso",
+                     "testo": f"Consenso {c.get('versione')} ({c.get('modalita')})"})
+    if d.get("reminder_sent_at"):
+        cron.append({"at": _iso(d["reminder_sent_at"]), "tipo": "promemoria", "testo": "Promemoria di conferma"})
+    if d.get("confirmed_at"):
+        cron.append({"at": _iso(d["confirmed_at"]), "tipo": "confermato", "testo": "Confermato"})
+    if d.get("verificato_at"):
+        vd = d.get("verificato_da") or {}
+        cron.append({"at": _iso(d["verificato_at"]), "tipo": "verificato",
+                     "testo": f"Indirizzo verificato ({vd.get('tipo') or '?'})", "dettaglio": vd.get("dettaglio")})
+    for passo, v in (d.get("sequenza") or {}).items():
+        sv = str(v or "")
+        saltato = sv.startswith("saltato")
+        cron.append({"at": sv.replace("saltato ", "", 1) if saltato else sv,
+                     "tipo": "sequenza", "testo": f"{'Saltato' if saltato else 'Inviato'}: {passo}"})
+    if d.get("unsubscribed_at"):
+        cron.append({"at": _iso(d["unsubscribed_at"]), "tipo": "disiscritto",
+                     "testo": f"Disiscritto ({d.get('unsubscribed_by') or 'link'})"})
+    if d.get("email_status_at"):
+        cron.append({"at": _iso(d["email_status_at"]), "tipo": "email_status",
+                     "testo": f"Indirizzo: {d.get('email_status')}"})
+    for n in (d.get("note_admin") or []):
+        cron.append({"at": _iso(n.get("at")), "tipo": "nota", "testo": n.get("testo"), "dettaglio": n.get("da")})
+    try:
+        async for a in db.audit_logs.find({"target_type": "subscriber", "target_id": email},
+                                          {"_id": 0, "action": 1, "created_at": 1, "metadata": 1}).sort("created_at", -1).limit(50):
+            cron.append({"at": _iso(a.get("created_at")), "tipo": "audit", "testo": a.get("action"),
+                         "dettaglio": (a.get("metadata") or {}).get("motivo") or (a.get("metadata") or {}).get("attore")})
+        async for a in db.consent_audit.find({"customer_email": email, "document_type": "aurya_newsletter"},
+                                             {"_id": 0, "source": 1, "accepted_at": 1, "version_tag": 1}).sort("accepted_at", -1).limit(50):
+            cron.append({"at": _iso(a.get("accepted_at")), "tipo": "consent_audit",
+                         "testo": f"{a.get('source')} · {a.get('version_tag')}"})
+    except Exception as exc:                # noqa: BLE001
+        logger.warning("cronologia audit non letta per %s: %s", _mask_email(email), exc)
+    riga["cronologia"] = sorted(cron, key=lambda x: x.get("at") or "")
+    return riga
+
+
+@router.patch("/admin/subscribers/{email}/preferenze")
+async def preferenze_da_admin(email: str, payload: PreferenzeAdminPayload,
+                              current_user: dict = Depends(require_system_admin)):
+    """Le preferenze cambiate da noi (stessi campi della pagina pubblica)."""
+    from database import db
+    email = email.lower().strip()
+    prima = await _iscritto_o_404(email)
+    now = datetime.now(timezone.utc)
+    doc_set: dict = {"updated_at": now}
+    if payload.topics is not None:
+        doc_set["preferences.topics"] = _clean_topics(payload.topics)
+    if payload.format in SUBSCRIBER_FORMATS:
+        doc_set["preferences.format"] = payload.format
+    if payload.retreat_alert is not None:
+        doc_set["preferences.retreat_alert"] = _clean_alert(payload.retreat_alert)
+    if payload.interests is not None:
+        doc_set["profile.interests"] = _clean_interests(payload.interests)
+    if payload.city is not None:
+        doc_set["profile.city"] = payload.city.strip()[:120]
+    if payload.travel is not None and payload.travel in TRAVEL_OPTIONS:
+        doc_set["profile.travel"] = payload.travel
+    if payload.budget is not None:
+        doc_set["profile.budget"] = payload.budget.strip()[:40]
+    if payload.name is not None:
+        doc_set["name"] = payload.name.strip()[:120] or None
+    await db.aurya_subscribers.update_one({"email": email}, {"$set": doc_set})
+    from services.subscriber_brevo_sync import sync_subscriber_background
+    sync_subscriber_background(email)
+    riga_prima = _riga_iscritto(prima)
+    dopo = _riga_iscritto(await _iscritto_o_404(email))
+    campi = [k for k in ("topics", "format", "retreat_alert", "interests", "city", "travel", "budget", "name")
+             if riga_prima.get(k) != dopo.get(k)]
+    await _audit_iscritto(current_user, "SUBSCRIBER_PREFERENCES_EDITED", email,
+                          {"campi": campi,
+                           "prima": {k: str(riga_prima.get(k))[:120] for k in campi},
+                           "dopo": {k: str(dopo.get(k))[:120] for k in campi}})
+    return dopo
+
+
+@router.post("/admin/subscribers/{email}/note")
+async def nota_da_admin(email: str, payload: NotaPayload,
+                        current_user: dict = Depends(require_system_admin)):
+    """Una nota del founder sull'iscritto (note_admin[])."""
+    from database import db
+    from models.common import generate_id
+    email = email.lower().strip()
+    await _iscritto_o_404(email)
+    now = datetime.now(timezone.utc)
+    nota = {"id": generate_id(), "testo": payload.testo.strip()[:2000], "at": now,
+            "da": current_user.get("email")}
+    await db.aurya_subscribers.update_one({"email": email},
+                                          {"$push": {"note_admin": nota}, "$set": {"updated_at": now}})
+    await _audit_iscritto(current_user, "SUBSCRIBER_NOTE_ADDED", email, {"nota_id": nota["id"]})
+    return {"ok": True, "nota": nota, "item": _riga_iscritto(await _iscritto_o_404(email))}
+
+
+def _pulisci_tag(raw) -> list:
+    out = []
+    for t in raw or []:
+        s = str(t or "").strip().lower()[:30]
+        if s and s not in out:
+            out.append(s)
+    return out[:20]
+
+
+@router.put("/admin/subscribers/{email}/tag")
+async def tag_da_admin(email: str, payload: TagPayload,
+                       current_user: dict = Depends(require_system_admin)):
+    """I tag dell'iscritto, sostituiti in blocco (minuscoli, senza doppioni)."""
+    from database import db
+    email = email.lower().strip()
+    prima = await _iscritto_o_404(email)
+    tag = _pulisci_tag(payload.tag)
+    await db.aurya_subscribers.update_one({"email": email},
+                                          {"$set": {"tag": tag, "updated_at": datetime.now(timezone.utc)}})
+    await _audit_iscritto(current_user, "SUBSCRIBER_TAGS_SET", email,
+                          {"prima": list(prima.get("tag") or []), "dopo": tag})
+    return {"ok": True, "tag": tag, "item": _riga_iscritto(await _iscritto_o_404(email))}
+
+
+@router.delete("/admin/subscribers/{email}")
+async def elimina_iscritto(email: str, payload: MotivoPayload,
+                           current_user: dict = Depends(require_system_admin)):
+    """Cancellazione GDPR su richiesta (art. 17): il documento sparisce,
+    Brevo lo mette in blacklist, resta la riga di audit col motivo."""
+    from database import db
+    email = email.lower().strip()
+    d = await _iscritto_o_404(email)
+    res = await db.aurya_subscribers.delete_one({"email": email})
+    from services.subscriber_brevo_sync import blacklist_subscriber_background
+    blacklist_subscriber_background(email)
+    creato = d.get("created_at")
+    await _audit_iscritto(current_user, "SUBSCRIBER_DELETED", email,
+                          {"motivo": payload.motivo, "stato": d.get("status"),
+                           "iscritto_il": creato.isoformat() if hasattr(creato, "isoformat") else None,
+                           "cancellati": res.deleted_count})
+    return {"ok": True, "email": email, "cancellati": res.deleted_count}
 
 
 @router.get("/public/newsletter/preferences/{token}")
@@ -674,4 +1191,7 @@ async def unsubscribe(request: Request, payload: TokenPayload):
     )
     from services.subscriber_brevo_sync import sync_subscriber_background
     sync_subscriber_background(email)     # BN6 — blacklist su Brevo
+    # B2 — la revoca lascia la sua riga nel registro, come l'accettazione
+    from services.verifica_email import registra_consenso_audit
+    await registra_consenso_audit(email, "newsletter_unsubscribe")
     return {"ok": True, "status": "unsubscribed"}

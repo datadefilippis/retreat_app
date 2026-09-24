@@ -148,4 +148,26 @@ async def list_leads(
     for r in rows:
         counts[r.get("type", "traveler")] = \
             counts.get(r.get("type", "traveler"), 0) + 1
+    # Lotto B5 (24/9/2026) — lo stesso essere umano in tre liste: per
+    # ogni lead diciamo se e' gia' nel Cerchio (`iscritto`) e, se la sua
+    # email e' quella di un utente admin, a quale organizzazione
+    # appartiene (`organizzazione_id`: il lead professionista ha creato
+    # l'account). Nessun altro cambio alla riga.
+    emails = sorted({(r.get("email") or "").lower().strip() for r in rows if r.get("email")})
+    iscritti: set = set()
+    org_per_email: dict = {}
+    if emails:
+        try:
+            iscritti = {e for e in await db.aurya_subscribers.distinct(
+                "email", {"email": {"$in": emails}}) if e}
+            async for u in db.users.find({"email": {"$in": emails}, "role": "admin"},
+                                         {"_id": 0, "email": 1, "organization_id": 1}):
+                if u.get("organization_id"):
+                    org_per_email[(u.get("email") or "").lower()] = u["organization_id"]
+        except Exception as exc:           # noqa: BLE001 — i legami non rompono la lista
+            logger.warning("leads: legami non calcolati: %s", exc)
+    for r in rows:
+        e = (r.get("email") or "").lower().strip()
+        r["iscritto"] = e in iscritti
+        r["organizzazione_id"] = org_per_email.get(e)
     return {"items": rows, "total": len(rows), "counts": counts}
