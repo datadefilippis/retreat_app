@@ -172,6 +172,12 @@ export default function PublicProfilePage() {
         const o = orgRes.value.data || {};
         setSlug(o.public_slug || o.store_slug || null);
         loadedName = o.name || '';
+        /* P1 — chi si e' iscritto SENZA attivita' ha org.name = il proprio
+           nome: nel campo «La tua attivita'» apparirebbe il suo nome due
+           volte. Si mostra vuoto; il Salva non manda un nome vuoto, quindi
+           org.name resta com'e' e il pubblico legge solo la persona. */
+        const persona = (loadedForm.nome_persona || '').trim().toLowerCase();
+        if (persona && loadedName.trim().toLowerCase() === persona) loadedName = '';
         setOrgName(loadedName);
         setLogoUrl(o.branding?.logo_url || null);
       }
