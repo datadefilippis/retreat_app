@@ -237,3 +237,20 @@ Fuori dal piano, da decidere a parte: le email del cliente finale (33) sono coer
 **Giro 1**: PE (1 g) → P1 identità (2 g) → P3 telefono (½) → P2 bio (1) → deploy, CSV dei 20 nomi dopo il go.
 **Giro 2**: P4 listino in home (½, la parte email è già in PE) → P5 admin (1) → P6 misure (½) → deploy.
 Totale circa sette giornate.
+
+---
+
+## 9. Stato del giro 1 (24/9 sera) — FATTO in locale, in attesa del «vai»
+
+Commit `fa42006a` (PE email) e `b7c21e56` (P1 identità + P3 telefono + P2 bio).
+
+- **PE**: g2 rimosso; «La tua pagina è online» alla nascita della pagina con blocco listino dinamico; np5/10/15 in due varianti; bug quota 80% corretto; `send_admin_notification` esiste (GDPR); lead alla casella Aurya; conferma Cerchio con oggetto suo; `send_welcome` via; alert critici a un admin + ops. Guardie `test_email_pe`.
+- **P1**: `services/nome_pubblico.py` + `lib/nomePubblico.js`; `nome_persona` in whitelist; card/pagina/directory/shell/Sound sulla stessa funzione; editor con nome e attività in cima; registrazione con attività facoltativa e persona dal primo giorno; `scripts/proponi_nome_persona.py proponi|applica`.
+- **P3**: `services/telefono.py`; `UserCreate.phone` canonico/validato (422); salvato privato; moduli con campo obbligatorio; /benvenuto lo salta se c'è; riga in home; scheda 360 admin con persona e telefono.
+- **P2**: bio 1000, guida in sei punti, contatore, quinto check `bio_completa` in editor e server; gate «online» invariato; email senza «due righe».
+
+**Verificato**: registrazione via API (422 con telefono malformato, 202 con valido; org creata «Prova Telefono» con `nome_persona` e `public_phone` privato, poi rimossa); PATCH/GET profilo e payload pubblico «Demo Admin · Masseria Montanari Demo»; editor e modulo di registrazione nel browser. Suite mirate 818 verdi; tre test live falliscono ANCHE senza le modifiche (directory locale vuota, AP5 sottoprocesso): dati locali, non regressioni.
+
+**Anteprima in produzione (sola lettura)**: al primo giro del motore nuovo partirebbero 5 email «La tua pagina è online» col blocco listino a chi ha la pagina senza servizi e non l'ha mai ricevuta (Casa Coco, La Nuova Alba, Debora, Studio ZENITH, Rigveda). Nessun'altra email in più. Dopo il deploy: `proponi_nome_persona.py proponi` in prod → CSV al founder → `applica` solo dopo la sua revisione.
+
+**Invarianza**: i 20 profili di prod restano identici finché il CSV non è approvato (`nome_persona` assente = marchio com'era); nessun numero diventa pubblico; slug e URL invariati; gate «online» invariato.
