@@ -88,3 +88,20 @@ E1 Checkout: campo opzionale `cerchio_optin: bool` nel corpo ordine → se vero,
 
 ## Ordine e deploy
 A, B, C in parallelo (file disgiunti) → D → E. Deploy solo su «vai» del founder, con gli interruttori spenti finché la v2.7 non è in prod.
+
+## Stato al 24/9 sera (tutto in locale, NIENTE in prod)
+
+| lotto | commit | verificato |
+|---|---|---|
+| Legale v2.7 ×4 + hash | 96bcb77e | guardie legali verdi |
+| E6 login senza verifica (`LOGIN_SENZA_VERIFICA`, spento) | 675dc3c7 | test_login_senza_verifica_e6 |
+| A regia operatori | bd1a2c32 | browser: lista con chip/cerca/da rivedere, foglio Profilo su Sara, audit con prima/dopo/motivo |
+| B dati Cerchio | 4683fe6a | API: iscrizione con provenienza+utm+consenso, link verificante → confermato, scheda, DELETE con audit; migrazioni locali eseguite |
+| C igiene invii + `CERCHIO_SINGOLO_OPTIN` (spento) | dcd388d7 | dry-run identico prima/dopo |
+| D frontend Cerchio | de33c837 | browser: Iscritti rifatta, scheda, conferma a mano |
+| E porte (checkout, email ordine/recensione, grazie, `/entra`) | 6fd7beee | browser: casella separata non preselezionata al checkout di Giulia |
+| «grazie» senza oracolo | 4cde8a3d | test_optin_singolo_subscribe |
+
+Interruttori: `LOGIN_SENZA_VERIFICA` e `CERCHIO_SINGOLO_OPTIN` in `.env.production`, entrambi spenti al deploy; si accendono (riavvio backend) DOPO che la v2.7 e' in prod e il re-consent e' partito.
+
+Dopo il deploy, in prod: `scripts/migra_provenienza.py --prova` → senza `--prova`; `scripts/migra_consenso_cerchio.py --prova` → senza. Poi decidere sui 4 lead del prelancio (una email di invito) e sul campo «quando».
