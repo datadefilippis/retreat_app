@@ -321,7 +321,16 @@ class TestB4Admin:
         assert r["source"] == "cancello:x" and r["porta"] == "meditazioni"
         assert r["provenienza"]["canale"] == "sound" and r["provenienza"]["superficie"] == "cancello"
         assert "ip" not in r["consenso"] and r["consenso"]["versione"] == "cerchio-v3"
-        assert r["n_email"] == 2 and r["ultima_email_at"]
+        # 24/9 sera: benvenuto + promemoria + la conferma del pregresso (senza registro) = 3
+        assert r["n_email"] == 3 and r["ultima_email_at"]
+        assert [e["tipo"] for e in r["email_dettaglio"]].count("conferma") == 1
+        # col registro presente si conta quello, non il pregresso; chi entra dal link d'ordine non ha conferma
+        r2 = _riga_iscritto({"email": "c@d.it", "status": "confirmed", "created_at": now,
+                             "email_inviate": [{"tipo": "conferma", "at": now}, {"tipo": "conferma (reinvio)", "at": now}]})
+        assert r2["n_email"] == 2
+        r3 = _riga_iscritto({"email": "e@f.it", "status": "confirmed", "created_at": now,
+                             "verificato_da": {"tipo": "clic", "dettaglio": "entra"}})
+        assert r3["n_email"] == 0
         assert r["tag"] == ["vip"] and r["n_note"] == 1 and r["email_status"] == "bounced"
         for k in ("verificato_at", "verificato_da", "created_at", "budget", "retreat_alert", "sequenza"):
             assert k in r, k

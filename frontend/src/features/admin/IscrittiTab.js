@@ -95,8 +95,13 @@ const COLONNE = [
   { k: 'travel', label: 'Dove', cella: (r) => DOVE[r.travel] || '—' },
   { k: 'city', label: 'Città', cella: (r) => r.city || '—' },
   { k: 'alert', label: 'Avviso ritiri', cella: (r) => alertTesto(r) },
-  { k: 'n_email', label: 'Email ricevute', cella: (r) => `${r.n_email ?? (r.sequenza || []).length}` },
+  // 24/9 sera (founder): le vie (interessi per i ritiri) si vedono SUBITO
   { k: 'interests', label: 'Vie', cella: (r) => vie(r) || '—' },
+  // «Email inviate» = le automatiche che il sistema ha mandato (conferma o
+  // benvenuto, promemoria, passi della sequenza). Non sappiamo se le hanno
+  // aperte; sappiamo se hanno cliccato: colonna «Verificato».
+  { k: 'n_email', label: 'Email inviate', titolo: 'Email automatiche mandate dal sistema: conferma o benvenuto, promemoria, sequenza. Aperte non lo sappiamo; cliccate = Verificato.',
+    cella: (r) => <span title={emailDettaglio(r)}>{r.n_email ?? (r.sequenza || []).length}</span> },
   { k: 'topics', label: 'Temi', cella: (r) => (r.topics || []).join(', ') || '—' },
   { k: 'language', label: 'Lingua', cella: (r) => r.language || '—' },
   { k: 'confirmed_at', label: 'Confermato il', cella: (r) => data(r.confirmed_at) },
@@ -106,7 +111,14 @@ const COLONNE = [
   { k: 'consenso', label: 'Consenso', cella: (r) => (r.consenso ? `${MODALITA[r.consenso.modalita] || r.consenso.modalita || '?'} · ${r.consenso.versione || '?'}` : '—') },
   { k: 'verificato', label: 'Verificato', cella: (r) => (r.verificato_at ? data(r.verificato_at) : 'no') },
 ];
-const COLONNE_DEFAULT = COLONNE.slice(0, 10).map((c) => c.k);
+const COLONNE_DEFAULT = COLONNE.slice(0, 11).map((c) => c.k);
+
+/* «conferma 12/09, benvenuto_ritiri 15/09»: il dettaglio dietro il numero */
+function emailDettaglio(r) {
+  const v = r.email_dettaglio || [];
+  if (!v.length) return 'Nessuna email automatica registrata';
+  return v.map((e) => `${e.tipo} ${e.at ? data(e.at) : ''}`.trim()).join(', ');
+}
 
 function leggiColonne() {
   try {
@@ -635,7 +647,7 @@ export default function IscrittiTab() {
                 <Riga k="Promemoria" v={s.reminder_sent_at ? dataOra(s.reminder_sent_at) : '—'} />
                 <Riga k="Disiscritto il" v={s.unsubscribed_at ? `${dataOra(s.unsubscribed_at)}${s.unsubscribed_by ? ` (${s.unsubscribed_by})` : ''}` : '—'} />
                 <Riga k="Indirizzo" v={s.email_status ? `${s.email_status}${scheda?.email_status_at ? ` dal ${data(scheda.email_status_at)}` : ''}` : 'ok'} />
-                <Riga k="Email ricevute" v={`${s.n_email ?? (s.sequenza || []).length}${s.ultima_email_at ? ` · ultima ${data(s.ultima_email_at)}` : ''}`} />
+                <Riga k="Email inviate" v={`${s.n_email ?? (s.sequenza || []).length}${s.ultima_email_at ? ` · ultima ${data(s.ultima_email_at)}` : ''} — ${emailDettaglio(s)}`} />
                 {scheda?.sequenza_dettaglio && Object.keys(scheda.sequenza_dettaglio).length > 0 && (
                   <Riga k="Sequenza" v={(
                     <ul className="space-y-0.5 text-xs">

@@ -421,6 +421,7 @@ async def _dopo_iscrizione(email: str, name: Optional[str], return_to: Optional[
         if not inviato:
             await asyncio.to_thread(_send_confirm_email, email, name,
                                     generate_subscriber_token(email), return_to)
+            await _registra_email_inviata(email, "conferma")   # il benvenuto lo segna gia' la sequenza
     except Exception as exc:                # noqa: BLE001
         logger.warning("email dopo iscrizione non partita per %s: %s", _mask_email(email), exc)
 
@@ -714,7 +715,7 @@ def _riga_iscritto(d: dict) -> dict:
     provenienza = d.get("provenienza") or {**classifica(d.get("source")), "url": None,
                                            "referrer": None, "utm": None, "dispositivo": None}
     consenso = {k: v for k, v in (d.get("consenso") or {}).items() if k != "ip"} or None
-    n_email, ultima = _conta_email(d)
+    n_email, ultima, email_dettaglio = _conta_email(d)
     return {
         "email": d["email"],
         "name": d.get("name"),
@@ -742,22 +743,52 @@ def _riga_iscritto(d: dict) -> dict:
         "email_status": d.get("email_status"),
         "n_email": n_email,
         "ultima_email_at": ultima,
+        "email_dettaglio": email_dettaglio,
         "tag": list(d.get("tag") or []),
         "n_note": len(d.get("note_admin") or []),
     }
 
 
+def _iso_o_str(v) -> str:
+    return v.isoformat() if hasattr(v, "isoformat") else (str(v) if v else "")
+
+
 def _conta_email(d: dict):
-    """Quante email editoriali ha ricevuto (passi delle sequenze mandati
-    + promemoria) e quando l'ultima. I passi «saltato» non contano."""
-    when: list = []
-    for v in (d.get("sequenza") or {}).values():
+    """Le email AUTOMATICHE che il sistema ha mandato a questo indirizzo:
+    la conferma (o il benvenuto) all'iscrizione, il promemoria, i passi
+    delle sequenze inviati (non quelli «saltato»). Ritorna
+    (quante, quando l'ultima, dettaglio). Non sappiamo se le hanno APERTE
+    (Brevo non ce lo dice): sappiamo se hanno CLICCATO (verificato_at).
+
+    Le conferme si registrano in `email_inviate` dal 24/9 sera; prima
+    partivano sempre all'iscrizione senza lasciare traccia: per il
+    pregresso se ne conta una, alla data di iscrizione (tranne chi e'
+    entrato dal link a un clic dell'email d'ordine, che non la riceve)."""
+    voci: list = []
+    for k, v in (d.get("sequenza") or {}).items():
         if v and not str(v).startswith("saltato"):
-            when.append(str(v))
+            voci.append({"tipo": k, "at": str(v)})
     if d.get("reminder_sent_at"):
-        r = d["reminder_sent_at"]
-        when.append(r.isoformat() if hasattr(r, "isoformat") else str(r))
-    return len(when), (max(when) if when else None)
+        voci.append({"tipo": "promemoria", "at": _iso_o_str(d["reminder_sent_at"])})
+    inviate = [e for e in (d.get("email_inviate") or []) if isinstance(e, dict) and e.get("at")]
+    for e in inviate:
+        voci.append({"tipo": e.get("tipo") or "conferma", "at": _iso_o_str(e["at"])})
+    if not inviate and (d.get("verificato_da") or {}).get("dettaglio") != "entra":
+        voci.append({"tipo": "conferma", "at": _iso_o_str(d.get("created_at"))})
+    voci.sort(key=lambda x: x["at"])
+    when = [x["at"] for x in voci if x["at"]]
+    return len(voci), (max(when) if when else None), voci
+
+
+async def _registra_email_inviata(email: str, tipo: str) -> None:
+    """Traccia sul documento un'email automatica mandata (conferma,
+    reinvio): e' quello che l'admin conta nella colonna «Email inviate»."""
+    try:
+        await db.aurya_subscribers.update_one(
+            {"email": email},
+            {"$push": {"email_inviate": {"tipo": tipo, "at": datetime.now(timezone.utc)}}})
+    except Exception as exc:                # noqa: BLE001
+        logger.warning("email_inviate non registrata per %s: %s", _mask_email(email), exc)
 
 
 async def _audit_iscritto(current_user: dict, action: str, email: str, metadata: dict) -> None:
@@ -858,6 +889,7 @@ def _query_iscritti(status: Optional[str], source: Optional[str], q: Optional[st
 _PROIEZIONE_ISCRITTO = {"_id": 0, "email": 1, "name": 1, "status": 1, "source": 1, "language": 1,
                         "created_at": 1, "confirmed_at": 1, "unsubscribed_at": 1, "unsubscribed_by": 1,
                         "reminder_sent_at": 1, "preferences": 1, "profile": 1, "sequenza": 1,
+                        "email_inviate": 1,   # 24/9 sera: il registro delle automatiche mandate
                         # B4 (24/9)
                         "provenienza": 1, "consenso": 1, "verificato_at": 1, "verificato_da": 1,
                         "email_status": 1, "email_status_at": 1, "tag": 1, "note_admin": 1}
@@ -1026,6 +1058,7 @@ async def reinvia_conferma(payload: EmailPayload,
     if d.get("status") != "pending":
         raise HTTPException(status_code=409, detail=f"L'iscritto e' «{d.get('status')}»: niente da riconfermare.")
     _send_confirm_email(email, d.get("name"), generate_subscriber_token(email))
+    await _registra_email_inviata(email, "conferma (reinvio)")
     await _audit_iscritto(current_user, "SUBSCRIBER_CONFIRM_RESENT", email, {})
     return {"ok": True, "email": email}
 
@@ -1084,6 +1117,9 @@ async def scheda_iscritto(email: str, current_user: dict = Depends(require_syste
                      "testo": f"Consenso {c.get('versione')} ({c.get('modalita')})"})
     if d.get("reminder_sent_at"):
         cron.append({"at": _iso(d["reminder_sent_at"]), "tipo": "promemoria", "testo": "Promemoria di conferma"})
+    for e in (d.get("email_inviate") or []):
+        if isinstance(e, dict) and e.get("at"):
+            cron.append({"at": _iso(e["at"]), "tipo": "email", "testo": f"Email inviata: {e.get('tipo') or 'conferma'}"})
     if d.get("confirmed_at"):
         cron.append({"at": _iso(d["confirmed_at"]), "tipo": "confermato", "testo": "Confermato"})
     if d.get("verificato_at"):

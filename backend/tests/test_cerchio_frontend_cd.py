@@ -161,11 +161,14 @@ class TestD3IscrittiTab:
         # le predefinite, nell'ordine deciso
         blocco = ISCRITTI[ISCRITTI.index("const COLONNE = ["):ISCRITTI.index("const COLONNE_DEFAULT")]
         chiavi = re.findall(r"\{ k: '([\w_]+)', label: '([^']+)'", blocco)
-        assert [c[1] for c in chiavi[:10]] == ["Email", "Nome", "Stato", "Provenienza", "Iscritto il",
-                                                "Budget", "Dove", "Città", "Avviso ritiri", "Email ricevute"]
-        assert "COLONNE.slice(0, 10)" in ISCRITTI
-        extra = {c[1] for c in chiavi[10:]}
-        assert extra == {"Vie", "Temi", "Lingua", "Confermato il", "Porta", "Ultima email", "Tag", "Consenso", "Verificato"}
+        # 24/9 sera (founder): «Vie» torna fra le predefinite; «Email inviate»
+        # dice cosa conta (automatiche mandate, non aperte)
+        assert [c[1] for c in chiavi[:11]] == ["Email", "Nome", "Stato", "Provenienza", "Iscritto il",
+                                                "Budget", "Dove", "Città", "Avviso ritiri", "Vie", "Email inviate"]
+        assert "COLONNE.slice(0, 11)" in ISCRITTI
+        assert "Email ricevute" not in ISCRITTI and "function emailDettaglio" in ISCRITTI
+        extra = {c[1] for c in chiavi[11:]}
+        assert extra == {"Temi", "Lingua", "Confermato il", "Porta", "Ultima email", "Tag", "Consenso", "Verificato"}
 
     def test_la_scheda_coi_sei_blocchi_e_la_cronologia(self):
         assert 'data-testid="iscritti-scheda"' in ISCRITTI
