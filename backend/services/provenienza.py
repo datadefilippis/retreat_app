@@ -31,6 +31,10 @@ TASSONOMIA = {
     "gestionale": ("lettera-operatore",),
     "prelancio": ("lead-viaggiatore", "lead-professionista"),
     "manuale": ("admin", "import"),
+    # Lotto E (24/9) — le porte nuove del commercio: casella al checkout,
+    # bottone nella pagina grazie, riga nell'email d'ordine e in quella
+    # del codice recensione (clic firmato = consenso + verifica)
+    "commercio": ("checkout", "pagina-grazie", "email-ordine", "email-recensione"),
     "altro": ("sconosciuta",),
 }
 
@@ -38,7 +42,9 @@ TASSONOMIA = {
 ETICHETTE = {
     "sito": "Sito", "magazine": "Magazine", "sound": "Aurya Sound",
     "account": "Account", "gestionale": "Gestionale", "prelancio": "Prelancio",
-    "manuale": "A mano", "altro": "Altro",
+    "manuale": "A mano", "commercio": "Acquisti", "altro": "Altro",
+    "checkout": "Casella al checkout", "pagina-grazie": "Pagina grazie",
+    "email-ordine": "Email dell'ordine", "email-recensione": "Email della recensione",
     "cerca-ritiro": "Cerca un ritiro", "home": "Home", "landing-cerchio": "Landing del Cerchio",
     "esperienze": "Esperienze",
     "articolo": "Articolo", "guida": "Guida (cancello)", "cta-categoria": "Invito di categoria",
@@ -82,6 +88,10 @@ _ESATTE = {
     "admin": ("manuale", "admin"),
     "manuale": ("manuale", "admin"),
     "import": ("manuale", "import"),
+    "checkout": ("commercio", "checkout"),
+    "pagina-grazie": ("commercio", "pagina-grazie"),
+    "email-ordine": ("commercio", "email-ordine"),
+    "email-recensione": ("commercio", "email-recensione"),
 }
 
 

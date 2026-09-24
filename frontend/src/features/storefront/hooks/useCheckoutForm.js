@@ -185,6 +185,9 @@ export default function useCheckoutForm({
   const [shippingOptions, setShippingOptions] = useState([]);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(null); // null | { transaction_mode, order_status, message, registered?: bool }
+  // E1 (24/9/2026) — casella del Cerchio di Aurya: consenso SEPARATO da
+  // quello dell'operatore (due titolari, due caselle), mai preselezionata.
+  const [cerchioOptin, setCerchioOptin] = useState(false);
   // Shared checkout submitter (unifies the Stripe redirect path with
   // EventLandingPage). `submitting` above still drives the cart UI
   // loading state since it's woven into the pre-submit registration
@@ -749,6 +752,9 @@ export default function useCheckoutForm({
     if (form?.email) {
       try { sessionStorage.setItem('storefront:mktp_email', form.email); } catch { /* no-op */ }
     }
+    // E4 — la pagina grazie nasconde il suo invito al Cerchio a chi ha
+    // gia' spuntato la casella qui (redirect Stripe = full reload).
+    try { sessionStorage.setItem('storefront:cerchio_optin', cerchioOptin ? '1' : '0'); } catch { /* no-op */ }
     e.preventDefault();
     if (!form.name.trim() || !form.email.trim() || selectedItems.length === 0) return;
     if (!attendeesValid) {
@@ -932,6 +938,10 @@ export default function useCheckoutForm({
       payload.gdpr_terms_accepted = !!gdprTermsAccepted;
       payload.gdpr_privacy_accepted = !!gdprPrivacyAccepted;
       payload.gdpr_marketing_accepted = !!gdprMarketingAccepted;
+      // E1 — la casella del Cerchio di Aurya, a parte da quella sopra
+      // (che e' il marketing dell'operatore): il backend iscrive con
+      // fonte «checkout» e registro del consenso. Default false.
+      payload.cerchio_optin = !!cerchioOptin;
       // AP-L — consenso Aurya del guest (checkbox unica): l'ordine lo
       // timbra con le versioni correnti dei documenti piattaforma. Per
       // i loggati Aurya il backend risale all'account (aurya_legal).
@@ -1035,6 +1045,8 @@ export default function useCheckoutForm({
     gdprMarketingAccepted, setGdprMarketingAccepted,
     effectiveTerms, termsValid, gdprValid,
     marketingStatus,
+    // E1 — casella del Cerchio di Aurya (consenso a parte)
+    cerchioOptin, setCerchioOptin,
     // AP-L — legal a due livelli
     platformAccount, setPlatformAccount, platformLoggedIn,
     auryaAccepted, setAuryaConsent,

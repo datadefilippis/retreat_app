@@ -4,6 +4,8 @@ import { useTranslation } from 'react-i18next';
 
 import { storefrontAPI } from '../../api/storefront';
 import { useStorefrontLocaleSync } from './hooks/useStorefrontLocaleSync';
+// E4 (24/9/2026) — «Entra nel Cerchio di Aurya» dopo l'acquisto
+import GrazieCerchio from './components/checkout/GrazieCerchio';
 
 /**
  * Checkout result pages for Stripe redirect.
@@ -228,6 +230,11 @@ export function CheckoutSuccessPage() {
         <h2 className="text-xl font-bold text-gray-900">{title}</h2>
         <p className="text-gray-600 mt-2">{description}</p>
         <OrderSummary status={status} />
+
+        {/* E4 — la porta del Cerchio nella pagina grazie: casella sua
+            (non preselezionata) + bottone; sparisce se il cliente l'ha
+            gia' spuntata al checkout. */}
+        {!loading && <GrazieCerchio className="mt-5" />}
 
         {/* TA4 — i pass in mano subito: appena l'ordine è confermato la
             success page linka /t/ e /b/ senza aspettare l'email. */}

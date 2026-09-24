@@ -910,6 +910,9 @@ async def notify_customer_order_received(order: dict, org_id: str) -> None:
         bank_block = await _bank_transfer_block(order, org_id, order_ref, locale)
         if not bank_block:
             bank_block = await _pagamento_concordare_block(order, org_id, store_name, locale)
+        # E3 (24/9) — una riga del Cerchio, col link firmato (mai a chi e' gia' dentro)
+        from services.porte_cerchio import riga_cerchio_html
+        riga_cerchio = await riga_cerchio_html(email, "email-ordine", locale)
 
         html = _wrap_template(f"""
             <p>{_t("greeting", locale)},</p>
@@ -921,6 +924,7 @@ async def notify_customer_order_received(order: dict, org_id: str) -> None:
             <p style="text-align: center;">
                 <a href="{account_url}" class="btn">{_t("order_received_cta", locale)}</a>
             </p>
+            {riga_cerchio}
         """, locale, reply_to=ctx["reply_to"], store_name=store_name)
 
         subject = _t("order_received_subject", locale, store_name=store_name)
@@ -1917,6 +1921,9 @@ async def notify_customer_order_confirmed(order: dict, org_id: str) -> None:
         payments_html = await _render_payment_schedule_section(order, org_id, locale)
         # P2 (10/9/2026): caparra ricevuta col bonifico → il saldo, in chiaro
         saldo_html = await _saldo_block(order, org_id, locale)
+        # E3 (24/9) — una riga del Cerchio, col link firmato (mai a chi e' gia' dentro)
+        from services.porte_cerchio import riga_cerchio_html
+        riga_cerchio = await riga_cerchio_html(email, "email-ordine", locale)
 
         html = _wrap_template(f"""
             <p>{_t("greeting", locale)},</p>
@@ -1934,6 +1941,7 @@ async def notify_customer_order_confirmed(order: dict, org_id: str) -> None:
             <p style="text-align: center;">
                 <a href="{detail_url}" class="btn">{_t("order_confirmed_cta", locale)}</a>
             </p>
+            {riga_cerchio}
         """, locale, reply_to=ctx["reply_to"], store_name=store_name)
 
         subject = _t("order_confirmed_subject", locale, store_name=store_name)

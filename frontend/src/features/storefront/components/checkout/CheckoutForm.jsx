@@ -17,6 +17,8 @@ import { formatAmount } from '../../../../utils/currency';
 import { computePasswordStrength } from '../../hooks/useCheckoutForm';
 // AP1 — accesso rapido con l'account Aurya (magic link/OTP piattaforma)
 import AuryaQuickLogin from './AuryaQuickLogin';
+// E1 (24/9/2026) — il testo unico e versionato della casella del Cerchio
+import { testoConsenso } from '../../../../lib/testiConsenso';
 
 export default function CheckoutForm({
   checkout,
@@ -55,6 +57,7 @@ export default function CheckoutForm({
     termsExpanded, setTermsExpanded,
     gdprMarketingAccepted, setGdprMarketingAccepted,
     marketingStatus,
+    cerchioOptin, setCerchioOptin,
     // AP-L — legal a due livelli (Aurya + condizioni dell'operatore)
     setPlatformAccount, platformLoggedIn,
     auryaAccepted, setAuryaConsent,
@@ -771,6 +774,24 @@ export default function CheckoutForm({
                         })}
                       </p>
                     )}
+                    {/* E1 (24/9/2026) — il Cerchio di Aurya: un ALTRO titolare,
+                        quindi un'altra casella, mai unita a quella sopra e mai
+                        preselezionata (ANALISI_SYSTEM_ADMIN §6.3). Stesso stile. */}
+                    <label className="flex items-start gap-2 cursor-pointer select-none">
+                      <input
+                        type="checkbox"
+                        checked={cerchioOptin}
+                        onChange={e => setCerchioOptin(e.target.checked)}
+                        data-testid="checkout-cerchio-optin"
+                        className="mt-0.5 shrink-0 h-4 w-4 rounded border-gray-300 text-gray-900 focus:ring-gray-900"
+                      />
+                      <span className="text-sm text-gray-600">
+                        {testoConsenso().testo}{' '}
+                        <a href="/privacy" target="_blank" rel="noopener noreferrer" className="underline text-blue-700 hover:no-underline">
+                          {t('storefront:checkout.gdpr.aurya_privacy_link', { defaultValue: 'Privacy' })}
+                        </a>
+                      </span>
+                    </label>
                     {/* RS5 — la promessa sull'email, in una riga */}
                     <p className="text-[11px] text-gray-500" data-testid="email-promise">
                       {t('storefront:checkout.gdpr.email_promise', {

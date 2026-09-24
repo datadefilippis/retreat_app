@@ -685,6 +685,28 @@ async def submit_order_from_storefront(
                     order.get("id"), exc, exc_info=True,
                 )
 
+        # ── Lotto E1 (24/9/2026) — casella del Cerchio di Aurya ───────
+        # Un consenso a parte da quello dell'operatore (altro titolare):
+        # se il cliente l'ha spuntata, iscrizione al Cerchio con fonte
+        # «checkout», testo corrente e ip/user-agent come prova. Best
+        # effort: l'ordine non fallisce mai per la Lettera. Il gia'
+        # confermato non riceve il magic link (unlock_flow).
+        if order and getattr(body, "cerchio_optin", False) and body.customer_email:
+            try:
+                from routers.subscribers import (SubscribePayload, iscrivi,
+                                                 richiesta_sintetica)
+                from services.testi_consenso import VERSIONE_CORRENTE
+                _lingua = (getattr(body, "locale", None) or "it")[:5]
+                await iscrivi(SubscribePayload(
+                    email=body.customer_email,
+                    name=(body.customer_name or "").strip()[:120] or None,
+                    language=_lingua, source="checkout", consent=True,
+                    unlock_flow=True, consenso_versione=VERSIONE_CORRENTE,
+                ), richiesta_sintetica(client_ip, user_agent))
+            except Exception as exc:
+                logger.warning("E1: iscrizione al Cerchio dal checkout fallita per ordine %s: %s",
+                               order.get("id"), exc)
+
         # ── AP-L Legal a due livelli (29/7/2026) ──────────────────────
         # L'ordine timbra ANCHE il livello Aurya: versioni dei documenti
         # piattaforma accettate al checkout dal guest (checkbox Aurya,

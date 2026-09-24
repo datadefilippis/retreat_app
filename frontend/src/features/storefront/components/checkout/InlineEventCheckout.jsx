@@ -38,6 +38,7 @@ import { useCustomerAuth } from '../../../../context/CustomerAuthContext';
 import useCheckoutForm from '../../hooks/useCheckoutForm';
 import OrderSummary from './OrderSummary';
 import CheckoutForm from './CheckoutForm';
+import GrazieCerchio from './GrazieCerchio';   // E4 — porta del Cerchio nel «grazie»
 
 const EMPTY_OBJ = {};
 
@@ -269,6 +270,8 @@ export default function InlineEventCheckout({ orgSlug, preload, onClose, mktpCon
             <p className="text-xs text-gray-500">{t('storefront:submitted.reference', { ref: orderRef })}</p>
           )}
           <p className="text-xs text-gray-500">{t('storefront:submitted.confirmEmailSoon')}</p>
+          {/* E4 — la porta del Cerchio anche nel «grazie» inline */}
+          <GrazieCerchio email={checkout.form?.email} className="mt-2" />
           {onClose && (
             <button type="button" onClick={onClose}
                     className="mt-1 rounded-full border border-gray-300 bg-white px-5 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50">

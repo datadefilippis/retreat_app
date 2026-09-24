@@ -47,6 +47,8 @@ class MagicLinkRequest(BaseModel):
     accepted_terms: bool = False
     # NL2 — consenso marketing SEPARATO, mai preselezionato lato UI
     wants_newsletter: bool = False
+    # E2 (24/9) — la versione del testo della casella del Cerchio letto
+    consenso_versione: Optional[str] = Field(None, max_length=30)
 
 
 class MagicLinkVerify(BaseModel):
@@ -80,7 +82,7 @@ async def request_magic_link(body: MagicLinkRequest, request: Request):
         # viaggia sul suo flusso (double opt-in immutato)
         if body.accepted_terms and body.wants_newsletter:
             await _subscribe_to_letter(request, body.email, body.name,
-                                       body.language)
+                                       body.language, body.consenso_versione)
     except Exception:
         # mai esporre errori interni su questo endpoint
         import logging
@@ -89,17 +91,19 @@ async def request_magic_link(body: MagicLinkRequest, request: Request):
 
 
 async def _subscribe_to_letter(request: Request, email: str, name,
-                               language) -> None:
+                               language, consenso_versione=None) -> None:
     """NL2 — iscrizione alla Lettera chiesta durante la creazione
     dell'account. Riusa la ROUTE pubblica (double opt-in, consenso
     marketing, sorgente tracciata): nessuna scorciatoia e nessuna
-    logica duplicata; un errore qui non fa mai fallire l'account."""
+    logica duplicata; un errore qui non fa mai fallire l'account.
+    E2 (24/9): la versione del testo letto viaggia col consenso."""
     import logging
     try:
         from routers.subscribers import SubscribePayload, subscribe
         await subscribe(request, SubscribePayload(
             email=email, name=name, consent=True,
-            language=language or "it", source="account_signup"))
+            language=language or "it", source="account_signup",
+            consenso_versione=consenso_versione or None))
     except Exception:
         logging.getLogger(__name__).warning(
             "NL2: iscrizione Lettera dal signup fallita", exc_info=True)
@@ -187,6 +191,8 @@ class PasswordSignup(BaseModel):
     # NL2 — consenso marketing SEPARATO (mai preselezionato lato UI):
     # vale per entrambe le strade di registrazione, con e senza password
     wants_newsletter: bool = False
+    # E2 (24/9) — la versione del testo della casella del Cerchio letto
+    consenso_versione: Optional[str] = Field(None, max_length=30)
 
 
 class VerifyEmailBody(BaseModel):
@@ -261,7 +267,7 @@ async def password_signup_ep(body: PasswordSignup, request: Request):
         # come effetto collaterale silenzioso della creazione account
         if body.wants_newsletter:
             await _subscribe_to_letter(request, body.email, body.name,
-                                       body.language)
+                                       body.language, body.consenso_versione)
         return out
     except ValueError as e:
         msg = str(e)

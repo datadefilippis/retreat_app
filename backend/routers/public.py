@@ -443,6 +443,13 @@ class OrderRequestPayload(BaseModel):
     gdpr_privacy_accepted: bool = False
     gdpr_marketing_accepted: bool = False
 
+    # ── Lotto E1 (24/9/2026) — casella del Cerchio di Aurya al checkout ──
+    # Consenso SEPARATO da gdpr_marketing_accepted (che e' il marketing
+    # dell'OPERATORE: due titolari, due caselle, mai unite). Facoltativo,
+    # mai preselezionato lato UI; True → iscrizione al Cerchio con fonte
+    # «checkout» e registro del consenso (testo corrente, ip, user-agent).
+    cerchio_optin: bool = False
+
     # ── AP-L (2026-07-29) — consenso Aurya a livello piattaforma ──
     # True quando il GUEST spunta "Accetto i Termini e la Privacy di
     # Aurya" al checkout (per i loggati la checkbox non compare: il

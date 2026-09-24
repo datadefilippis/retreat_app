@@ -262,7 +262,37 @@ def _send_access_email(email: str, name: Optional[str], token: str,
 @limiter.limit("10/minute")
 async def subscribe(request: Request, payload: SubscribePayload):
     """Iscrizione (o aggiornamento) alla lettera. Upsert per email;
-    nuovo o non confermato → parte l'email di double opt-in."""
+    nuovo o non confermato → parte l'email di double opt-in.
+
+    Lotto E (24/9/2026) — la route e' un involucro sottile (rate limit)
+    intorno a `iscrivi`: le porte interne (checkout, link «entra» delle
+    email, account) chiamano quella, senza passare da HTTP."""
+    return await iscrivi(payload, request)
+
+
+def richiesta_sintetica(ip: Optional[str], user_agent: Optional[str]) -> Request:
+    """Lotto E1 — una Request minima per chi chiama `iscrivi` senza
+    averne una viva (il servizio ordini riceve solo ip e user-agent):
+    `_consenso_da_payload` legge da qui l'ip e lo user-agent della prova."""
+    headers = []
+    if user_agent:
+        headers.append((b"user-agent", str(user_agent)[:300].encode("utf-8", "ignore")))
+    scope = {"type": "http", "method": "POST", "path": "/public/newsletter/subscribe",
+             "query_string": b"", "headers": headers,
+             "client": (ip, 0) if ip else None, "server": None, "scheme": "https"}
+    return Request(scope)
+
+
+async def iscrivi(payload: SubscribePayload, request: Request, *,
+                  gia_verificato: bool = False) -> dict:
+    """Il corpo dell'iscrizione al Cerchio, riusabile dalle porte interne.
+    Stesso comportamento della route: upsert, registro del consenso,
+    503 onesto se non si salva, benvenuto/conferma come sempre.
+
+    `gia_verificato` (solo chiamate interne, E3): il gesto che iscrive e'
+    GIA' la prova dell'indirizzo (clic nel link firmato di un'email), il
+    chiamante conferma subito con `segna_verificato`, che manda il
+    benvenuto: qui non parte nessuna email di conferma."""
     from database import db
 
     email = payload.email.lower().strip()
@@ -360,6 +390,8 @@ async def subscribe(request: Request, payload: SubscribePayload):
 
     if consenso:
         await _audit_consenso_subscribe(email, consenso, payload.language)
+    if gia_verificato:
+        return {"ok": True}                  # E3: la conferma (e il benvenuto) arrivano dal chiamante
     # C4/B (24/9): con CERCHIO_SINGOLO_OPTIN acceso la prima email e' il
     # BENVENUTO (i suoi link sono verificanti: il clic conferma), non
     # l'email di conferma. Se il benvenuto non parte (gia' ricevuto in
@@ -490,6 +522,42 @@ async def verifica_e_vai(request: Request, token: str, to: Optional[str] = None)
         except Exception as exc:            # noqa: BLE001 — il clic porta comunque alla pagina
             logger.warning("verifica al clic fallita per %s: %s", _mask_email(email), exc)
     from services.url_builder import build_public_url
+    return RedirectResponse(url=build_public_url(dove), status_code=302)
+
+
+@router.get("/public/newsletter/entra/{token}")
+@limiter.limit("30/minute")
+async def entra_con_un_clic(request: Request, token: str,
+                            to: Optional[str] = None, da: Optional[str] = None):
+    """Lotto E3 (24/9/2026) — la riga «Vuoi la Lettera del Cerchio? Un
+    clic» nelle email transazionali (conferma ordine, codice recensione).
+    Il clic e' insieme il consenso (testo corrente, ip e user-agent della
+    richiesta) e la prova che l'indirizzo e' suo: iscrive con la fonte
+    dell'email (`da`: email-ordine | email-recensione), annota la
+    verifica e porta a `to` (solo percorsi interni; senza, alla pagina
+    «Sei nel Cerchio» che salva anche la prova nel browser). Un token
+    rotto non iscrive nessuno: si va alla landing del Cerchio."""
+    from fastapi.responses import RedirectResponse
+
+    from services.porte_cerchio import SUPERFICI_EMAIL
+    from services.testi_consenso import VERSIONE_CORRENTE
+    from services.url_builder import build_public_url
+    from services.verifica_email import percorso_interno, segna_verificato
+
+    try:
+        email = decode_subscriber_token(token)["email"]
+    except (TokenExpiredError, TokenInvalidError):
+        return RedirectResponse(url=build_public_url("/newsletter"), status_code=302)
+    fonte = da if da in SUPERFICI_EMAIL else "email-ordine"
+    dove = percorso_interno(to) if to else f"/newsletter/conferma/{token}"
+    try:
+        await iscrivi(SubscribePayload(
+            email=email, source=fonte, consent=True, unlock_flow=True,
+            consenso_versione=VERSIONE_CORRENTE, language="it",
+            url=str(request.url)[:500]), request, gia_verificato=True)
+        await segna_verificato(email, "clic", "entra")
+    except Exception as exc:                # noqa: BLE001 — il clic porta comunque alla pagina
+        logger.warning("entra con un clic fallito per %s: %s", _mask_email(email), exc)
     return RedirectResponse(url=build_public_url(dove), status_code=302)
 
 

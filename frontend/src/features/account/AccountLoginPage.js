@@ -29,6 +29,8 @@ import { authAPI } from '../../api/auth';
 import useSeoMeta from '../storefront/lib/useSeoMeta';
 import MarketplaceShell from '../storefront/components/MarketplaceShell';
 import { salvaProva, emailDellaProva } from '../../lib/cerchio';
+// E2 (24/9/2026) — testo unico e versionato della casella del Cerchio
+import { testoConsenso, VERSIONE_CORRENTE } from '../../lib/testiConsenso';
 
 // Guard module-level: il magic token e' ONE-SHOT lato server, ma in dev
 // React StrictMode monta l'effect due volte → due verify concorrenti, la
@@ -262,6 +264,7 @@ export default function AccountLoginPage() {
         language: emailLang(),
         accepted_terms: true,
         wants_newsletter: !!wantsLetter,
+        consenso_versione: VERSIONE_CORRENTE,
       });
       setState('signupSent');
     } catch (err) {
@@ -376,7 +379,7 @@ export default function AccountLoginPage() {
             await api.post('/public/newsletter/subscribe', {
               email: email.trim(), name: name.trim() || null,
               language: emailLang() || 'it', source: 'signup_pro',
-              consent: true,
+              consent: true, consenso_versione: VERSIONE_CORRENTE,
             });
           } catch { /* iscrizione facoltativa: non blocca */ }
         }
@@ -410,6 +413,7 @@ export default function AccountLoginPage() {
         // AP-L — la checkbox e' required nel form: qui arriva sempre true
         accepted_terms: !!signupConsent,
         wants_newsletter: !!wantsLetter,
+        consenso_versione: VERSIONE_CORRENTE,
       });
       setState('signupSent');
     } catch (err) {
@@ -785,7 +789,8 @@ export default function AccountLoginPage() {
                   data-testid="signup-letter"
                 />
                 <span className="text-xs text-gray-600">
-                  {t('landings:account.signupLetter', { defaultValue: 'Entra anche nel Cerchio di Aurya (meditazioni riservate, ritiri in anteprima, la Lettera)' })}
+                  {/* E2 — lo stesso testo di tutte le porte, versionato */}
+                  {testoConsenso().testo}
                 </span>
               </label>
               {/* AP-L — riga consenso: link ai documenti Aurya, spunta

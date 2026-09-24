@@ -97,7 +97,11 @@ async def request_review_otp(org_slug: str, email: str,
         "expires_at": _iso(utc_now() + timedelta(minutes=OTP_TTL_MINUTES)),
         "created_at": _iso(utc_now()),
     })
-    _send_review_otp_email(email_n, code, org_slug, locale)
+    # E3 (24/9) — una riga del Cerchio in fondo, col link firmato (mai a
+    # chi e' gia' dentro; l'email e' verificata dall'OTP stesso)
+    from services.porte_cerchio import riga_cerchio_html
+    riga_cerchio = await riga_cerchio_html(email_n, "email-recensione", locale)
+    _send_review_otp_email(email_n, code, org_slug, locale, riga_cerchio)
 
 
 def _otp_base(org_slug: str, email: str) -> Dict[str, Any]:
@@ -297,7 +301,7 @@ async def _notify_operator_new_review(org_id: str, review: Dict[str, Any]) -> No
 
 
 def _send_review_otp_email(email: str, code: str, org_slug: str,
-                           locale: str) -> None:
+                           locale: str, riga_cerchio: str = "") -> None:
     from services.email_service import send_email, _t, _wrap_template
     content = f"""
     <p>{_t("greeting", locale)},</p>
@@ -307,6 +311,7 @@ def _send_review_otp_email(email: str, code: str, org_slug: str,
     display:inline-block">{code}</p>
     <p style="color:#8a9088;font-size:13px">{_t("review_otp_hint", locale,
                                                 minutes=OTP_TTL_MINUTES)}</p>
+    {riga_cerchio}
     """
     send_email(email, _t("review_otp_subject", locale),
                _wrap_template(content, locale), bypass_gate=True)
