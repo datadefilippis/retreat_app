@@ -23,6 +23,7 @@ Risposte volutamente generiche sul subscribe: mai rivelare se una
 email e' gia' iscritta (niente oracolo di enumerazione).
 """
 
+import asyncio
 import logging
 from datetime import datetime, timezone
 from typing import Optional
@@ -396,13 +397,32 @@ async def iscrivi(payload: SubscribePayload, request: Request, *,
     # BENVENUTO (i suoi link sono verificanti: il clic conferma), non
     # l'email di conferma. Se il benvenuto non parte (gia' ricevuto in
     # passato) si ripiega sulla conferma di sempre. Spento: come oggi.
-    from services.sequenze import invia_subito_se_singolo, singolo_optin
-    inviato = await invia_subito_se_singolo(email) if singolo_optin() else None
-    if not inviato:
-        _send_confirm_email(email, payload.name,
-                            generate_subscriber_token(email),
-                            _safe_return_to(payload.return_to))
+    # Consolidamento (24/9 sera): l'email parte in un TASK, non dentro la
+    # richiesta. Brevo puo' metterci secondi (timeout 10s + 3 retry): il
+    # form deve rispondere subito, l'email arriva un istante dopo. Il
+    # riferimento al task resta in _TASK_EMAIL finche' non finisce (il
+    # loop non lo raccoglie a meta').
+    task = asyncio.create_task(_dopo_iscrizione(
+        email, payload.name, _safe_return_to(payload.return_to)))
+    _TASK_EMAIL.add(task)
+    task.add_done_callback(_TASK_EMAIL.discard)
     return {"ok": True, "modalita": _modalita_risposta()}
+
+
+_TASK_EMAIL: set = set()
+
+
+async def _dopo_iscrizione(email: str, name: Optional[str], return_to: Optional[str]) -> None:
+    """La prima email dell'iscritto, fuori dalla richiesta. Mai un'eccezione
+    verso l'alto: il documento e' gia' salvato, l'email e' best-effort."""
+    try:
+        from services.sequenze import invia_subito_se_singolo, singolo_optin
+        inviato = await invia_subito_se_singolo(email) if singolo_optin() else None
+        if not inviato:
+            await asyncio.to_thread(_send_confirm_email, email, name,
+                                    generate_subscriber_token(email), return_to)
+    except Exception as exc:                # noqa: BLE001
+        logger.warning("email dopo iscrizione non partita per %s: %s", _mask_email(email), exc)
 
 
 def _modalita_risposta() -> str:
@@ -564,7 +584,9 @@ async def entra_con_un_clic(request: Request, token: str,
         await iscrivi(SubscribePayload(
             email=email, source=fonte, consent=True, unlock_flow=True,
             consenso_versione=VERSIONE_CORRENTE, language="it",
-            url=str(request.url)[:500]), request, gia_verificato=True)
+            # la «pagina» del consenso e' l'email da cui si e' cliccato,
+            # non l'URL col token (che nel registro non deve finire)
+            url=build_public_url(f"/email/{fonte}")), request, gia_verificato=True)
         await segna_verificato(email, "clic", "entra")
     except Exception as exc:                # noqa: BLE001 — il clic porta comunque alla pagina
         logger.warning("entra con un clic fallito per %s: %s", _mask_email(email), exc)

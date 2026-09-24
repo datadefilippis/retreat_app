@@ -66,7 +66,7 @@ class TestE0Estrazione:
         corpo = _corpo(SUBS, "async def iscrivi(", "\n\n\ndef _provenienza_da_payload")
         for atteso in ("status_code=503",
                        "inviato = await invia_subito_se_singolo(email) if singolo_optin() else None",
-                       "if not inviato:", "_send_confirm_email(", "_send_access_email(",
+                       "if not inviato:", "_send_confirm_email", "_send_access_email(",   # 24/9 sera: la conferma parte via to_thread
                        "if not payload.unlock_flow:", "_audit_consenso_subscribe("):
             assert atteso in corpo, atteso
 

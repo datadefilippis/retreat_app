@@ -43,13 +43,15 @@ def link_entra(email: str, da: str = "email-ordine", to: Optional[str] = None) -
 
 
 async def gia_nel_cerchio(email: str) -> bool:
-    """True se l'indirizzo e' un iscritto CONFERMATO: a lui la riga non
-    serve. Un errore di lettura vale come «gia' dentro» (niente riga)."""
+    """True se l'indirizzo e' gia' un iscritto (confermato O in attesa:
+    chi ha appena spuntato la casella al checkout non deve trovare un
+    secondo invito nell'email d'ordine). Solo chi si e' disiscritto, o
+    non c'e', vede la riga. Un errore di lettura vale come «gia' dentro»."""
     try:
         from database import db
         doc = await db.aurya_subscribers.find_one(
             {"email": (email or "").strip().lower()}, {"_id": 0, "status": 1})
-        return bool(doc and doc.get("status") == "confirmed")
+        return bool(doc and doc.get("status") in ("confirmed", "pending"))
     except Exception as exc:                # noqa: BLE001
         logger.warning("porte_cerchio: controllo iscritto fallito: %s", exc)
         return True

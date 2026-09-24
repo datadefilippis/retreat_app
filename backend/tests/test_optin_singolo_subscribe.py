@@ -9,7 +9,13 @@ SRC = (Path(__file__).resolve().parents[1] / "routers" / "subscribers.py").read_
 def test_subscribe_usa_il_benvenuto_solo_con_interruttore():
     i = SRC.index("inviato = await invia_subito_se_singolo(email) if singolo_optin() else None")
     blocco = SRC[i:i + 400]
-    assert "if not inviato:" in blocco and "_send_confirm_email(" in blocco
+    assert "if not inviato:" in blocco and "_send_confirm_email" in blocco
+    # 24/9 sera: l'email parte in un task (create_task) e il send gira in
+    # un thread (to_thread): la richiesta non aspetta Brevo
+    assert "asyncio.create_task(_dopo_iscrizione(" in SRC
+    assert "await asyncio.to_thread(_send_confirm_email" in SRC
+    seq = (Path(__file__).resolve().parents[1] / "services" / "sequenze.py").read_text(encoding="utf-8")
+    assert "await asyncio.to_thread(lambda: _manda(passo, ctx))" in seq
     # spento: singolo_optin() e' falso e la conferma parte come sempre
     from services.sequenze import singolo_optin
     import os

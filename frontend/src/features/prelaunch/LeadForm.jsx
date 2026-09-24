@@ -239,7 +239,14 @@ export default function LeadForm({ type = 'traveler', accent = '#376254', contex
           <Check className="h-6 w-6 text-white" />
         </div>
         <p className="font-heading text-lg font-semibold text-foreground">
-          {t('form.thanksTitle', { defaultValue: 'Ci sei. Benvenuto.' })}
+          {/* 24/9 — il titolo dice la verita' dello stato: «Ci sei» solo
+              quando e' vero (gia' dentro, o Lettera in arrivo); con la
+              conferma da fare e' «Quasi fatto», non «Ci sei» + «Quasi dentro» */}
+          {giaDentro
+            ? t('form.thanksTitleGia', { defaultValue: 'Sei già dei nostri.' })
+            : modalita === 'benvenuto' || isOperator
+            ? t('form.thanksTitle', { defaultValue: 'Ci sei. Benvenuto.' })
+            : t('form.thanksTitleConferma', { defaultValue: 'Quasi fatto.' })}
         </p>
         <p className="mt-1 text-sm text-muted-foreground">
           {giaDentro

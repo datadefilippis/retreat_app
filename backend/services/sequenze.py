@@ -41,6 +41,7 @@ Cerchio (aurya_subscribers confermati, orologio confirmed_at):
   ritiri (vuole i ritiri) · meditazioni (dalle meditazioni, senza
   preferenze) · altro (dalle altre porte, senza preferenze)
 """
+import asyncio
 import logging
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
@@ -312,7 +313,10 @@ async def _esegui(collezione, chiave: dict, passo: Passo, costruisci_ctx, now: d
         return
     try:
         ctx = await costruisci_ctx() if callable(costruisci_ctx) else costruisci_ctx
-        esito = _manda(passo, ctx)
+        # 24/9 sera — l'invio (HTTP verso Brevo, fino a secondi) gira in un
+        # thread: il loop resta libero per le richieste, anche quando il
+        # benvenuto parte da dentro un'iscrizione.
+        esito = await asyncio.to_thread(lambda: _manda(passo, ctx))
     except Exception as exc:  # noqa: BLE001
         logger.error("sequenze: %s passo %s: %s", chiave, passo.nome, exc)
         esito = False
