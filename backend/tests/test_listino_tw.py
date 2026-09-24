@@ -7607,8 +7607,12 @@ class TestDisciplineDi:
     def test_superfici_frontend(self):
         editor = (FRONTEND_SRC / "features" / "settings"
                   / "PublicProfilePage.js").read_text()
-        assert 'data-testid={`pp-disc-${d.slug}`}' in editor, \
-            "spariti i chip discipline dall'editor profilo"
+        # 24/9/2026: i chip vivono nel selettore CONDIVISO (components/
+        # SelettoreDiscipline), usato dall'editor e da /benvenuto
+        selettore = (FRONTEND_SRC / "components" / "SelettoreDiscipline.js").read_text()
+        assert 'data-testid={`pp-disc-${d.slug}`}' in selettore, \
+            "spariti i chip discipline dal selettore"
+        assert "<SelettoreDiscipline" in editor, "l'editor non usa piu' il selettore condiviso"
         assert "payload.disciplines" in editor
         # DI2 — la sezione e' COMPATTA: chiusa di default (riga sola),
         # si apre col toggle e dentro c'e' la ricerca

@@ -61,6 +61,7 @@ DISCIPLINA_TO_CATEGORIA = {
     "sostegno-psicologico": "crescita", "psicologia-perinatale": "femminile",
     # anima & percorsi interiori
     "costellazioni-familiari": "costellazioni", "counseling-olistico": "crescita",
+    "counseling-gestalt": "crescita",
     "coaching-olistico": "crescita", "cerchi-di-donne": "femminile", "sacro-femminile": "femminile",
     "sciamanesimo": "crescita", "astrologia": "astrologia", "numerologia": "astrologia",
     "tarocchi-evolutivi": "astrologia",

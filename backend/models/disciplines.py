@@ -78,6 +78,9 @@ DISCIPLINE_FAMILIES = (
     ("anima", "Anima & Percorsi interiori", (
         ("costellazioni-familiari", "Costellazioni familiari"),
         ("counseling-olistico", "Counseling olistico"),
+        # 24/9/2026 (founder): il counselor a indirizzo Gestalt (approccio,
+        # non marchio: regola DI6 rispettata)
+        ("counseling-gestalt", "Counseling Gestalt"),
         ("coaching-olistico", "Coaching olistico"),
         ("cerchi-di-donne", "Cerchi di donne"),
         ("sacro-femminile", "Sacro femminile & Ciclicità"),

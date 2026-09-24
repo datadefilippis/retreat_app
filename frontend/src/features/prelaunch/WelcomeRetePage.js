@@ -17,7 +17,8 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import api from '../../api/client';
 import { BrandLogo } from '../../components/BrandLogo';
-import { DISCIPLINE_FAMILIES, DISCIPLINES_MAX } from '../../lib/disciplines';
+import { DISCIPLINES_MAX } from '../../lib/disciplines';
+import SelettoreDiscipline from '../../components/SelettoreDiscipline';
 // SD2 — la stessa scelta dalla lista dell'editor: citta' E coordinate E
 // regione in un gesto; le altre sedi (fino a 3) si aggiungono dal profilo
 import LocationAutocomplete, { sedeDaLuogo, etichettaSede } from '../../components/LocationAutocomplete';
@@ -40,6 +41,7 @@ export default function WelcomeRetePage() {
   const [sede, setSede] = useState(null);   // SD2 — la sede scelta dalla lista
   const [phone, setPhone] = useState('');
   const [phonePresente, setPhonePresente] = useState(false);   // P3: dato alla registrazione
+  const [discQuery, setDiscQuery] = useState('');              // la ricerca del selettore
   const [instagram, setInstagram] = useState('');
   const [disciplines, setDisciplines] = useState([]);
   const [saving, setSaving] = useState(false);
@@ -126,23 +128,16 @@ export default function WelcomeRetePage() {
             <label className="block text-sm font-semibold text-gray-700 mb-2">
               {t('welcomeRete.disciplines', { defaultValue: 'Di cosa ti occupi?' })}
             </label>
-            <div className="space-y-3 max-h-56 overflow-y-auto pr-1" data-testid="welcome-disciplines">
-              {DISCIPLINE_FAMILIES.map((fam) => (
-                <div key={fam.slug}>
-                  <div className="text-[11px] uppercase tracking-wide text-gray-400 mb-1">{fam.label}</div>
-                  <div className="flex flex-wrap gap-1.5">
-                    {fam.items.map((d) => (
-                      <button key={d.slug} type="button" onClick={() => toggle(d.slug)}
-                        className={`px-2.5 py-1 rounded-full text-xs border transition-colors ${
-                          disciplines.includes(d.slug)
-                            ? 'bg-[#376254] text-white border-[#376254]'
-                            : 'bg-white text-gray-600 border-gray-300 hover:border-[#376254]'}`}>
-                        {d.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              ))}
+            {/* 24/9 — lo stesso selettore dell'editor (cerca, «le più scelte»,
+                famiglie chiuse): 52 voci in una scatola da 220 px erano un muro */}
+            <div data-testid="welcome-disciplines">
+              <SelettoreDiscipline
+                value={disciplines}
+                query={discQuery}
+                onQuery={setDiscQuery}
+                max={DISCIPLINES_MAX}
+                onToggle={toggle}
+              />
             </div>
           </div>
 

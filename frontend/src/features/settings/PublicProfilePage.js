@@ -27,7 +27,8 @@ import OnboardingStrip from '../onboarding/OnboardingStrip';
 // salvataggio immediato, fuori dal circuito snapshot/dirty del form
 import LinkPageCard from './LinkPageCard';
 // DI — tassonomia discipline (specchio di models/disciplines.py)
-import { DISCIPLINE_FAMILIES, DISCIPLINES_MAX, disciplineLabel } from '../../lib/disciplines';
+import { DISCIPLINES_MAX, disciplineLabel } from '../../lib/disciplines';
+import SelettoreDiscipline from '../../components/SelettoreDiscipline';
 // P1 — il nome pubblico si compone come sul server (specchio di services/nome_pubblico.py)
 import { nomePubblico, NOME_PERSONA_MAX } from '../../lib/nomePubblico';
 
@@ -724,55 +725,27 @@ export default function PublicProfilePage() {
             {/* pannello aperto: ricerca + famiglie */}
             {discOpen && (
               <div className="space-y-3">
-                <div className="flex items-center justify-between gap-3">
-                  <Input value={discQuery} onChange={e => setDiscQuery(e.target.value)}
-                         placeholder={t('publicProfile.disciplinesSearch', { defaultValue: 'Cerca una disciplina…' })}
-                         className="h-8 text-sm" />
-                  <span className="shrink-0 text-[11px] text-muted-foreground">
-                    {(form.disciplines || []).length}/{DISCIPLINES_MAX}
-                  </span>
-                </div>
-                {DISCIPLINE_FAMILIES.map(fam => {
-                  const visibili = discQuery
-                    ? fam.items.filter(d => d.label.toLowerCase()
-                        .includes(discQuery.toLowerCase()))
-                    : fam.items;
-                  if (visibili.length === 0) return null;
-                  return (
-                    <div key={fam.slug}>
-                      <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground mb-1.5">
-                        {fam.label}
-                      </p>
-                      <div className="flex flex-wrap gap-1.5">
-                        {visibili.map(d => {
-                          const sel = (form.disciplines || []).includes(d.slug);
-                          const full = !sel && (form.disciplines || []).length >= DISCIPLINES_MAX;
-                          return (
-                            <button key={d.slug} type="button" disabled={full}
-                                    data-testid={`pp-disc-${d.slug}`}
-                                    onClick={() => setForm(f => {
-                                      // update funzionale: due tap ravvicinati
-                                      // non si sovrascrivono (stale closure)
-                                      const cur = f.disciplines || [];
-                                      return { ...f, disciplines: cur.includes(d.slug)
-                                        ? cur.filter(s => s !== d.slug)
-                                        : [...cur, d.slug] };
-                                    })}
-                                    className={`rounded-full border px-3 py-1 text-xs transition-colors ${
-                                      sel
-                                        ? 'border-[#376254] bg-[#376254] text-white'
-                                        : full
-                                          ? 'border-input text-muted-foreground/40 cursor-not-allowed'
-                                          : 'border-input text-foreground hover:border-[#8a9979] hover:bg-[#376254]/5'
-                                    }`}>
-                              {d.label}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  );
-                })}
+                {/* 24/9 (founder: «troppe voci, difficile orientarsi») — UN
+                    selettore condiviso (components/SelettoreDiscipline): scelte
+                    in alto, cerca per sinonimo, famiglie chiuse una alla volta,
+                    «le più scelte» per partire. Stesso in /benvenuto. */}
+                <SelettoreDiscipline
+                  value={form.disciplines || []}
+                  query={discQuery}
+                  onQuery={setDiscQuery}
+                  max={DISCIPLINES_MAX}
+                  autoFocus
+                  placeholder={t('publicProfile.disciplinesSearch', { defaultValue: 'Cerca: yoga, reiki, psicoterapia, massaggio…' })}
+                  onToggle={(slug) => setForm(f => {
+                    // update funzionale: due tap ravvicinati non si
+                    // sovrascrivono (stale closure, DI2)
+                    const cur = f.disciplines || [];
+                    if (!cur.includes(slug) && cur.length >= DISCIPLINES_MAX) return f;
+                    return { ...f, disciplines: cur.includes(slug)
+                      ? cur.filter(s => s !== slug)
+                      : [...cur, slug] };
+                  })}
+                />
                 {/* DI3 — la tassonomia e' curata (il filtro vive di voci
                     stabili), ma nessuno resta muto: la mancanza si
                     segnala e la voce nuova varra' per TUTTI.

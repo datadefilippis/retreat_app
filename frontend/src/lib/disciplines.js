@@ -89,6 +89,7 @@ export const DISCIPLINE_FAMILIES = Object.freeze([
     items: [
       { slug: 'costellazioni-familiari', label: 'Costellazioni familiari' },
       { slug: 'counseling-olistico', label: 'Counseling olistico' },
+      { slug: 'counseling-gestalt', label: 'Counseling Gestalt' },
       { slug: 'coaching-olistico', label: 'Coaching olistico' },
       { slug: 'cerchi-di-donne', label: 'Cerchi di donne' },
       { slug: 'sacro-femminile', label: 'Sacro femminile & Ciclicità' },
@@ -109,3 +110,84 @@ export const DISCIPLINE_LABELS = Object.freeze(Object.fromEntries(
 export const DISCIPLINES_MAX = 10;
 
 export const disciplineLabel = (slug) => DISCIPLINE_LABELS[slug] || slug;
+
+/* ── 24/9/2026 — orientarsi fra 52 voci (components/SelettoreDiscipline) ── */
+
+/** Le otto che si scelgono più spesso: la prima riga, per partire senza sfogliare. */
+export const PIU_SCELTE = Object.freeze([
+  'yoga', 'meditazione', 'massaggio-olistico', 'reiki', 'breathwork',
+  'naturopatia', 'counseling-olistico', 'psicoterapia',
+]);
+
+/** Parole con cui la gente cerca (professione, plurali, nomi comuni) →
+    la voce della tassonomia. Si cerca su etichetta + famiglia + queste. */
+export const CERCA_ANCHE = Object.freeze({
+  psicologia: ['psicologo', 'psicologa'],
+  psicoterapia: ['psicoterapeuta', 'terapia'],
+  'sostegno-psicologico': ['colloqui', 'sostegno'],
+  'counseling-olistico': ['counselor', 'counselling'],
+  'counseling-gestalt': ['gestalt', 'counselor gestalt', 'gestaltico'],
+  'coaching-olistico': ['coach', 'life coach'],
+  'massaggio-olistico': ['massaggio', 'massaggiatrice', 'massaggiatore', 'massaggi'],
+  'massaggio-ayurvedico': ['ayurveda', 'abhyanga'],
+  'massaggio-thai': ['thailandese'],
+  riflessologia: ['riflessologo', 'riflessologa', 'plantare'],
+  linfodrenaggio: ['linfatico', 'drenaggio'],
+  craniosacrale: ['cranio'],
+  'sound-healing': ['campane tibetane', 'bagno di gong', 'gong', 'suono', 'ciotole'],
+  breathwork: ['respiro', 'respirazione'],
+  meditazione: ['meditare'],
+  mindfulness: ['consapevolezza'],
+  'costellazioni-familiari': ['costellatore', 'costellatrice', 'costellazioni'],
+  naturopatia: ['naturopata'],
+  erboristeria: ['erborista', 'erbe'],
+  aromaterapia: ['oli essenziali'],
+  floriterapia: ['fiori di bach', 'bach'],
+  'alimentazione-olistica': ['nutrizione', 'alimentazione', 'cibo'],
+  'bagni-di-bosco': ['shinrin yoku', 'natura', 'foresta'],
+  reiki: ['energia', 'energetico'],
+  'allineamento-chakra': ['chakra'],
+  'lavoro-energetico-chakra': ['chakra', 'energetico'],
+  pranoterapia: ['pranoterapeuta'],
+  cristalloterapia: ['cristalli', 'pietre'],
+  'access-bars': ['bars'],
+  'theta-healing': ['theta'],
+  kinesiologia: ['kinesiologo', 'kinesiologa'],
+  ipnosi: ['ipnoterapia', 'rilassamento'],
+  'training-autogeno': ['autogeno'],
+  yoga: ['hatha', 'vinyasa', 'yin', 'kundalini', 'insegnante di yoga'],
+  pilates: ['postura'],
+  'tai-chi': ['taiji'],
+  'qi-gong': ['qigong', 'chi kung'],
+  danzaterapia: ['danza', 'movimento'],
+  biodanza: ['danza'],
+  'danze-sacre': ['danza', 'dea'],
+  bioenergetica: ['lowen'],
+  feldenkrais: ['movimento'],
+  'cerchi-di-donne': ['cerchio', 'donne'],
+  'sacro-femminile': ['femminile', 'ciclicità', 'ciclo', 'luna'],
+  sciamanesimo: ['sciamano', 'sciamana', 'sciamanico'],
+  astrologia: ['astrologo', 'astrologa', 'tema natale', 'oroscopo'],
+  numerologia: ['numeri'],
+  'tarocchi-evolutivi': ['tarocchi', 'tarologa', 'tarologo'],
+  'hot-stone': ['pietre calde'],
+  shiatsu: ['shiatzu'],
+  'consulenza-ayurvedica': ['ayurveda', 'dosha'],
+  'psicologia-perinatale': ['gravidanza', 'mamme', 'maternità', 'perinatale'],
+});
+
+const norm = (s) => String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+
+/** Le voci che rispondono a una parola: etichetta, famiglia, sinonimi. */
+export function cercaDiscipline(query) {
+  const q = norm(query).trim();
+  if (!q) return [];
+  const out = [];
+  DISCIPLINE_FAMILIES.forEach((fam) => {
+    fam.items.forEach((d) => {
+      const testi = [d.label, d.slug.replace(/-/g, ' '), fam.label, ...(CERCA_ANCHE[d.slug] || [])];
+      if (testi.some((t) => norm(t).includes(q))) out.push(d);
+    });
+  });
+  return out;
+}
