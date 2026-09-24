@@ -2,7 +2,7 @@
 Pre-flight email send gate (Fase 2 Track G — Step G1, "B2.5").
 
 Inspects the recipient's `email_status` field on user / customer_account
-documents BEFORE handing the message to Brevo. Skips delivery when the
+/ aurya_subscribers (C2, 24/9) documents BEFORE handing the message to Brevo. Skips delivery when the
 address is in a known-bad state (bounced / blocked / unsubscribed) so we
 stop eroding our Brevo sender reputation by retrying dead inboxes.
 
@@ -79,6 +79,10 @@ def _resolve_blocking_statuses() -> frozenset[str]:
 
 
 _BLOCKING_STATUSES = _resolve_blocking_statuses()
+
+# Dove si legge email_status: utenti, account cliente e (C2, 24/9) gli
+# iscritti al Cerchio. Stessi stati, stessa cache, stesso fail-open.
+_COLLEZIONI = ("users", "customer_accounts", "aurya_subscribers")
 
 
 # ── Sync pymongo client (lazy-init, process-level) ───────────────────────────
@@ -223,10 +227,12 @@ def is_email_blocked(email: str) -> Tuple[bool, Optional[str]]:
 
     found_status: Optional[str] = None
     try:
-        # users + customer_accounts both index `email`. Two tiny queries
+        # users + customer_accounts both index `email`. Tiny queries
         # (each <2ms typical), can't merge into one because they live
-        # in different collections.
-        for coll_name in ("users", "customer_accounts"):
+        # in different collections. C2 (24/9): anche gli iscritti al
+        # Cerchio: il webhook Brevo scrive email_status pure su
+        # aurya_subscribers, e le email editoriali non saltano piu' il gate.
+        for coll_name in _COLLEZIONI:
             doc = db[coll_name].find_one(
                 {"email": addr},
                 {"email_status": 1, "_id": 0},

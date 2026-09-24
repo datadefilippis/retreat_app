@@ -51,6 +51,7 @@ from typing import Optional
 from fastapi import APIRouter, HTTPException, Header, Request
 
 from database import (
+    db,
     users_collection,
     customer_accounts_collection,
     audit_logs_collection,
@@ -71,6 +72,18 @@ TRACKED_EVENTS = {
     "unsubscribed": "unsubscribed",
     "complaint": "complaint",
 }
+
+
+def _aggiornamento_iscritto(new_status: str, now_dt: datetime) -> dict:
+    """C2: i campi da scrivere su aurya_subscribers per un evento Brevo.
+    Sempre email_status + email_status_at; per «unsubscribed» anche la
+    disiscrizione vera (status, unsubscribed_at, unsubscribed_by)."""
+    aggiornamento = {"email_status": new_status, "email_status_at": now_dt}
+    if new_status == "unsubscribed":
+        aggiornamento.update({"status": "unsubscribed",
+                              "unsubscribed_at": now_dt,
+                              "unsubscribed_by": "brevo"})
+    return aggiornamento
 
 
 def _mask_email(email: str) -> str:
@@ -220,6 +233,21 @@ async def brevo_webhook(
         except Exception as e:
             logger.error(
                 "brevo webhook: customer_accounts update failed email=%s err=%s",
+                _mask_email(email), e,
+            )
+
+        # C2 (24/9) — anche l'iscritto al Cerchio: cosi' il gate lo vede
+        # e le email editoriali smettono di insistere su un indirizzo
+        # morto. Un «unsubscribed» dal client di posta (List-Unsubscribe)
+        # vale come disiscrizione vera: status, data e chi l'ha fatto.
+        try:
+            await db.aurya_subscribers.update_one(
+                {"email": email},
+                {"$set": _aggiornamento_iscritto(new_status, now_dt)},
+            )
+        except Exception as e:
+            logger.error(
+                "brevo webhook: aurya_subscribers update failed email=%s err=%s",
                 _mask_email(email), e,
             )
 

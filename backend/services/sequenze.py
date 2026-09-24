@@ -231,9 +231,38 @@ def contesto_cerchio(sub: dict) -> dict:
             "porta": stato["porta"], "vuole_ritiri": stato["vuole_ritiri"]}
 
 
-_PROIEZIONE_SUB = {"_id": 0, "email": 1, "name": 1, "confirmed_at": 1, "profile": 1,
+_PROIEZIONE_SUB = {"_id": 0, "email": 1, "name": 1, "confirmed_at": 1, "created_at": 1, "profile": 1,
                    "preferences": 1, "sequenza": 1, "source": 1}
 _FILTRO_SUB = {"status": "confirmed", "consent": True}
+
+# C4 (24/9) — L'INTERRUTTORE DEL SINGOLO OPT-IN (strada B del founder).
+# Spento (default): il Cerchio scrive solo ai confermati, orologio
+# confirmed_at, tutto come oggi byte per byte. Acceso: si scrive anche ai
+# «pending» che hanno dato il consenso e non sono sospesi, l'orologio e'
+# confirmed_at oppure created_at, e il benvenuto parte all'iscrizione.
+# Si legge dall'ambiente A OGNI CHIAMATA (mai in cima al modulo) cosi' i
+# test lo accendono con un monkeypatch e la prod lo accende senza deploy.
+_FILTRO_SUB_SINGOLO = {"status": {"$in": ["pending", "confirmed"]}, "consent": True,
+                       "sospeso_at": {"$exists": False}}
+
+
+def singolo_optin() -> bool:
+    import os
+    return (os.getenv("CERCHIO_SINGOLO_OPTIN") or "").strip().lower() in ("1", "true", "on", "si", "sì", "yes")
+
+
+def filtro_sub() -> dict:
+    """Il filtro degli iscritti a cui il Cerchio scrive, secondo l'interruttore."""
+    return dict(_FILTRO_SUB_SINGOLO) if singolo_optin() else dict(_FILTRO_SUB)
+
+
+def orologio_sub(sub: dict) -> Optional[datetime]:
+    """Da quando contano i giorni dei passi: confirmed_at (sempre);
+    con l'interruttore acceso, created_at se la conferma non c'e' ancora."""
+    confermato = _data(sub.get("confirmed_at"))
+    if confermato or not singolo_optin():
+        return confermato
+    return _data(sub.get("created_at"))
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -255,12 +284,16 @@ def _manda(passo: Passo, ctx: dict, dry_run: bool = False) -> Optional[bool]:
         return True
     try:
         if passo.a == _ADMIN:
-            # FV6 — «a noi» = la casella di Aurya
+            # FV6 — «a noi» = la casella di Aurya (a noi stessi si scrive sempre)
             return bool(send_email(CASELLA_AURYA, oggetto, _wrap_template(corpo, "it"), bypass_gate=True))
         risposte = T.risposte_a()
+        # C2 (24/9): le email editoriali passano dal gate (rimbalzi,
+        # disiscrizioni dal client di posta); C1: quelle del Cerchio (il
+        # contesto ha il token dell'iscritto) portano l'header List-Unsubscribe.
+        unsubscribe_url = T.url_preferenze_nudo(ctx["token"]) if ctx.get("token") else None
         return bool(send_email(ctx["email"], oggetto,
                                _wrap_template(corpo, "it", reply_to=risposte),
-                               reply_to=risposte, bypass_gate=True))
+                               reply_to=risposte, unsubscribe_url=unsubscribe_url))
     except Exception as exc:  # noqa: BLE001
         logger.warning("sequenze: %s non inviato a %s: %s", passo.nome, ctx.get("email", "")[:2] + "***", exc)
         return False
@@ -330,14 +363,19 @@ async def _giro_cerchio(now: datetime, dry_run: bool, result: dict) -> None:
     from database import db
     piu_vecchia = now - timedelta(days=PASSI["cerchio"][-1].fine or 2)
     n = 0
+    recenti = [{"confirmed_at": {"$gte": piu_vecchia}},
+               {"confirmed_at": {"$gte": piu_vecchia.isoformat()}}]
+    if singolo_optin():
+        # C4: anche chi si e' appena iscritto e non ha (ancora) confermato
+        recenti += [{"created_at": {"$gte": piu_vecchia}},
+                    {"created_at": {"$gte": piu_vecchia.isoformat()}}]
     async for sub in db.aurya_subscribers.find(
-            {**_FILTRO_SUB, "$or": [{"confirmed_at": {"$gte": piu_vecchia}},
-                                    {"confirmed_at": {"$gte": piu_vecchia.isoformat()}}]},
+            {**filtro_sub(), "$or": recenti},
             _PROIEZIONE_SUB).limit(_MAX_PER_TICK * 5):
-        confermato = _data(sub.get("confirmed_at"))
-        if not confermato or not sub.get("email"):
+        inizio = orologio_sub(sub)
+        if not inizio or not sub.get("email"):
             continue
-        giorni = (now - confermato).days
+        giorni = (now - inizio).days
         dovuti = passi_dovuti("cerchio", giorni, stato_cerchio(sub), sub.get("sequenza") or {})
         if not dovuti:
             continue
@@ -372,7 +410,7 @@ async def invia_subito(pubblico: str, email: str) -> Optional[str]:
     if pubblico != "cerchio":
         raise ValueError("solo il Cerchio ha un passo immediato")
     from database import db
-    sub = await db.aurya_subscribers.find_one({"email": email, **_FILTRO_SUB}, _PROIEZIONE_SUB)
+    sub = await db.aurya_subscribers.find_one({"email": email, **filtro_sub()}, _PROIEZIONE_SUB)
     if not sub:
         return None
     dovuti = passi_dovuti("cerchio", 0, stato_cerchio(sub), sub.get("sequenza") or {})
@@ -382,6 +420,15 @@ async def invia_subito(pubblico: str, email: str) -> Optional[str]:
     result: Dict[str, Any] = {"inviati": 0, "saltati": 0, "errori": 0}
     await _esegui(db.aurya_subscribers, {"email": email}, dovuti[0], contesto_cerchio(sub), now, result)
     return dovuti[0].nome
+
+
+async def invia_subito_se_singolo(email: str) -> Optional[str]:
+    """C4: il benvenuto all'ISCRIZIONE (non alla conferma), solo con
+    l'interruttore acceso. Spento non fa niente: `subscribe` puo'
+    chiamarla sempre senza cambiare il comportamento di oggi."""
+    if not singolo_optin():
+        return None
+    return await invia_subito("cerchio", email)
 
 
 # ─────────────────────────────────────────────────────────────────────────────

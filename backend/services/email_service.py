@@ -1409,6 +1409,7 @@ def send_email(
     to_email: str, subject: str, html_body: str,
     *, reply_to: str = None, sender_name: str = None,
     bypass_gate: bool = False,
+    unsubscribe_url: Optional[str] = None,
 ) -> bool:
     """
     Send a single transactional email via Brevo HTTP API.
@@ -1419,9 +1420,13 @@ def send_email(
       reply_to:    email address for Reply-To header (Brevo replyTo field)
       sender_name: override sender display name (default: SMTP_FROM_NAME)
       bypass_gate: when True, skip the pre-flight email gate (Track G G1).
-                   Use sparingly — currently no caller sets it. Reserved
-                   for future cases like unsubscribe-confirmation emails
-                   where we MUST send even to known-bad addresses.
+                   Serve solo dove DOBBIAMO scrivere anche a un indirizzo
+                   segnato (conferma del Cerchio, magic link, note a noi).
+      unsubscribe_url: (C1, 24/9) solo per le email editoriali (Cerchio:
+                   benvenuto, promemoria, Lettera). Se c'e', il payload
+                   porta gli header List-Unsubscribe e List-Unsubscribe-Post
+                   che Gmail e Yahoo chiedono ai mittenti bulk. Le
+                   transazionali non lo passano e non cambiano di una virgola.
     """
     if not _configured:
         logger.info("email_service [DRY RUN] to=%s subject=%s", to_email, subject)
@@ -1462,7 +1467,8 @@ def send_email(
                 type(e).__name__,
             )
 
-    data = _payload_brevo(to_email, subject, html_body, reply_to=reply_to, sender_name=sender_name)
+    data = _payload_brevo(to_email, subject, html_body, reply_to=reply_to, sender_name=sender_name,
+                          unsubscribe_url=unsubscribe_url)
 
     payload = json.dumps(data).encode("utf-8")
 
@@ -1640,18 +1646,35 @@ _BASE_STYLE = """
 """
 
 
+def _headers_unsubscribe(unsubscribe_url: str) -> dict:
+    """C1 (24/9): i due header che i grandi provider chiedono a chi manda
+    email editoriali. Il mailto va alla casella che qualcuno LEGGE (la
+    casella di Aurya, non il noreply del mittente); il link e' la pagina
+    delle preferenze dell'iscritto, nuda: Gmail ci fa una POST diretta
+    (One-Click), quindi niente redirect verificanti qui."""
+    return {
+        "List-Unsubscribe": f"<mailto:{CASELLA_AURYA}?subject=unsubscribe>, <{unsubscribe_url}>",
+        "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+    }
+
+
 def _payload_brevo(to_email: str, subject: str, html_body: str, *,
-                   reply_to: str = None, sender_name: str = None) -> dict:
+                   reply_to: str = None, sender_name: str = None,
+                   unsubscribe_url: Optional[str] = None) -> dict:
     """Il corpo della chiamata a Brevo. FV6: il Reply-To c'e' SEMPRE —
     quello passato (es. l'operatore, per le email della sua vetrina) o
-    la casella di Aurya."""
-    return {
+    la casella di Aurya. C1: la chiave `headers` compare SOLO se c'e' un
+    unsubscribe_url (le transazionali restano com'erano)."""
+    data = {
         "sender": {"name": sender_name or SMTP_FROM_NAME, "email": SMTP_FROM_EMAIL},
         "to": [{"email": to_email}],
         "subject": subject,
         "htmlContent": html_body,
         "replyTo": {"email": reply_to or REPLY_TO_DEFAULT},
     }
+    if unsubscribe_url:
+        data["headers"] = _headers_unsubscribe(unsubscribe_url)
+    return data
 
 
 def _wrap_template(content: str, locale: str = "it", *, reply_to: str = None, store_name: str = None) -> str:

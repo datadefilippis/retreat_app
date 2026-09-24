@@ -1155,6 +1155,28 @@ async def _cerchio_reminder_job() -> None:
             raise
 
 
+# ── La sospensione del Cerchio (C4, 24/9/2026) ───────────────────────────────
+# Ogni 6 ore, accanto al promemoria: con CERCHIO_SINGOLO_OPTIN acceso i
+# «pending» da 90 giorni mai verificati prendono `sospeso_at` (max 200 a
+# giro, mai cancellati). Spento, il giro non fa niente.
+
+async def _cerchio_sospensione_job() -> None:
+    interval_seconds = 6 * 3600
+    await asyncio.sleep(_INITIAL_DELAY_SECONDS + 200)
+    while True:
+        try:
+            from services.cerchio_reminder import run_cerchio_sospensione_sweep
+            await run_cerchio_sospensione_sweep()
+        except asyncio.CancelledError:
+            raise
+        except Exception as exc:
+            logger.error("background_service: cerchio sospensione error: %s", exc, exc_info=True)
+        try:
+            await asyncio.sleep(interval_seconds)
+        except asyncio.CancelledError:
+            raise
+
+
 # ── Le sequenze (RB8 10/9/2026 → FV2 10/9 sera) ─────────────────────────────
 # Ogni 6 ore, un motore per due pubblici (services/sequenze.py): ai
 # professionisti nella finestra di un passo (g2 a Valentina, pagina
@@ -1204,6 +1226,8 @@ def start() -> List[asyncio.Task]:
         asyncio.create_task(_addon_consistency_audit_job(), name="addon_consistency_audit_job"),
         # CN2 — il promemoria del Cerchio ai non confermati
         asyncio.create_task(_cerchio_reminder_job(), name="cerchio_reminder_job"),
+        # C4 — la sospensione a 90 giorni dei pending mai verificati (solo con l'interruttore)
+        asyncio.create_task(_cerchio_sospensione_job(), name="cerchio_sospensione_job"),
         # RB8/FV2 — le sequenze: professionisti e Cerchio
         asyncio.create_task(_sequenze_job(), name="sequenze_job"),
     ]

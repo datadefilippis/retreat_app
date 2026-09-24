@@ -396,9 +396,31 @@ def op_r14(ctx: dict) -> Optional[Tuple[str, str]]:
 #     c'è nel Cerchio, e «se cerchi un ritiro dicci le tue vie».
 # ─────────────────────────────────────────────────────────────────────────────
 
+def _link(email: str, path: str) -> str:
+    """C3 (24/9): un link del Cerchio che, al clic, segna l'indirizzo come
+    verificato e poi porta a `path` (contratto B3, services/verifica_email).
+    Import pigro con ripiego sul link nudo: il modulo nasce in parallelo
+    (Lotto B) e queste email devono partire in entrambi gli stati."""
+    try:
+        from services.verifica_email import link_verificante
+        return link_verificante(email, path)
+    except Exception:  # noqa: BLE001 — modulo o funzione assenti, o errore: link nudo
+        return f"{APP_URL}{path}"
+
+
+def percorso_preferenze(token: str) -> str:
+    return f"/newsletter/preferenze/{token}" if token else "/newsletter"
+
+
+def url_preferenze_nudo(token: str) -> str:
+    """Il link delle preferenze SENZA redirect verificante: e' quello che
+    va nell'header List-Unsubscribe (C1), dove Gmail fa una POST diretta."""
+    return f"{APP_URL}{percorso_preferenze(token)}"
+
+
 def _url_preferenze(ctx: dict) -> str:
-    token = ctx.get("token") or ""
-    return f"{APP_URL}/newsletter/preferenze/{token}" if token else f"{APP_URL}/newsletter"
+    """Nel corpo dell'email il link delle preferenze e' verificante (C3)."""
+    return _link(ctx.get("email") or "", percorso_preferenze(ctx.get("token") or ""))
 
 
 def _piede_cerchio(ctx: dict) -> str:
@@ -418,10 +440,10 @@ def _dove(ctx: dict) -> str:
     return ""
 
 
-def _meditazioni_riga() -> str:
+def _meditazioni_riga(ctx: dict) -> str:
     return ("<p>Nel frattempo, se ti va, ci sono le <strong>meditazioni gratuite</strong> del "
             "Cerchio: si ascoltano dal telefono, con le cuffie, senza nessuna app.</p>"
-            + _bottone(f"{APP_URL}/meditazioni", "Ascolta le meditazioni"))
+            + _bottone(_link(ctx.get("email") or "", "/meditazioni"), "Ascolta le meditazioni"))
 
 
 def benvenuto_cerchio_ritiri(ctx: dict) -> Tuple[str, str]:
@@ -447,7 +469,7 @@ def benvenuto_cerchio_ritiri(ctx: dict) -> Tuple[str, str]:
             "a quello che ci hai detto, te lo scriviamo. Non un elenco per riempire una email: una "
             "proposta, quando c'è.</p>"
             + manca
-            + _meditazioni_riga()
+            + _meditazioni_riga(ctx)
             + "<p>Se vuoi dirci di più su quello che cerchi, rispondi a questa email: la legge Valentina.</p>"
             + _firma()
             + _piede_cerchio(ctx))
@@ -455,7 +477,7 @@ def benvenuto_cerchio_ritiri(ctx: dict) -> Tuple[str, str]:
 
 def benvenuto_cerchio_meditazioni(ctx: dict) -> Tuple[str, str]:
     """Dalle meditazioni, senza preferenze sui ritiri: solo le meditazioni."""
-    url = f"{APP_URL}/meditazioni"
+    url = _link(ctx.get("email") or "", "/meditazioni")
     return ("Benvenuto nel Cerchio: le tue meditazioni",
             f"<p>{_saluto(ctx.get('nome'))}</p>"
             "<p>sei nel Cerchio di Aurya, e le <strong>meditazioni</strong> si sono aperte.</p>"
@@ -476,7 +498,7 @@ def benvenuto_cerchio_generico(ctx: dict) -> Tuple[str, str]:
             "<p>sei nel Cerchio di Aurya. Ecco cosa c'è.</p>"
             "<p><strong>Le meditazioni gratuite.</strong> Si ascoltano dal telefono, con le cuffie, "
             "senza nessuna app.</p>"
-            + _bottone(f"{APP_URL}/meditazioni", "Ascolta le meditazioni")
+            + _bottone(_link(ctx.get("email") or "", "/meditazioni"), "Ascolta le meditazioni")
             + "<p><strong>La Lettera.</strong> Quando vale la pena: una pratica raccontata bene e una "
               "persona della rete. Mai per riempire una casella.</p>"
             + f"<p><strong>I ritiri, se li cerchi.</strong> <a href=\"{_url_preferenze(ctx)}\">Dicci "
