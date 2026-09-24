@@ -82,7 +82,7 @@ $SSH "cd /opt/aurya && $C exec -T backend python scripts/migra_provenienza.py --
 
 echo "== [6] verifica sul vivo"
 for u in / /accedi /public-profile /operatori /newsletter /cerca-ritiro /meditazioni /admin/operatori /admin/cerchio /api/health /privacy; do printf "   %s → %s\n" "$u" "$(curl -s -o /dev/null -w '%{http_code}' https://aurya.life$u)"; done
-printf "   legale v2.7 servito → %s\n" "$(curl -s https://aurya.life/api/legal/current 2>/dev/null | python3 -c 'import sys,json; d=json.load(sys.stdin); print(d.get(\"version_tag\") or d.get(\"version\") or d)' 2>/dev/null | head -c 40)"
+printf "   legale servito → %s (atteso v2.7)\n" "$(curl -s https://aurya.life/api/legal/versions | grep -o 'v2\.[0-9]' | sort -u | tail -1)"
 printf "   directory (nomi, primi 3): "; curl -s "https://aurya.life/api/public/operators?preview=1" | python3 -c "import sys,json; d=json.load(sys.stdin); print([i['name'] for i in d.get('items',[])][:3])"
 printf "   admin senza token → %s (atteso 401/403)\n" "$(curl -s -o /dev/null -w '%{http_code}' https://aurya.life/api/admin/subscribers)"
 printf "   v-link rotto → %s (atteso 302 verso /newsletter)\n" "$(curl -s -o /dev/null -w '%{http_code}' https://aurya.life/api/public/newsletter/v/token-rotto)"
