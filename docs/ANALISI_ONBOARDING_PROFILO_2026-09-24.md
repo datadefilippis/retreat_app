@@ -111,12 +111,17 @@ Il payload pubblico porta `name` (già composto, così card, pagina, link e SEO 
 - Per i 9 operatori senza numero: una riga nella home «Aurya non ha un tuo recapito: aggiungi un telefono, resta privato» con il campo inline, finché non lo mettono.
 - La scheda 360° dell'admin mostra il numero anche quando è privato (è il motivo per cui lo chiediamo).
 
-### P4 · Il listino come passo naturale (1 giornata)
+### P4 · Il listino come passo naturale (1 giornata) — rivisto il 24/9 con il founder
 
-- **Home dell'operatore**: se il profilo è pubblicato e non c'è nessun servizio, una card in testa «La tua pagina è online ma non ha ancora un servizio: le persone non sanno cosa possono prenotare» con «Aggiungi il primo servizio». Se c'è un solo servizio, la stessa card in tono più leggero. Scompare da sola.
-- **Dopo «Salva profilo»** in `/public-profile`, la striscia già esistente mostra il passo listino come prossima azione anche a profilo incompleto.
-- **Email nuova `op_listino`** nella sequenza: giorni 7-12, condizione «online senza servizi» (oggi non esiste), tre esempi concreti di riga di listino con prezzo, risposta «insieme» come nelle altre.
-- **Tre righe di esempio pre-compilate** in `/listino` vuoto, per disciplina dichiarata (es. Reiki: «Trattamento Reiki 60 min», «Percorso di 4 incontri»), da confermare con un tocco: abbatte il foglio bianco.
+**Il fatto che cambia la risposta.** L'email «La tua pagina è online» (`op_profilo_online`) parte solo quando `online` è vero, cioè anche con almeno un servizio pubblicato. Chi pubblica il profilo senza listino **non la riceve mai**; al giorno 5 riceve invece «Ti manca solo la pagina» (`op_np5`), che per lui è falsa: la pagina l'ha appena fatta. Lo perdiamo nel momento in cui si aspetta una conferma.
+
+Decisione del founder: niente esempi per disciplina (troppo complesso), niente popup. Tre pezzi piccoli:
+
+1. **L'email che già esiste parte prima.** `op_profilo_online` si invia quando NASCE la pagina (primo salvataggio con bio → `_ensure_public_surface` conia lo slug), non al primo servizio. Un blocco dinamico: senza servizi → «Il prossimo passo è il listino: una riga, un prezzo, una durata. Senza, chi arriva sulla tua pagina non sa cosa può prenotare», link a `/listino`, un solo esempio generico («Trattamento individuale · 60 min · 60 €»); con servizi → «hai già N servizi». Una email sola, integrata in quella di oggi.
+2. **np5/np10/np15 smettono di mentire.** Nuovo stato del motore `pagina_senza_listino` accanto a `senza_pagina` (`sequenze.stato_operatore`): stesse finestre, stesso passo, cambia il primo capoverso («La tua pagina c'è, manca il listino»). Chi non ha la pagina riceve i testi di oggi. La condizione `online` resta invariata per `r14` e per tutto il resto.
+3. **Card fissa nella home dell'operatore** finché non esiste un servizio pubblicato: «La tua pagina è online ma non ha servizi» + «Aggiungi il primo servizio». Non un popup: resta, non interrompe, sparisce da sola. Dopo «Salva profilo» la striscia già esistente che rimanda al listino diventa il messaggio di conferma visibile.
+
+Guardie: `test_sequenze` per i due stati e per l'evento «pagina nata»; nessuna email in più per chi ha già il listino (riceve la stessa di oggi, prima).
 
 ### P5 · Regia dell'admin: modificare quando l'operatore non risponde (1 giornata)
 
@@ -144,9 +149,11 @@ Il payload pubblico porta `name` (già composto, così card, pagina, link e SEO 
 
 P1 (2 gg) → P3 (½) → P2 (1) → primo deploy → P4 (1) → P5 (1) → P6 (½) → secondo deploy. Circa sei giornate di lavoro, due giri di produzione.
 
-## 7. Decisioni per il founder
+## 7. Decisioni del founder (24/9)
 
-1. Formato del nome composto: «Valentina · Brillare» (punto mediano, come i titoli SEO) oppure «Valentina — Brillare» (trattino, come nella tua richiesta)?
-2. Telefono obbligatorio anche per chi si iscrive solo come ascoltatore di Aurya Sound? Proposta: no, solo per il professionista.
-3. La coda «da rivedere» in admin: vuoi anche l'email automatica all'operatore quando Aurya gli corregge la pagina, o preferisci scrivergli tu?
-4. Le tre righe di esempio del listino per disciplina: te le propongo io in un CSV (47 discipline × 3 righe) da rivedere, oppure partiamo con dieci discipline più comuni?
+1. Nome composto: **«Valentina · Brillare»**, punto mediano.
+2. Telefono obbligatorio **solo per i professionisti**, non per chi si iscrive ad Aurya Sound.
+3. Quando l'admin corregge una pagina **nessuna email automatica**: scrive il founder.
+4. Listino: **niente esempi per disciplina**; l'email di pagina online parte alla nascita della pagina con il blocco listino, np5/10/15 con lo stato «pagina senza listino», card fissa in home (P4 rivisto).
+
+Prossimo passo proposto: P1 identità, con il CSV dei 20 nomi da rivedere prima di applicarlo.
