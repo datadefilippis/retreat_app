@@ -38,7 +38,7 @@ from typing import Final
 # IMPORTANT: bump CURRENT_VERSION_TAG whenever the LEGAL CONTENT changes.
 # The hash is recomputed manually from the IT bundle (see procedure below).
 
-CURRENT_VERSION_TAG: Final[str] = "v2.6"
+CURRENT_VERSION_TAG: Final[str] = "v2.7"
 """Human-readable tag of the documents the user is currently shown.
 
 History:
@@ -142,9 +142,24 @@ History:
     ex art. 7.7: la pratica reale non cambia, cambia la carta).
     Il bump innesca il re-consent esistente. Stesse modifiche in
     EN/DE/FR.
+  - v2.7 (Cerchio, 2026-09-24) — Privacy 2.3 punto 1: la newsletter
+    di Aurya «Il Cerchio» passa da «iscrizione con doppio consenso» a
+    «consenso registrato» (data e ora, testo accettato e versione,
+    IP, pagina di provenienza), con l'invio che parte dall'iscrizione
+    e i contenuti riservati che si aprono al primo clic su un link
+    ricevuto via email (verifica «per uso»). Nuova riga 7-bis nella
+    tabella delle finalita' (prima la newsletter di Aurya non aveva
+    una riga propria: c'era solo quella dell'Operatore) e nuova riga
+    di conservazione (sospensione dagli invii dopo 90 giorni senza
+    conferma ne' interazione; prova del consenso per tutta la durata
+    dell'iscrizione). Base giuridica invariata (consenso art. 6.1.a);
+    nessun nuovo sub-responsabile. Il bump innesca il re-consent
+    esistente degli utenti admin (30 operatori al 24/9): decisione
+    del founder, da mettere in prod PRIMA di accendere
+    CERCHIO_SINGOLO_OPTIN. Stesse modifiche in EN/DE/FR.
 """
 
-CURRENT_VERSION_HASH: Final[str] = "30715016c1144ebf"
+CURRENT_VERSION_HASH: Final[str] = "7aa1dcc7ec721fff"
 """SHA256-hex16 of the rendered IT privacy + terms text bundle.
 
 Computed from the concatenation:
