@@ -2543,7 +2543,11 @@ async def onboarding_status(current_user: dict = Depends(require_admin)):
                             # SD6 — accende il riquadro in home SOLO per
                             # i ritiri «online» senza Stripe (i «su
                             # richiesta» sono in lista: nessun avviso)
-                            "retreats_direct_no_stripe": online_senza_stripe}}
+                            "retreats_direct_no_stripe": online_senza_stripe,
+                            # P3 (24/9) — la home chiede il recapito a chi non
+                            # ce l'ha: viaggia qui, nella chiamata che la home
+                            # fa gia' (IG4: nessuna chiamata in piu')
+                            "telefono_mancante": not bool(pp.get("public_phone"))}}
 
     # 1. Stripe collegato: connection attiva
     conn = await payment_connections_collection.find_one(

@@ -66,9 +66,12 @@ class TestPrivatoDalPrimoGiorno:
 
     def test_la_home_lo_chiede_a_chi_non_ce_l_ha(self):
         assert 'data-testid="home-telefono"' in HOME
-        assert "setTelefonoMancante(!(r.data || {}).public_phone)" in HOME
+        # il segnale viaggia in onboarding-status: NESSUNA chiamata in piu' (IG4)
+        assert "obSteps?.telefono_mancante === true" in HOME
+        assert HOME.count("api.get(") == 6
+        assert '"telefono_mancante": not bool(pp.get("public_phone"))' in (BACKEND / "routers" / "organizations.py").read_text(encoding="utf-8")
         assert "api.patch('/organizations/current/public-profile', { public_phone: telefono.trim() })" in HOME
-        assert "if (!chiediRecensioni) return undefined;" in HOME   # la regia non lo chiede
+        assert "chiediRecensioni && !telefonoSalvato" in HOME   # la regia non la vede
 
     def test_la_regia_lo_vede(self):
         assert '"public_profile.public_phone": 1' in ADMIN and '"telefono":' in ADMIN

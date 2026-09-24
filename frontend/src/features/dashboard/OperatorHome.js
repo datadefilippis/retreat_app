@@ -119,18 +119,12 @@ export default function OperatorHome() {
   // la lista recensioni le risponde 403 per ruolo. Non si chiede: niente
   // rumore nei log, nessun cambiamento per gli operatori.
   const chiediRecensioni = user?.role !== 'system_admin';
-  // P3 — il recapito: una GET a parte, solo per chi e' admin della sua org
-  const [telefonoMancante, setTelefonoMancante] = useState(false);
+  // P3 — il recapito: il segnale `telefono_mancante` viaggia dentro
+  // onboarding-status (la chiamata che la home fa gia': IG4, nessuna
+  // chiamata in piu'); dopo il salvataggio la riga sparisce da sola
   const [telefono, setTelefono] = useState('');
   const [telefonoStato, setTelefonoStato] = useState('');
-  useEffect(() => {
-    if (!chiediRecensioni) return undefined;
-    let vivo = true;
-    api.get('/organizations/current/public-profile')
-      .then((r) => { if (vivo) setTelefonoMancante(!(r.data || {}).public_phone); })
-      .catch(() => { /* niente riga: mai un avviso su un dato che non si conosce */ });
-    return () => { vivo = false; };
-  }, [chiediRecensioni]);
+  const [telefonoSalvato, setTelefonoSalvato] = useState(false);
 
   // DF1 — il caricamento e' una funzione riusabile: al montaggio come
   // prima, e di nuovo quando la scheda torna visibile dopo un'assenza
@@ -208,6 +202,7 @@ export default function OperatorHome() {
   // anche loro. Ora scatta SOLO se c'e' un ritiro «prenotazione online»
   // senza Stripe pronto: l'unico che resta fuori (services/ritiri_visibilita).
   const calendarBlocked = obSteps && Number(obSteps.retreats_direct_no_stripe || 0) > 0;
+  const telefonoMancante = chiediRecensioni && !telefonoSalvato && obSteps?.telefono_mancante === true;
 
   return (
     <div className="space-y-5" data-testid="operator-home">
@@ -223,7 +218,7 @@ export default function OperatorHome() {
           setTelefonoStato('salvo');
           try {
             await api.patch('/organizations/current/public-profile', { public_phone: telefono.trim() });
-            setTelefonoMancante(false);
+            setTelefonoSalvato(true);
           } catch { setTelefonoStato('errore'); }
         }}>
         <div className="text-sm flex-1 min-w-[220px]">
