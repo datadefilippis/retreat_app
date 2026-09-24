@@ -21,7 +21,9 @@ from typing import Any, Dict, List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Header, Request, status
 from pydantic import BaseModel
 
-from auth import get_current_user, get_verified_user, require_admin
+# E6 (24/9/2026): qui la verifica dell'email resta RIGIDA anche con
+# LOGIN_SENZA_VERIFICA acceso — soldi e terzi (auth.get_verified_user_strict).
+from auth import get_current_user, get_verified_user_strict as get_verified_user, require_admin
 from routers.auth import limiter
 from repositories import billing_repository
 from services import stripe_service

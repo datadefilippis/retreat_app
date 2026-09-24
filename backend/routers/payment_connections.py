@@ -21,7 +21,9 @@ from typing import Optional
 from pydantic import BaseModel
 from fastapi import APIRouter, Depends, HTTPException, status
 
-from auth import get_current_user, get_verified_user, require_admin
+# E6 (24/9/2026): qui la verifica dell'email resta RIGIDA anche con
+# LOGIN_SENZA_VERIFICA acceso — soldi e terzi (auth.get_verified_user_strict).
+from auth import get_current_user, get_verified_user_strict as get_verified_user, require_admin
 from models.common import generate_id, utc_now
 from services.module_access import check_module_access
 

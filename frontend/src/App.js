@@ -234,7 +234,10 @@ const ProtectedRoute = ({ children }) => {
   // Onda 28 — email verification gate. Strictly compare to false so
   // that legacy /me responses without the field (or transient race
   // conditions during context load) don't false-positive a redirect.
-  if (user && user.role !== "system_admin" && user.email_verified === false) {
+  // E6 (24/9/2026) — con `verifica_morbida` dal server si entra lo
+  // stesso: l'avviso in cima al gestionale (BannerVerificaEmail) fa
+  // il resto, e i cancelli rigidi restano lato server.
+  if (user && user.role !== "system_admin" && user.email_verified === false && !user.verifica_morbida) {
     return <Navigate to="/verify-email-required" replace />;
   }
 

@@ -2065,7 +2065,7 @@ export default function FrequenzePage() {
     const next = encodeURIComponent(location.pathname + location.search);
     return <Navigate to={`/accedi?next=${next}`} replace />;
   }
-  if (needsAuth && user && user.role !== 'system_admin' && user.email_verified === false) {
+  if (needsAuth && user && user.role !== 'system_admin' && user.email_verified === false && !user.verifica_morbida) {
     return <Navigate to="/verify-email-required" replace />;
   }
   /* L1 (26/8, sistema) — Crea e' l'atelier PROPRIETARIO di Aurya: il

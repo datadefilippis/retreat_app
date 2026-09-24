@@ -188,6 +188,10 @@ class UserResponse(BaseModel):
     # professionali. Il client disegna il Builder solo se e' vero; la
     # VERITA' sta in require_sound_professional (routers/sound_pro.py).
     sound_professional: bool = False
+    # E6 (24/9/2026) — se vero, il client NON rimanda a
+    # /verify-email-required chi non ha verificato: mostra un avviso
+    # e lascia lavorare (login senza verifica, verifica «per uso»).
+    verifica_morbida: bool = False
 
 
 class UserInvite(BaseModel):

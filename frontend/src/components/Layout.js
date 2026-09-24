@@ -44,6 +44,7 @@ import { Separator } from '../components/ui/separator';
 // 2026-05-22 — sidebar brand mark. Uses the white wordmark variant
 // since the sidebar lives over the navy gradient background.
 import { BrandLogo } from '../components/BrandLogo';
+import BannerVerificaEmail from '../components/BannerVerificaEmail';
 import { modulesAPI } from '../api/modules';
 import api from '../api/client';
 import { useTranslation } from 'react-i18next';
@@ -613,6 +614,8 @@ export const AppLayout = ({ children }) => {
       <div className="min-h-screen bg-background">
         <Sidebar />
         <main className="md:pl-64">
+          {/* E6 — avviso «email non confermata» solo col login senza verifica */}
+          <BannerVerificaEmail />
           {children}
         </main>
       </div>

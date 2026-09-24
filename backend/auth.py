@@ -308,6 +308,30 @@ async def get_verified_user(current_user: dict = Depends(get_current_user)) -> d
     if current_user.get("role") == "system_admin":
         return current_user
 
+    # E6 (24/9/2026): con LOGIN_SENZA_VERIFICA acceso il cancello si fa
+    # morbido — si lavora subito, la verifica arriva «per uso». Restano
+    # rigidi i punti che toccano soldi e terzi: get_verified_user_strict.
+    if not current_user.get("email_verified", False):
+        from core.flags import login_senza_verifica
+        if login_senza_verifica():
+            return current_user
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail={
+                "error": "email_not_verified",
+                "message": "Email verification required to access this resource",
+                "user_email": current_user.get("email"),
+            },
+        )
+    return current_user
+
+
+async def get_verified_user_strict(current_user: dict = Depends(get_current_user)) -> dict:
+    """E6 — il cancello RIGIDO: verifica dell'email sempre richiesta,
+    interruttore o no. Per pagamenti, connessioni Stripe, fatturazione:
+    dove un indirizzo non verificato puo' fare danni a terzi."""
+    if current_user.get("role") == "system_admin":
+        return current_user
     if not current_user.get("email_verified", False):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,

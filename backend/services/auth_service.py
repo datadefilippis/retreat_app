@@ -21,6 +21,7 @@ from models import (
     Organization, UserRole, AuditLog,
 )
 from auth import get_password_hash, verify_password, create_access_token, validate_password_strength
+from core.flags import login_senza_verifica
 
 # Onda 30 — anti-bruteforce lockout (mirror of Onda 29 customer side).
 # Pure helpers shared with customer_auth_service via core.lockout_helpers
@@ -386,8 +387,11 @@ async def login(email: str, password: str) -> TokenResponse:
         raise ValueError("Account is deactivated")
 
     # v6.0: Require email verification before login (system_admin bypasses)
+    # E6 (24/9/2026): con LOGIN_SENZA_VERIFICA acceso si entra subito;
+    # la verifica arriva «per uso» e resta richiesta solo dai cancelli
+    # rigidi (auth.get_verified_user_strict).
     if not user_doc.get("email_verified", False):
-        if not is_sysadmin:
+        if not is_sysadmin and not login_senza_verifica():
             raise ValueError("Email not verified")
 
     # v6.0: Check org deactivation (system_admin has no org, bypasses)
@@ -534,4 +538,5 @@ async def get_current_user_info(user_id: str) -> UserResponse:
         sound_composer=sound_composer,
         sound_professional=sound_professional,
         sound_crea=sound_crea,
+        verifica_morbida=login_senza_verifica(),
     )
