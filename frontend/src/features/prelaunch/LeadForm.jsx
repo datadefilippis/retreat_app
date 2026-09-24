@@ -128,6 +128,7 @@ export default function LeadForm({ type = 'traveler', accent = '#376254', contex
   const [message, setMessage] = useState('');
   const [consent, setConsent] = useState(false);
   const [state, setState] = useState('idle');   // idle | sending | done | error
+  const [modalita, setModalita] = useState('conferma');   // benvenuto | conferma (dal server)
   // NW2 — il blocco esperienze del form progressivo
   const [wantsExperiences, setWantsExperiences] = useState(
     Boolean(experiencesOptIn && experiencesDefault));
@@ -158,7 +159,7 @@ export default function LeadForm({ type = 'traveler', accent = '#376254', contex
         // BN2 — iscrizione alla lettera: double opt-in lato backend
         // NW2 — il blocco esperienze viaggia solo se l'utente ha
         // acceso il flag: niente dati raccolti «di passaggio»
-        await api.post('/public/newsletter/subscribe', {
+        const risposta = await api.post('/public/newsletter/subscribe', {
           email: email.trim(), name: name.trim() || null,
           language: (i18n.language || 'it').slice(0, 2),
           source: fonte,
@@ -183,6 +184,10 @@ export default function LeadForm({ type = 'traveler', accent = '#376254', contex
           ...provenienzaCorrente(),
           consenso_versione: VERSIONE_CORRENTE,
         });
+        // 24/9 — il server dice cosa ha mandato (dipende solo dal suo
+        // interruttore): «benvenuto» = la Lettera arriva subito, un clic
+        // conferma; «conferma» = l'email di conferma di sempre.
+        setModalita(risposta?.data?.modalita === 'benvenuto' ? 'benvenuto' : 'conferma');
         trackEvent('generate_lead', { lead_type: 'subscriber', lead_context: context || 'landing', porta: porta || '(nessuna)' });
         // SB2 (20/8) — gia' confermato? La prova arriva subito e il
         // grazie dice la verita' («sei gia' dei nostri»), invece di
@@ -239,6 +244,8 @@ export default function LeadForm({ type = 'traveler', accent = '#376254', contex
         <p className="mt-1 text-sm text-muted-foreground">
           {giaDentro
             ? t('form.thanksGia', { defaultValue: 'Questa email è già dei nostri: tutto sbloccato su questo dispositivo — guide, meditazioni, sessioni. Nessuna nuova conferma da fare.' })
+            : modalita === 'benvenuto'
+            ? t('form.thanksBenvenuto', { defaultValue: 'Sei dentro: la prima Lettera è in arrivo nella tua casella. Per aprire le meditazioni riservate basta un clic su un link di quell’email.' })
             : (thanksBody
               || (isOperator
                 ? t('form.thanksOp', { defaultValue: 'Grazie per esserti presentato: ti scriviamo personalmente prima del lancio.' })

@@ -15,3 +15,21 @@ def test_subscribe_usa_il_benvenuto_solo_con_interruttore():
     import os
     os.environ.pop("CERCHIO_SINGOLO_OPTIN", None)
     assert singolo_optin() is False
+
+
+def test_il_grazie_dice_la_verita_senza_oracolo():
+    """`modalita` nella risposta viene SOLO dall'interruttore: identica per
+    nuovo, pending e gia' confermato (niente enumerazione)."""
+    assert SRC.count('return {"ok": True, "modalita": _modalita_risposta()}') == 2
+    assert "dallo\n    stato dell'iscritto" in SRC or "mai dallo" in SRC
+    from routers.subscribers import _modalita_risposta
+    import os
+    os.environ.pop("CERCHIO_SINGOLO_OPTIN", None)
+    assert _modalita_risposta() == "conferma"
+    os.environ["CERCHIO_SINGOLO_OPTIN"] = "1"
+    try:
+        assert _modalita_risposta() == "benvenuto"
+    finally:
+        os.environ.pop("CERCHIO_SINGOLO_OPTIN", None)
+    lead = (Path(__file__).resolve().parents[2] / "frontend" / "src" / "features" / "prelaunch" / "LeadForm.jsx").read_text(encoding="utf-8")
+    assert "risposta?.data?.modalita === 'benvenuto'" in lead and "form.thanksBenvenuto" in lead

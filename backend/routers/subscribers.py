@@ -364,7 +364,7 @@ async def iscrivi(payload: SubscribePayload, request: Request, *,
                 _send_access_email(email, payload.name,
                                    generate_subscriber_token(email),
                                    _safe_return_to(payload.return_to))
-            return {"ok": True}
+            return {"ok": True, "modalita": _modalita_risposta()}
         # nuovo, pending o unsubscribed (re-optin) → (ri)parte la conferma
         doc_set["status"] = "pending"
         set_on_insert = {"email": email, "created_at": now}
@@ -402,7 +402,17 @@ async def iscrivi(payload: SubscribePayload, request: Request, *,
         _send_confirm_email(email, payload.name,
                             generate_subscriber_token(email),
                             _safe_return_to(payload.return_to))
-    return {"ok": True}
+    return {"ok": True, "modalita": _modalita_risposta()}
+
+
+def _modalita_risposta() -> str:
+    """Cosa dire nel «grazie»: dipende SOLO dall'interruttore, mai dallo
+    stato dell'iscritto (la risposta resta identica per nuovo, pending e
+    gia' confermato: nessun oracolo di enumerazione). «benvenuto» = la
+    prima Lettera arriva subito e un suo clic conferma; «conferma» =
+    l'email di conferma di sempre."""
+    from services.sequenze import singolo_optin
+    return "benvenuto" if singolo_optin() else "conferma"
 
 
 def _provenienza_da_payload(payload: "SubscribePayload", user_agent: str) -> dict:
