@@ -105,3 +105,7 @@ A, B, C in parallelo (file disgiunti) → D → E. Deploy solo su «vai» del fo
 Interruttori: `LOGIN_SENZA_VERIFICA` e `CERCHIO_SINGOLO_OPTIN` in `.env.production`, entrambi spenti al deploy; si accendono (riavvio backend) DOPO che la v2.7 e' in prod e il re-consent e' partito.
 
 Dopo il deploy, in prod: `scripts/migra_provenienza.py --prova` → senza `--prova`; `scripts/migra_consenso_cerchio.py --prova` → senza. Poi decidere sui 4 lead del prelancio (una email di invito) e sul campo «quando».
+
+## Deploy fatto — 24/9/2026 ore 12:45 UTC (tag `prod-2026-09-24-admin-cerchio`)
+
+Prova generale sulla copia di prod (33 org, 20 pagine pubbliche identiche campo per campo, lista admin e profilo/onboarding senza errori su ogni documento). Giro in ~3 minuti con `deploy/giri/deploy-2026-09-24-admin-cerchio.sh`: backup di 8 collezioni + dump intero, frontend poi backend, 5 «profilo_online» pregressi segnati come saltati (nessuna email in ritardo), migrazioni provenienza e consenso eseguite su 39 iscritti (22 verificati), verifiche vive tutte 200, legale v2.7 servito, dry-run sequenze vuoto. **Interruttori `LOGIN_SENZA_VERIFICA` e `CERCHIO_SINGOLO_OPTIN` spenti**: si accendono in `.env.production` con riavvio del backend quando il founder decide.
