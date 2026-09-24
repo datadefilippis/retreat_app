@@ -7544,8 +7544,22 @@ class TestDisciplineDi:
         # le voci chieste esplicitamente dal founder esistono
         for slug in ("reiki", "shiatsu", "naturopatia", "meditazione",
                      "yoga", "breathwork", "aromaterapia",
-                     "cristalloterapia", "costellazioni-familiari"):
+                     "cristalloterapia", "costellazioni-familiari",
+                     # 24/9/2026 (founder): chakra ×2 in Energia; linfodrenaggio c'era gia'
+                     "allineamento-chakra", "lavoro-energetico-chakra", "linfodrenaggio"):
             assert slug in DISCIPLINES, f"manca {slug}"
+        assert DISCIPLINES["allineamento-chakra"] == "Allineamento chakra"
+        assert DISCIPLINES["lavoro-energetico-chakra"] == "Lavoro energetico coi chakra"
+        # le due voci nuove stanno in Energia e hanno una casa nella
+        # directory dei ritiri e nelle pagine locali
+        energia = {s for f, _l, items in DISCIPLINE_FAMILIES if f == "energia" for s, _ in items}
+        assert {"allineamento-chakra", "lavoro-energetico-chakra"} <= energia
+        from models.retreat_taxonomy import DISCIPLINA_TO_CATEGORIA
+        from services.pagine_locali import CATEGORIA_ARTICOLI, FAMIGLIA_DI
+        for slug in ("allineamento-chakra", "lavoro-energetico-chakra"):
+            assert DISCIPLINA_TO_CATEGORIA[slug] == "reiki"
+            assert CATEGORIA_ARTICOLI[slug] == "reiki"
+            assert FAMIGLIA_DI[slug][0] == "energia"
 
     def test_patch_valida_e_get_riflette(self):
         """Slug fuori tassonomia scartati in silenzio; dedup; roundtrip."""

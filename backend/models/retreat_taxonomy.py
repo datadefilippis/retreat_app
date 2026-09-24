@@ -51,6 +51,7 @@ DISCIPLINA_TO_CATEGORIA = {
     "linfodrenaggio": "massaggio", "hot-stone": "massaggio",
     # energia & vibrazione
     "reiki": "reiki", "pranoterapia": "reiki", "cristalloterapia": "reiki",
+    "allineamento-chakra": "reiki", "lavoro-energetico-chakra": "reiki",
     "sound-healing": "suono", "theta-healing": "reiki", "access-bars": "reiki", "kinesiologia": "reiki",
     # natura & rimedi
     "naturopatia": "detox", "aromaterapia": "detox", "floriterapia": "detox", "erboristeria": "detox",

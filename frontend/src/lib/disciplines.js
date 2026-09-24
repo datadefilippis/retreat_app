@@ -53,6 +53,9 @@ export const DISCIPLINE_FAMILIES = Object.freeze([
       { slug: 'reiki', label: 'Reiki' },
       { slug: 'pranoterapia', label: 'Pranoterapia' },
       { slug: 'cristalloterapia', label: 'Cristalloterapia' },
+      // 24/9/2026 (founder): due voci sui chakra, generiche, non di marchio
+      { slug: 'allineamento-chakra', label: 'Allineamento chakra' },
+      { slug: 'lavoro-energetico-chakra', label: 'Lavoro energetico coi chakra' },
       { slug: 'sound-healing', label: 'Sound healing & Campane tibetane' },
       { slug: 'theta-healing', label: 'Theta healing' },
       { slug: 'access-bars', label: 'Access Bars' },

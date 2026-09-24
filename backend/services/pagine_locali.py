@@ -49,6 +49,7 @@ CATEGORIA_ARTICOLI = {
     "sound-healing": "suono",
     "reiki": "reiki", "pranoterapia": "reiki", "cristalloterapia": "reiki", "theta-healing": "reiki",
     "access-bars": "reiki", "kinesiologia": "reiki",
+    "allineamento-chakra": "reiki", "lavoro-energetico-chakra": "reiki",
     "costellazioni-familiari": "costellazioni",
     "astrologia": "astrologia", "tarocchi-evolutivi": "astrologia", "numerologia": "astrologia",
     "massaggio-olistico": "massaggio", "shiatsu": "massaggio", "massaggio-thai": "massaggio",

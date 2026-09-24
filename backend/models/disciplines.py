@@ -48,6 +48,10 @@ DISCIPLINE_FAMILIES = (
         ("reiki", "Reiki"),
         ("pranoterapia", "Pranoterapia"),
         ("cristalloterapia", "Cristalloterapia"),
+        # 24/9/2026 (founder): due voci sui chakra, generiche e non di
+        # marchio, come da regola DI6. «Linfodrenaggio» c'era gia'.
+        ("allineamento-chakra", "Allineamento chakra"),
+        ("lavoro-energetico-chakra", "Lavoro energetico coi chakra"),
         ("sound-healing", "Sound healing & Campane tibetane"),
         ("theta-healing", "Theta healing"),
         ("access-bars", "Access Bars"),
