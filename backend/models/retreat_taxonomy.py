@@ -56,6 +56,9 @@ DISCIPLINA_TO_CATEGORIA = {
     # natura & rimedi
     "naturopatia": "detox", "aromaterapia": "detox", "floriterapia": "detox", "erboristeria": "detox",
     "alimentazione-olistica": "detox", "bagni-di-bosco": "cammini", "consulenza-ayurvedica": "ayurveda",
+    # psicologia & psicoterapia (24/9)
+    "psicologia": "crescita", "psicoterapia": "crescita",
+    "sostegno-psicologico": "crescita", "psicologia-perinatale": "femminile",
     # anima & percorsi interiori
     "costellazioni-familiari": "costellazioni", "counseling-olistico": "crescita",
     "coaching-olistico": "crescita", "cerchi-di-donne": "femminile", "sacro-femminile": "femminile",

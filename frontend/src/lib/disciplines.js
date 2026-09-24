@@ -75,6 +75,16 @@ export const DISCIPLINE_FAMILIES = Object.freeze([
     ],
   },
   {
+    // 24/9/2026 (founder): professioni psicologiche, famiglia propria
+    slug: 'psiche', label: 'Psicologia & Psicoterapia',
+    items: [
+      { slug: 'psicologia', label: 'Psicologia' },
+      { slug: 'psicoterapia', label: 'Psicoterapia' },
+      { slug: 'sostegno-psicologico', label: 'Sostegno psicologico' },
+      { slug: 'psicologia-perinatale', label: 'Psicologia perinatale' },
+    ],
+  },
+  {
     slug: 'anima', label: 'Anima & Percorsi interiori',
     items: [
       { slug: 'costellazioni-familiari', label: 'Costellazioni familiari' },

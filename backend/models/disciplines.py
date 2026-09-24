@@ -66,6 +66,15 @@ DISCIPLINE_FAMILIES = (
         ("bagni-di-bosco", "Bagni di bosco"),
         ("consulenza-ayurvedica", "Consulenza ayurvedica"),
     )),
+    # 24/9/2026 (founder): si iscrive uno psicoterapeuta. Le professioni
+    # psicologiche sono regolamentate (albo): famiglia propria, voci
+    # generiche, nessun metodo di marchio (regola DI6).
+    ("psiche", "Psicologia & Psicoterapia", (
+        ("psicologia", "Psicologia"),
+        ("psicoterapia", "Psicoterapia"),
+        ("sostegno-psicologico", "Sostegno psicologico"),
+        ("psicologia-perinatale", "Psicologia perinatale"),
+    )),
     ("anima", "Anima & Percorsi interiori", (
         ("costellazioni-familiari", "Costellazioni familiari"),
         ("counseling-olistico", "Counseling olistico"),

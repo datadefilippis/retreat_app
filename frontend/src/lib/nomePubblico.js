@@ -13,7 +13,8 @@ const pulito = (s) => String(s || '').split(/\s+/).filter(Boolean).join(' ').tri
 export function contienePersona(marchio, persona) {
   const m = pulito(marchio).toLowerCase();
   const parti = pulito(persona).toLowerCase().split(' ').filter((p) => p.length > 2);
-  return parti.length > 0 && parti.every((p) => m.includes(p));
+  // basta UNA parola del nome dentro il marchio: niente «Valentina Rossi · Valentina - Brillare»
+  return parti.length > 0 && parti.some((p) => m.includes(p));
 }
 
 export function nomePubblico(persona, marchio) {

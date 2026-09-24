@@ -29,11 +29,14 @@ def _pulito(s: Optional[str]) -> str:
 
 
 def contiene_persona(marchio: str, persona: str) -> bool:
-    """Il marchio contiene gia' (tutte le parole di) la persona?
-    Parole di 1-2 lettere ignorate («di», «e»)."""
+    """Il marchio contiene gia' la persona? Basta UNA parola del nome
+    (di almeno 3 lettere) dentro il marchio: «Valentina - Brillare» con
+    «Valentina Rossi» NON deve diventare «Valentina Rossi · Valentina -
+    Brillare» (domanda del founder, 24/9). Un marchio che porta il nome
+    di chi lo firma e' gia' personale: si mostra com'e'."""
     m = _pulito(marchio).casefold()
     parti = [p for p in _pulito(persona).casefold().split() if len(p) > 2]
-    return bool(parti) and all(p in m for p in parti)
+    return bool(parti) and any(p in m for p in parti)
 
 
 def parti_nome(org: dict, fallback: str = "") -> Dict[str, object]:

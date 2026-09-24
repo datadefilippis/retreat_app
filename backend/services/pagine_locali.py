@@ -39,6 +39,7 @@ INTRO_FAMIGLIA = {
     "energia": "Pratiche energetiche e vibrazionali, in presenza e in alcuni casi a distanza.",
     "natura": "Rimedi naturali, consulenze e percorsi che partono dalla natura e dall'alimentazione.",
     "anima": "Percorsi interiori e di crescita personale, in sessioni individuali o in cerchio.",
+    "psiche": "Psicologi e psicoterapeuti iscritti all'albo: colloqui, sostegno e percorsi di psicoterapia, in studio o online.",
 }
 
 # disciplina → categoria del Magazine con articoli (per il link «Leggi»)
@@ -59,6 +60,8 @@ CATEGORIA_ARTICOLI = {
     "naturopatia": "naturopatia", "aromaterapia": "naturopatia", "floriterapia": "naturopatia",
     "erboristeria": "naturopatia", "alimentazione-olistica": "naturopatia",
     "counseling-olistico": "crescita", "coaching-olistico": "crescita",
+    "psicologia": "crescita", "psicoterapia": "crescita", "sostegno-psicologico": "crescita",
+    "psicologia-perinatale": "femminile",
 }
 
 

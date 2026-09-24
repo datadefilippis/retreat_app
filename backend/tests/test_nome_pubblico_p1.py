@@ -66,6 +66,13 @@ class TestRegola:
         assert not contiene_persona("Cerchio Angelico", "Paola Artico")
         # persona = marchio (stessa stringa): una volta sola
         assert nome_pubblico(_org("Seva Kaur", "Seva Kaur")) == "Seva Kaur"
+        # domanda del founder (24/9): «Valentina» + «Valentina-brillare» → mai
+        # «Valentina · Valentina-brillare», e nemmeno con il cognome
+        assert nome_pubblico(_org("Valentina-brillare", "Valentina")) == "Valentina-brillare"
+        assert nome_pubblico(_org("Valentina - Brillare", "Valentina Rossi")) == "Valentina - Brillare"
+        assert nome_pubblico(_org("Brillare | Il Sole Dentro ~ Valentina", "Valentina")) == "Brillare | Il Sole Dentro ~ Valentina"
+        # le particelle corte non contano: «Studio di Ada» non «contiene» «Ada Bianchi»? Ada ha 3 lettere: conta
+        assert nome_pubblico(_org("Studio Zenith", "Ada Bianchi")) == "Ada Bianchi · Studio Zenith"
 
     def test_parti_per_l_intestazione(self):
         p = parti_nome(_org("Casa Coco", "Erika Manzari"))
@@ -102,6 +109,7 @@ class TestFrontend:
         assert "export const SEPARATORE = ' · ';" in JS
         assert "export const NOME_PERSONA_MAX = 80;" in JS
         assert "p.length > 2" in JS      # stessa soglia delle particelle («di», «e»)
+        assert "parti.some((p) => m.includes(p))" in JS   # una parola basta, come nel backend
 
     def test_editor_nome_e_attivita_in_alto(self):
         assert 'data-testid="profile-nome-persona"' in PAGE and 'data-testid="profile-marchio"' in PAGE
