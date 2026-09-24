@@ -157,3 +157,83 @@ P1 (2 gg) → P3 (½) → P2 (1) → primo deploy → P4 (1) → P5 (1) → P6 (
 4. Listino: **niente esempi per disciplina**; l'email di pagina online parte alla nascita della pagina con il blocco listino, np5/10/15 con lo stato «pagina senza listino», card fissa in home (P4 rivisto).
 
 Prossimo passo proposto: P1 identità, con il CSV dei 20 nomi da rivedere prima di applicarlo.
+
+---
+
+## 8. Le email automatiche: inventario, incoerenze, piano (PE)
+
+Inventario completo su tutto il backend (24/9): **31 email all'operatore, 33 al cliente finale, 6 all'iscritto del Cerchio, 12 interne** alla casella Aurya. Mittente unico `noreply@aurya.life`, Reply-To sempre presente (di default la casella Aurya). Il «gate» email non c'entra col prelancio: è solo la lista dei rimbalzati.
+
+### 8.1 Quello che parte davvero (produzione, ultimi 30 giorni)
+
+| Email | Inviate | Nota |
+|---|---|---|
+| **«Da 2 giorni su Aurya: …» (interna, g2)** | **16** | la più inviata di tutte: una per ogni nuova org, condizione «sempre» |
+| «La tua pagina è online» | 8 | |
+| «Ti manca solo la pagina» (np5) | 6 | |
+| «Cosa blocca, di solito» (np10) | 3 | |
+| «Un'ultima cosa» (np15) | 2 | |
+| «Il primo ritiro» (r14) | 1 | |
+| Benvenuti Cerchio | 19 su 22 confermati | |
+
+Il 44% delle email della sequenza operatore va a noi stessi. Nessun errore Brevo negli ultimi 7 giorni.
+
+### 8.2 Incoerenze trovate
+
+**Fuorvianti per l'operatore**
+1. «Ti manca solo la pagina» (np5/10/15) parte a chi ha già la pagina ma non un servizio: la condizione `online` richiede un servizio pubblicato. Oggi in produzione non è ancora successo (0 casi), ma succederà: 4 operatori su 20 sono esattamente in quello stato. Peggio: chi ha pubblicato **solo un ritiro** (`event_ticket`) è «non online» e riceve «la tua pagina non è ancora online» pur avendo già lavorato.
+2. «La tua pagina è online» parte solo con un servizio, quindi chi pubblica il profilo senza listino non la riceve mai (§4 P4). E può arrivare fino a 60 giorni dopo l'iscrizione con il tono del giorno zero.
+3. «Un'ultima cosa, poi non insistiamo» promette l'ultima email sulla pagina, ma se l'operatore va online dopo riceve comunque «La tua pagina è online». Difendibile, da dire meglio.
+4. **Bug**: l'email di quota all'80% ha oggetto e capoverso letterali `quota_warn_80_subject` / `quota_warn_80_intro` (chiave i18n inesistente, `quota_email_service.py:225-226`). Da correggere subito, è imbarazzante.
+5. «Pagamento a rischio» all'operatore ha il piè di pagina «rispondi ad Aurya» ma parla di un cliente: il Reply-To va al cliente, come già fa «Nuova richiesta».
+
+**Interne inutili o incoerenti**
+6. **g2 «Da 2 giorni su Aurya»**: da eliminare (decisione del founder). In più il testo si contraddice: dice «non ha ancora la pagina online» e poi «controlla che sia entrato nei canali Telegram, i link li ha ricevuti con l'email della pagina online», che non ha ricevuto. E occupa il posto nel giro delle 6 ore: quando g2 e «pagina online» sono dovute insieme, la pagina online slitta di 6 ore. Le richieste struttura/regia/aziende/Pro, le segnalazioni di recensioni e le candidature restano: sono code di lavoro.
+7. Il lead pre-lancio va a `info@aurya.life` scritto nel codice, non alla casella Aurya come tutto il resto.
+
+**Doppioni**
+8. Cerchio: «Benvenuto nel Cerchio: un clic e sei dentro» (conferma) e, al clic, «Benvenuto nel Cerchio di Aurya» (benvenuto): due oggetti quasi uguali nello stesso minuto. Il doppio opt-in serve; l'oggetto no.
+9. Alert Stripe critici a tutti gli admin dell'org più ops: N+1 copie identiche.
+
+**Codice morto e buchi**
+10. `send_welcome` («Benvenuto su Aurya — Verifica la tua email») importata e mai chiamata; `send_email_with_attachment` senza chiamanti; `footer_auto` mai più letto.
+11. **Buco legale**: la richiesta GDPR di cancellazione account importa `send_admin_notification`, che non esiste; l'errore è ingoiato e **nessuna email parte**, con un SLA di 30 giorni dichiarato in un testo mai spedito (`routers/customer_portal.py:1545-1565`).
+12. Il re-consent legale non manda nessuna email: è solo in-app. Va bene così, ma va saputo.
+
+### 8.3 Il percorso email dell'operatore, riscritto
+
+Principio: **una email per momento, ogni email vera nello stato in cui arriva, nessuna email a noi che non sia una coda di lavoro.**
+
+| Momento | Email | Condizione (nuovo motore) |
+|---|---|---|
+| Giorno 0 | «Il tuo spazio su Aurya è aperto» (verifica + tre passi) | registrazione |
+| **Nasce la pagina** (primo salvataggio con bio → slug) | «La tua pagina è online: ecco il link» con blocco listino dinamico | evento, entro 60 giorni; se già passata non si ripete |
+| Giorni 5-9 | «Ti manca solo la pagina» **oppure** «La tua pagina c'è, manca il listino» | `senza_pagina` / `pagina_senza_listino` |
+| Giorni 10-14 | «Cosa blocca, di solito» nelle due varianti | idem |
+| Giorni 15-21 | «Un'ultima cosa» nelle due varianti; testo: «l'ultima su questo passo» | idem |
+| Giorni 14-20 | «Il primo ritiro» | pagina + servizio, nessun ritiro (chi ha già un ritiro non riceve niente) |
+| Nuova richiesta, recensione, pagamento a rischio | come oggi, con Reply-To corretto | evento |
+
+Stati del motore (`stato_operatore`): `pagina` (slug + bio), `listino` (servizio pubblicato), `ritiro`. `online` = pagina + listino resta per compatibilità. Chi ha solo il ritiro conta come «ha lavorato»: riceve la variante listino, non «non hai la pagina».
+
+### 8.4 Fase PE · Email (1 giornata, nel primo giro di deploy)
+
+- PE1 **Via g2**: rimosso il passo dalla tupla `PASSI["operatore"]` e il template; il motore non dipende da lei. Guardia: nessun passo con destinatario admin nella sequenza operatore.
+- PE2 **Pagina online alla nascita della pagina** + blocco listino (= P4.1). Evento marcato una volta sola, come oggi.
+- PE3 **Due stati** per np5/10/15 (= P4.2) e testo dell'«ultima» corretto.
+- PE4 **Bug quota 80%**: chiave i18n giusta + test che ogni `_t()` usata nei servizi email abbia la chiave in it/en/de/fr (chiude anche il rischio per le altre famiglie).
+- PE5 **Reply-To coerente**: «Pagamento a rischio» risponde al cliente; alert store e recensioni tengono la casella Aurya ma il piè di pagina lo dice senza il brand del negozio.
+- PE6 **GDPR**: `send_admin_notification` implementata (casella Aurya, oggetto «[GDPR] Richiesta cancellazione account»), test che la richiesta la spedisce.
+- PE7 **Lead** → casella Aurya invece di `info@` nel codice.
+- PE8 **Cerchio**: oggetto della conferma «Un clic per entrare nel Cerchio», così il benvenuto non sembra un doppione. Contenuti invariati.
+- PE9 **Pulizia**: `send_welcome`, `send_email_with_attachment`, `footer_auto` e le loro chiavi via; `passo_dovuto` resta per i test.
+- PE10 **Alert critici**: una copia a ops e una al primo admin dell'org, non a tutti.
+- Misura: il conteggio per passo esiste già in admin (`conta_invii`); si aggiunge la riga «email interne al mese» che dopo PE1 deve scendere di 16.
+
+Fuori dal piano, da decidere a parte: le email del cliente finale (33) sono coerenti tra loro e con il brand del negozio; non le tocco in questo ciclo.
+
+### 8.5 Ordine aggiornato
+
+**Giro 1**: PE (1 g) → P1 identità (2 g) → P3 telefono (½) → P2 bio (1) → deploy, CSV dei 20 nomi dopo il go.
+**Giro 2**: P4 listino in home (½, la parte email è già in PE) → P5 admin (1) → P6 misure (½) → deploy.
+Totale circa sette giornate.
