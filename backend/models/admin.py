@@ -55,6 +55,21 @@ class OrgSummary(BaseModel):
     # slug del profilo pubblico, SOLO se pubblicato (link /o/{slug}
     # sempre valido; da non pubblicato il pubblico fa 404)
     profile_slug: Optional[str] = None
+    # SA2 (24/9/2026) — la regia legge in riga chi e' e a che punto e':
+    # tutti opzionali, solo AGGIUNTI (i client vecchi non li vedono).
+    # nome_persona/nome_pubblico = P1 («Nome · Marchio»); telefono =
+    # public_profile.public_phone (privato per la regia anche quando
+    # show_contacts e' spento: telefono_pubblico lo dice);
+    # stato_profilo ∈ account|bozza|pagina|online (services/stato_profilo);
+    # email_verificata = il titolare ha confermato l'email.
+    nome_persona: Optional[str] = None
+    nome_pubblico: Optional[str] = None
+    telefono: Optional[str] = None
+    telefono_pubblico: Optional[bool] = None
+    stato_profilo: Optional[str] = None
+    n_servizi: Optional[int] = None
+    bio_len: Optional[int] = None
+    email_verificata: Optional[bool] = None
     created_at: datetime
     updated_at: datetime
 
@@ -64,6 +79,9 @@ class OrgListResponse(BaseModel):
     total: int
     skip: int
     limit: int
+    # SA2 — quanti per stato sull'insieme filtrato dalla sola ricerca `q`
+    # (i chip mostrano i numeri anche quando si e' dentro un filtro di stato)
+    conteggi: Dict[str, int] = {}
 
 
 # ── Users (admin view) ────────────────────────────────────────────────────────

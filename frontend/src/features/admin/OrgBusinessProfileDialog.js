@@ -18,6 +18,9 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
 } from '../../components/ui/dialog';
 import { Skeleton } from '../../components/ui/skeleton';
+// SA4 (24/9/2026) — la scheda ha un secondo foglio: «Profilo», dove il
+// system admin corregge nome, bio, telefono, discipline, sede, social
+import OrgProfiloAdminTab from './OrgProfiloAdminTab';
 
 const eur = (v) => `€${Number(v || 0).toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 const CHANNEL_LABELS = {
@@ -33,12 +36,15 @@ function Stat({ label, value, accent }) {
   );
 }
 
-export default function OrgBusinessProfileDialog({ orgId, open, onOpenChange }) {
+export default function OrgBusinessProfileDialog({ orgId, open, onOpenChange, onProfiloSalvato, foglioIniziale = 'scheda' }) {
   const [data, setData] = useState(null);
   const [trials, setTrials] = useState(null);
+  // SA4 — «scheda» (sola lettura, com'era) | «profilo» (il form dell'admin)
+  const [foglio, setFoglio] = useState(foglioIniziale);
 
   useEffect(() => {
     if (!open || !orgId) return;
+    setFoglio(foglioIniziale);
     setData(null);
     setTrials(null);
     api.get(`/admin/platform/organizations/${orgId}/business-profile`)
@@ -48,7 +54,7 @@ export default function OrgBusinessProfileDialog({ orgId, open, onOpenChange }) 
     api.get(`/admin/organizations/${orgId}/trial-history`)
       .then((res) => setTrials(res.data))
       .catch(() => setTrials(null));
-  }, [open, orgId]);
+  }, [open, orgId, foglioIniziale]);
 
   const t = data?.transactions || {};
   const e = data?.platform_earnings || {};
@@ -78,10 +84,31 @@ export default function OrgBusinessProfileDialog({ orgId, open, onOpenChange }) 
           </DialogDescription>
         </DialogHeader>
 
-        {!data && <Skeleton className="h-64 w-full rounded-xl" />}
-        {data?.error && <p className="text-sm text-red-700">Impossibile caricare la scheda.</p>}
+        {/* SA4 — i due fogli della scheda */}
+        <div className="flex gap-1 border-b" role="tablist" data-testid="business-fogli">
+          {[['scheda', 'Scheda'], ['profilo', 'Profilo']].map(([k, label]) => (
+            <button key={k} type="button" role="tab" aria-selected={foglio === k}
+              data-testid={`business-foglio-${k}`}
+              onClick={() => setFoglio(k)}
+              className={`px-3 py-1.5 text-sm border-b-2 -mb-px ${foglio === k
+                ? 'border-[#376254] text-foreground font-semibold'
+                : 'border-transparent text-muted-foreground hover:text-foreground'}`}>
+              {label}
+            </button>
+          ))}
+        </div>
 
-        {data && !data.error && (
+        {foglio === 'profilo' && open && orgId && (
+          <OrgProfiloAdminTab orgId={orgId} onSaved={(p) => {
+            if (p?.name) setData((d) => (d ? { ...d, name: p.name } : d));
+            onProfiloSalvato?.(p);
+          }} />
+        )}
+
+        {foglio === 'scheda' && !data && <Skeleton className="h-64 w-full rounded-xl" />}
+        {foglio === 'scheda' && data?.error && <p className="text-sm text-red-700">Impossibile caricare la scheda.</p>}
+
+        {foglio === 'scheda' && data && !data.error && (
           <div className="space-y-5">
             {/* segnale break-even (GT2 lato piattaforma) */}
             {e.pro_breakeven_reached && (

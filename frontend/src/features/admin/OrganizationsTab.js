@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { adminAPI } from '../../api';
 import {
   Card, CardContent, CardHeader, CardTitle, CardDescription,
@@ -18,14 +19,39 @@ import {
 } from '../../components/ui/select';
 import {
   Building2, ChevronRight, RefreshCw, CreditCard, Loader2,
-  AlertTriangle, Trash2,
+  AlertTriangle, Trash2, Search, Lock, MailCheck, MailX,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { formatDate } from '../../lib/utils';
 import { PIANI, nomePiano, classePiano, nomeStato } from './pianiAurya';
 import AdminOrgBillingActions from './AdminOrgBillingActions';
+// SA3 (24/9/2026) — la scheda 360° si apre dal nome in lista (prima solo
+// da Segnalazioni e Directory); dentro, il foglio «Profilo» per correggere
+import OrgBusinessProfileDialog from './OrgBusinessProfileDialog';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
+
+// SA1/SA3 — i quattro stati del profilo (services/stato_profilo), una
+// verita' sola con l'accompagnamento dell'operatore
+const STATI_PROFILO = ['account', 'bozza', 'pagina', 'online'];
+const STATO_CLS = {
+  account: 'bg-gray-100 text-gray-600',
+  bozza:   'bg-amber-100 text-amber-800',
+  pagina:  'bg-blue-100 text-blue-800',
+  online:  'bg-green-100 text-green-800',
+};
+// P2 — la soglia della bio «buona» (stessa dell'editor e del server)
+const BIO_BUONA = 300;
+
+// la coda «da rivedere»: perche' un operatore ci finisce (piu' motivi insieme)
+function motiviDaRivedere(org) {
+  const m = [];
+  if (org.stato_profilo && org.stato_profilo !== 'account' && (org.bio_len ?? 0) < BIO_BUONA) m.push('bio breve');
+  if (!org.nome_persona) m.push('solo marchio');
+  if (!org.telefono) m.push('senza telefono');
+  if (org.stato_profilo === 'pagina') m.push('pagina senza listino');
+  return m;
+}
 
 
 const STATUS_COLORS = {
@@ -61,9 +87,28 @@ const ACTION_LABELS = {
 // ── Component ─────────────────────────────────────────────────────────────────
 
 const OrganizationsTab = () => {
+  const { t } = useTranslation('settings');
   const [orgs, setOrgs]       = useState([]);
   const [loading, setLoading] = useState(true);
   const [total, setTotal]     = useState(0);
+
+  // SA2/SA3 — la regia: ricerca libera (server), stato del profilo,
+  // «senza telefono», conteggi per stato, coda «da rivedere» (client)
+  const [q, setQ] = useState('');
+  const [qServer, setQServer] = useState('');
+  const [statoFiltro, setStatoFiltro] = useState('');        // '' = tutti
+  const [senzaTelefono, setSenzaTelefono] = useState(false);
+  const [daRivedere, setDaRivedere] = useState(false);
+  const [conteggi, setConteggi] = useState({});
+  useEffect(() => {
+    const timer = setTimeout(() => setQServer(q.trim()), 300);
+    return () => clearTimeout(timer);
+  }, [q]);
+
+  // SA3 — la scheda 360° dal nome in lista (+ foglio «Profilo» per correggere)
+  const [schedaOrgId, setSchedaOrgId] = useState(null);
+  const [schedaFoglio, setSchedaFoglio] = useState('scheda');
+  const apriScheda = (orgId, foglio = 'scheda') => { setSchedaFoglio(foglio); setSchedaOrgId(orgId); };
 
   // Detail dialog
   const [detailOpen, setDetailOpen]       = useState(false);
@@ -119,15 +164,20 @@ const OrganizationsTab = () => {
   const fetchOrgs = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await adminAPI.listOrganizations(0, 100);
+      const extra = {};
+      if (qServer) extra.q = qServer;
+      if (statoFiltro) extra.stato = statoFiltro;
+      if (senzaTelefono) extra.telefono = 'no';
+      const res = await adminAPI.listOrganizations(0, 200, extra);
       setOrgs(res.data.items);
       setTotal(res.data.total);
+      setConteggi(res.data.conteggi || {});
     } catch (err) {
       toast.error(err.response?.data?.detail || 'Failed to load organizations');
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [qServer, statoFiltro, senzaTelefono]);
 
   useEffect(() => { fetchOrgs(); }, [fetchOrgs]);
 
@@ -184,6 +234,8 @@ const OrganizationsTab = () => {
     (o) => commercialOverview[o.id]?.drift_flags?.billing_restricted,
   ).length;
   const anyIssue = driftCount > 0 || warningsCount > 0 || restrictedCount > 0;
+  // SA3 — quanti finiscono nella coda «da rivedere» (sulle righe caricate)
+  const nDaRivedere = useMemo(() => orgs.filter((o) => motiviDaRivedere(o).length > 0).length, [orgs]);
 
   // ── Detail dialog ───────────────────────────────────────────────────────────
 
@@ -399,6 +451,63 @@ const OrganizationsTab = () => {
               {auditRunning ? 'Controllo…' : 'Controlla i piani'}
             </Button>
           </div>
+          {/* SA3 (24/9/2026) — la regia sopra la tabella: cerca (nome, email,
+              telefono, slug: lato server), quattro chip di stato coi
+              conteggi (sull'insieme della sola ricerca), «senza telefono»,
+              e la coda «da rivedere» (bio breve, solo marchio, senza
+              telefono, pagina senza listino: la lista di lavoro). */}
+          <div className="mt-3 space-y-2" data-testid="org-regia">
+            <div className="relative max-w-md">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" aria-hidden />
+              <Input value={q} onChange={(e) => setQ(e.target.value)}
+                data-testid="org-cerca" className="pl-8 h-9"
+                placeholder={t('adminRegia.cerca', { defaultValue: 'Cerca nome, email, telefono' })}
+                aria-label={t('adminRegia.cerca', { defaultValue: 'Cerca nome, email, telefono' })} />
+            </div>
+            <div className="flex flex-wrap items-center gap-1.5">
+              <button type="button" data-testid="org-stato-tutti"
+                onClick={() => setStatoFiltro('')}
+                className={`rounded-full border px-2.5 py-1 text-xs ${!statoFiltro
+                  ? 'border-[#376254] bg-[#376254] text-white' : 'border-input hover:bg-muted/40'}`}>
+                {t('adminRegia.tutti', { defaultValue: 'Tutti' })}
+                <span className="ml-1 opacity-70">{STATI_PROFILO.reduce((n, s) => n + (conteggi[s] || 0), 0)}</span>
+              </button>
+              {STATI_PROFILO.map((s) => (
+                <button key={s} type="button" data-testid={`org-stato-${s}`}
+                  onClick={() => setStatoFiltro(statoFiltro === s ? '' : s)}
+                  title={t(`adminRegia.statoSpiega_${s}`, { defaultValue: {
+                    account: 'Solo account: nessuna descrizione scritta',
+                    bozza: 'Descrizione scritta, pagina non ancora raggiungibile',
+                    pagina: 'Pagina online, nessun servizio nel listino',
+                    online: 'Pagina online con almeno un servizio',
+                  }[s] })}
+                  className={`rounded-full border px-2.5 py-1 text-xs ${statoFiltro === s
+                    ? 'border-[#376254] bg-[#376254] text-white' : 'border-input hover:bg-muted/40'}`}>
+                  {t(`adminRegia.stato_${s}`, { defaultValue: { account: 'Solo account', bozza: 'Bozza', pagina: 'Pagina', online: 'Online' }[s] })}
+                  <span className="ml-1 opacity-70">{conteggi[s] ?? 0}</span>
+                </button>
+              ))}
+              <span className="mx-1 h-4 border-l border-border" aria-hidden />
+              <label className="inline-flex items-center gap-1.5 text-xs cursor-pointer">
+                <input type="checkbox" checked={senzaTelefono} data-testid="org-senza-telefono"
+                  onChange={(e) => setSenzaTelefono(e.target.checked)} />
+                {t('adminRegia.senzaTelefono', { defaultValue: 'senza telefono' })}
+              </label>
+              <label className="inline-flex items-center gap-1.5 text-xs cursor-pointer">
+                <input type="checkbox" checked={daRivedere} data-testid="org-da-rivedere"
+                  onChange={(e) => setDaRivedere(e.target.checked)} />
+                {t('adminRegia.daRivedere', { defaultValue: 'da rivedere' })}
+                <span className="opacity-70">{nDaRivedere}</span>
+              </label>
+              {(q || statoFiltro || senzaTelefono || daRivedere) && (
+                <Button variant="ghost" size="sm" className="h-7 text-xs"
+                  onClick={() => { setQ(''); setStatoFiltro(''); setSenzaTelefono(false); setDaRivedere(false); }}>
+                  {t('adminRegia.azzera', { defaultValue: 'Azzera' })}
+                </Button>
+              )}
+            </div>
+          </div>
+
           {/* Onda 10 Step E.2 — drift overview banner. Always rendered; visual
               severity reflects current per-org overview. Click a metric to
               jump-filter the table; "Run scan" hits the same audit as the
@@ -617,6 +726,8 @@ const OrganizationsTab = () => {
                 const status = o.billing_status || 'none';
                 if (status !== billingStatusFilter) return false;
               }
+              // 4. SA3 — la coda «da rivedere»
+              if (daRivedere && motiviDaRivedere(o).length === 0) return false;
               return true;
             });
             return filteredOrgs.length === 0 ? (
@@ -625,9 +736,10 @@ const OrganizationsTab = () => {
               </p>
             ) : (
             <div className="overflow-x-auto">
-              {(commercialFilter !== 'all' || planFilter !== 'all' || billingStatusFilter !== 'all') && (
+              {(commercialFilter !== 'all' || planFilter !== 'all' || billingStatusFilter !== 'all' || daRivedere) && (
                 <div className="text-xs text-muted-foreground mb-2">
                   Showing {filteredOrgs.length} of {orgs.length} orgs
+                  {daRivedere && ` · ${t('adminRegia.daRivedere', { defaultValue: 'da rivedere' })}`}
                   {commercialFilter !== 'all' && ` · state: ${commercialFilter}`}
                   {planFilter !== 'all' && ` · plan: ${planFilter}`}
                   {billingStatusFilter !== 'all' && ` · status: ${billingStatusFilter}`}
@@ -636,9 +748,9 @@ const OrganizationsTab = () => {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Nome</TableHead>
+                    <TableHead>{t('adminRegia.colChi', { defaultValue: 'Chi' })}</TableHead>
+                    <TableHead>{t('adminRegia.colProfilo', { defaultValue: 'Profilo' })}</TableHead>
                     <TableHead>Piano</TableHead>
-                    <TableHead>Profilo</TableHead>
                     <TableHead>Stato</TableHead>
                     <TableHead>Creata</TableHead>
                     <TableHead className="text-right">Azioni</TableHead>
@@ -647,12 +759,38 @@ const OrganizationsTab = () => {
                 <TableBody>
                   {filteredOrgs.map((org) => {
                     const ov = commercialOverview[org.id];
+                    const motivi = motiviDaRivedere(org);
                     return (
                     <TableRow key={org.id}>
-                      <TableCell>
-                        <div className="font-medium">{org.name}</div>
+                      {/* SA3 — «Chi»: nome pubblico (apre la scheda 360°),
+                          sotto email (verificata o no) e telefono col
+                          lucchetto se privato */}
+                      <TableCell data-testid="org-chi">
+                        <button type="button" onClick={() => apriScheda(org.id)}
+                          className="font-medium text-left hover:underline underline-offset-2"
+                          title={t('adminRegia.apriScheda', { defaultValue: 'Apri la scheda dell’operatore' })}>
+                          {org.nome_pubblico || org.name}
+                        </button>
+                        {org.nome_persona && org.nome_pubblico !== org.name && (
+                          <div className="text-[11px] text-muted-foreground">{org.name}</div>
+                        )}
                         {org.admin_email && (
-                          <div className="text-xs text-muted-foreground">{org.admin_email}</div>
+                          <div className="text-xs text-muted-foreground flex items-center gap-1">
+                            {org.email_verificata === true && <MailCheck className="h-3 w-3 text-green-700" aria-label="email verificata" />}
+                            {org.email_verificata === false && <MailX className="h-3 w-3 text-amber-700" aria-label="email non verificata" />}
+                            {org.admin_email}
+                          </div>
+                        )}
+                        {org.telefono ? (
+                          <div className="text-xs text-muted-foreground flex items-center gap-1">
+                            {!org.telefono_pubblico && <Lock className="h-3 w-3" aria-hidden />}
+                            <a href={`tel:${org.telefono}`} className="hover:underline">{org.telefono}</a>
+                            {!org.telefono_pubblico && (
+                              <span className="text-[10px]">{t('adminRegia.privato', { defaultValue: 'privato' })}</span>
+                            )}
+                          </div>
+                        ) : (
+                          <div className="text-[11px] text-amber-700">{t('adminRegia.nessunTelefono', { defaultValue: 'nessun telefono' })}</div>
                         )}
                         {ov?.recommended_action && (
                           <div className="text-xs text-muted-foreground mt-0.5">
@@ -660,22 +798,53 @@ const OrganizationsTab = () => {
                           </div>
                         )}
                       </TableCell>
-                      <TableCell><PlanBadge plan={org.commercial_plan_slug || org.plan} /></TableCell>
+                      {/* SA3 — «Profilo»: chip di stato + link alla pagina
+                          + «N servizi» + i motivi della coda da rivedere */}
                       <TableCell>
-                        {org.profile_published && org.profile_slug ? (
-                          <a href={`/o/${org.profile_slug}`} target="_blank"
-                            rel="noreferrer"
-                            className="text-xs text-primary underline underline-offset-2"
-                            title="Apri il profilo pubblico">
-                            /o/{org.profile_slug} ↗
-                          </a>
-                        ) : (
-                          <span className="text-xs text-muted-foreground"
-                            title="La vetrina non e' pubblicata: non appare in esplora-operatori">
-                            non pubblicato
-                          </span>
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          {org.stato_profilo && (
+                            <Badge className={STATO_CLS[org.stato_profilo] || STATO_CLS.account}
+                              data-testid={`org-chip-${org.stato_profilo}`}>
+                              {t(`adminRegia.stato_${org.stato_profilo}`, { defaultValue: { account: 'Solo account', bozza: 'Bozza', pagina: 'Pagina', online: 'Online' }[org.stato_profilo] })}
+                            </Badge>
+                          )}
+                          {org.profile_published && org.profile_slug ? (
+                            <a href={`/o/${org.profile_slug}`} target="_blank"
+                              rel="noreferrer"
+                              className="text-xs text-primary underline underline-offset-2"
+                              title="Apri il profilo pubblico">
+                              /o/{org.profile_slug} ↗
+                            </a>
+                          ) : org.stato_profilo === 'bozza' ? (
+                            <span className="text-xs text-muted-foreground"
+                              title="Descrizione scritta ma pagina non raggiungibile">
+                              {t('adminRegia.senzaPagina', { defaultValue: 'senza pagina' })}
+                            </span>
+                          ) : (
+                            <span className="text-xs text-muted-foreground"
+                              title="La vetrina non e' pubblicata: non appare in esplora-operatori">
+                              non pubblicato
+                            </span>
+                          )}
+                        </div>
+                        <div className="text-[11px] text-muted-foreground mt-0.5 flex items-center gap-1.5 flex-wrap">
+                          {org.stato_profilo && org.stato_profilo !== 'account' && (
+                            <span>{t('adminRegia.nServizi', { defaultValue: '{{n}} servizi', n: org.n_servizi ?? 0 })}</span>
+                          )}
+                          {org.stato_profilo && org.stato_profilo !== 'account' && (
+                            <span>· bio {org.bio_len ?? 0}</span>
+                          )}
+                          <button type="button" onClick={() => apriScheda(org.id, 'profilo')}
+                            className="text-[#376254] hover:underline underline-offset-2"
+                            data-testid="org-modifica-profilo">
+                            {t('adminRegia.modificaProfilo', { defaultValue: 'modifica' })}
+                          </button>
+                        </div>
+                        {motivi.length > 0 && (
+                          <div className="text-[10px] text-amber-700 mt-0.5">{motivi.join(' · ')}</div>
                         )}
                       </TableCell>
+                      <TableCell><PlanBadge plan={org.commercial_plan_slug || org.plan} /></TableCell>
                       <TableCell><StatusBadge isActive={org.is_active} /></TableCell>
                       <TableCell className="text-sm text-muted-foreground">
                         {formatDate(org.created_at)}
@@ -1113,6 +1282,15 @@ const OrganizationsTab = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* ── SA3 — la scheda 360° dal nome in lista (+ foglio Profilo) ───── */}
+      <OrgBusinessProfileDialog
+        orgId={schedaOrgId}
+        open={!!schedaOrgId}
+        onOpenChange={(open) => { if (!open) setSchedaOrgId(null); }}
+        foglioIniziale={schedaFoglio}
+        onProfiloSalvato={() => fetchOrgs()}
+      />
 
       {/* ── Hard Delete Org Dialog ───────────────────────────────────── */}
       <Dialog open={!!deleteOrg} onOpenChange={(open) => { if (!open) { setDeleteOrg(null); setDeleteConfirmName(''); } }}>

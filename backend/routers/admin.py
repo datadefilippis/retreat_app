@@ -109,12 +109,27 @@ def _dt(val: object) -> datetime:
 
 def _org_summary(doc: dict, *, profile_published: bool = False,
                  admin_email: str | None = None,
-                 profile_slug: str | None = None) -> OrgSummary:
+                 profile_slug: str | None = None,
+                 regia: dict | None = None) -> OrgSummary:
     # I timestamp non sono garantiti su TUTTI i doc (le org campione del
     # prelaunch nascono senza updated_at): un KeyError qui butta giu'
     # l'INTERA lista organizzazioni in admin, non solo la riga rotta.
     created = doc.get("created_at") or utc_now()
+    # SA2 (24/9) — la riga «Chi» + lo stato del profilo: solo campi
+    # aggiunti, tutti opzionali; `regia` = {stato, n_servizi, bio_len,
+    # email_verificata} calcolati in batch dalla lista.
+    pp = doc.get("public_profile") or {}
+    regia = regia or {}
+    from services.nome_pubblico import nome_pubblico as _np
     return OrgSummary(
+        nome_persona=pp.get("nome_persona") or None,
+        nome_pubblico=_np(doc) or doc.get("name"),
+        telefono=pp.get("public_phone") or None,
+        telefono_pubblico=bool(pp.get("show_contacts")),
+        stato_profilo=regia.get("stato"),
+        n_servizi=regia.get("n_servizi"),
+        bio_len=regia.get("bio_len", len((pp.get("bio") or "").strip())),
+        email_verificata=regia.get("email_verificata"),
         id=doc["id"],
         name=doc["name"],
         industry=doc.get("industry"),
@@ -206,21 +221,37 @@ def _audit_entry(doc: dict) -> AuditLogAdminEntry:
 async def list_organizations(
     skip:  int = Query(0,  ge=0,  description="Number of records to skip"),
     limit: int = Query(50, ge=1, le=200, description="Maximum records to return"),
+    q: Optional[str] = Query(
+        None, max_length=120,
+        description="Cerca: nome org, nome persona, email titolare, telefono, slug"),
+    stato: Optional[str] = Query(
+        None, pattern="^(account|bozza|pagina|online)$",
+        description="Stato del profilo (services/stato_profilo)"),
+    telefono: Optional[str] = Query(
+        None, pattern="^(si|no)$", description="Con o senza telefono"),
     _: dict = Depends(require_system_admin),
 ) -> OrgListResponse:
     """
     Return all organizations on the platform, newest first.
     Supports pagination via skip / limit.
+
+    SA2 (24/9/2026) — filtri della regia: `q` (match case-insensitive su
+    nome org, public_profile.nome_persona, email del titolare, telefono,
+    slug), `stato` (uno dei quattro di services/stato_profilo), `telefono`
+    (si|no). `total` conta l'insieme filtrato; `conteggi` per stato si
+    calcolano sull'insieme filtrato dalla SOLA `q`, cosi' i chip mostrano
+    i numeri anche dentro un filtro di stato. La lista e' piccola (decine
+    di org): si legge tutta con proiezione esplicita e si pagina qui.
     """
-    total, docs = (
-        await admin_repository.count_organizations(),
-        await admin_repository.list_organizations(skip=skip, limit=limit),
-    )
+    import asyncio as _aio
+    from database import (stores_collection, users_collection,
+                          organizations_collection)
+    from services.stato_profilo import conteggi as _conteggi, stato_profilo
+    docs = await admin_repository.list_organizations_regia(
+        await _filtro_regia_q(q))
     # RO (30/8) — lo specchietto: due query batch sulla PAGINA (non
     # per-riga) per dire di ogni org (a) se la vetrina e' pubblicata
     # (il criterio di /esplora-operatori) e (b) l'email del titolare.
-    from database import (stores_collection, users_collection,
-                          organizations_collection)
     org_ids = [d["id"] for d in docs]
     slug_pubblico: dict = {}
     async for st in stores_collection.find(
@@ -241,26 +272,195 @@ async def list_organizations(
         slug_pubblico.setdefault(og["id"], og["public_slug"])
     pubblicate = set(slug_pubblico)
     email_titolare: dict = {}
+    # SA2 — email_verificata segue lo stesso titolare (primo admin)
+    email_verificata: dict = {}
     async for u in users_collection.find(
             {"organization_id": {"$in": org_ids}},
-            {"_id": 0, "organization_id": 1, "email": 1, "role": 1}):
+            {"_id": 0, "organization_id": 1, "email": 1, "role": 1,
+             "email_verified": 1}):
         oid = u.get("organization_id")
         # il primo admin vince; un membro qualsiasi fa da riserva
         if u.get("role") == "admin" or oid not in email_titolare:
             email_titolare.setdefault(oid, u.get("email"))
+            email_verificata.setdefault(oid, bool(u.get("email_verified")))
             if u.get("role") == "admin":
                 email_titolare[oid] = u.get("email")
+                email_verificata[oid] = bool(u.get("email_verified"))
+    # SA1 — lo stato del profilo con la STESSA verita' delle sequenze
+    # (services/stato_profilo → stato_operatore), in parallelo
+    stati = await _aio.gather(*(stato_profilo(d) for d in docs))
+    conteggi = _conteggi(stati)
+    righe = []
+    for d, st in zip(docs, stati):
+        if stato and st["stato"] != stato:
+            continue
+        ha_tel = bool(((d.get("public_profile") or {}).get("public_phone") or "").strip())
+        if telefono == "si" and not ha_tel:
+            continue
+        if telefono == "no" and ha_tel:
+            continue
+        righe.append((d, st))
+    total = len(righe)
     return OrgListResponse(
         items=[_org_summary(
             d,
             profile_published=(d["id"] in pubblicate),
             admin_email=email_titolare.get(d["id"]),
             profile_slug=slug_pubblico.get(d["id"]),
-        ) for d in docs],
+            regia={**st, "email_verificata": email_verificata.get(d["id"])},
+        ) for d, st in righe[skip:skip + limit]],
         total=total,
         skip=skip,
         limit=limit,
+        conteggi=conteggi,
     )
+
+
+async def _filtro_regia_q(q: Optional[str]) -> Optional[dict]:
+    """SA2 — il filtro Mongo della ricerca libera: nome org, nome persona,
+    slug (public_slug o store), telefono, email del titolare. Email e slug
+    store vivono in altre collezioni: si risolvono prima in id di org."""
+    q = (q or "").strip()
+    if not q:
+        return None
+    from database import stores_collection, users_collection
+    rx = {"$regex": re.escape(q), "$options": "i"}
+    ids: set = set()
+    async for u in users_collection.find(
+            {"email": rx, "organization_id": {"$nin": [None, ""]}},
+            {"_id": 0, "organization_id": 1}).limit(500):
+        ids.add(u["organization_id"])
+    async for st in stores_collection.find(
+            {"slug": rx, "organization_id": {"$nin": [None, ""]}},
+            {"_id": 0, "organization_id": 1}).limit(500):
+        ids.add(st["organization_id"])
+    or_ = [{"name": rx}, {"public_profile.nome_persona": rx},
+           {"public_slug": rx}, {"public_profile.public_phone": rx}]
+    # telefono: «366 371» trova «+393663713543» e «366 371 3543»
+    cifre = re.sub(r"\D", "", q)
+    if len(cifre) >= 3:
+        or_.append({"public_profile.public_phone": {
+            "$regex": r"\D*".join(cifre), "$options": "i"}})
+    if ids:
+        or_.append({"id": {"$in": sorted(ids)}})
+    return {"$or": or_}
+
+
+# ── SA4 (24/9/2026) — l'admin modifica il profilo pubblico ───────────────────
+#
+# Stesso pulitore e stessi effetti della rotta dell'operatore
+# (services/profilo_pubblico: pulisci + dopo_salvataggio), piu' `motivo`
+# obbligatorio e una riga in audit_logs con prima/dopo dei campi toccati.
+# Nessuna email all'operatore: il founder gli scrive lui (decisione 24/9).
+
+_MOTIVO_MIN, _MOTIVO_MAX = 3, 300
+_VALORE_BREVE = 120
+
+
+def _valore_breve(v):
+    """Prima/dopo nell'audit: testi clip a 120 caratteri, liste e dict
+    serializzati e clip, scalari com'erano."""
+    import json as _json
+    if v is None or isinstance(v, (bool, int, float)):
+        return v
+    if isinstance(v, str):
+        return v[:_VALORE_BREVE]
+    try:
+        return _json.dumps(v, ensure_ascii=False, default=str)[:_VALORE_BREVE]
+    except Exception:  # noqa: BLE001
+        return str(v)[:_VALORE_BREVE]
+
+
+def _valore_attuale(org: dict, chiave: str):
+    """Il valore di oggi per una chiave `$set` («name» o
+    «public_profile.x»)."""
+    if chiave.startswith("public_profile."):
+        return (org.get("public_profile") or {}).get(chiave.split(".", 1)[1])
+    return org.get(chiave)
+
+
+async def _profilo_pubblico_payload(org_id: str) -> dict:
+    """Lo STESSO payload di GET /organizations/current/public-profile,
+    letto per conto dell'org indicata (la rotta legge solo
+    organization_id dal current_user)."""
+    from routers.organizations import get_public_profile
+    return await get_public_profile({"organization_id": org_id})
+
+
+@router.get(
+    "/organizations/{org_id}/public-profile",
+    summary="Profilo pubblico di un'org, come lo vede il suo editor (system admin)",
+)
+async def admin_get_public_profile(
+    org_id: str,
+    _: dict = Depends(require_system_admin),
+) -> dict:
+    from database import organizations_collection
+    if not await organizations_collection.find_one({"id": org_id}, {"_id": 1}):
+        raise HTTPException(status_code=404, detail="Organization not found")
+    return await _profilo_pubblico_payload(org_id)
+
+
+@router.patch(
+    "/organizations/{org_id}/public-profile",
+    summary="Modifica il profilo pubblico di un'org con motivo (system admin)",
+)
+async def admin_update_public_profile(
+    org_id: str,
+    body: dict = Body(...),
+    current_user: dict = Depends(require_system_admin),
+) -> dict:
+    """SA4 — corpo = lo stesso dell'operatore (+ `name` facoltativo) +
+    `motivo` (3–300, obbligatorio). Usa services/profilo_pubblico.
+    Audit PUBLIC_PROFILE_ADMIN_EDIT con campi, prima/dopo (valori
+    brevi) e motivo. Risposta: il payload della GET del profilo."""
+    from database import organizations_collection, audit_logs_collection
+    from models.common import generate_id
+    from services.profilo_pubblico import dopo_salvataggio, pulisci
+
+    body = body if isinstance(body, dict) else {}
+    motivo = " ".join(str(body.get("motivo") or "").split())
+    if not (_MOTIVO_MIN <= len(motivo) <= _MOTIVO_MAX):
+        raise HTTPException(
+            status_code=422,
+            detail=f"motivo obbligatorio ({_MOTIVO_MIN}-{_MOTIVO_MAX} caratteri)")
+    org = await organizations_collection.find_one(
+        {"id": org_id}, {"_id": 0, "id": 1, "name": 1, "public_profile": 1})
+    if not org:
+        raise HTTPException(status_code=404, detail="Organization not found")
+
+    campi_body = {k: v for k, v in body.items() if k != "motivo"}
+    updates = pulisci(campi_body, org)
+    if not updates:
+        raise HTTPException(status_code=400, detail="Nessun campo valido")
+
+    prima = {k: _valore_breve(_valore_attuale(org, k)) for k in updates}
+    dopo = {k: _valore_breve(v) for k, v in updates.items()}
+    await organizations_collection.update_one({"id": org_id}, {"$set": updates})
+    await dopo_salvataggio(org_id, updates)
+
+    now_dt = utc_now()
+    try:
+        await audit_logs_collection.insert_one({
+            "id": generate_id(),
+            "actor_user_id": current_user.get("user_id"),
+            "actor_role": "system_admin",
+            "organization_id": org_id,
+            "action": "PUBLIC_PROFILE_ADMIN_EDIT",
+            "target_type": "organization",
+            "target_id": org_id,
+            "metadata": {
+                "campi": sorted(updates.keys()),
+                "prima": prima,
+                "dopo": dopo,
+                "motivo": motivo,
+            },
+            "created_at": now_dt.isoformat(),
+            "expire_at": now_dt,
+        })
+    except Exception:  # noqa: BLE001 — l'audit non rompe il salvataggio
+        pass
+    return await _profilo_pubblico_payload(org_id)
 
 
 @router.get(

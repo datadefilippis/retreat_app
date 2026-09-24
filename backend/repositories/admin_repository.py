@@ -47,6 +47,45 @@ async def count_organizations() -> int:
         {"is_sample": {"$ne": True}})
 
 
+# SA2 (24/9/2026) — la proiezione ESPLICITA della regia operatori: tutti i
+# campi che routers/admin._org_summary legge, piu' cio' che serve allo
+# stato del profilo (services/stato_profilo → sequenze.stato_operatore:
+# public_slug, bio, bank_iban) e alla riga «Chi» (nome persona, telefono,
+# show_contacts). Niente foto, intervista integrale, link page, traduzioni.
+PROIEZIONE_REGIA = {
+    "_id": 0, "id": 1, "name": 1, "industry": 1, "plan": 1, "timezone": 1,
+    "currency": 1, "is_active": 1, "commercial_plan_slug": 1,
+    "billing_status": 1, "cancel_at_period_end": 1, "network_member": 1,
+    "legacy_commerce": 1, "exclude_from_listings": 1, "directory_featured": 1,
+    "fondatore_forzato": 1, "created_at": 1, "updated_at": 1,
+    "public_slug": 1, "bank_iban": 1,
+    "store_settings.is_storefront_published": 1,
+    "public_profile.interview_published": 1,
+    "public_profile.interview_verified_at": 1,
+    "public_profile.interview_video_url": 1,
+    # basta sapere se l'intervista c'e' (stato draft): un elemento
+    "public_profile.interview": {"$slice": 1},
+    "public_profile.nome_persona": 1, "public_profile.public_phone": 1,
+    "public_profile.show_contacts": 1, "public_profile.bio": 1,
+}
+
+
+async def list_organizations_regia(filtro: Optional[dict] = None) -> List[dict]:
+    """SA2 — TUTTE le org (non campione) che passano `filtro`, newest
+    first, con la proiezione esplicita. Niente skip/limit: la lista
+    della regia filtra per stato e conta in memoria (decine di org),
+    poi pagina. Cross-tenant per costruzione (solo /admin/*)."""
+    q = {"is_sample": {"$ne": True}}
+    if filtro:
+        q = {"$and": [q, filtro]}
+    cursor = (
+        organizations_collection
+        .find(q, PROIEZIONE_REGIA)
+        .sort("created_at", -1)
+    )
+    return await cursor.to_list(None)
+
+
 async def get_organization_detail(org_id: str) -> Optional[dict]:
     """Single organization by ID.  Returns None if not found."""
     return await organizations_collection.find_one({"id": org_id}, {"_id": 0})

@@ -11,8 +11,16 @@ import api from './client';
 export const adminAPI = {
   // ── Organizations (read) ──────────────────────────────────────────────────
 
-  listOrganizations: (skip = 0, limit = 100) =>
-    api.get('/admin/organizations', { params: { skip, limit } }),
+  // SA2 (24/9/2026) — `extra` = { q, stato, telefono } della regia
+  listOrganizations: (skip = 0, limit = 100, extra = {}) =>
+    api.get('/admin/organizations', { params: { skip, limit, ...extra } }),
+
+  // SA4 (24/9/2026) — il profilo pubblico di un'org, come lo vede il suo
+  // editor, e la modifica dal pannello con `motivo` obbligatorio
+  getOrgPublicProfile: (orgId) =>
+    api.get(`/admin/organizations/${orgId}/public-profile`).then((r) => r.data),
+  setOrgPublicProfile: (orgId, body) =>
+    api.patch(`/admin/organizations/${orgId}/public-profile`, body).then((r) => r.data),
 
   getOrganization: (orgId) =>
     api.get(`/admin/organizations/${orgId}`),
