@@ -126,7 +126,7 @@ class TestIntegrazioneNonReset:
 
 
 class TestDoveVive:
-    ORG = (BACKEND / "routers" / "organizations.py").read_text()
+    ORG = (BACKEND / "routers" / "organizations.py").read_text() + (BACKEND / "services" / "profilo_pubblico.py").read_text()   # A3 (24/9): pulitore estratto
     PUB = (BACKEND / "routers" / "public.py").read_text()
 
     def test_il_salvataggio_accetta_sedi_e_scrive_gli_specchi(self):
@@ -177,7 +177,7 @@ class TestVisibilitaRitiriSd6:
         assert "n_listabili = n_other + (n_direct if oid in pay_ready else 0)" in ins
         assert 'if oid not in pay_ready:\n            reasons.append("stripe_not_ready")' not in ins, \
             "l'admin non puo' piu' dire «Stripe non attivo» a chi e' in lista"
-        org = (BACKEND / "routers" / "organizations.py").read_text()
+        org = (BACKEND / "routers" / "organizations.py").read_text() + (BACKEND / "services" / "profilo_pubblico.py").read_text()   # A3 (24/9): pulitore estratto
         assert org.count('"retreats_direct_no_stripe"') == 2, "il segnale vale in entrambi i rami"
         assert "async def _ritiri_online_senza_stripe" in org
 

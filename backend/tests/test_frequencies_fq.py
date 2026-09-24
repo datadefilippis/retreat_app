@@ -1664,7 +1664,7 @@ class TestSbloccoSenzaEmail:
 
     def test_il_ramo_confermato_rispetta_unlock_flow(self):
         src = (BACKEND_DIR / "routers" / "subscribers.py").read_text()
-        blocco = src.split('existing.get("status") == "confirmed"')[1][:900]
+        blocco = src.split('existing.get("status") == "confirmed"')[1][:1800]   # B2 (24/9): prima c'e' il blocco consenso
         assert "if not payload.unlock_flow:" in blocco
         assert "_send_access_email" in blocco     # il form puro lo manda ancora
         assert "unlock_flow: Optional[bool] = False" in src

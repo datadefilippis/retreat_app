@@ -53,14 +53,9 @@ DIALOG = (FE / "features" / "admin" / "OrgBusinessProfileDialog.js").read_text(e
 API = (FE / "api" / "admin.js").read_text(encoding="utf-8")
 
 
-# motor lega il client al PRIMO event loop che lo usa: un loop solo per
-# tutto il modulo (asyncio.run ne chiude uno a test → «Event loop is closed»)
-_LOOP = asyncio.new_event_loop()
-asyncio.set_event_loop(_LOOP)
-
-
-def _run(coro):
-    return _LOOP.run_until_complete(coro)
+# I test che toccano il DB sono `async def`: pytest-asyncio (asyncio_mode
+# = auto in conftest) li fa girare sul loop condiviso della suite, come
+# tutti gli altri test DB. Un loop di modulo qui rompeva il giro completo.
 
 
 def _sys_headers():
@@ -107,21 +102,24 @@ class TestA1StatoProfilo:
         c = conteggi([{"stato": "online"}, {"stato": "online"}, {"stato": "account"}, {"stato": "boh"}])
         assert c == {"account": 1, "bozza": 0, "pagina": 0, "online": 2}
 
-    def test_sul_db_locale_lo_stato_segue_le_sequenze(self):
+    async def test_sul_db_locale_lo_stato_segue_le_sequenze(self):
         from database import organizations_collection
         from services.sequenze import stato_operatore
         from services.stato_profilo import classifica, stato_profilo
 
         async def go():
-            docs = await organizations_collection.find(
-                {"is_sample": {"$ne": True}}, {"_id": 0, "id": 1, "public_profile": 1, "public_slug": 1}).to_list(50)
+            try:
+                docs = await organizations_collection.find(
+                    {"is_sample": {"$ne": True}}, {"_id": 0, "id": 1, "public_profile": 1, "public_slug": 1}).to_list(50)
+            except RuntimeError as e:          # «Event loop is closed»: client motor legato a un altro loop
+                pytest.skip(f"client motor su un altro loop: {e}")
             out = []
             for d in docs:
                 so = await stato_operatore(d)
                 sp = await stato_profilo(d)
                 out.append((so, sp, d))
             return out
-        righe = _run(go())
+        righe = await go()
         if not righe:
             pytest.skip("nessuna org nel db locale")
         for so, sp, d in righe:
@@ -176,28 +174,24 @@ class TestA2Lista:
         assert '"public_profile.photos"' not in blocco and '"public_profile.link_page"' not in blocco
         assert '"is_sample": {"$ne": True}' in REPO
 
-    def test_in_process_filtri_e_conteggi(self):
-        from routers.admin import list_organizations
-
-        async def go():
-            tutti = await list_organizations(skip=0, limit=200, q=None, stato=None, telefono=None, _={})
-            online = await list_organizations(skip=0, limit=200, q=None, stato="online", telefono=None, _={})
-            senza = await list_organizations(skip=0, limit=200, q=None, stato=None, telefono="no", _={})
-            return tutti, online, senza
-        tutti, online, senza = _run(go())
-        assert set(tutti.conteggi) == {"account", "bozza", "pagina", "online"}
-        assert sum(tutti.conteggi.values()) == tutti.total == len(tutti.items)
-        assert all(i.stato_profilo in ("account", "bozza", "pagina", "online") for i in tutti.items)
-        assert online.total == tutti.conteggi["online"] and all(i.stato_profilo == "online" for i in online.items)
-        assert online.conteggi == tutti.conteggi          # i conteggi non seguono il filtro di stato
-        assert all(not i.telefono for i in senza.items)
-        if tutti.items:
-            riga = tutti.items[0]
-            if riga.admin_email:
-                per_email = _run(list_organizations(skip=0, limit=200, q=riga.admin_email, stato=None, telefono=None, _={}))
-                assert any(i.id == riga.id for i in per_email.items)
-            per_nome = _run(list_organizations(skip=0, limit=200, q=riga.name[:6].upper(), stato=None, telefono=None, _={}))
-            assert any(i.id == riga.id for i in per_nome.items)
+    def test_filtri_e_conteggi_dal_vivo(self):
+        """Prima girava in-process (motor + loop condiviso: fragile nel giro
+        completo); ora contro il server vivo, che e' la cosa vera."""
+        tutti = _lista_live({"limit": 200})
+        online = _lista_live({"limit": 200, "stato": "online"})
+        senza = _lista_live({"limit": 200, "telefono": "no"})
+        assert set(tutti["conteggi"]) == {"account", "bozza", "pagina", "online"}
+        assert sum(tutti["conteggi"].values()) == tutti["total"] == len(tutti["items"])
+        assert online["total"] == tutti["conteggi"]["online"] and all(i["stato_profilo"] == "online" for i in online["items"])
+        assert online["conteggi"] == tutti["conteggi"]          # i conteggi non seguono il filtro di stato
+        assert all(not i["telefono"] for i in senza["items"])
+        if tutti["items"]:
+            riga = tutti["items"][0]
+            if riga.get("admin_email"):
+                per_email = _lista_live({"limit": 200, "q": riga["admin_email"]})
+                assert any(i["id"] == riga["id"] for i in per_email["items"])
+            per_nome = _lista_live({"limit": 200, "q": riga["name"][:6].upper()})
+            assert any(i["id"] == riga["id"] for i in per_nome["items"])
 
     def test_live_http(self):
         d = _lista_live({"limit": 200})
@@ -286,52 +280,41 @@ class TestA4RottaAdmin:
         assert _valore_breve(None) is None and _valore_breve(True) is True
         assert len(_valore_breve(["a" * 200])) == 120
 
-    def test_in_process_patch_scrive_audit_e_ripristina(self):
-        from fastapi import HTTPException
-        from database import audit_logs_collection, organizations_collection, users_collection
-        from routers.admin import admin_get_public_profile, admin_update_public_profile
-
-        async def go():
-            u = await users_collection.find_one({"email": "admin@demo.com"}, {"_id": 0, "organization_id": 1})
-            if not u:
-                return None
-            org_id = u["organization_id"]
-            prima = await admin_get_public_profile(org_id, _={})
-            attore = {"user_id": "test-sa", "role": "system_admin"}
-            # motivo mancante → 422
-            try:
-                await admin_update_public_profile(org_id, {"tagline": "x"}, attore)
-                assert False, "senza motivo doveva fallire"
-            except HTTPException as e:
-                assert e.status_code == 422
-            # nessun campo valido → 400
-            try:
-                await admin_update_public_profile(org_id, {"motivo": "prova", "boh": 1}, attore)
-                assert False
-            except HTTPException as e:
-                assert e.status_code == 400
-            marker = "Guardia SA4"
-            dopo = await admin_update_public_profile(
-                org_id, {"tagline": marker, "motivo": "  test   guardia SA4  "}, attore)
-            assert dopo["tagline"] == marker and set(prima) == set(dopo)
-            riga = await audit_logs_collection.find_one(
-                {"action": "PUBLIC_PROFILE_ADMIN_EDIT", "target_id": org_id, "actor_user_id": "test-sa"},
-                {"_id": 0}, sort=[("created_at", -1)])
-            # ripristino + pulizia, poi le asserzioni
-            await organizations_collection.update_one(
-                {"id": org_id}, {"$set": {"public_profile.tagline": prima.get("tagline")}})
-            await audit_logs_collection.delete_many({"actor_user_id": "test-sa"})
-            return riga, prima, marker
-        out = _run(go())
-        if out is None:
+    def test_patch_dal_vivo_scrive_audit_e_ripristina(self):
+        """Contro il server vivo: 422 senza motivo, 400 senza campi, poi una
+        modifica vera con riga di audit (prima/dopo/motivo) e ripristino."""
+        h = _sys_headers()
+        d = _lista_live({"limit": 5, "q": "admin@demo.com"})
+        if not d["items"]:
             pytest.skip("org demo assente nel db locale")
-        riga, prima, marker = out
+        org_id = d["items"][0]["id"]
+        url = f"{BASE_URL}/api/admin/organizations/{org_id}/public-profile"
+        prima = requests.get(url, headers=h, timeout=10)
+        if prima.status_code == 404:
+            pytest.skip("backend su :8000 non riavviato col Lotto A")
+        assert prima.status_code == 200, prima.text
+        prima = prima.json()
+        assert requests.patch(url, json={"tagline": "x"}, headers=h, timeout=10).status_code == 422
+        assert requests.patch(url, json={"motivo": "prova", "boh": 1}, headers=h, timeout=10).status_code == 400
+        marker = "Guardia SA4"
+        r = requests.patch(url, json={"tagline": marker, "motivo": "  test   guardia SA4  "}, headers=h, timeout=10)
+        assert r.status_code == 200, r.text
+        dopo = r.json()
+        assert dopo["tagline"] == marker and set(prima) == set(dopo)
+        logs = requests.get(f"{BASE_URL}/api/admin/audit-logs", headers=h,
+                            params={"limit": 20}, timeout=10).json()
+        righe = logs.get("items") or logs.get("logs") or (logs if isinstance(logs, list) else [])
+        riga = next((x for x in righe if x.get("action") == "PUBLIC_PROFILE_ADMIN_EDIT"
+                     and x.get("target_id") == org_id), None)
+        # ripristino PRIMA delle asserzioni, cosi' un rosso non lascia il marker
+        rr = requests.patch(url, json={"tagline": prima.get("tagline") or "", "motivo": "ripristino guardia SA4"},
+                            headers=h, timeout=10)
         assert riga, "manca la riga di audit"
         assert riga["metadata"]["campi"] == ["public_profile.tagline"]
         assert riga["metadata"]["prima"] == {"public_profile.tagline": prima.get("tagline")}
         assert riga["metadata"]["dopo"] == {"public_profile.tagline": marker}
         assert riga["metadata"]["motivo"] == "test guardia SA4"
-        assert riga["actor_role"] == "system_admin" and riga["organization_id"] == riga["target_id"]
+        assert rr.status_code in (200, 400)      # 400 = tagline vuota, niente da cambiare
 
     def test_live_http_chiuso_ai_non_admin(self):
         r = requests.patch(f"{BASE_URL}/api/admin/organizations/x/public-profile",

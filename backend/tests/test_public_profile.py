@@ -19,11 +19,17 @@ class TestPublicProfileGuards:
     def test_patch_is_whitelisted(self):
         # Il PATCH deve iterare SOLO i campi della whitelist: nessun
         # campo arbitrario puo' entrare nel documento org.
+        # A3 (24/9): la pulizia vive in services/profilo_pubblico.py e la
+        # rotta la CHIAMA (stessa funzione per operatore e admin)
         src = self._src("routers/organizations.py")
         i = src.index("async def update_public_profile")
         block = src[i:i + 1500]
-        assert "_PUBLIC_PROFILE_FIELDS.items()" in block
-        assert "body.items()" not in block          # mai iterare il body
+        assert "pulisci(" in block and "body.items()" not in block
+        serv = self._src("services/profilo_pubblico.py")
+        j = serv.index("def pulisci(")
+        blocco = serv[j:j + 1500]
+        assert "_PUBLIC_PROFILE_FIELDS.items()" in blocco
+        assert "body.items()" not in blocco          # mai iterare il body
 
     def test_field_limits_defined(self):
         from routers.organizations import _PUBLIC_PROFILE_FIELDS

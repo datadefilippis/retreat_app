@@ -60,7 +60,7 @@ class TestFacebookESito:
 
 class TestDoveVive:
     def test_il_salvataggio_del_profilo_normalizza(self):
-        src = (BACKEND / "routers" / "organizations.py").read_text()
+        src = (BACKEND / "routers" / "organizations.py").read_text() + (BACKEND / "services" / "profilo_pubblico.py").read_text()   # A3 (24/9): pulitore estratto
         assert "from services.social_links import NORMALIZZATORI" in src
         i = src.index("for field, max_len in _PUBLIC_PROFILE_FIELDS.items():")
         assert "NORMALIZZATORI" in src[i:i + 1500], "la normalizzazione sta subito dopo la whitelist"

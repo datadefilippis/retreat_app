@@ -174,7 +174,7 @@ class TestOperatorGeoAn3:
     non sui ritiri futuri: coordinate configurabili, geocoding
     best-effort, /operatori con raggio e mappa."""
 
-    ORG_SRC = (BACKEND_DIR / "routers" / "organizations.py").read_text()
+    ORG_SRC = (BACKEND_DIR / "routers" / "organizations.py").read_text() + (BACKEND_DIR / "services" / "profilo_pubblico.py").read_text()   # A3 (24/9): pulitore estratto
     PUB_SRC = (BACKEND_DIR / "routers" / "public.py").read_text()
 
     def test_profile_accepts_validated_coordinates(self):
@@ -642,7 +642,7 @@ class TestOperatorProfileMultilang:
     solo dove il contenuto esiste, mobile con la carta sopra la bio."""
 
     def test_patch_whitelists_translations(self):
-        src = (BACKEND_DIR / "routers" / "organizations.py").read_text()
+        src = (BACKEND_DIR / "routers" / "organizations.py").read_text() + (BACKEND_DIR / "services" / "profilo_pubblico.py").read_text()   # A3 (24/9): pulitore estratto
         assert '"translations" in body' in src
         # solo en/de/fr, solo bio/tagline, clip alle stesse lunghezze
         assert '("bio", 600), ("tagline", 80)' in src
