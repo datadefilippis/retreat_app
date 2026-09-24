@@ -254,3 +254,20 @@ Commit `fa42006a` (PE email) e `b7c21e56` (P1 identità + P3 telefono + P2 bio).
 **Anteprima in produzione (sola lettura)**: al primo giro del motore nuovo partirebbero 5 email «La tua pagina è online» col blocco listino a chi ha la pagina senza servizi e non l'ha mai ricevuta (Casa Coco, La Nuova Alba, Debora, Studio ZENITH, Rigveda). Nessun'altra email in più. Dopo il deploy: `proponi_nome_persona.py proponi` in prod → CSV al founder → `applica` solo dopo la sua revisione.
 
 **Invarianza**: i 20 profili di prod restano identici finché il CSV non è approvato (`nome_persona` assente = marchio com'era); nessun numero diventa pubblico; slug e URL invariati; gate «online» invariato.
+
+## 10. Giro completo provato in locale (24/9 sera) e rifiniture
+
+Account di prova **sara.conti.prova@esempio.it / Password-Lunga-12** (solo locale): registrazione con nome e cognome, attività vuota, telefono → 202; organizzazione nata come «Sara Conti» con `nome_persona` e `public_phone` privato; verifica email → accesso; /benvenuto senza il campo telefono; discipline (psicoterapia) + città + Instagram; bio da 344 caratteri → slug `sara-conti`, «Presentati: fatto», completezza 80% (manca la copertina); pagina pubblica con contatti NON esposti; sequenze: partirebbe «La tua pagina è online» col blocco listino, e np5/10/15 nelle varianti «manca il listino». Le cinque email renderizzate sono state consegnate al founder.
+
+**Risposte alle domande del founder**
+- Utenti già registrati senza telefono: nessun errore; il server lo accetta assente; la home glielo chiede con una riga (segnale `telefono_mancante` dentro onboarding-status, nessuna chiamata in più).
+- «Valentina» + «Valentina-brillare»: mai «Valentina · Valentina-brillare». Regola: basta una parola del nome dentro il marchio perché si mostri il marchio com'è; vale anche con il cognome. Guardie con i casi reali.
+- Psicologia: famiglia nuova «Psicologia & Psicoterapia» (Psicologia, Psicoterapia, Sostegno psicologico, Psicologia perinatale), 51 discipline.
+
+**Rifiniture fatte guardando il percorso**
+- Dopo /benvenuto si va alla propria pagina (`/public-profile`), non alla dashboard: lì la striscia dice «Passo 1 di 3» e da lì «Vai al listino». Testo del benvenuto allineato (niente più «la conversazione con cui costruiremo il racconto»), bottone «Vai alla tua pagina».
+- Nell'editor il campo «La tua attività» resta vuoto quando l'organizzazione porta già il nome della persona.
+
+**Nota locale**: le pagine `/o/{slug}` rispondono 404 in locale per tutti (la shell passa da nginx in produzione); in produzione le pagine dei nuovi iscritti rispondono 200 (verificato su 8 slug recenti).
+
+**La pagina dopo la registrazione (/benvenuto), analizzata a parte** (richiesta del founder, 24/9 sera). Cosa fa: tre domande facoltative (discipline, città, Instagram) più il telefono solo a chi non l'ha dato; salva nel profilo con la stessa PATCH dell'editor, timbra `welcome_seen_at` e non si ripropone. Ridondanza: le stesse tre cose si ritrovano nell'editor, già compilate; è voluto (un primo passo leggero che «riempie» la pagina prima ancora di aprirla), non è un doppione da scrivere due volte. Stabilità: precarica ciò che c'è, i campi vuoti non cancellano nulla, `?next=` solo interno. Rifinito oggi: destinazione `/public-profile`, testo che dice dove si va e perché, bottone «Vai alla tua pagina». Da valutare nel giro 2: intestarla «Passo 0 di 3» così la striscia successiva continua la stessa numerazione.

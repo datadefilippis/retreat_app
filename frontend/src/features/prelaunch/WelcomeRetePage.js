@@ -30,8 +30,12 @@ export default function WelcomeRetePage() {
   // tappa del benvenuto la conserva e la riconsegna. Solo percorsi
   // interni (mai '//': stessa regola di ogni next della porta).
   const rawNext = searchParams.get('next') || '';
+  /* P-onboarding (24/9, founder): dopo il benvenuto si va DRITTI alla
+     propria pagina, non alla dashboard: e' li' che la striscia-guida dice
+     «Passo 1 di 3» e da li' si passa al listino. Accompagnare, non
+     lasciare in un cruscotto vuoto. */
   const dest = rawNext.startsWith('/') && !rawNext.startsWith('//')
-    ? rawNext : '/dashboard';
+    ? rawNext : '/public-profile';
   const [city, setCity] = useState('');
   const [sede, setSede] = useState(null);   // SD2 — la sede scelta dalla lista
   const [phone, setPhone] = useState('');
@@ -114,7 +118,7 @@ export default function WelcomeRetePage() {
           {t('welcomeRete.title', { defaultValue: 'Benvenuto nella rete.' })}
         </h1>
         <p className="text-center text-gray-600 mb-10 leading-relaxed">
-          {t('welcomeRete.lead', { defaultValue: 'Raccontaci due cose su di te: ci aiutano a conoscerti e a preparare la conversazione con cui costruiremo il racconto del tuo lavoro. Puoi anche saltare e farlo più tardi.' })}
+          {t('welcomeRete.lead', { defaultValue: 'Due cose su di te, poi ti portiamo alla tua pagina: la compili in un quarto d’ora e da lì aggiungi i tuoi servizi con il prezzo. Puoi anche saltare e farlo più tardi.' })}
         </p>
 
         <form onSubmit={save} className="space-y-6 bg-white rounded-2xl border border-gray-200 p-7 shadow-sm">
@@ -193,7 +197,7 @@ export default function WelcomeRetePage() {
               className="rounded-lg bg-[#376254] px-6 py-2.5 text-sm font-semibold text-white hover:bg-[#2e5346] disabled:opacity-50">
               {saving
                 ? t('welcomeRete.saving', { defaultValue: 'Salvo…' })
-                : t('welcomeRete.continue', { defaultValue: 'Continua' })}
+                : t('welcomeRete.continue', { defaultValue: 'Vai alla tua pagina' })}
             </button>
           </div>
         </form>

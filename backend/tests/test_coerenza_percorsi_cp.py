@@ -180,8 +180,11 @@ class TestBenvenutoRaggiungibileIdOcties:
         # il ?next= accetta solo percorsi interni (mai '//')
         assert "rawNext.startsWith('/')" in src
         assert "!rawNext.startsWith('//')" in src
-        assert "'/dashboard'" in src.split("const dest")[1][:200], \
-            "senza next non c'e' il ripiego sulla dashboard"
+        # 24/9/2026 (founder): senza next si va alla PROPRIA PAGINA, non alla
+        # dashboard: e' li' che la striscia dice «Passo 1 di 3» (accompagnare)
+        assert "'/public-profile'" in src.split("const dest")[1][:400], \
+            "senza next il ripiego e' la pagina del profilo"
+        assert "'/dashboard'" not in src.split("const dest")[1][:400]
 
     def test_non_si_ripropone(self):
         be = (BACKEND_DIR / "routers" / "organizations.py").read_text()
