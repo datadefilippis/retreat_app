@@ -16,16 +16,34 @@ class UserRole(str, Enum):
     USER  = "user"   # org-level standard user
 
 
+
+def _email_minuscola(v):
+    """25/9/2026 — l'email e' la chiave dell'account e l'indice unico
+    distingue le maiuscole: «Spazio@x.it» e «spazio@x.it» erano due
+    utenti (caso vero in prod, 24/9). Si normalizza QUI, una volta per
+    tutti i modelli: registrazione, login, inviti."""
+    return v.strip().lower() if isinstance(v, str) else v
+
 class UserBase(BaseModel):
     email: EmailStr
     name: str
     role: UserRole = UserRole.USER
+
+    @field_validator("email", mode="before")
+    @classmethod
+    def _email_lower(cls, v):
+        return _email_minuscola(v)
 
 
 class UserCreate(BaseModel):
     email: EmailStr
     name: str
     password: str = Field(min_length=12)
+
+    @field_validator("email", mode="before")
+    @classmethod
+    def _email_lower(cls, v):
+        return _email_minuscola(v)
     organization_name: Optional[str] = None  # For signup (P1: facoltativo)
     # P3 (24/9/2026, founder) — il telefono del professionista: i moduli lo
     # chiedono obbligatorio, il server lo accetta quando c'e' e lo rifiuta
@@ -57,6 +75,11 @@ class UserCreate(BaseModel):
 class UserLogin(BaseModel):
     email: EmailStr
     password: str
+
+    @field_validator("email", mode="before")
+    @classmethod
+    def _email_lower(cls, v):
+        return _email_minuscola(v)
 
 
 class User(UserBase):
@@ -198,6 +221,11 @@ class UserInvite(BaseModel):
     email: EmailStr
     name: str
     role: UserRole = UserRole.USER
+
+    @field_validator("email", mode="before")
+    @classmethod
+    def _email_lower(cls, v):
+        return _email_minuscola(v)
 
 
 class UserInviteResponse(UserResponse):

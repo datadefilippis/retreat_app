@@ -18,8 +18,14 @@ async def find_by_verification_token_hash(token_hash: str) -> Optional[dict]:
 
 
 async def find_by_email(email: str) -> Optional[dict]:
-    """Find user by email"""
-    return await users_collection.find_one({"email": email}, {"_id": 0})
+    """Find user by email. 25/9/2026: l'email si confronta in minuscolo
+    (i documenti sono normalizzati da scripts/normalizza_email_utenti.py);
+    per un eventuale record storico con maiuscole si prova anche com'e'."""
+    e = (email or "").strip()
+    doc = await users_collection.find_one({"email": e.lower()}, {"_id": 0})
+    if doc is None and e != e.lower():
+        doc = await users_collection.find_one({"email": e}, {"_id": 0})
+    return doc
 
 
 async def find_by_id(user_id: str) -> Optional[dict]:
