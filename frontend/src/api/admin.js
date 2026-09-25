@@ -21,6 +21,21 @@ export const adminAPI = {
     api.get(`/admin/organizations/${orgId}/public-profile`).then((r) => r.data),
   setOrgPublicProfile: (orgId, body) =>
     api.patch(`/admin/organizations/${orgId}/public-profile`, body).then((r) => r.data),
+  // SA6 (25/9/2026 sera) — copertina, ritratto e galleria dalla regia:
+  // sostituisci (multipart, `sostituisci` = URL della foto di galleria da
+  // rimpiazzare) o rimuovi, sempre con `motivo`; risposta = payload del profilo
+  uploadOrgProfileImage: (orgId, { tipo, file, motivo, sostituisci }) => {
+    const fd = new FormData();
+    fd.append('file', file);
+    fd.append('tipo', tipo);
+    fd.append('motivo', motivo);
+    if (sostituisci) fd.append('sostituisci', sostituisci);
+    return api.post(`/admin/organizations/${orgId}/public-profile/immagine`, fd,
+      { headers: { 'Content-Type': 'multipart/form-data' } }).then((r) => r.data);
+  },
+  deleteOrgProfileImage: (orgId, { tipo, url, motivo }) =>
+    api.delete(`/admin/organizations/${orgId}/public-profile/immagine`,
+      { params: { tipo, url, motivo } }).then((r) => r.data),
 
   getOrganization: (orgId) =>
     api.get(`/admin/organizations/${orgId}`),

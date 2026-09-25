@@ -29,7 +29,8 @@ import secrets
 from datetime import datetime, timedelta, timezone
 from typing import Optional
 
-from fastapi import APIRouter, Body, Depends, HTTPException, Query, Request, status
+from fastapi import (APIRouter, Body, Depends, File, Form, HTTPException, Query,
+                     Request, UploadFile, status)
 from slowapi import Limiter
 # Onda 27.2 — see backend/core/rate_limiting.py for rationale.
 # Replaces slowapi.util.get_remote_address which returned the proxy IP
@@ -460,6 +461,193 @@ async def admin_update_public_profile(
         })
     except Exception:  # noqa: BLE001 — l'audit non rompe il salvataggio
         pass
+    return await _profilo_pubblico_payload(org_id)
+
+
+# ── SA6 (25/9/2026 sera, founder: «certi utenti pubblicano foto profilo o
+# copertina completamente fuori luogo: da system admin voglio poterle
+# cancellare o sostituirgliele») ─────────────────────────────────────────
+# Le immagini del profilo pubblico (copertina, ritratto, galleria) si
+# rimuovono o si sostituiscono dalla regia, con MOTIVO obbligatorio e riga
+# di audit PUBLIC_PROFILE_ADMIN_IMAGE. Stesse difese dell'operatore
+# (_read_profile_image: estensioni, MIME, 2MB, pipeline WebP), stessa
+# igiene dei file (via i vecchi, URL sempre nuovo), stessi effetti dopo il
+# salvataggio (cache slug→org, IndexNow). Nessuna email all'operatore.
+
+_IMMAGINI_PROFILO = {
+    # tipo → (campo sul documento, category dello storage)
+    "cover": ("public_profile.cover_url", "profile-covers"),
+    "portrait": ("public_profile.portrait_url", "profile-portraits"),
+    "photo": ("public_profile.photos", "profile-photos"),
+}
+
+
+def _motivo_pulito(raw) -> str:
+    motivo = " ".join(str(raw or "").split())
+    if not (_MOTIVO_MIN <= len(motivo) <= _MOTIVO_MAX):
+        raise HTTPException(
+            status_code=422,
+            detail=f"motivo obbligatorio ({_MOTIVO_MIN}-{_MOTIVO_MAX} caratteri)")
+    return motivo
+
+
+def _nome_file_da_url(url: str) -> str:
+    """`/uploads/profile-photos/<org>-ab12cd34ef.webp` → `<org>-ab12cd34ef`:
+    il prefisso che cancella QUEL file e nessun altro."""
+    import os as _os
+    return _os.path.splitext(_os.path.basename(str(url or "").split("?")[0]))[0]
+
+
+async def _audit_immagine(current_user: dict, org_id: str, *, tipo: str,
+                          azione: str, prima, dopo, motivo: str) -> None:
+    from database import audit_logs_collection
+    from models.common import generate_id
+    now_dt = utc_now()
+    try:
+        await audit_logs_collection.insert_one({
+            "id": generate_id(),
+            "actor_user_id": current_user.get("user_id"),
+            "actor_role": "system_admin",
+            "organization_id": org_id,
+            "action": "PUBLIC_PROFILE_ADMIN_IMAGE",
+            "target_type": "organization",
+            "target_id": org_id,
+            "metadata": {
+                "tipo": tipo, "azione": azione,
+                "prima": _valore_breve(prima), "dopo": _valore_breve(dopo),
+                "motivo": motivo,
+            },
+            "created_at": now_dt.isoformat(),
+            "expire_at": now_dt,
+        })
+    except Exception:  # noqa: BLE001 — l'audit non rompe l'operazione
+        pass
+
+
+async def _org_con_profilo(org_id: str) -> dict:
+    from database import organizations_collection
+    org = await organizations_collection.find_one(
+        {"id": org_id}, {"_id": 0, "id": 1, "public_profile": 1})
+    if not org:
+        raise HTTPException(status_code=404, detail="Organization not found")
+    return org
+
+
+@router.post(
+    "/organizations/{org_id}/public-profile/immagine",
+    summary="Sostituisce (o aggiunge) un'immagine del profilo pubblico con motivo (system admin)",
+)
+@limiter.limit("10/minute")
+async def admin_upload_public_profile_image(
+    org_id: str,
+    request: Request,
+    file: UploadFile = File(...),
+    tipo: str = Form(...),
+    motivo: str = Form(""),
+    sostituisci: str = Form(""),
+    current_user: dict = Depends(require_system_admin),
+) -> dict:
+    """multipart: `tipo` = cover | portrait | photo, `file`, `motivo`
+    (3-300), `sostituisci` = l'URL della foto di galleria da rimpiazzare
+    (solo tipo photo; vuoto = aggiungi in coda, tetto 8)."""
+    import uuid as _uuid
+    from database import organizations_collection
+    from routers.organizations import _PP_PHOTOS_MAX, _read_profile_image
+    from services.object_storage import (content_type_for_ext,
+                                         delete_public_uploads,
+                                         save_public_upload)
+    from services.profilo_pubblico import dopo_salvataggio
+
+    motivo = _motivo_pulito(motivo)
+    if tipo not in _IMMAGINI_PROFILO:
+        raise HTTPException(status_code=400, detail="tipo: cover, portrait o photo")
+    org = await _org_con_profilo(org_id)
+    pp = org.get("public_profile") or {}
+    campo, category = _IMMAGINI_PROFILO[tipo]
+    ext, contents = await _read_profile_image(file)
+
+    if tipo == "photo":
+        photos = list(pp.get("photos") or [])
+        vecchio = (sostituisci or "").strip() or None
+        if vecchio and vecchio not in photos:
+            raise HTTPException(status_code=404, detail="Foto da sostituire non trovata")
+        if not vecchio and len(photos) >= _PP_PHOTOS_MAX:
+            raise HTTPException(status_code=400,
+                                detail=f"Massimo {_PP_PHOTOS_MAX} foto in galleria")
+        # NB: niente cleanup a prefisso {org_id}: la galleria ha piu' file
+        # per org. Si toglie SOLO il file che si sostituisce.
+        if vecchio:
+            delete_public_uploads(category, _nome_file_da_url(vecchio))
+        url = save_public_upload(
+            category, f"{org_id}-{_uuid.uuid4().hex[:10]}{ext}", contents,
+            content_type=content_type_for_ext(ext))
+        if vecchio:
+            photos[photos.index(vecchio)] = url
+        else:
+            photos.append(url)
+        await organizations_collection.update_one(
+            {"id": org_id}, {"$set": {campo: photos}})
+        prima, dopo = vecchio, url
+    else:
+        prima = pp.get(campo.split(".", 1)[1])
+        # come l'operatore (PV1): via i vecchi file, filename con suffisso
+        # random → la sostituzione appare subito, niente cache stantia
+        delete_public_uploads(category, f"{org_id}")
+        url = save_public_upload(
+            category, f"{org_id}-{_uuid.uuid4().hex[:10]}{ext}", contents,
+            content_type=content_type_for_ext(ext))
+        await organizations_collection.update_one(
+            {"id": org_id}, {"$set": {campo: url}})
+        dopo = url
+
+    await dopo_salvataggio(org_id)
+    await _audit_immagine(current_user, org_id, tipo=tipo,
+                          azione="sostituisci" if prima else "aggiungi",
+                          prima=prima, dopo=dopo, motivo=motivo)
+    return await _profilo_pubblico_payload(org_id)
+
+
+@router.delete(
+    "/organizations/{org_id}/public-profile/immagine",
+    summary="Rimuove un'immagine del profilo pubblico con motivo (system admin)",
+)
+async def admin_delete_public_profile_image(
+    org_id: str,
+    tipo: str = Query(...),
+    motivo: str = Query(""),
+    url: Optional[str] = Query(None, description="solo tipo photo: la foto da togliere"),
+    current_user: dict = Depends(require_system_admin),
+) -> dict:
+    from database import organizations_collection
+    from services.object_storage import delete_public_uploads
+    from services.profilo_pubblico import dopo_salvataggio
+
+    motivo = _motivo_pulito(motivo)
+    if tipo not in _IMMAGINI_PROFILO:
+        raise HTTPException(status_code=400, detail="tipo: cover, portrait o photo")
+    org = await _org_con_profilo(org_id)
+    pp = org.get("public_profile") or {}
+    campo, category = _IMMAGINI_PROFILO[tipo]
+
+    if tipo == "photo":
+        photos = list(pp.get("photos") or [])
+        if not url or url not in photos:
+            raise HTTPException(status_code=404, detail="Foto non trovata in galleria")
+        delete_public_uploads(category, _nome_file_da_url(url))
+        await organizations_collection.update_one(
+            {"id": org_id}, {"$pull": {campo: url}})
+        prima = url
+    else:
+        prima = pp.get(campo.split(".", 1)[1])
+        if not prima:
+            raise HTTPException(status_code=400, detail="Nessuna immagine da rimuovere")
+        delete_public_uploads(category, f"{org_id}")
+        await organizations_collection.update_one(
+            {"id": org_id}, {"$set": {campo: None}})
+
+    await dopo_salvataggio(org_id)
+    await _audit_immagine(current_user, org_id, tipo=tipo, azione="rimuovi",
+                          prima=prima, dopo=None, motivo=motivo)
     return await _profilo_pubblico_payload(org_id)
 
 
