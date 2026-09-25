@@ -360,7 +360,7 @@ class TestFinestraETetto30:
         pagina = (FQ_DIR / "FrequenzePage.js").read_text()
         assert "const DURATA_MAX_MIN = 90;" in pagina
         assert 'max="90"' in pagina
-        assert "Math.min(DURATA_MAX_SEC, Math.max(60," in pagina
+        assert "Math.min(DURATA_MAX_SEC, Math.max(DURATA_MIN_SEC," in pagina   # DL 25/9: pavimento 3 s
         # e nessuno puo' scrivere un numero piu' alto a mano: il
         # campo si riporta dentro il tetto e lo dice
         assert "mins > DURATA_MAX_MIN" in pagina

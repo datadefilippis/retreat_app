@@ -341,8 +341,8 @@ class TestAutorita:
          "fuori da 20"),
         ([{"metodo": "bin", "hz": 400, "durata_sec": 90, "gain": 0.3}],
          "battito"),
-        ([{"metodo": "tone", "hz": 220, "durata_sec": 30, "gain": 0.3}],
-         "minimo è 60"),
+        ([{"metodo": "tone", "hz": 220, "durata_sec": 1, "gain": 0.3}],
+         "minimo è 3"),      # DL 25/9: il pavimento e' 3 s, non un minuto
     ])
     async def test_17_passi_invalidi_rifiutati_con_messaggio(
             self, banco, passi, pezzo):
@@ -431,7 +431,7 @@ class TestGemelliDeiCompilatori:
         [{"metodo": "bin", "hz": 400, "durata_sec": 90, "gain": 0.3}],
         [{"metodo": "iso", "hz": 400, "battito_hz": 90,
           "durata_sec": 90, "gain": 0.3}],
-        [{"metodo": "tone", "hz": 220, "durata_sec": 30, "gain": 0.3}],
+        [{"metodo": "tone", "hz": 220, "durata_sec": 1, "gain": 0.3}],
         [{"metodo": "tone", "hz": 220, "durata_sec": 5500, "gain": 0.3}],
         [{"metodo": "tone", "hz": 220, "battito_hz": 7,
           "durata_sec": 90, "gain": 0.3}],

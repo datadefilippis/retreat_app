@@ -1826,7 +1826,7 @@ class TestRefinementCrea:
         # il nome dice cosa c'e' dentro (una sola funzione, usata sia
         # dal master scaricato sia dal render)
         assert "const nomeExport = ()" in crea
-        assert "aurya-${pezzi" in crea and "min-" in crea
+        assert "aurya-${pezzi" in crea and "${durTag}-" in crea and "min`" in crea   # DL 25/9: anche «7s»
         assert "nomeExport()" in blocco
         assert 'data-testid="fq-export"' in crea
 

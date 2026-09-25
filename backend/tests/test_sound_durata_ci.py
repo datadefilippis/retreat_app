@@ -41,7 +41,7 @@ class TestTetto:
         assert s2["duration_sec"] == 5400
 
     def test_crea_offre_i_preset_lunghi(self):
-        assert "[5, 10, 15, 20, 30, 45, 60, 90]" in PAGE
+        assert "[1, 5, 10, 15, 20, 30, 45, 60, 90]" in PAGE   # DL 25/9: + 1′ e i chip 10″ 20″ 30″
         assert "const CONTINUO_MIN = 30;" in PAGE
         # nessuna frase dice piu' che oltre i 30 non si ascolta
         assert "non è disponibile" not in PAGE.split("const fissaDurata")[1][:900]

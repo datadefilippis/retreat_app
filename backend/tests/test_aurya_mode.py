@@ -730,7 +730,8 @@ class TestScenaDellAutoreVc:
         sessione dura quanto il contenuto, pill sempre a vista), FISSA
         solo per scelta dal foglio, commit al rilascio, tetto vero e
         SPIEGATO."""
-        assert "const [durataFissaMin, setDurataFissaMin] = useState(null)" in self.CREA, \
+        # DL 25/9: la durata fissa vive in secondi
+        assert "const [durataFissaSec, setDurataFissaSec] = useState(null)" in self.CREA, \
             "il default deve essere AUTO (null), non un numero nascosto"
         assert 'data-testid="fq-durata"' in self.CREA          # la pill
         assert 'data-testid="fq-foglio-durata"' in self.CREA   # il foglio

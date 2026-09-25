@@ -279,6 +279,8 @@ export async function resolveGuidaLayers(ctx, score, soundsById) {
         respiri: l.respiri, round: l.round, vuoto_sec: l.vuoto_sec,
         pieno_sec: l.pieno_sec, recupero_sec: l.recupero_sec,
         campana: l.campana !== false,
+        // RS (25/9): effetto e spazio del respiro, come per la voce (solo se scelti)
+        fx: l.fx || null, fx_amount: l.fx_amount ?? 0.6, space: l.space,
       });
     } catch (e) {
       console.warn('[aurya] GUIDA SALTATA:', (asset.stream_url || '').split('/').pop(),

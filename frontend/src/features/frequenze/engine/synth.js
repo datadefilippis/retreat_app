@@ -878,7 +878,17 @@ export function startPreview(ctx, score,
     if (s0 + span <= ctx.currentTime) return;
     const uG = ctx.createGain(); uG.gain.value = 1; uG.connect(sess);
     liveG[g.id] = { node: uG, base: g.gain };
-    const gg = ctx.createGain(); gg.gain.value = g.gain; gg.connect(uG);
+    const gg = ctx.createGain(); gg.gain.value = g.gain;
+    /* RS (25/9, founder): effetto e spazio anche sul respiro, come sulla
+       voce — ma SOLO se scelti: senza fx e con spazio «fermo» il grafo e'
+       quello di ieri (gg → uG), e le ricette pubblicate suonano uguali.
+       Il duck resta fuori: e' la voce che guida. */
+    let uscitaG = gg;
+    if (g.fx) {
+      const chainG = buildVoiceChain(ctx, g.fx, g.fx_amount ?? 0.6);
+      gg.connect(chainG.input); uscitaG = chainG.output;
+    }
+    spazializza(g, 'guida', uscitaG, uG, s0, span);
     const uA = Math.max(0, ctx.currentTime - s0);
     nodes.push(...montaGuida(ctx, gg, g, { da: uA, a: span, quando: (u) => at(s0 + u) }));
   });

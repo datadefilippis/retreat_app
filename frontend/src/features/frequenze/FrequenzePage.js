@@ -75,6 +75,18 @@ let _uid = 5000;
    di DURATION_MAX nel backend. */
 const DURATA_MAX_MIN = 90;
 const DURATA_MAX_SEC = DURATA_MAX_MIN * 60;
+/* DL (25/9, founder: «voglio tracce anche di 7 secondi»): il pavimento
+   e' tre secondi, non un minuto. La durata FISSA vive in secondi. */
+const DURATA_MIN_SEC = 3;
+/* «20» = minuti (come sempre), «0:20» / «1.30» = m:ss, «20s» / «20″» = secondi */
+const parseDurata = (raw) => {
+  const s = String(raw ?? '').trim().toLowerCase().replace(',', '.');
+  if (!s) return NaN;
+  if (/^\d+[:.]\d{1,2}$/.test(s)) { const [m, ss] = s.split(/[:.]/); return (+m) * 60 + (+ss); }
+  if (/^\d+(\.\d+)?\s*(s|sec|"|″)$/.test(s)) return parseFloat(s);
+  if (/^\d+(\.\d+)?\s*(m|min|′)?$/.test(s)) return parseFloat(s) * 60;
+  return NaN;
+};
 const CONTINUO_MIN = 30;      // = CONTINUO_WAV_MAX_SEC / 60: soglia del render a blocchi
 
 /* L'EXPORT PESA COME IL MASTER (192 kbps): la meditazione che scarichi
@@ -319,9 +331,9 @@ export default function FrequenzePage() {
   /* DU (22/8) — LA DURATA E' AUTO di default: la sessione dura quanto
      il suo contenuto (l'ultima traccia). Il vecchio default nascosto
      di 20 min ingannava: chi montava 5 minuti di tracce si ritrovava
-     15 minuti di loop mai chiesti. `durataFissaMin` e' null in AUTO;
+     15 minuti di loop mai chiesti. `durataFissaSec` e' null in AUTO;
      un numero solo se l'autore la FISSA (dal foglio della pill). */
-  const [durataFissaMin, setDurataFissaMin] = useState(null);
+  const [durataFissaSec, setDurataFissaSec] = useState(null);   // DL: secondi, null = automatica
   const [foglioDurata, setFoglioDurata] = useState(false);
   const [fadeIn, setFadeIn] = useState(5);
   const [fadeOut, setFadeOut] = useState(10);
@@ -372,9 +384,9 @@ export default function FrequenzePage() {
   /* la fine dell'ultima traccia: in AUTO e' LEI la durata */
   const maxEndSec = layers.length
     ? Math.max(...layers.map((l) => l.end || 0)) : 0;
-  const duration = Math.min(DURATA_MAX_SEC, Math.max(60,
-    durataFissaMin != null ? durataFissaMin * 60 : (maxEndSec || 60)));
-  const durataAuto = durataFissaMin == null;
+  const duration = Math.min(DURATA_MAX_SEC, Math.max(DURATA_MIN_SEC,
+    durataFissaSec != null ? durataFissaSec : (maxEndSec || 60)));
+  const durataAuto = durataFissaSec == null;
 
   /* VC2/VC3 — la scena dell'autore. `visual` = i valori RISOLTI che
      viaggeranno nella ricetta (null = mai toccata: default e niente
@@ -573,6 +585,7 @@ export default function FrequenzePage() {
     setLayers((ls) => [...ls, {
       id: ++_uid, kind: 'guida', asset_id: asset.id, name: asset.title,
       start, end, gain: 0.9, mute: false, ...base,
+      // RS (25/9): nasce senza effetto e ferma davanti; effetto e spazio si scelgono nella riga
       ...(Object.keys(parole).length ? { parole } : {}),
       _ciclo: asset.ciclo_sec || 8,
     }]);
@@ -987,7 +1000,7 @@ export default function FrequenzePage() {
        valeva il pavimento di 60s, e «Dormire» nasceva compresso in un
        minuto. */
     const durataProtocollo = PROTOCOLLI[name].durataMin || 20;
-    setDurataFissaMin(durataProtocollo);
+    setDurataFissaSec(durataProtocollo * 60);
     const built = PROTOCOLLI[name].build(durataProtocollo * 60);
     setLayers(built.layers.map((l) => ({ ...l, id: ++_uid })));
     setPhases(built.phases);
@@ -1141,7 +1154,7 @@ export default function FrequenzePage() {
       {
         const fine = Math.max(0, ...((s.layers || []).map((l) => l.end || 0)));
         const d = s.duration_sec || 1200;
-        setDurataFissaMin(Math.abs(d - fine) < 1 ? null : Math.round(d / 60));
+        setDurataFissaSec(Math.abs(d - fine) < 1 ? null : Math.round(d));
       }
       setFadeIn(s.fade_in_sec ?? 10); setFadeOut(s.fade_out_sec ?? 20);
       setLayers((s.layers || []).map((l) => ({ ...l, id: ++_uid })));
@@ -1239,7 +1252,8 @@ export default function FrequenzePage() {
     const pezzi = (title || 'sessione').toLowerCase()
       .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
       .replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 48);
-    return `aurya-${pezzi || 'sessione'}-${Math.round(duration / 60)}min-`
+    const durTag = duration < 60 ? `${Math.round(duration)}s` : `${Math.round(duration / 60)}min`;   // DL: anche «7s»
+    return `aurya-${pezzi || 'sessione'}-${durTag}-`
       + `${new Date().toISOString().slice(0, 10)}.mp3`;
   };
   const scaricaBlob = (blob, nome) => {
@@ -1431,8 +1445,12 @@ export default function FrequenzePage() {
      foglio), MAI a ogni cifra digitata: era il popup che si apriva
      sopra la tastiera del telefono a meta' numero. E il tetto e' VERO:
      prima si poteva vedere 35 a schermo mentre il motore suonava 30. */
-  const fissaDurata = (mins) => {
-    if (!Number.isFinite(mins) || mins < 1) return;
+  const fissaDurata = (sec) => {
+    if (!Number.isFinite(sec) || sec < DURATA_MIN_SEC) {
+      if (Number.isFinite(sec)) setStatus(`Il minimo è ${DURATA_MIN_SEC} secondi`);
+      return;
+    }
+    let mins = sec / 60;
     if (mins > DURATA_MAX_MIN) {
       setStatus(`Il massimo è ${DURATA_MAX_MIN} minuti: oltre, il file pubblicato pesa troppo per chi ascolta`);
       mins = DURATA_MAX_MIN;
@@ -1440,8 +1458,8 @@ export default function FrequenzePage() {
       setStatus(`Oltre ${CONTINUO_MIN} minuti master, export e ascolto a schermo bloccato si preparano a blocchi: qualche minuto in più di attesa, nessun limite all'ascolto`);
     }
     setFoglioDurata(false);
-    const newD = Math.max(60, mins * 60), oldD = duration;
-    setDurataFissaMin(mins);
+    const newD = Math.min(DURATA_MAX_SEC, Math.max(DURATA_MIN_SEC, Math.round(mins * 60))), oldD = duration;
+    setDurataFissaSec(newD);
     if (!layers.length || oldD === newD) { prevDurRef.current = newD; return; }
     /* il dialogo di adattamento ha senso solo se la nuova durata
        TAGLIA tracce esistenti: allungare non tocca nessuno */
@@ -1474,7 +1492,7 @@ export default function FrequenzePage() {
   /* DU — tornare all'automatica: la durata si riallinea alle tracce,
      senza dialoghi (nessun taglio possibile: E' la fine delle tracce) */
   const tornaDurataAuto = () => {
-    setDurataFissaMin(null);
+    setDurataFissaSec(null);
     setFoglioDurata(false);
     setStatus('La durata ora segue le tracce');
   };
@@ -1880,6 +1898,38 @@ export default function FrequenzePage() {
             <button type="button" className={`chip${l.campana !== false ? ' on' : ''}`}
               title="Una campana segna ogni svolta (ritenzioni e recupero)"
               onClick={() => patchLayer(l.id, { campana: l.campana === false })}>campana</button>
+            {/* RS (25/9, founder: «il respiro come la voce: tempio, spazio») —
+                effetto e spazio anche sulla guida. Senza scelta resta
+                com'era (nessun nodo in piu': le ricette di ieri suonano uguali). */}
+            <span className="lbl" title="Un effetto sul respiro, come sulla voce: nessuno, naturale, sogno, tempio, sussurro">effetto</span>
+            <select className="minisel" data-testid={`fq-guida-fx-${l.id}`}
+              value={l.fx || 'nessuno'}
+              title={l.fx ? (VOICE_PRESETS[l.fx] || VOICE_PRESETS.natural).hint : 'La registrazione com’è, senza effetto'}
+              onChange={(e) => patchLayer(l.id, e.target.value === 'nessuno'
+                ? { fx: undefined, fx_amount: undefined }
+                : { fx: e.target.value, fx_amount: l.fx_amount ?? 0.6 })}>
+              <option value="nessuno">Nessuno</option>
+              {Object.entries(VOICE_PRESETS).map(([k, p]) => (
+                <option key={k} value={k}>{p.label}</option>
+              ))}
+            </select>
+            {l.fx && (
+              <>
+                <input className="sl vol" type="range" min="0" max="1" step="0.05"
+                  value={l.fx_amount ?? 0.6}
+                  onChange={(e) => patchLayer(l.id, { fx_amount: +e.target.value })} />
+                <span className="val v1">{Math.round((l.fx_amount ?? 0.6) * 100)}%</span>
+              </>
+            )}
+            <span className="lbl" title="Dove sta il respiro in cuffia: fermo davanti, si avvicina, a lato, o si muove">🎧 spazio</span>
+            <select className="minisel" data-testid={`fq-space-${l.id}`}
+              title={SPACE_PRESETS[l.space?.preset || 'fermo'].hint}
+              value={l.space?.preset || 'fermo'}
+              onChange={(e) => patchLayer(l.id, { space: { preset: e.target.value } })}>
+              {presetPerTipo('guida').map((k) => (
+                <option key={k} value={k}>{SPACE_PRESETS[k].label}</option>
+              ))}
+            </select>
             <button type="button" className={`chip m${l.mute ? ' on' : ''}`}
               onClick={() => patchLayer(l.id, { mute: !l.mute })}>muto</button>
             <span className="guida-riassunto" data-testid={`fq-guida-riassunto-${l.id}`}>
@@ -2647,22 +2697,30 @@ export default function FrequenzePage() {
               {foglioDurata && (
                 <div className="foglio-durata" data-testid="fq-foglio-durata">
                   <div className="fd-riga">
-                    {[5, 10, 15, 20, 30, 45, 60, 90].map((m) => (
-                      <button key={m} type="button"
-                        className={durataFissaMin === m ? 'su' : ''}
-                        onClick={() => fissaDurata(m)}>{m}′</button>
+                    {/* DL — anche brevi: 10″ 20″ 30″ per un segnale, una campana, una prova */}
+                    {[10, 20, 30].map((s) => (
+                      <button key={`s${s}`} type="button" data-testid={`fq-durata-sec-${s}`}
+                        className={durataFissaSec === s ? 'su' : ''}
+                        onClick={() => fissaDurata(s)}>{s}″</button>
                     ))}
-                    <input type="number" min="1" max="90" step="1"
-                      placeholder="min" data-testid="fq-durata-min"
-                      defaultValue={durataAuto ? '' : durataFissaMin}
-                      onKeyDown={(e) => { if (e.key === 'Enter') fissaDurata(+e.currentTarget.value); }}
-                      onBlur={(e) => { if (e.target.value !== '') fissaDurata(+e.target.value); }} />
+                    {[1, 5, 10, 15, 20, 30, 45, 60, 90].map((m) => (
+                      <button key={m} type="button"
+                        className={durataFissaSec === m * 60 ? 'su' : ''}
+                        onClick={() => fissaDurata(m * 60)}>{m}′</button>
+                    ))}
+                    <input type="text" inputMode="decimal" max="90" style={{ minWidth: 132 }}
+                      placeholder="min · 0:20 · 20s" data-testid="fq-durata-min"
+                      title="Minuti (es. 20), oppure m:ss (0:20, 1.30), oppure secondi (20s)"
+                      defaultValue={durataAuto ? '' : (durataFissaSec % 60 === 0 ? durataFissaSec / 60 : fmt(durataFissaSec))}
+                      onKeyDown={(e) => { if (e.key === 'Enter') fissaDurata(parseDurata(e.currentTarget.value)); }}
+                      onBlur={(e) => { if (e.target.value !== '') fissaDurata(parseDurata(e.target.value)); }} />
                   </div>
                   <button type="button" className={`fd-auto${durataAuto ? ' su' : ''}`}
                     data-testid="fq-durata-auto" onClick={tornaDurataAuto}>
                     Automatica, segue le tracce
                   </button>
-                  <p className="fd-nota">Fino a 90 minuti. Qui in Crea
+                  <p className="fd-nota">Da 3 secondi a 90 minuti: scrivi «20s» o «0:20»
+                  per una traccia breve, un numero per i minuti. Qui in Crea
                   la ascolti intera, sempre. Oltre i 30, master, export e
                   ascolto a schermo bloccato si preparano a blocchi:
                   qualche minuto in più di attesa, nessun limite.</p>
@@ -2674,6 +2732,13 @@ export default function FrequenzePage() {
                 title="Titolo, apertura e chiusura della sessione"
                 onClick={() => setSetupOpen((o) => !o)}>
                 ⚙ Impostazioni {setupOpen ? '▴' : '▾'}
+                {!setupOpen && (
+                  /* 25/9 (founder, telefono): chiuso, il bottone RIASSUME cosa
+                     c'e' dentro, cosi' nulla sembra sparito */
+                  <small data-testid="fq-setup-riassunto">
+                    {` · ${STANZE[stanza]?.label || 'asciutta'} · ${fadeIn}s / ${fadeOut}s${title ? ` · ${title}` : ''}`}
+                  </small>
+                )}
               </button>
               <div className={`cb-collapse${setupOpen ? ' open' : ''}`}>
                 <div className="cb-fields">

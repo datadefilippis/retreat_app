@@ -133,9 +133,13 @@ class TestMotore:
         assert "resolveGuidaLayers(ctx, track.score, soundsRef.current)" in PUBLIC
         assert "guidaLayers" in CONTINUO.split("export async function preparaContinuo")[1][:900]
 
-    def test_la_guida_non_passa_da_spazio_ne_duck(self):
+    def test_la_guida_non_passa_dal_duck_e_lo_spazio_e_opt_in(self):
+        """RS (25/9): effetto e spazio anche sul respiro, ma solo se scelti;
+        il duck resta fuori. Senza scelta il grafo e' quello di ieri."""
         ramo = SYNTH.split("guidaLayers.filter(")[1].split("(score.layers || [])")[0]
-        assert "spazializza(" not in ramo and "duckBus" not in ramo and "uG.connect(sess)" in ramo
+        assert "duckBus" not in ramo and "uG.connect(sess)" in ramo
+        assert "spazializza(g, 'guida', uscitaG, uG, s0, span)" in ramo
+        assert "if (g.fx) {" in ramo and "buildVoiceChain(ctx, g.fx" in ramo
 
 
 class TestCrea:

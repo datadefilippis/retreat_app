@@ -114,7 +114,21 @@ export async function renderPcm(score, { sampleRate = 44100, audioLayers = [],
       guide.forEach((g) => {
         const fineStrato = Math.min(g.end, d);
         if (fineStrato <= cs || g.start >= cs + len) return;
-        const gg = off.createGain(); gg.gain.value = g.gain; gg.connect(off.destination);
+        const gg = off.createGain(); gg.gain.value = g.gain;
+        /* RS (25/9): effetto e spazio del respiro come dal vivo; la
+           traiettoria continua fra i blocchi (uA = offset nello strato) */
+        let uscitaG = gg;
+        if (g.fx) {
+          const chainG = buildVoiceChain(off, g.fx, g.fx_amount ?? 0.6);
+          gg.connect(chainG.input); uscitaG = chainG.output;
+        }
+        if (spaceValido('guida', g.space?.preset)) {
+          const spG = creaSpazio(off, g.space.preset,
+            { tA: 0, uA: Math.max(0, cs - g.start), uB: Math.max(1, fineStrato - g.start) });
+          uscitaG.connect(spG.input); spG.output.connect(off.destination);
+        } else {
+          uscitaG.connect(off.destination);
+        }
         montaGuida(off, gg, g, {
           da: cs - g.start, a: Math.min(cs + len, fineStrato) - g.start,
           quando: (u) => Math.max(0, u + g.start - cs),

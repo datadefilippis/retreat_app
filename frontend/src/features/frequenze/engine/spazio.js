@@ -34,11 +34,11 @@
    (m), ampiezza dell'oscillazione (gradi) per «respira», e quanto manda
    alla Stanza. `kinds` dice a quali strati si offre. */
 export const SPACE_PRESETS = Object.freeze({
-  fermo: { label: 'fermo', kinds: ['audio', 'voice'], hint: 'Davanti, al centro. Com’e’ sempre stato.' },
-  respira: { label: 'respira', kinds: ['audio', 'voice'], r: 1.5, sway: 35, swayHz: 0.06, send: 0.15,
+  fermo: { label: 'fermo', kinds: ['audio', 'voice', 'guida'], hint: 'Davanti, al centro. Com’e’ sempre stato.' },
+  respira: { label: 'respira', kinds: ['audio', 'voice', 'guida'], r: 1.5, sway: 35, swayHz: 0.06, send: 0.15,
     mono: true, rinforzo: 0.5, comp: 1.41,
     hint: 'Oscilla piano a destra e a sinistra, come un respiro.' },
-  orbita_lenta: { label: 'orbita lenta', kinds: ['audio', 'voice'], r: 1.6, rate: 1 / 24, send: 0.2,
+  orbita_lenta: { label: 'orbita lenta', kinds: ['audio', 'voice', 'guida'], r: 1.6, rate: 1 / 24, send: 0.2,
     mono: true, rinforzo: 0.6, comp: 1.6,
     hint: 'Un giro intorno alla testa ogni 24 secondi.' },
   orbita: { label: 'orbita', kinds: ['audio'], r: 1.8, rate: 1 / 8, send: 0.2,
@@ -47,9 +47,9 @@ export const SPACE_PRESETS = Object.freeze({
   avvolge: { label: 'avvolge', kinds: ['audio'], r: 2.4, rate: 1 / 20, riseY: 1.2, riseSec: 60, send: 0.45,
     mono: true, rinforzo: 0.55, comp: 1.7,
     hint: 'Largo, sale sopra la testa e riempie la stanza.' },
-  vicina: { label: 'vicina', kinds: ['voice'], r0: 2.2, r1: 0.6, approachSec: 6, send: 0, comp: 1.15,
+  vicina: { label: 'vicina', kinds: ['voice', 'guida'], r0: 2.2, r1: 0.6, approachSec: 6, send: 0, comp: 1.15,
     hint: 'Parte lontana e in sei secondi arriva vicino: presenza.' },
-  a_lato: { label: 'a lato', kinds: ['voice'], r: 1.0, angle: 30, send: 0, rinforzo: 0.4, comp: 1.05,
+  a_lato: { label: 'a lato', kinds: ['voice', 'guida'], r: 1.0, angle: 30, send: 0, rinforzo: 0.4, comp: 1.05,
     hint: 'Fissa a 30 gradi sulla destra: per una seconda voce.' },
 });
 

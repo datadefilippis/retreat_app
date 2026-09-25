@@ -180,7 +180,7 @@ def compila(steps) -> dict:
     durata = _round_js(t, 1)
     if durata < DURATION_MIN:
         raise ErrorePasso(None, f"il protocollo dura {_num_fmt(durata)}s: "
-                                f"il minimo è {_num_fmt(DURATION_MIN)}s (un minuto)")
+                                f"il minimo è {_num_fmt(DURATION_MIN)}s")
     if durata > DURATION_MAX:
         raise ErrorePasso(None, f"il protocollo dura {_num_fmt(durata)}s: "
                                 f"il massimo è {_num_fmt(DURATION_MAX)}s (novanta minuti)")

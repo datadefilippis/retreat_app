@@ -192,7 +192,7 @@ class TestRifiuti:
         ([{"metodo": "tone", "hz": 220, "battito_hz": 7, "durata_sec": 60, "gain": 0.3}], "non ha un battito"),
         ([{"metodo": "tone", "hz": 220, "durata_sec": 60,
            "pausa_dopo_sec": -5, "gain": 0.3}], "pausa"),
-        ([{"metodo": "tone", "hz": 220, "durata_sec": 30, "gain": 0.3}], "minimo è 60"),
+        ([{"metodo": "tone", "hz": 220, "durata_sec": 1, "gain": 0.3}], "minimo è 3"),
         ([{"metodo": "tone", "hz": 220, "durata_sec": 5500, "gain": 0.3}], "massimo è 5400"),
     ])
     def test_rifiutato_con_messaggio(self, steps, pezzo):
@@ -253,7 +253,7 @@ class TestModelloBackend:
         assert clean_steps([{"metodo": "tone", "hz": 220, "durata_sec": 60,
                              "gain": 0.3, "battito_hz": 7}]) is None
         assert clean_steps([{"metodo": "tone", "hz": 220,
-                             "durata_sec": 30, "gain": 0.3}]) is None  # < 60s
+                             "durata_sec": 1, "gain": 0.3}]) is None  # < 3s (DL 25/9: il pavimento e' 3 s)
 
     def test_il_modello_esiste_e_non_parla_di_salute(self):
         import sys

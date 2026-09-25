@@ -51,6 +51,8 @@ GUIDA_PAROLE = ("inspira", "espira")
 SPACE_PRESETS = {
     "audio": ("fermo", "respira", "orbita_lenta", "orbita", "avvolge"),
     "voice": ("fermo", "respira", "orbita_lenta", "vicina", "a_lato"),
+    # RS (25/9): il respiro registrato ha gli stessi posti della voce
+    "guida": ("fermo", "respira", "orbita_lenta", "vicina", "a_lato"),
 }
 STANZE = ("asciutta", "sala", "tempio", "cattedrale")
 
@@ -103,7 +105,7 @@ INTENTS = ("dormire", "meditare", "rilassare", "concentrare",
 # un WAV in memoria) resta SOLO su quella funzione (CONTINUO_MAX_SEC nel
 # client); la traccia pubblicata e' un file in streaming e non ha
 # limiti; il master oltre i 30 si codifica a blocchi (render.js).
-DURATION_MIN, DURATION_MAX = 60, 5400          # 1 min .. 90 min
+DURATION_MIN, DURATION_MAX = 3, 5400           # 3 s .. 90 min (DL 25/9: anche tracce brevi)
 # 30 e non due ore (decisione founder 21/8): l'ascolto a schermo
 # bloccato — la funzione piu' preziosa su telefono — regge fino a 30
 # minuti (CONTINUO_MAX_SEC). Col tetto, NESSUNA traccia pubblicata
@@ -263,6 +265,14 @@ def clean_layer(raw, duration):
                   if k in GUIDA_PAROLE and isinstance(v, str) and 1 <= len(v) <= 64}
         if puliti:
             out["parole"] = puliti
+        # RS (25/9): effetto e spazio SOLO se scelti — una ricetta di ieri
+        # resta identica (niente fx, niente space = niente nodi nel motore)
+        if raw.get("fx") in VOICE_FX:
+            out["fx"] = raw.get("fx")
+            out["fx_amount"] = _num(raw.get("fx_amount"), 0.0, 1.0, 0.6)
+        sp = clean_space("guida", raw.get("space"))
+        if sp:
+            out["space"] = sp
         return out
     method = raw.get("method")
     if method not in METHODS:
