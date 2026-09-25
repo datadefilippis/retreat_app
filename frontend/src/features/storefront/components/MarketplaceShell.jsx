@@ -373,7 +373,6 @@ export default function MarketplaceShell({ children, minimal = false, noSearch =
   // RT2 — fase network: menu della rete e CTA candidatura. In fase
   // marketplace tornano le voci piene e il funnel operatori /inizia.
   const navItems = isNetwork ? NETWORK_NAV_ITEMS : NAV_ITEMS;
-  const operatorTo = isNetwork ? '/entra-nella-rete' : '/inizia';
   /* founder 2/8/2026 — non piu' una domanda ("sei un operatore?") ma
      una destinazione. E "professionisti", non "operatori": e' la parola
      con cui il founder ha deciso di chiamarli su tutto il sito. */
@@ -409,9 +408,6 @@ const PRO_CTA = `rounded-full border border-[#8a7440] bg-[#8a7440]/[0.07]
      RB6 (10/9/2026, REBRANDING): lo stesso gesto delle due porte e
      della landing — «Apri il tuo spazio» — cosi' header, home e landing
      dicono UNA cosa sola all'operatore olistico. */
-  const operatorLabel = isNetwork
-    ? t('marketplace.forProfessionals', { defaultValue: 'Apri il tuo spazio' })
-    : t('marketplace.forOrganizers', { defaultValue: 'Sei un professionista?' });
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const [destinations, setDestinations] = React.useState(_destCache || []);
@@ -434,6 +430,17 @@ const PRO_CTA = `rounded-full border border-[#8a7440] bg-[#8a7440]/[0.07]
   const [hasOperatorToken, setHasOperatorToken] = React.useState(() => {
     try { return Boolean(localStorage.getItem('token')); } catch { return false; }
   });
+  /* 25/9 (founder) — a chi ha GIA' il cappello operatore la voce d'oro
+     non dice piu' «Apri il tuo spazio» (l'invito a registrarsi che ha
+     prodotto un doppio account) ma «Il tuo spazio», verso il gestionale. */
+  const operatorTo = isNetwork
+    ? (hasOperatorToken ? '/dashboard' : '/entra-nella-rete')
+    : '/inizia';
+  const operatorLabel = isNetwork
+    ? (hasOperatorToken
+      ? t('marketplace.tuoSpazio', { defaultValue: 'Il tuo spazio' })
+      : t('marketplace.forProfessionals', { defaultValue: 'Apri il tuo spazio' }))
+    : t('marketplace.forOrganizers', { defaultValue: 'Sei un professionista?' });
   const accountTo = hasPlatformToken ? '/account' : '/accedi';
 
   // LR1 — "Esci" dal menu dell'omino: rimuove il token piattaforma E la

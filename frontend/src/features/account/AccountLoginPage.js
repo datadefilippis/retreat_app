@@ -29,6 +29,7 @@ import { authAPI } from '../../api/auth';
 import useSeoMeta from '../storefront/lib/useSeoMeta';
 import MarketplaceShell from '../storefront/components/MarketplaceShell';
 import { salvaProva, emailDellaProva } from '../../lib/cerchio';
+import GiaDentro from '../../components/GiaDentro';
 // E2 (24/9/2026) — testo unico e versionato della casella del Cerchio
 import { testoConsenso, VERSIONE_CORRENTE } from '../../lib/testiConsenso';
 
@@ -77,6 +78,9 @@ export default function AccountLoginPage() {
   // signup() di AuthContext che usa /entra-nella-rete (che resta intatta).
   // ?pro=1 accende l'interruttore da URL (deep link per il menu, domani).
   const { signup: operatorSignup } = useAuth();
+  const { isAuthenticated } = useAuth();
+  // 25/9 (founder) — «email già esistente»: non un testo, ma due gesti
+  const [esiste, setEsiste] = useState(false);
   const [isPro, setIsPro] = useState(params.get('pro') === '1');
   const proParam = params.get('pro');
   useEffect(() => { setIsPro(proParam === '1'); }, [proParam]);
@@ -142,7 +146,7 @@ export default function AccountLoginPage() {
   const [signupConsent, setSignupConsent] = useState(false);
 
   const goTo = (view) => {
-    setState(view); setError(null);
+    setState(view); setError(null); setEsiste(false);
     // RU-bis (founder 4/9): uscendo dalla registrazione (torni al login,
     // o hai gia' inviato) l'interruttore professionista si spegne da
     // solo e ?pro sparisce: la scheda riparte sempre neutra. Il deep
@@ -391,8 +395,9 @@ export default function AccountLoginPage() {
             defaultValue: 'Troppi tentativi ravvicinati: aspetta un minuto e riprova.',
           }));
         } else if (status === 409) {
+          setEsiste(true);
           setError(t('landings:account.proSignupExists', {
-            defaultValue: 'Questa email ha già uno spazio su Aurya. Accedi oppure usa Password dimenticata.',
+            defaultValue: 'Questa email ha già uno spazio su Aurya: non serve registrarsi di nuovo.',
           }));
         } else {
           setError(extractApiError(err, t('landings:account.requestError', {
@@ -425,8 +430,9 @@ export default function AccountLoginPage() {
           defaultValue: 'Troppi tentativi ravvicinati: aspetta un minuto e riprova.',
         }));
       } else if (status === 409) {
+        setEsiste(true);
         setError(t('landings:account.signupExists', {
-          defaultValue: 'Questa email ha già un account Aurya. Accedi oppure usa Password dimenticata.',
+          defaultValue: 'Questa email ha già un account Aurya: non serve registrarsi di nuovo.',
         }));
       } else if (status === 400 && detail) {
         setError(String(detail));
@@ -440,10 +446,17 @@ export default function AccountLoginPage() {
     }
   };
 
+  /* 25/9 (founder) — chi ha GIA' la sessione aperta (caso Marilisa: due
+     account in un giorno) non trova il form ma «Sei già dentro», con i
+     gesti utili. Vale per login e registrazione; le viste di verifica,
+     OTP e reset restano raggiungibili. */
+  const giaDentro = isAuthenticated && !token && (state === 'form' || state === 'signup');
+
   return (
     <MarketplaceShell>
     <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
       <div className="w-full max-w-sm rounded-2xl border border-gray-200 bg-white p-6 text-center">
+        {giaDentro ? <GiaDentro compatto /> : (<>
         {state === 'verifying' && (
           <>
             <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto" />
@@ -815,6 +828,18 @@ export default function AccountLoginPage() {
                 </span>
               </label>
               {error && <p className="text-xs text-red-600">{error}</p>}
+              {error && esiste && (
+                <div className="flex flex-col gap-2 pt-1" data-testid="signup-esiste">
+                  <button type="button" onClick={() => goTo('form')}
+                          className="w-full rounded-xl bg-primary text-primary-foreground py-2.5 text-sm font-semibold">
+                    {t('landings:account.esisteAccedi', { defaultValue: 'Accedi con questa email' })}
+                  </button>
+                  <button type="button" onClick={() => goTo('reset')}
+                          className="text-xs font-medium text-primary underline underline-offset-2">
+                    {t('landings:account.esisteReset', { defaultValue: 'Non ricordi la password? Ne scegli una nuova' })}
+                  </button>
+                </div>
+              )}
               {error && nonVerificata && (
                 <p className="text-xs" data-testid="login-rimanda-verifica">
                   {rimando === 'done'
@@ -886,6 +911,7 @@ export default function AccountLoginPage() {
           </Link>
         </p>
 
+        </>)}
       </div>
     </div>
     </MarketplaceShell>

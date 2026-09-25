@@ -22,12 +22,14 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
 import { authAPI } from '../../api/auth';
 import { validatePassword, extractApiError } from '../../pages/AuthPages';
+import GiaDentro from '../../components/GiaDentro';
 
 const FIELD_CLS = 'w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm '
   + 'focus:border-[#376254] focus:outline-none';
 
 export default function InlineSignupForm() {
   const { signup } = useAuth();
+  const { isAuthenticated } = useAuth();   // 25/9: «Sei già dentro» al posto del form
   const navigate = useNavigate();
   const { t, i18n } = useTranslation('auth');
   const { t: tl } = useTranslation('landings');
@@ -68,6 +70,21 @@ export default function InlineSignupForm() {
         setError(t('signup.too_fast', { defaultValue: 'Troppi tentativi ravvicinati: aspetta un minuto e riprova.' }));
         return;
       }
+      if (err.response?.status === 409) {
+        // 25/9 — non un errore: un invito ad accedere con quella email
+        setError(
+          <span data-testid="ol-signup-esiste">
+            {t('signup.exists', { defaultValue: 'Questa email ha già uno spazio su Aurya: non serve registrarsi di nuovo.' })}{' '}
+            <Link to={`/accedi?email=${encodeURIComponent(email.trim())}`} className="font-semibold underline underline-offset-2">
+              {t('signup.exists_login', { defaultValue: 'Accedi' })}
+            </Link>{' · '}
+            <Link to="/accedi?vista=reset" className="font-semibold underline underline-offset-2">
+              {t('signup.exists_reset', { defaultValue: 'Password dimenticata' })}
+            </Link>
+          </span>,
+        );
+        return;
+      }
       if (err.response?.status === 202
           || err.response?.data?.status === 'verification_required') {
         setVerificationRequired(true);
@@ -106,6 +123,11 @@ export default function InlineSignupForm() {
         {error && <p className="mt-2 text-xs text-red-700">{error}</p>}
       </div>
     );
+  }
+
+  // 25/9 (founder) — sessione gia' aperta: niente form, «Sei già dentro»
+  if (isAuthenticated) {
+    return <GiaDentro />;
   }
 
   return (
