@@ -121,7 +121,7 @@ Informativa v2.8 e Termini: account necessario per vedere i contatti e per ordin
 
 **Rischi e mitigazioni**: cache 45 s del profilo pubblico (il JSON dei flag è cacheabile: nessun dato personale); Googlebot vede i flag e non i valori, coerente con l'HTML; operatori: email «da oggi vedi chi chiede i tuoi contatti» (una riga nella Lettera degli operatori, non un giro nuovo). **Stima**: 1 giorno.
 
-### R4 · Misura e regia
+### R4 · Misura e regia (FATTO il 25/9 sera: sezione «porta» nei numeri del lunedì, card e riga interruttori nella Panoramica)
 
 System admin → Cerchio: provenienza `account` nei conteggi e nelle vie. Operatori: colonna «richieste contatto (30 gg)». Dashboard: account creati per giorno, richieste di contatto, ordini con account, iscritti da account. Un solo endpoint `GET /admin/funnel` che legge le collezioni esistenti (nessuna scrittura). **Stima**: mezza giornata. **Guardie**: `test_regia_funnel_r4.py`.
 

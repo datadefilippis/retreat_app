@@ -177,10 +177,38 @@ async def numeri_del_lunedi(
     from services.sequenze import conta_invii
     sequenze = await conta_invii(d30)
 
+    # 8. LA PORTA (R4, 25/9/2026): account Aurya creati, richieste di
+    #    contatto (persone e operatori raggiunti), ordini nati con l'account,
+    #    iscritti al Cerchio arrivati dall'account, stato degli interruttori.
+    #    Solo conteggi, mai email.
+    from core.flags import contatti_dietro_porta, login_senza_verifica
+    from database import (contact_requests_collection, orders_collection,
+                          platform_accounts_collection)
+    def _da(campo, d):
+        return {"$or": [{campo: {"$gte": d}}, {campo: {"$gte": iso(d)}}]}
+    acc_7 = await platform_accounts_collection.count_documents(_da("created_at", d7))
+    acc_30 = await platform_accounts_collection.count_documents(_da("created_at", d30))
+    acc_tot = await platform_accounts_collection.count_documents({})
+    rc_righe = await contact_requests_collection.count_documents({"quando": {"$gte": iso(d30)}})
+    rc_persone = len(await contact_requests_collection.distinct("platform_account_id", {"quando": {"$gte": iso(d30)}}))
+    rc_operatori = len(await contact_requests_collection.distinct("org_id", {"quando": {"$gte": iso(d30)}}))
+    ordini_30 = await orders_collection.count_documents(_da("created_at", d30))
+    ordini_account_30 = await orders_collection.count_documents(
+        {"$and": [_da("created_at", d30), {"platform_account_id": {"$nin": [None, ""]}}]})
+    cerchio_account_30 = await sub_.count_documents(
+        {"$and": [_da("created_at", d30), {"provenienza.canale": "account"}]})
+    porta = {"account_7g": acc_7, "account_30g": acc_30, "account_totali": acc_tot,
+             "richieste_30g": rc_righe, "persone_30g": rc_persone, "operatori_raggiunti_30g": rc_operatori,
+             "ordini_30g": ordini_30, "ordini_con_account_30g": ordini_account_30,
+             "cerchio_via_account_30g": cerchio_account_30,
+             "interruttori": {"contatti_dietro_porta": contatti_dietro_porta(),
+                              "login_senza_verifica": login_senza_verifica()}}
+
     payload = {"cerchio": {"confermati": confermati, "con_citta": con_citta,
                            "con_ritiri": con_ritiri, "nuovi_7g": nuovi_7g, "porte_30g": porte},
                "ritiri": ritiri, "visite": visite, "operatori": operatori,
                "richieste": richieste, "euro": euro, "sequenze_30g": sequenze,
+               "porta": porta,
                "generated_at": iso(now)}
     _cache["lunedi"] = (time.monotonic(), payload)
     return payload

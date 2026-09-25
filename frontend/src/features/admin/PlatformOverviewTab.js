@@ -11,7 +11,7 @@
  * system a parte. Sola lettura, cache server 60s.
  */
 import React, { useCallback, useEffect, useState } from 'react';
-import { Wallet, TrendingUp, Globe2, CalendarCheck, RefreshCw, Users, Eye, Inbox, Sparkles } from 'lucide-react';
+import { Wallet, TrendingUp, Globe2, CalendarCheck, RefreshCw, Users, Eye, Inbox, Sparkles, KeyRound } from 'lucide-react';
 import api from '../../api/client';
 import { adminAPI } from '../../api';
 import { StatCard, TrendArea, DonutSplit } from '../../components/charts';
@@ -115,7 +115,17 @@ export default function PlatformOverviewTab() {
           <StatCard loading={loading} icon={Wallet} label="Ritiri incassati (30 giorni)"
                     value={lunedi ? eur(lunedi.euro.ritiri_30g) : '—'}
                     sublabel="servizi e piani: ordini manuali, fuori da qui" />
+          {/* R4 (25/9/2026) — LA PORTA: account creati, richieste di contatto
+              (il lead agli operatori), ordini nati con l'account, Cerchio via account */}
+          <StatCard loading={loading} icon={KeyRound} label="La porta (30 giorni)"
+                    value={lunedi?.porta ? `${lunedi.porta.account_30g} account` : '—'}
+                    sublabel={lunedi?.porta ? `${lunedi.porta.richieste_30g} richieste di contatto da ${lunedi.porta.persone_30g} persone a ${lunedi.porta.operatori_raggiunti_30g} operatori · ${lunedi.porta.ordini_con_account_30g}/${lunedi.porta.ordini_30g} ordini con account · ${lunedi.porta.cerchio_via_account_30g} nel Cerchio via account · ${lunedi.porta.account_totali} account in tutto` : ''} />
         </div>
+        {lunedi?.porta?.interruttori && (
+          <p className="mt-3 text-xs text-muted-foreground" data-testid="numeri-lunedi-porta">
+            Interruttori: contatti dietro la porta {lunedi.porta.interruttori.contatti_dietro_porta ? 'ACCESO' : 'spento'} · accesso prima della verifica email {lunedi.porta.interruttori.login_senza_verifica ? 'ACCESO' : 'spento'}
+          </p>
+        )}
         {lunedi && Object.keys(lunedi.cerchio.porte_30g || {}).length > 0 && (
           <p className="mt-3 text-xs text-muted-foreground" data-testid="numeri-lunedi-porte">
             Porte degli ultimi 30 giorni: {Object.entries(lunedi.cerchio.porte_30g).sort((a, b) => b[1] - a[1]).map(([k, n]) => `${k} ${n}`).join(' · ')}
