@@ -59,6 +59,15 @@ async def go():
           and b and b['email'] == 'spaziomarilisa@gmail.com')
     if not ok:
         print('CONDIZIONI NON RISPETTATE: non elimino nulla'); return
+    # il telefono, l'unico dato in piu' del secondo account, passa al primo (solo se il primo non ce l'ha)
+    pp2 = (await db.organizations.find_one({'id': ORG_DOPPIA}, {'_id':0,'public_profile.public_phone':1}) or {}).get('public_profile') or {}
+    tel = pp2.get('public_phone')
+    if tel:
+        r_tel = await db.organizations.update_one({'id': ORG_BUONA, 'public_profile.public_phone': {'\$in': [None, '']}}, {'\$set': {'public_profile.public_phone': tel}})
+        print('telefono copiato sul primo account:', tel, '| scritto:', r_tel.modified_count == 1)
+        dopo = await db.organizations.find_one({'id': ORG_BUONA}, {'_id':0,'public_profile.public_phone':1})
+        if ((dopo or {}).get('public_profile') or {}).get('public_phone') != tel:
+            print('TELEFONO NON COPIATO: non elimino nulla'); return
     from services.hard_delete_service import cascade_hard_delete
     r = await cascade_hard_delete(ORG_DOPPIA)
     print('eliminato:', {k: v for k, v in r.items() if v})
