@@ -132,6 +132,14 @@ export default function InlineSignupForm() {
 
   return (
     <form onSubmit={submit} className="space-y-4" data-testid="ol-inline-signup">
+      {/* 25/9 (founder) — chi ha gia' un account deve vederlo PRIMA di
+          compilare, non in un link piccolo in fondo */}
+      <p className="rounded-lg bg-[#f4f1ea] px-3 py-2 text-center text-sm text-gray-700" data-testid="ol-hai-account">
+        {tl('opPro.haveAccount', { defaultValue: 'Hai già un account?' })}{' '}
+        <Link to="/accedi" className="font-semibold text-[#2f5749] underline underline-offset-2">
+          {tl('opPro.loginLink', { defaultValue: 'Accedi' })}
+        </Link>
+      </p>
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">

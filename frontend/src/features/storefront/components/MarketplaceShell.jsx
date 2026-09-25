@@ -40,6 +40,7 @@ import {
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from '../../../components/ui/sheet';
 import { scordaProva } from '../../../lib/cerchio';
 import { vociAccount } from '../../../lib/cappelli';
+import StrisciaBentornato from '../../../components/StrisciaBentornato';
 
 // S5 — destinazioni top nel footer (link programmatici): cache a livello
 // modulo, il footer è su ogni pagina e non deve rifetchare a ogni nav.
@@ -695,6 +696,11 @@ const PRO_CTA = `rounded-full border border-[#8a7440] bg-[#8a7440]/[0.07]
           </nav>
         )}
       </header>
+
+      {/* 25/9 (founder) — a chi ha il cappello operatore: «Ciao, sei dentro,
+          la tua pagina è al passo N di 3 → Continua». Nasce dal doppio
+          account di Marilisa: il puntino sull'omino non basta. */}
+      {hasOperatorToken && <StrisciaBentornato />}
 
       {/* LC6 — il landmark <main>: nessuna pagina pubblica lo aveva,
           quindi chi naviga con uno screen reader non poteva saltare

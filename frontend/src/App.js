@@ -33,6 +33,7 @@ import { StorefrontPrivacyPage, StorefrontTermsPage } from "./pages/StorefrontLe
 import CustomerReconsentModal from "./features/customer-portal/CustomerReconsentModal";
 // Wave GDPR-Admin Phase E — re-consent modal + cookie disclosure
 import ReconsentModal from "./components/legal/ReconsentModal";
+import SpazioRedirect from "./components/SpazioRedirect";
 import CookieConsentBanner from "./components/legal/CookieConsentBanner";
 import { trackPageView } from "./lib/analytics";
 const ModulesPage = lazy(() => import("./pages/ModulesPage"));
@@ -558,6 +559,8 @@ function AppRoutes() {
       />
       {/* AB3 — i piani spiegati per esteso, linkata dalla FAQ "Quanto costa?" */}
       <Route path="/costi" element={<PricingPage />} />
+      {/* 25/9 (founder) — l'indirizzo da dire a voce: dentro → gestionale, fuori → accesso */}
+      <Route path="/spazio" element={<SpazioRedirect />} />
       <Route path="/newsletter" element={<NewsletterLandingPage />} />
       {/* BN2 — pagine token del double opt-in (noindex, servite 200 dalla shell) */}
       <Route path="/newsletter/conferma/:token" element={<NewsletterConfirmPage />} />

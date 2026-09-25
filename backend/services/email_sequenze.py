@@ -128,6 +128,10 @@ def benvenuto_operatore(email: str, nome: str, verification_token: str, locale: 
                 Telegram degli operatori Aurya: le novità, le richieste che arrivano, noi a
                 un messaggio di distanza.</li>
             </ol>
+            <p><strong>Per rientrare, quando vuoi:</strong> <a href="{APP_URL}/spazio">aurya.life/spazio</a>,
+            con la tua email e la password che hai scelto. Se la dimentichi, «Password
+            dimenticata» te ne fa scegliere una nuova in un minuto. Non serve registrarsi
+            di nuovo.</p>
             <p>Se qualcosa non torna, rispondi a questa email: la legge Valentina.</p>
             {_firma()}
         """, locale or "it", reply_to=risposte_a())
