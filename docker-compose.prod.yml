@@ -97,6 +97,11 @@ services:
       # endpoint default-denies (503), so unconfigured deployments are safe.
       - BREVO_WEBHOOK_SECRET=${BREVO_WEBHOOK_SECRET:-}
       - APP_URL=${APP_URL:-https://aurya.life}
+      # Interruttori (core/flags.py + services/sequenze): letti a ogni chiamata,
+      # ma il container li vede SOLO se elencati qui (25/9/2026, R2).
+      - CONTATTI_DIETRO_PORTA=${CONTATTI_DIETRO_PORTA:-}
+      - LOGIN_SENZA_VERIFICA=${LOGIN_SENZA_VERIFICA:-}
+      - CERCHIO_SINGOLO_OPTIN=${CERCHIO_SINGOLO_OPTIN:-}
       # PUBLIC_APP_URL is the customer-facing host embedded in
       # post-purchase email links (/t/<token>, /b/<token>, /rsv/<token>,
       # /d/<token>, /account/courses/...). Without this var the backend
