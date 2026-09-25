@@ -19,6 +19,7 @@ import { creaAccount, entraInAurya } from '../../utils/authLinks';
 import { prova, emailDellaProva, sblocca, iscriviESblocca, migraVecchieChiavi } from '../../lib/cerchio';
 import { testoConsenso } from '../../lib/testiConsenso';
 import AvvisamiRitiri, { useAvvisamiRitiri } from '../prelaunch/AvvisamiRitiri';
+import { ValoreCerchio, FiduciaCerchio, PorteCerchio, CTA_ISCRIVITI } from './CorpoCerchio';
 import './frequenze.css';
 import './meditazioni.css';
 import SoundTopbar from './SoundTopbar';
@@ -122,9 +123,24 @@ export default function MeditazioniPage() {
      non mettiamo opzioni di ritiri?»): il blocco «avvisami» condiviso,
      spento di default — chi vuole solo le meditazioni lascia l'email */
   const avvisami = useAvvisamiRitiri(false);
+  /* la porta di chi e' gia' dentro (25/9): senza email nel form il
+     riquadro apre il suo campo, l'errore si legge li' e non sotto il form */
+  const [msgPorta, setMsgPorta] = useState('');
+  const [chiediEmail, setChiediEmail] = useState(false);
+  const sbloccaGiaDentro = async () => {
+    if (!email) { setChiediEmail(true); return; }
+    setBusy(true); setMsgPorta('');
+    try {
+      await sblocca(email);
+      await loadCatalog();
+    } catch (err) {
+      setMsgPorta(err?.response?.data?.detail
+        || 'Non troviamo questa email nel Cerchio: controlla o iscriviti qui sopra.');
+    } finally { setBusy(false); }
+  };
   const subscribe = async (e) => {
     e.preventDefault();
-    if (!consent) { setMsg('Serve il consenso alle email del Cerchio'); return; }
+    if (!consent) { setMsg('Serve il consenso alle email del Cerchio: spunta la casella qui sopra.'); return; }
     setBusy(true); setMsg('');
     try {
       const esito = await iscriviESblocca({
@@ -166,46 +182,32 @@ export default function MeditazioniPage() {
               sessioni vibrazionali composte dai professionisti della rete
             </div>
           </header>
-          <section className="bib" style={{ textAlign: 'center', marginTop: 10 }}>
-            <p style={{ fontSize: 15, lineHeight: 1.7 }}>
-              {teaserCount > 0
-                ? <>Qui dentro {teaserCount === 1 ? "c'è una sessione composta" : `ci sono ${teaserCount} sessioni composte`} dai professionisti di Aurya, per dormire, meditare, rilassarsi, concentrarsi.</>
-                : <>Qui vivranno le sessioni composte dai professionisti di Aurya, per dormire, meditare, rilassarsi, concentrarsi.</>}
-              {' '}<b>L'ascolto completo è per chi è nel Cerchio di Aurya</b>:
-              entrare è gratis, e ti apre anche i ritiri in anteprima e la Lettera.
-            </p>
-            {/* founder 3/9 sera: mai una strada chiusa — chi non vuole
-                ancora entrare puo' prima ascoltare l'assaggio da 90
-                secondi su Aurya Sound */}
-            <p style={{ fontSize: 14, marginTop: 10 }} data-testid="med-assaggio">
-              Vuoi prima un assaggio?{' '}
-              <a href="/sound" style={{ color: 'var(--water)' }}>
-                Ascolta novanta secondi su Aurya Sound, senza iscriverti →
-              </a>
-            </p>
+          {/* 25/9/2026 (founder, link condiviso sui social): lo schermo
+              d'invito e' una pagina di valore — il testo del founder, il
+              form con le tre cose facoltative, le due porte di chi e' gia'
+              dentro in evidenza. Parole e porte in CorpoCerchio.jsx, le
+              stesse del cancello della traccia. */}
+          <section className="bib cerchio-soglia" data-testid="med-soglia">
+            <ValoreCerchio
+              intro={<>Le esperienze sonore di Aurya sono disponibili per intero all’interno del Cerchio di Aurya.
+                {teaserCount > 0 && <> Qui dentro {teaserCount === 1 ? "c’è già una sessione composta" : `ci sono già ${teaserCount} sessioni composte`} dai professionisti di Aurya.</>}</>} />
             {attesaConferma && (
               /* NL-septies — prima iscrizione: il cancello si apre col
                  clic nell'email, come per le guide del Magazine */
-              <div className="warnbox" style={{ maxWidth: 440, margin: '18px auto 0', textAlign: 'left' }}
+              <div className="warnbox" style={{ margin: '14px 0 0', textAlign: 'left' }}
                 data-testid="med-attesa-conferma">
                 Ti abbiamo scritto: apri l’email e clicca «Entro nel Cerchio».
                 Il link ti riporta qui, con le meditazioni sbloccate.
               </div>
             )}
-            <form onSubmit={subscribe} style={{ maxWidth: 440, margin: '18px auto 0' }}>
+            <form onSubmit={subscribe} className="cerchio-form">
               {/* US: il nome sopra l'email, facoltativo, come in ogni form del Cerchio */}
               <input type="text" value={nome} maxLength={80} placeholder="il tuo nome (facoltativo)"
                 onChange={(e) => setNome(e.target.value)}
-                style={{ width: '100%', boxSizing: 'border-box', marginBottom: 8 }}
                 data-testid="med-nome" />
-              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                <input type="email" required value={email} placeholder="la tua email"
-                  onChange={(e) => setEmail(e.target.value)}
-                  style={{ flex: 1, minWidth: 200 }} />
-                <button type="submit" className="primary" disabled={busy}>
-                  {busy ? 'Un attimo…' : 'Entra nel Cerchio e sblocca'}
-                </button>
-              </div>
+              <input type="email" required value={email} placeholder="la tua email"
+                onChange={(e) => setEmail(e.target.value)}
+                data-testid="med-email" />
               <div style={{ marginTop: 10 }}>
                 <AvvisamiRitiri {...avvisami} accent="#d6c49a" scuro testid="med-avvisami" />
               </div>
@@ -224,35 +226,41 @@ export default function MeditazioniPage() {
                   {' '}<a href="/privacy" target="_blank" rel="noreferrer"
                     style={{ color: 'var(--water)' }}>Privacy</a></span>
               </label>
+              {msg && <p style={{ color: 'var(--alert)', fontSize: 12.5, marginTop: 8 }}>{msg}</p>}
+              <button type="submit" className="primary cerchio-cta" disabled={busy} data-testid="med-iscriviti">
+                {busy ? 'Un attimo…' : `${CTA_ISCRIVITI} →`}
+              </button>
+              <FiduciaCerchio />
             </form>
-            {msg && <p style={{ color: 'var(--alert)', fontSize: 12, marginTop: 10 }}>{msg}</p>}
-            <p style={{ fontSize: 13, color: 'var(--dim)', marginTop: 18 }}>
-              Sei già nel Cerchio?{' '}
-              <button type="button" className="readmore" style={{ display: 'inline' }}
-                onClick={async () => {
-                  if (!email) { setMsg('Scrivi la tua email qui sopra e ripremi'); return; }
-                  setBusy(true); setMsg('');
-                  try {
-                    await sblocca(email);
-                    await loadCatalog();
-                  } catch (err) {
-                    setMsg(err?.response?.data?.detail || 'Email non riconosciuta');
-                  } finally { setBusy(false); }
-                }}>Sblocca con la tua email</button>
-            </p>
             {/* NL-octies (20/8, founder), «Crealo gratis» portava alla
                 schermata di ACCESSO e buttava via l'email appena
-                scritta. Le due strade ora dicono ciascuna la sua, e si
+                scritta. Le due strade dicono ciascuna la sua, e si
                 portano dietro l'indirizzo e il ritorno qui. */}
-            <p style={{ fontSize: 13, color: 'var(--dim)', marginTop: 8 }}>
-              Hai un account Aurya?{' '}
-              <a href={entraInAurya(email, '/meditazioni')}
-                data-testid="med-gate-accedi"
-                style={{ color: 'var(--water)' }}>Accedi</a>
-              {' '}· non ce l'hai?{' '}
-              <a href={creaAccount(email, '/meditazioni')}
-                data-testid="med-gate-crea"
-                style={{ color: 'var(--water)' }}>Crealo gratis</a>
+            <PorteCerchio
+              chiediEmail={chiediEmail} email={email} setEmail={setEmail}
+              onSblocca={sbloccaGiaDentro} invio={busy} msgSblocco={msgPorta}
+              sblocca={(
+                <button type="button" className="porta-azione" data-testid="med-gia-dentro"
+                  onClick={sbloccaGiaDentro}>Sblocca con la tua email</button>
+              )}
+              accedi={(
+                <a href={entraInAurya(email, '/meditazioni')}
+                  data-testid="med-gate-accedi"
+                  className="porta-azione">Accedi</a>
+              )}
+              crea={(
+                <a href={creaAccount(email, '/meditazioni')}
+                  data-testid="med-gate-crea"
+                  className="porta-secondaria">Crealo gratis</a>
+              )} />
+            {/* founder 3/9 sera: mai una strada chiusa — chi non vuole
+                ancora entrare puo' prima ascoltare l'assaggio da 90
+                secondi su Aurya Sound */}
+            <p className="cerchio-assaggio" data-testid="med-assaggio">
+              Vuoi prima un assaggio?{' '}
+              <a href="/sound" style={{ color: 'var(--water)' }}>
+                Ascolta novanta secondi su Aurya Sound, senza iscriverti →
+              </a>
             </p>
           </section>
         </main>

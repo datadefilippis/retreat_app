@@ -48,11 +48,17 @@ class TestFn2CancelloInChiaro:
         (anteprime, la Lettera). «Il Cerchio» e' il nome, «la Lettera»
         una delle cose che ricevi; «newsletter» non compare piu'."""
         c = (FQ / "CancelloLettera.jsx").read_text()
-        assert "per chi è nel Cerchio di Aurya" in c
-        assert "<b>gratis</b>" in c
-        assert "meditazioni riservate" in c and "la Lettera" in c
-        assert "newsletter di Aurya" not in c and "ricevere la newsletter" not in c, \
-            "il cancello non deve piu' chiamarla newsletter"
+        corpo = (FQ / "CorpoCerchio.jsx").read_text()
+        # 25/9/2026: il testo e' del founder e vive in CorpoCerchio (uguale
+        # sulla vetrina /meditazioni); il cancello lo monta
+        assert "<ValoreCerchio" in c and "<PorteCerchio" in c
+        assert "TITOLO_CERCHIO = 'Entra nel Cerchio di Aurya'" in corpo
+        assert "all’interno del Cerchio di Aurya" in c
+        assert "L’iscrizione è gratuita" in corpo and "la Lettera di Aurya" in corpo
+        assert "CTA_ISCRIVITI = 'Iscriviti gratuitamente e inizia ad ascoltare'" in corpo
+        for src in (c, corpo):
+            assert "newsletter di Aurya" not in src and "ricevere la newsletter" not in src, \
+                "il cancello non deve piu' chiamarla newsletter"
 
     def test_le_tre_porte_restano(self):
         """Iscriviti / gia' iscritto / account: nessuna via persa."""

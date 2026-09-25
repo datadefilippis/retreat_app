@@ -5,8 +5,16 @@
  * gergo interno («l'ascolto completo è di chi riceve la Lettera») a
  * visitatori che non sanno cosa sia la Lettera. Qui il copy dice le
  * cose in chiaro — cosa ottieni (la meditazione completa), cosa
- * costa (l'iscrizione gratuita alla newsletter) — e il brand («la
+ * costa (l'iscrizione gratuita al Cerchio) — e il brand («la
  * Lettera») è un'apposizione, mai una premessa.
+ *
+ * 25/9/2026 (founder, link delle meditazioni condiviso sui social): il
+ * cancello diventa una pagina di valore. Il testo e' del founder
+ * («Entra nel Cerchio di Aurya… Iscriviti gratuitamente e inizia ad
+ * ascoltare»), le due strade di chi e' gia' dentro — «Sei già nel
+ * Cerchio? Sblocca con la tua email» e «Hai un account Aurya?» — sono
+ * due riquadri in evidenza, non una riga grigia in fondo. Parole e porte
+ * vivono in CorpoCerchio.jsx, uguali sulla vetrina /meditazioni.
  *
  * E' UN componente per TUTTI i cancelli dell'ascolto: la pagina
  * traccia (variante 'scuro', dentro il suo overlay fqz) e la landing
@@ -20,6 +28,7 @@ import { sblocca, iscriviESblocca } from '../../lib/cerchio';
 import { testoConsenso } from '../../lib/testiConsenso';
 import { creaAccount, entraInAurya } from '../../utils/authLinks';
 import AvvisamiRitiri, { useAvvisamiRitiri } from '../prelaunch/AvvisamiRitiri';
+import { ValoreCerchio, FiduciaCerchio, PorteCerchio, CTA_ISCRIVITI } from './CorpoCerchio';
 
 /* US (10/9/2026 notte, founder: «nella newsletter delle meditazioni non
    mettiamo opzioni di ritiri?»): anche il cancello chiede, con LO STESSO
@@ -39,13 +48,15 @@ export default function CancelloLettera({
   const [invio, setInvio] = useState(false);
   const [attesa, setAttesa] = useState(false);
   const [msg, setMsg] = useState('');
+  const [msgPorta, setMsgPorta] = useState('');
+  const [chiediEmail, setChiediEmail] = useState(false);
   const chiaro = variante === 'chiaro';
   const dove = returnTo || (slug ? `/frequenze/${slug}` : '/meditazioni');
   const avvisami = useAvvisamiRitiri(false);
 
   const iscrivi = async (e) => {
     e.preventDefault();
-    if (!consent) { setMsg('Serve il consenso alle email del Cerchio'); return; }
+    if (!consent) { setMsg('Serve il consenso alle email del Cerchio: spunta la casella qui sopra.'); return; }
     setInvio(true); setMsg('');
     try {
       const esito = await iscriviESblocca({
@@ -59,71 +70,57 @@ export default function CancelloLettera({
     } finally { setInvio(false); }
   };
 
+  /* la porta di chi e' gia' dentro: se l'email non e' ancora scritta il
+     riquadro apre il suo campo (niente «scrivila qui sopra e ripremi») */
   const giaIscritto = async () => {
-    if (!email) { setMsg('Scrivi la tua email qui sopra e ripremi'); return; }
-    setInvio(true); setMsg('');
+    if (!email) { setChiediEmail(true); return; }
+    setInvio(true); setMsgPorta('');
     try { await sblocca(email); onSbloccato && onSbloccato(); }
     catch (err) {
-      setMsg(err?.response?.data?.detail || 'Email non riconosciuta');
+      setMsgPorta(err?.response?.data?.detail
+        || 'Non troviamo questa email nel Cerchio: controlla o iscriviti qui sopra.');
     } finally { setInvio(false); }
   };
 
   /* i vestiti dei due mondi: la sostanza non cambia */
   const S = chiaro ? {
-    titolo: 'font-serif text-2xl sm:text-3xl mb-3',
-    corpo: 'text-base text-muted-foreground',
-    input: 'flex-1 min-w-[200px] rounded-xl border border-[#d8cfba] bg-white px-5 py-3.5 text-base',
-    bottone: 'inline-flex items-center gap-2 rounded-full px-7 py-3.5 text-base font-medium transition hover:opacity-90 disabled:opacity-50',
-    nota: 'text-sm text-muted-foreground',
+    input: 'w-full rounded-xl border border-[#d8cfba] bg-white px-5 py-3.5 text-base',
+    bottone: 'mt-3 inline-flex w-full items-center justify-center gap-2 rounded-full px-7 py-3.5 text-base font-medium transition hover:opacity-90 disabled:opacity-50',
     warn: 'mt-4 rounded-xl border border-[#c9b37e] bg-[#faf6ec] px-5 py-4 text-sm',
     err: 'mt-3 text-sm text-[#a03434]',
+    link: 'font-semibold text-[#2f5749] underline underline-offset-2',
+    porta: 'rounded-full border border-[#2f5749] px-4 py-2 text-sm font-semibold text-[#2f5749] transition hover:bg-[#2f5749]/5',
   } : null;
 
   return (
     <div data-testid="cancello-lettera">
       {/* CN3 (3/9/2026, piano IL CERCHIO): il cancello parla di
-          appartenenza, non di newsletter — cosa ottieni (la meditazione
-          completa), cosa costa (entrare nel Cerchio: gratis), cos'altro
-          arriva (anteprime e Lettera). «Il Cerchio» e' il nome, «la
-          Lettera» una delle cose che ricevi. */}
-      <h2 className={chiaro ? S.titolo : undefined}>
-        La meditazione completa è per chi è nel Cerchio di Aurya.
-      </h2>
-      <p className={chiaro ? S.corpo : undefined}>
-        {durataSec > 120 && <>Sono {fmtMin(durataSec)} in tutto. </>}
-        Entrare è <b>gratis</b>: lasci l&rsquo;email, confermi, e da
-        quel momento ascolti tutte le meditazioni riservate, ricevi i
-        ritiri in anteprima e la Lettera.
-      </p>
+          appartenenza, non di newsletter — «Il Cerchio» e' il nome, «la
+          Lettera» una delle cose che ricevi. Dal 25/9 il testo e' del
+          founder e sta in CorpoCerchio. */}
+      <ValoreCerchio chiaro={chiaro}
+        intro={<>Questa esperienza sonora è disponibile per intero all’interno del Cerchio di Aurya.
+          {durataSec > 120 && <> Sono {fmtMin(durataSec)} in tutto.</>}</>} />
       {attesa && (
         <div className={chiaro ? S.warn : 'warnbox'}
-          style={chiaro ? undefined : { margin: '12px 0', textAlign: 'left' }}
+          style={chiaro ? undefined : { margin: '14px 0 0', textAlign: 'left' }}
           data-testid="cancello-attesa">
           Ti abbiamo scritto: apri l&rsquo;email e clicca «Entro nel
           Cerchio». Ti riporta qui, con la meditazione intera sbloccata.
         </div>
       )}
-      <form onSubmit={iscrivi} className={chiaro ? 'mt-5' : undefined}>
+      <form onSubmit={iscrivi} className={chiaro ? 'mt-5' : 'cerchio-form'}>
         {/* US: il nome sopra l'email, facoltativo, come in ogni form del Cerchio */}
         <input type="text" value={nome} maxLength={80}
           placeholder="il tuo nome (facoltativo)"
           onChange={(e) => setNome(e.target.value)}
-          className={chiaro ? `${S.input} mb-2 w-full` : undefined}
-          style={chiaro ? undefined : { width: '100%', boxSizing: 'border-box', marginBottom: 8 }}
+          className={chiaro ? `${S.input} mb-2` : undefined}
           data-testid="cancello-nome" />
-        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-          <input type="email" required value={email}
-            placeholder="la tua email"
-            onChange={(e) => setEmail(e.target.value)}
-            className={chiaro ? S.input : undefined}
-            style={chiaro ? undefined : { flex: 1, minWidth: 200 }} />
-          <button type="submit" disabled={invio}
-            className={chiaro ? S.bottone : 'primary'}
-            style={chiaro ? { background: '#14212b', color: '#f6f2e8' } : undefined}
-            data-testid="cancello-iscriviti">
-            {invio ? 'Un attimo…' : 'Entra nel Cerchio e continua l’ascolto →'}
-          </button>
-        </div>
+        <input type="email" required value={email}
+          placeholder="la tua email"
+          onChange={(e) => setEmail(e.target.value)}
+          className={chiaro ? S.input : undefined}
+          data-testid="cancello-email" />
         <div style={{ marginTop: 10 }}>
           <AvvisamiRitiri {...avvisami} accent={chiaro ? '#2f5749' : ORO} scuro={!chiaro}
                           testid="cancello-avvisami" />
@@ -131,7 +128,7 @@ export default function CancelloLettera({
         {/* US (founder: «il flag di accettazione e' piccolissimo»): casella
             18px nell'oro di casa, testo 13px leggibile sullo scuro */}
         <label style={{ display: 'flex', gap: 10, alignItems: 'flex-start', lineHeight: 1.45,
-                        fontSize: 13, marginTop: 12, cursor: 'pointer',
+                        fontSize: 13, marginTop: 12, cursor: 'pointer', textAlign: 'left',
                         color: chiaro ? undefined : 'var(--bone)' }}
           className={chiaro ? 'text-muted-foreground' : undefined}>
           <input type="checkbox" checked={consent}
@@ -145,28 +142,36 @@ export default function CancelloLettera({
               style={chiaro ? undefined : { color: 'var(--water)' }}
               className={chiaro ? 'underline' : undefined}>Privacy</a></span>
         </label>
+        {msg && (
+          <p className={chiaro ? S.err : undefined}
+            style={chiaro ? undefined : { color: 'var(--alert)', fontSize: 12.5, marginTop: 8 }}>
+            {msg}
+          </p>
+        )}
+        <button type="submit" disabled={invio}
+          className={chiaro ? S.bottone : 'primary cerchio-cta'}
+          style={chiaro ? { background: '#14212b', color: '#f6f2e8' } : undefined}
+          data-testid="cancello-iscriviti">
+          {invio ? 'Un attimo…' : `${CTA_ISCRIVITI} →`}
+        </button>
+        <FiduciaCerchio chiaro={chiaro} />
       </form>
-      {msg && (
-        <p className={chiaro ? S.err : undefined}
-          style={chiaro ? undefined : { color: 'var(--alert)', fontSize: 12, marginTop: 8 }}>
-          {msg}
-        </p>
-      )}
-      <p className={chiaro ? 'mt-4 text-sm text-muted-foreground' : undefined}
-        style={chiaro ? undefined : { fontSize: 12.5, color: 'var(--dim)', marginTop: 14 }}>
-        Sei già iscritto?{' '}
-        <button type="button" data-testid="cancello-gia-iscritto"
-          className={chiaro ? 'underline' : 'readmore'}
-          style={chiaro ? undefined : { display: 'inline' }}
-          onClick={giaIscritto}>Sblocca con la tua email</button>
-        {' '}· hai un account Aurya?{' '}
-        <a href={entraInAurya(email, dove)} data-testid="cancello-accedi"
-          className={chiaro ? 'underline' : undefined}
-          style={chiaro ? undefined : { color: 'var(--water)' }}>Accedi</a>
-        {' '}· <a href={creaAccount(email, dove)} data-testid="cancello-crea"
-          className={chiaro ? 'underline' : undefined}
-          style={chiaro ? undefined : { color: 'var(--water)' }}>Crealo gratis</a>
-      </p>
+      <PorteCerchio chiaro={chiaro}
+        chiediEmail={chiediEmail} email={email} setEmail={setEmail}
+        onSblocca={giaIscritto} invio={invio} msgSblocco={msgPorta}
+        sblocca={(
+          <button type="button" data-testid="cancello-gia-iscritto"
+            className={chiaro ? S.porta : 'porta-azione'}
+            onClick={giaIscritto}>Sblocca con la tua email</button>
+        )}
+        accedi={(
+          <a href={entraInAurya(email, dove)} data-testid="cancello-accedi"
+            className={chiaro ? S.porta : 'porta-azione'}>Accedi</a>
+        )}
+        crea={(
+          <a href={creaAccount(email, dove)} data-testid="cancello-crea"
+            className={chiaro ? S.link : 'porta-secondaria'}>Crealo gratis</a>
+        )} />
       {children}
     </div>
   );

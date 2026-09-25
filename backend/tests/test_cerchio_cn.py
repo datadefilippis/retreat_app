@@ -120,9 +120,13 @@ class TestCn3Ribrand:
         assert landings["nwHome"]["letterCta"] == "Entra nel Cerchio"
         assert landings["manifesto"]["ctaLetterPrimary"] == "Entra nel Cerchio di Aurya"
         cancello = (FE / "features" / "frequenze" / "CancelloLettera.jsx").read_text()
-        assert "per chi è nel Cerchio di Aurya" in cancello
+        corpo = (FE / "features" / "frequenze" / "CorpoCerchio.jsx").read_text()
+        assert "del Cerchio di Aurya" in cancello and "Entra nel Cerchio di Aurya" in corpo
         med = (FE / "features" / "frequenze" / "MeditazioniPage.js").read_text()
-        assert "nel Cerchio di Aurya" in med and "Sei già nel Cerchio?" in med
+        # 25/9: le due porte («Sei già nel Cerchio?», «Hai un account Aurya?»)
+        # sono riquadri condivisi in CorpoCerchio, montati dalla vetrina
+        assert "del Cerchio di Aurya" in med and "<PorteCerchio" in med
+        assert "Sei già nel Cerchio?" in corpo and "Hai un account Aurya?" in corpo
         shell_fe = (FE / "features" / "storefront" / "components" / "MarketplaceShell.jsx").read_text()
         assert "'Il Cerchio di Aurya'" in shell_fe
         # la Lettera resta il nome dell'email dentro il Cerchio: non sparisce,
