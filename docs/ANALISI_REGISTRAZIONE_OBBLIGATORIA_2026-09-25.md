@@ -10,10 +10,10 @@
 
 | Domanda | Risposta del piano |
 |---|---|
-| Contatti (telefono, email, Instagram, Facebook, sito) sul profilo `/o/` e nella scheda dello store | **Visibili solo con account Aurya.** Chi non ce l'ha lo crea sul posto: email, codice a 6 cifre, fatto. |
+| Contatti (telefono, email, Instagram, Facebook, sito) sul profilo `/o/` e nella scheda dello store | **Visibili solo con account Aurya.** Chi non ce l'ha lo crea sul posto: nome, email, password, fatto (il codice a 6 cifre resta solo per entrare senza password). |
 | Pagina link `/@slug` (bio Instagram dell'operatore) | **Invariata.** È traffico che porta l'operatore da solo. |
-| Ordinare (profilo, store, landing ritiro) | **Account obbligatorio.** Stessa porta, stesso codice. Chi ha già la sessione salta il passo. La strada ospite si spegne con un interruttore, solo quando i numeri del cancello contatti dicono che la porta funziona. |
-| Newsletter (il Cerchio) | **Mai condizione.** Casella separata, spenta, nel momento subito dopo il codice: lì l'email è già provata, quindi l'iscrizione è confermata all'istante senza doppio opt-in. È il punto di massima resa, ed è l'unico modo lecito. |
+| Ordinare (profilo, store, landing ritiro) | **Account obbligatorio.** Stessa porta, stessa password. Chi ha già la sessione salta il passo. La strada ospite si spegne con un interruttore, solo quando i numeri del cancello contatti dicono che la porta funziona. |
+| Newsletter (il Cerchio) | **Mai condizione.** Casella separata, spenta, nella creazione dell'account; l'iscrizione si conferma da sola nel momento in cui l'email viene provata (link di verifica o codice), senza un secondo clic. È il punto di massima resa, ed è l'unico modo lecito. |
 | Widget embed sui siti degli operatori | **Invariati.** Sono clienti dell'operatore sul suo sito: nessun account Aurya lì. |
 | SEO | **Invariata**, con una sola conseguenza: il telefono esce dal JSON-LD LocalBusiness, perché Google non deve vedere ciò che una persona non vede. Costo modesto e spiegato al §6. |
 
@@ -61,11 +61,21 @@ Rate limit su codice (5/min) e verifica (10/min), honeypot, limiti per IP ora no
 
 ## 2. Il disegno: una porta, tre usi
 
-**`PortaAurya`** (componente unico, nasce da `AuryaQuickLogin`): email → codice a 6 cifre → sessione. Tre stati: *chiusa* (form email), *codice inviato*, *dentro* (saluto col nome). Con sessione già aperta non si vede nemmeno.
+*Aggiornato dopo la decisione del founder (25/9 sera): l'account si crea con una password, mai senza.*
 
-- Per un'email nuova mostra una riga sotto il campo: «Creando l'account accetti Termini e Privacy di Aurya» con i link (la casella non serve: l'atto di chiedere il codice con quella riga visibile è l'accettazione, come nel signup passwordless che già esiste) e manda `accepted_terms=True`. Per un'email esistente non cambia nulla.
-- Subito dopo il codice, **la riga del Cerchio**: casella spenta, testo cerchio-v3, «Con la Lettera ascolti le meditazioni complete e ricevi i ritiri in anteprima». Se spuntata → `iscrivi(..., gia_verificato=True)` → confermato subito, prova salvata nel browser (le meditazioni si sbloccano nello stesso istante), provenienza `canale=account, superficie=contatti|checkout`. Se l'email è già nel Cerchio, la riga non compare.
-- Facoltativi, chiesti una volta e mai bloccanti: nome (se manca), telefono (al checkout, salvato sull'account), città e il blocco «Avvisami sui ritiri» (solo se ha spuntato il Cerchio, riusa `AvvisamiRitiri`).
+**`PortaAurya`** (componente unico, in `features/account`): due viste.
+
+- **Entra**: email + password (`/platform/auth/login`). Sotto: «Non hai un account? Crealo», «Accedi senza password» (il codice a 6 cifre resta come ripiego: magic-link + code/verify) e «Password dimenticata?» (la vista `recupero` di `/accedi`).
+- **Crea**: nome, email, password con le quattro regole di `/accedi` (12 caratteri, minuscola, maiuscola, numero), la casella legale obbligatoria «Accetto i Termini e la Privacy di Aurya» (`accepted_terms`, senza la quale il server risponde 400) e, separata e spenta, **la riga del Cerchio** col testo unico e versionato (cerchio-v3) e sotto «Con la Lettera ascolti le meditazioni complete e ricevi i ritiri in anteprima». → `/platform/auth/signup` con `wants_newsletter` e `consenso_versione`.
+
+Il momento della verifica. Con password, l'email si prova al clic sul link di verifica (non al codice). Due comportamenti, decisi dall'interruttore `LOGIN_SENZA_VERIFICA` (E6, lo stesso già deciso per gli operatori):
+
+- **acceso**: il signup risponde già con la sessione; la porta si chiude e si prosegue (contatti o ordine); l'email si prova «per uso» al primo clic su un nostro link (verifica, ordine, Lettera). L'export GDPR resta rigido.
+- **spento** (oggi): «Ti abbiamo scritto: apri l'email e conferma. Poi entra con la tua password».
+
+In entrambi i casi, quando l'email viene provata (link di verifica, codice, magic link) l'iscrizione al Cerchio chiesta nella riga passa da «in attesa» a **confermata** nello stesso istante (`segna_verificato`, tipo «account»): nessun secondo clic, nessuna email di conferma in più. Chi non spunta la riga non riceve nulla di marketing.
+
+Con sessione già aperta la porta non si vede: nome, email e telefono si prefillano dall'account (`/platform/me`, che ora porta anche `city`).
 
 Usi: **U1** riquadro contatti, **U2** passo «I tuoi dati» del checkout, **U3** (già oggi) accesso da `/accedi`.
 
@@ -75,20 +85,19 @@ Usi: **U1** riquadro contatti, **U2** passo «I tuoi dati» del checkout, **U3**
 
 Ogni lotto: interruttore in `.env` (spento = comportamento di oggi, byte per byte), guardia con letterali, prova dal vivo sull'org demo, prova nel browser da visitatore, suite completa sulla baseline, deploy con interruttore spento, accensione a parte.
 
-### R1 · La porta unica (fondamenta, nessun cambio visibile)
+### R1 · La porta unica (FATTO il 25/9 sera, in locale)
 
 **Backend**
-- `POST /platform/auth/magic-link`: già accetta `accepted_terms`; si aggiunge `cerchio_optin` (bool, default false) e `consenso_versione`. Al **verify del codice** (email ora provata): se `cerchio_optin` era stato chiesto, `iscrivi(gia_verificato=True)` con provenienza `account`; risposta arricchita con `cerchio: {stato}` e la prova del Cerchio (token) per il browser. Nulla cambia per chi non manda i campi nuovi.
-- `PATCH /platform/me`: accetta `phone`, `city` (già `name`, `language`). Validazione come il profilo.
-- Rate limit invariati (5/min codice, 10/min verifica); nginx: la zona `signup` (5 r/m) copre anche `/api/platform/auth/magic-link` (oggi solo slowapi).
+- `services/platform_account_service`: `_conferma_cerchio_per_uso(email, dettaglio)` chiamata dove l'email viene provata (verify-email, codice, magic link) → il Cerchio in attesa si conferma (tipo «account»); `password_login` accetta gli account non verificati solo con `LOGIN_SENZA_VERIFICA` acceso.
+- `auth.get_current_platform_account`: sessione valida prima della verifica solo col flag; `get_current_platform_account_strict` per `/me/export`.
+- `POST /platform/auth/signup`: col flag acceso risponde con `access_token` + `verifica_morbida: true` nella stessa 202; spento, come prima.
+- `PATCH /me` e `GET /me`: `city`.
 
 **Frontend**
-- `components/PortaAurya.jsx` (in `features/account`): estratto da `AuryaQuickLogin`, con i tre stati, la riga legale per email nuove, la riga del Cerchio, callback `onDentro(account, {cerchio})`. `AuryaQuickLogin` diventa un involucro di `PortaAurya` (nessuna differenza per il checkout di oggi).
-- `lib/cerchio.js`: `salvaProva` chiamata anche dal verify (la prova arriva dal server).
+- `features/account/PortaAurya.jsx` (viste entra/codice/crea/inviata, mai un submit del form padre).
+- `AuryaQuickLogin`: «Hai già un account Aurya? Accedi · Non ce l'hai? Crealo» — la creazione con password vive nel pannello del checkout, la sessione e il prefill sono gli stessi di prima.
 
-**Guardie**: `test_porta_aurya_r1.py` (contratto delle rotte, `gia_verificato` solo dal verify, mai dal request; testi consenso versionati; nessun account senza `accepted_terms`; AuryaQuickLogin inalterato per i test AP1). Suite: `test_platform_accounts`, `test_cerchio_dati_cb`, `test_porte_cerchio_ce`, `test_ticket_account_ta`.
-
-**Rischi**: nessuno visibile; il verify che iscrive al Cerchio è additivo. **Stima**: 1 giorno.
+**Guardia**: `test_porta_aurya_r1.py` (letterali, flag spento di default, signup dal vivo con Cerchio in attesa e login rigido, verifica che conferma il Cerchio sul db locale).
 
 ### R5 · Legale (prima di accendere R2)
 

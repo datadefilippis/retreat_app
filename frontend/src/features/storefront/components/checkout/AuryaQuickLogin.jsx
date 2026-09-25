@@ -18,6 +18,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import platformApi, { PLATFORM_TOKEN_KEY } from '../../../../api/platformClient';
 import { salvaProva } from '../../../../lib/cerchio';
+import PortaAurya from '../../../account/PortaAurya';
 
 export default function AuryaQuickLogin({ onProfile }) {
   const { t, i18n } = useTranslation('storefront');
@@ -31,6 +32,9 @@ export default function AuryaQuickLogin({ onProfile }) {
   const [password, setPassword] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(null);
+  // R1 (25/9/2026, founder): l'account si CREA con una password, qui
+  // dentro, con la porta unica (PortaAurya) — stessa sessione, stesso prefill
+  const [creaAccount, setCreaAccount] = useState(false);
 
   // callback stabile: il parent puo' ricreare la closure a ogni render
   const onProfileRef = useRef(onProfile);
@@ -182,6 +186,17 @@ export default function AuryaQuickLogin({ onProfile }) {
             defaultValue: 'Hai già un account Aurya? Accedi',
           })}
         </button>
+        {' · '}
+        <button
+          type="button"
+          onClick={() => { setCreaAccount(true); setPhase('email'); }}
+          className="underline text-gray-700 hover:text-gray-900 font-medium"
+          data-testid="aurya-login-crea"
+        >
+          {t('storefront:checkout.auryaLogin.crea', {
+            defaultValue: 'Non ce l’hai? Crealo',
+          })}
+        </button>
       </p>
     );
   }
@@ -199,14 +214,22 @@ export default function AuryaQuickLogin({ onProfile }) {
         </p>
         <button
           type="button"
-          onClick={() => { setPhase('idle'); setError(null); }}
+          onClick={() => { setPhase('idle'); setError(null); setCreaAccount(false); }}
           className="text-[11px] text-gray-500 hover:text-gray-700"
         >
           {t('storefront:checkout.auryaLogin.cancel', { defaultValue: 'Annulla' })}
         </button>
       </div>
 
-      {phase === 'email' && (
+      {creaAccount && (
+        <PortaAurya vista="crea" emailIniziale={email} contesto="checkout"
+          onDentro={(me) => {
+            setAccount(me); setPhase('done'); setCreaAccount(false);
+            onProfileRef.current?.(me);
+          }} />
+      )}
+
+      {!creaAccount && phase === 'email' && (
         <div className="space-y-2">
           <p className="text-[11px] text-gray-500">
             {t('storefront:checkout.auryaLogin.emailHint', {
@@ -251,7 +274,7 @@ export default function AuryaQuickLogin({ onProfile }) {
         </div>
       )}
 
-      {phase === 'password' && (
+      {!creaAccount && phase === 'password' && (
         <div className="space-y-2">
           <p className="text-[11px] text-gray-500">
             {t('storefront:checkout.auryaLogin.passwordHint', {
@@ -306,7 +329,7 @@ export default function AuryaQuickLogin({ onProfile }) {
         </div>
       )}
 
-      {phase === 'sent' && (
+      {!creaAccount && phase === 'sent' && (
         <div className="space-y-2">
           <p className="text-[11px] text-gray-500">
             {t('storefront:checkout.auryaLogin.sentHint', {

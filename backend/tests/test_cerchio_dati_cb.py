@@ -204,7 +204,7 @@ class TestB3VerificaPerUso:
         sig2 = inspect.signature(v.link_verificante)
         assert list(sig2.parameters) == ["email", "path"]
         assert not inspect.iscoroutinefunction(v.link_verificante)
-        assert v.TIPI == ("conferma", "clic", "otp", "admin")
+        assert v.TIPI == ("conferma", "clic", "otp", "admin", "account")   # R1 (25/9): l'email dell'account provata
 
     def test_il_link_verificante(self):
         from core.subscriber_token import decode_subscriber_token

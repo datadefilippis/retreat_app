@@ -205,6 +205,8 @@ async def consume_magic_link(token: str) -> Optional[Dict[str, Any]]:
         {"id": result["account_id"], "is_active": True}, {"_id": 0},
     )
     if account:
+        await _conferma_cerchio_per_uso(account["email"], "magic-link")
+    if account:
         logger.info("platform_account: login magic-link per %s", account["id"])
         # ID (20/8) — email appena verificata: se esiste un operatore
         # verificato con la stessa email, il legame dei cappelli nasce qui
@@ -267,6 +269,7 @@ async def verify_login_code(email: str, code: str) -> Optional[Dict[str, Any]]:
         {"id": account["id"]},
         {"$set": {"email_verified": True, "last_login_at": _iso(now)}},
     )
+    await _conferma_cerchio_per_uso(account["email"], "codice")
     # ID (20/8) — email appena verificata: se esiste un operatore
     # verificato con la stessa email, il legame dei cappelli nasce qui
     try:
@@ -407,6 +410,18 @@ async def record_aurya_consent_audit(*, account_id: Optional[str], email: str,
         logger.exception("AP-L: audit consenso Aurya fallito per %s", email)
 
 
+async def _conferma_cerchio_per_uso(email: str, dettaglio: str) -> None:
+    """R1 (25/9/2026) — l'email dell'account e' appena stata PROVATA (clic
+    di verifica, codice a 6 cifre, magic link): se nel Cerchio era in
+    attesa, si conferma qui — lo stesso «verificato per uso» del 24/9.
+    Best-effort: non blocca mai l'accesso."""
+    try:
+        from services.verifica_email import segna_verificato
+        await segna_verificato(email, "account", dettaglio)
+    except Exception:  # noqa: BLE001
+        logger.warning("conferma Cerchio per uso fallita per %s", email, exc_info=True)
+
+
 async def password_signup(*, name: Optional[str], email: str, password: str,
                           language: Optional[str] = None,
                           accepted_terms: bool = False,
@@ -539,6 +554,7 @@ async def verify_signup_email(token: str) -> Dict[str, Any]:
                   "verification_token_expires": None}},
     )
     logger.info("platform_account: email verificata per %s", account["id"])
+    await _conferma_cerchio_per_uso(account["email"], "verify-email")
     # ID (20/8) — stesso auto-link della strada magic/OTP
     try:
         from services.identity_link_service import auto_link_by_email
@@ -623,7 +639,10 @@ async def password_login(email: str, password: str) -> Dict[str, Any]:
 
     if not account.get("is_active", True):
         raise ValueError("ACCOUNT_DISABLED")
-    if not account.get("email_verified", False):
+    # R1 (25/9) — E6 esteso ai clienti: con l'interruttore acceso si entra
+    # anche prima del clic di verifica (poi l'email si prova «per uso»)
+    from core.flags import login_senza_verifica
+    if not account.get("email_verified", False) and not login_senza_verifica():
         raise ValueError("EMAIL_NOT_VERIFIED")
 
     await platform_accounts_collection.update_one(

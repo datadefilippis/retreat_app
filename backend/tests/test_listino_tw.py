@@ -1732,7 +1732,9 @@ class TestHubAccountAp2:
         router = (BACKEND_DIR / "routers" / "platform_accounts.py").read_text()
         # TUTTE le strade di login arricchiscono la risposta (magic link,
         # OTP e — da AP1b — anche il login password)
-        assert router.count("**await newsletter_status(account[\"email\"])") == 3
+        # R1 (25/9/2026): quattro — magic link, OTP, password e il signup
+        # con password quando LOGIN_SENZA_VERIFICA risponde gia' con la sessione
+        assert router.count("**await newsletter_status(account[\"email\"])") == 4
         # /platform/me espone il booleano per il render (senza token)
         assert "with_token=False" in router
 

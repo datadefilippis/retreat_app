@@ -19,7 +19,8 @@ from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from pydantic import BaseModel, Field
 
-from auth import create_platform_token, get_current_platform_account
+from auth import (create_platform_token, get_current_platform_account,
+                  get_current_platform_account_strict)
 from routers.auth import limiter
 from models.common import utc_now
 
@@ -59,6 +60,8 @@ class ProfileUpdate(BaseModel):
     name: Optional[str] = Field(None, max_length=120)
     phone: Optional[str] = Field(None, max_length=40)
     language: Optional[str] = Field(None, max_length=5)
+    # R1 (25/9) — la citta', per i ritiri vicini e il prefill; facoltativa
+    city: Optional[str] = Field(None, max_length=80)
 
 
 @router.post("/auth/magic-link", status_code=202)
@@ -268,6 +271,20 @@ async def password_signup_ep(body: PasswordSignup, request: Request):
         if body.wants_newsletter:
             await _subscribe_to_letter(request, body.email, body.name,
                                        body.language, body.consenso_versione)
+        # R1 (25/9/2026, E6 esteso ai clienti): con LOGIN_SENZA_VERIFICA
+        # acceso la porta si chiude subito — la sessione viaggia nella
+        # stessa risposta e l'email si prova «per uso» (clic sul link di
+        # verifica o su un nostro link). Spento: 202 e «controlla la
+        # posta», come sempre.
+        from core.flags import login_senza_verifica
+        if login_senza_verifica():
+            from database import platform_accounts_collection
+            from services.platform_account_service import newsletter_status
+            account = await platform_accounts_collection.find_one(
+                {"email": body.email.strip().lower()}, {"_id": 0})
+            if account:
+                return {**out, **_login_response(account), "verifica_morbida": True,
+                        **await newsletter_status(account["email"])}
         return out
     except ValueError as e:
         msg = str(e)
@@ -373,7 +390,7 @@ async def password_reset_confirm_ep(body: PasswordResetConfirm,
 async def get_me(account: dict = Depends(get_current_platform_account)):
     _flag_enabled()
     out = {k: account.get(k) for k in
-           ("id", "email", "name", "phone", "language",
+           ("id", "email", "name", "phone", "city", "language",
             "email_verified", "created_at", "last_login_at")}
     # TA5 — la UI "imposta password" deve sapere se chiedere l'attuale
     out["has_password"] = bool(account.get("password_hash"))
@@ -403,7 +420,7 @@ async def update_me(body: ProfileUpdate,
         )
     fresh = {**account, **updates}
     return {k: fresh.get(k) for k in
-            ("id", "email", "name", "phone", "language")}
+            ("id", "email", "name", "phone", "city", "language")}
 
 
 class _PasswordChange(BaseModel):
@@ -588,7 +605,7 @@ async def get_my_orders(account: dict = Depends(get_current_platform_account)):
 
 
 @router.get("/me/export")
-async def export_my_data(account: dict = Depends(get_current_platform_account)):
+async def export_my_data(account: dict = Depends(get_current_platform_account_strict)):
     """GDPR — export JSON dei dati dell'identita' piattaforma + vista
     cliente delle prenotazioni. I dati interni degli operatori non
     escono da qui (titolarita' loro)."""

@@ -586,11 +586,17 @@ async def get_current_platform_account(
             detail="Account not found",
             headers={"WWW-Authenticate": "Bearer"},
         )
+    # R1 (25/9/2026) — E6 esteso ai clienti: con LOGIN_SENZA_VERIFICA acceso
+    # la sessione vale anche prima del clic di verifica (l'email si prova
+    # «per uso»: verify-email, codice, link nelle nostre email). Spento =
+    # rigido come sempre. L'export GDPR resta rigido (…_strict).
     if not account.get("email_verified"):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Email not verified",
-        )
+        from core.flags import login_senza_verifica  # noqa: PLC0415
+        if not login_senza_verifica():
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Email not verified",
+            )
 
     # logout-all: rifiuta token emessi prima dell'invalidazione
     inv = account.get("sessions_invalidated_at")
@@ -606,4 +612,16 @@ async def get_current_platform_account(
                 detail="Session invalidated",
             )
 
+    return account
+
+
+async def get_current_platform_account_strict(
+    account: dict = Depends(get_current_platform_account),
+) -> dict:
+    """R1 (25/9/2026) — come get_current_platform_account, ma l'email DEVE
+    essere verificata anche con LOGIN_SENZA_VERIFICA acceso: export GDPR e
+    tutto cio' che consegna dati a un indirizzo non ancora provato."""
+    if not account.get("email_verified"):
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
+                            detail="Email not verified")
     return account

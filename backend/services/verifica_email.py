@@ -32,7 +32,7 @@ from urllib.parse import quote
 
 logger = logging.getLogger(__name__)
 
-TIPI = ("conferma", "clic", "otp", "admin")
+TIPI = ("conferma", "clic", "otp", "admin", "account")
 
 
 def _mask(email: str) -> str:
