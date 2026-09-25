@@ -81,5 +81,6 @@ class TestGestalt:
         from services.pagine_locali import CATEGORIA_ARTICOLI
         assert DISCIPLINA_TO_CATEGORIA["counseling-gestalt"] == "crescita"
         assert CATEGORIA_ARTICOLI["counseling-gestalt"] == "crescita"
-        # 52 voci, 7 famiglie
-        assert len(DISCIPLINES) == 52 and len(DISCIPLINE_FAMILIES) == 7
+        # 53 voci (25/9: + percorsi-spirituali), 7 famiglie
+        assert len(DISCIPLINES) == 53 and len(DISCIPLINE_FAMILIES) == 7
+        assert DISCIPLINES["percorsi-spirituali"] == "Percorsi spirituali" and DISCIPLINA_TO_CATEGORIA["percorsi-spirituali"] == "crescita" and CATEGORIA_ARTICOLI["percorsi-spirituali"] == "crescita"

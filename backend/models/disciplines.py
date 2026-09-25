@@ -85,6 +85,8 @@ DISCIPLINE_FAMILIES = (
         ("cerchi-di-donne", "Cerchi di donne"),
         ("sacro-femminile", "Sacro femminile & Ciclicità"),
         ("sciamanesimo", "Pratiche sciamaniche"),
+        # 25/9/2026 (founder): la ricerca spirituale come pratica accompagnata
+        ("percorsi-spirituali", "Percorsi spirituali"),
         ("astrologia", "Astrologia"),
         ("numerologia", "Numerologia"),
         ("tarocchi-evolutivi", "Tarocchi evolutivi"),

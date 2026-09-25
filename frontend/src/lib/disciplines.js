@@ -94,6 +94,8 @@ export const DISCIPLINE_FAMILIES = Object.freeze([
       { slug: 'cerchi-di-donne', label: 'Cerchi di donne' },
       { slug: 'sacro-femminile', label: 'Sacro femminile & Ciclicità' },
       { slug: 'sciamanesimo', label: 'Pratiche sciamaniche' },
+      // 25/9/2026 (founder): la ricerca spirituale come pratica accompagnata
+      { slug: 'percorsi-spirituali', label: 'Percorsi spirituali' },
       { slug: 'astrologia', label: 'Astrologia' },
       { slug: 'numerologia', label: 'Numerologia' },
       { slug: 'tarocchi-evolutivi', label: 'Tarocchi evolutivi' },
@@ -167,6 +169,7 @@ export const CERCA_ANCHE = Object.freeze({
   'cerchi-di-donne': ['cerchio', 'donne'],
   'sacro-femminile': ['femminile', 'ciclicità', 'ciclo', 'luna'],
   sciamanesimo: ['sciamano', 'sciamana', 'sciamanico'],
+  'percorsi-spirituali': ['spiritualità', 'spirituale', 'cammino spirituale', 'ricerca interiore', 'preghiera', 'guida spirituale'],
   astrologia: ['astrologo', 'astrologa', 'tema natale', 'oroscopo'],
   numerologia: ['numeri'],
   'tarocchi-evolutivi': ['tarocchi', 'tarologa', 'tarologo'],
