@@ -1,111 +1,170 @@
-# Registrazione per vedere i contatti e per prenotare — analisi e piano
+# Account per vedere i contatti e per ordinare — analisi e piano (v2)
 
-*25 settembre 2026, sera. Richiesta del founder: «per ottenere più iscritti alla newsletter, chi vuole vedere social, sito, email o numero di un operatore deve essere iscritto ad Aurya come utente; anche per prenotare; i dati poi precompilati nell'ordine; un meccanismo dove obblighiamo a registrarsi ed essere iscritti alla newsletter. Snello, senza sfasciare ciò che funziona.»*
+*25 settembre 2026, sera. Richiesta del founder: chi vuole vedere social, sito, email o telefono di un operatore deve avere un account Aurya; per ordinare l'account diventa obbligatorio e i dati si precompilano; più iscritti al Cerchio. Vincoli: snello, senza regressioni su newsletter, creazione account e creazione ordini, solido e scalabile.*
 
-## 0. Risposta breve
+*v2: riscritto dopo la lettura integrale dei tre flussi (ordine, account, Cerchio). Sostituisce la v1 dello stesso giorno.*
 
-**Fattibile, con una correzione di rotta su una parola: «obbligare» vale per l'account, non per la newsletter.**
+---
 
-- **Account obbligatorio per prenotare e per vedere i contatti: sì.** È lecito, è normale nei marketplace, e i mattoni ci sono già (accesso senza password con codice a 6 cifre, prefill del checkout, sessione cliente).
-- **Newsletter obbligatoria: no.** Un consenso dato perché altrimenti non puoi prenotare non è un consenso (GDPR art. 7.4). La nostra stessa informativa (§7-bis) promette che il Cerchio è «specifico, non preselezionato e revocabile». Se lo rendiamo una condizione, ogni iscritto raccolto così è contestabile e l'informativa va riscritta.
-- **La via che porta più iscritti davvero:** la casella del Cerchio compare nel passaggio in cui la persona ha appena verificato l'email col codice. Non serve più il doppio opt-in: l'email è già provata, l'iscrizione è confermata all'istante (la strada `gia_verificato` esiste già). Casella separata, spenta, ma con il valore scritto accanto. È il punto di massima resa: la persona è dentro, ha fiducia, un clic e ha finito.
+## 0. Le decisioni, in chiaro
 
-Stima onesta dell'effetto: oggi il collo di bottiglia non è la newsletter, è il volume (4 ordini in totale, 7 account, 41 iscritti). Il cancello sui contatti produrrà registrazioni subito, perché i contatti li cerca chi ha già deciso di scrivere. Il cancello sul checkout va fatto dopo, misurando: ogni passo in più prima di pagare costa conversione, e con 2 ordini al mese non possiamo permetterci di scoprirlo tardi.
-
-## 1. Dove siamo (misurato in prod il 25/9)
-
-| Cosa | Numero |
+| Domanda | Risposta del piano |
 |---|---|
-| Account cliente (platform_accounts) | 7, di cui 6 con email verificata |
+| Contatti (telefono, email, Instagram, Facebook, sito) sul profilo `/o/` e nella scheda dello store | **Visibili solo con account Aurya.** Chi non ce l'ha lo crea sul posto: email, codice a 6 cifre, fatto. |
+| Pagina link `/@slug` (bio Instagram dell'operatore) | **Invariata.** È traffico che porta l'operatore da solo. |
+| Ordinare (profilo, store, landing ritiro) | **Account obbligatorio.** Stessa porta, stesso codice. Chi ha già la sessione salta il passo. La strada ospite si spegne con un interruttore, solo quando i numeri del cancello contatti dicono che la porta funziona. |
+| Newsletter (il Cerchio) | **Mai condizione.** Casella separata, spenta, nel momento subito dopo il codice: lì l'email è già provata, quindi l'iscrizione è confermata all'istante senza doppio opt-in. È il punto di massima resa, ed è l'unico modo lecito. |
+| Widget embed sui siti degli operatori | **Invariati.** Sono clienti dell'operatore sul suo sito: nessun account Aurya lì. |
+| SEO | **Invariata**, con una sola conseguenza: il telefono esce dal JSON-LD LocalBusiness, perché Google non deve vedere ciò che una persona non vede. Costo modesto e spiegato al §6. |
+
+**Perché la newsletter non può essere obbligatoria.** GDPR art. 7.4 e considerando 43: un consenso dato perché altrimenti non ottieni il servizio non è libero. La nostra informativa (§7-bis) dichiara il Cerchio «specifico, non preselezionato e revocabile». Ogni iscritto raccolto per obbligo sarebbe contestabile e l'informativa andrebbe riscritta al contrario. L'account invece è una necessità del servizio (art. 6.1.b) e non ha bisogno di consenso.
+
+---
+
+## 1. Come funziona oggi (letto nel codice, misurato in prod il 25/9)
+
+### 1.1 Numeri
+
+| Cosa | Prod |
+|---|---|
+| Account Aurya (`platform_accounts`) | 7, 6 verificati, 4 col timbro legale, **0 col telefono** |
 | Iscritti al Cerchio | 41 (22 confermati, 19 in attesa del clic) |
-| Ordini totali / ultimi 30 giorni | 4 / 2, tutti già legati a un account |
-| Operatori che mostrano i contatti | 7 su 23 pubblicati |
-| Operatori con almeno un social o sito | 27 (su 35 utenti operatore) |
+| Ordini | 4 in tutto, 2 negli ultimi 30 giorni, **tutti già con `platform_account_id`** (agganciati dopo, per email) |
+| Account per-store (`customer_accounts`, sistema legacy) | **0** |
+| Operatori con contatti mostrati / con social o sito | 7 / 27 |
 
-**Cosa esiste già e si riusa senza toccarlo:**
+### 1.2 Tre sistemi di identità, uno solo vivo
 
-1. **Accesso senza password** (`/platform/auth/magic-link` + `/platform/auth/code/verify`): email → codice a 6 cifre → sessione. Se l'email è nuova, l'account nasce da solo alla richiesta del codice e viene segnato verificato al primo uso. Zero password, venti secondi.
-2. **AuryaQuickLogin** nel checkout: pannello inline «Hai un account? Entra col codice», al successo prefilla nome ed email. Oggi è facoltativo: chi non entra compra come ospite.
-3. **Consensi sull'account**: chi ha l'account ha già accettato privacy e termini una volta; nel checkout le caselle legali spariscono (regola CG-4). Il consenso marketing resta una casella a parte.
-4. **Il Cerchio con prova**: token firmato (5 anni) che il server verifica per i contenuti riservati; `iscrivi(..., gia_verificato=True)` conferma senza doppio opt-in quando l'email è già provata (E6, 24/9). Alla creazione dell'account c'è già `wants_newsletter` che chiama la stessa iscrizione.
-5. **Profilo cliente** (`/platform/me`, PATCH): nome, telefono, lingua. Storico ordini e export GDPR già pronti.
-6. **Claim degli ordini**: gli ordini ospite vengono agganciati all'account via email. Con l'account obbligatorio non serve più.
+1. **Account Aurya** (`platform_accounts`, token `type=platform`, client `platformApi`): email + codice a 6 cifre (`/platform/auth/magic-link` → `/platform/auth/code/verify`), oppure password. Il codice **crea l'account da solo** se l'email è nuova, **ma solo se la richiesta porta `accepted_terms=True`** (AP-L: nessun account nasce senza timbro legale, fonte `signup_passwordless`). Il pannello inline del checkout (`AuryaQuickLogin`) oggi **non** manda quel flag: fa entrare chi ha già l'account, non crea.
+2. **Account per-store** (`customer_accounts`, `customerApi`, registrazione con password dal checkout, `wantRegister`): eredità ecommerce, obbligatorio solo per i corsi. In prod non esiste nessuno. È l'unica identità che `/public/order-request` legge dal Bearer.
+3. **Cliente CRM** (`customers`, per org): nasce a ogni ordine da nome+email, senza login.
 
-## 2. Le tre regole che non si negoziano
+**Conseguenza importante per il piano:** oggi l'ordine **non** viaggia con l'account Aurya. `/public/order-request` accetta solo il token per-store; l'account Aurya viene timbrato sull'ordine *dopo*, per email (`retroactive_claim` al login, o email di claim). Per rendere l'account obbligatorio all'ordine, l'ordine deve nascere già con `platform_account_id`, dal token, con l'email del token come email del cliente.
 
-1. **Newsletter mai condizione.** Casella separata, spenta, testo cerchio-v3, un clic per uscire. Chi non la spunta prenota lo stesso. (GDPR 7.4, considerando 43; informativa Aurya §7-bis e §4.1.)
-2. **SEO intatta.** Google deve vedere ciò che vede una persona. Se i contatti si vedono solo da loggati, il telefono esce anche dal JSON-LD LocalBusiness (oggi c'è): tenerlo nascosto agli umani e visibile a Google è cloaking di dati strutturati. Costo SEO: modesto (il posizionamento locale viene da nome, luogo, geo, recensioni, contenuti; il telefono nello schema serve ai rich result, non alla classifica). Tutto il resto resta com'è: pagine, sitemap, robots con `Allow: /api/public/`, fetcher AI.
-3. **La pagina link (/@slug) non si tocca.** È la bio Instagram dell'operatore: chi arriva da lì è già suo pubblico. Metterle un cancello sarebbe un torto all'operatore. Vale anche per i suoi social dentro quella pagina.
+### 1.3 Checkout
 
-## 3. Il disegno: «una porta, tre usi»
+- Un solo `CheckoutForm` + `useCheckoutForm` + `useCheckoutSubmit`, montati da StorefrontPage, OperatorProfilePage (checkout inline dal listino), InlineServiceCheckout, InlineEventCheckout, EventLandingPage. **Una modifica li copre tutti.**
+- Legale a due livelli (AP-L/CG-4): con sessione Aurya la casella «Accetto Termini e Privacy di Aurya» non compare (accettata alla creazione dell'account); la casella dell'operatore compare solo se ha pubblicato le sue condizioni.
+- Casella del Cerchio già presente (`cerchio_optin`, Lotto E del 24/9): dopo l'ordine `order_creation_service` iscrive l'email **in doppio opt-in**, perché l'email dell'ordine non è provata.
+- Pagamento: `payment_checkout_url` (Stripe) o richiesta/approvazione, deciso dal backend. Non si tocca.
 
-Un solo componente, **PortaAurya**: email → codice a 6 cifre → sessione cliente. Nasce da AuryaQuickLogin, oggi chiuso nel checkout, e si monta in tre posti.
+### 1.4 Contatti
 
-### 3.1 Contatti e canali dell'operatore (profilo /o/ e scheda «Chi siamo» dello store)
+- Profilo JSON: `contacts = {public_phone, has_email}` (dal giro anti-scrape di oggi); email al clic da `/public/operator/{slug}/contatti` (10/min, aperta). Social e sito in chiaro nel JSON (`socials`). JSON-LD con `telephone`.
+- Pagine: `OperatorProfilePage` (riquadro «Contatti» + riga social), `StoreAbout` (store), `LinkPage` (`/@slug`, resta libera).
 
-- Il JSON del profilo dice solo cosa c'è: `contacts = {has_phone, has_email, has_socials, has_website}`. Niente valori.
-- Il riquadro «Contatti» mostra: «Telefono, email, Instagram e sito: entra con la tua email per vederli. Venti secondi, nessuna password.» Sotto, PortaAurya inline. Chi ha già la sessione vede tutto subito.
-- La rotta `GET /public/operator/{slug}/contatti` (già in prod dal giro anti-scrape, oggi aperta con limite) richiede il bearer cliente e risponde con telefono, email, social, sito. Limite 30 al minuto per account.
-- **Il dato in più che vale per l'operatore:** ogni apertura scrive un evento `richiesta_contatto {account, org, quando, da dove}`. L'operatore vede nel gestionale «12 persone hanno chiesto i tuoi contatti» con nome ed email (è un lead, il motivo per cui è su Aurya). La persona lo sa prima di aprire: una riga «l'operatore vedrà che hai chiesto i suoi contatti» (trasparenza, informativa §2.2).
-- JSON-LD: via `telephone` (vedi regola 2). Resta tutto il resto del LocalBusiness.
+### 1.5 Difese già in piedi
 
-### 3.2 Prenotazione con account (checkout)
+Rate limit su codice (5/min) e verifica (10/min), honeypot, limiti per IP ora non aggirabili (AS1), consensi versionati e audit immutabile (`aurya_legal`, registro consensi), Cerchio con prova firmata e verifica «per uso».
 
-- Il passo «I tuoi dati» del checkout diventa PortaAurya se non c'è sessione: email → codice → dentro. Nome, email e telefono si prefillano dall'account; ciò che manca (telefono, nome) si chiede una volta e si salva sull'account (PATCH /platform/me).
-- Le caselle legali seguono la regola di oggi: sparite per chi ha l'account (accettate alla creazione), quindi il checkout si accorcia, non si allunga.
-- La strada ospite si spegne dietro un interruttore (`CHECKOUT_RICHIEDE_ACCOUNT`), acceso in prod solo dopo una settimana di misura del 3.1. Se l'interruttore è spento nulla cambia rispetto a oggi.
-- Ordini sempre con `customer_id`: la claim email diventa inutile.
+---
 
-### 3.3 La casella del Cerchio, nel momento giusto
+## 2. Il disegno: una porta, tre usi
 
-Subito dopo il codice verificato (in 3.1 e 3.2), una riga sola:
+**`PortaAurya`** (componente unico, nasce da `AuryaQuickLogin`): email → codice a 6 cifre → sessione. Tre stati: *chiusa* (form email), *codice inviato*, *dentro* (saluto col nome). Con sessione già aperta non si vede nemmeno.
 
-> ☐ Sì, mandami la Lettera del Cerchio di Aurya (meditazioni, guide, ritiri). Ti cancelli con un clic.
-> *Con la Lettera ascolti le meditazioni complete e ricevi i ritiri in anteprima.*
+- Per un'email nuova mostra una riga sotto il campo: «Creando l'account accetti Termini e Privacy di Aurya» con i link (la casella non serve: l'atto di chiedere il codice con quella riga visibile è l'accettazione, come nel signup passwordless che già esiste) e manda `accepted_terms=True`. Per un'email esistente non cambia nulla.
+- Subito dopo il codice, **la riga del Cerchio**: casella spenta, testo cerchio-v3, «Con la Lettera ascolti le meditazioni complete e ricevi i ritiri in anteprima». Se spuntata → `iscrivi(..., gia_verificato=True)` → confermato subito, prova salvata nel browser (le meditazioni si sbloccano nello stesso istante), provenienza `canale=account, superficie=contatti|checkout`. Se l'email è già nel Cerchio, la riga non compare.
+- Facoltativi, chiesti una volta e mai bloccanti: nome (se manca), telefono (al checkout, salvato sull'account), città e il blocco «Avvisami sui ritiri» (solo se ha spuntato il Cerchio, riusa `AvvisamiRitiri`).
 
-- Spenta di default, testo cerchio-v3 (lo stesso di tutte le porte, versionato).
-- Se spuntata: `iscrivi(gia_verificato=True)` → stato `confirmed` all'istante, prova del Cerchio salvata nel browser (le meditazioni si sbloccano nello stesso momento), provenienza `canale=account, superficie=contatti|checkout`, consenso registrato con versione, IP e pagina come oggi.
-- Se già nel Cerchio: la riga non compare («Sei nel Cerchio ✓»).
-- Chi non spunta: nessuna email marketing. Riceve solo le email transazionali dell'ordine.
+Usi: **U1** riquadro contatti, **U2** passo «I tuoi dati» del checkout, **U3** (già oggi) accesso da `/accedi`.
 
-### 3.4 Dati che si raccolgono (tutti dichiarati)
+---
 
-Account: email (verificata), nome, telefono, lingua. Facoltativi, chiesti una volta e mai bloccanti: città e, se spunta il Cerchio, il blocco «Avvisami sui ritiri» (vie, dove, budget) che già esiste. Eventi: richieste di contatto, ordini. Tutto visibile in regia (Cerchio → iscritti con provenienza `account`; Operatori → «lead dai contatti»).
+## 3. Lotti
 
-## 4. Piano a lotti (piccoli, isolati, ognuno con interruttore e guardia)
+Ogni lotto: interruttore in `.env` (spento = comportamento di oggi, byte per byte), guardia con letterali, prova dal vivo sull'org demo, prova nel browser da visitatore, suite completa sulla baseline, deploy con interruttore spento, accensione a parte.
 
-| Lotto | Cosa | Tocca | Rischio | Stima |
-|---|---|---|---|---|
-| **R1 Porta unica** | `PortaAurya` estratto da AuryaQuickLogin (email → codice → sessione, casella Cerchio con `gia_verificato`, prefill), profilo account con città | frontend storefront, `platform_accounts` (patch profilo), `subscribers.iscrivi` | basso: componente nuovo, nulla cambia finché non lo si monta | 1 giorno |
-| **R2 Contatti dietro la porta** | flag nel JSON, `/contatti` con bearer + evento `richiesta_contatto`, riquadro nuovo su /o/ e StoreAbout, via `telephone` dal JSON-LD, lead nel gestionale operatore | `public.py`, `seo_shell.py`, OperatorProfilePage, StoreAbout, una tab/card in dashboard | medio-basso: interruttore `CONTATTI_DIETRO_PORTA` (spento = oggi) | 1 giorno |
-| **R3 Checkout con account** | PortaAurya obbligatoria al passo dati, prefill telefono, salvataggio sull'account, ospite dietro `CHECKOUT_RICHIEDE_ACCOUNT` | CheckoutForm, useCheckoutForm, `/order-request` (customer_id obbligatorio se flag) | medio: è il checkout; si accende dopo la misura di R2 | 1 giorno |
-| **R4 Misura e regia** | contatori in system admin (account creati, richieste contatto, ordini con account, iscritti da account), provenienza `account` nella tab Cerchio | admin | basso | mezza giornata |
-| **R5 Legale** | informativa v2.8: account necessario per prenotare, richiesta di contatto condivisa con l'operatore, Cerchio sempre facoltativo; termini allineati | `backend/legal/*`, versione legale | basso, ma va fatto PRIMA di accendere R2 in prod | mezza giornata |
+### R1 · La porta unica (fondamenta, nessun cambio visibile)
 
-Ordine: **R1 → R5 → R2 (acceso) → R4 → una settimana di numeri → R3.**
+**Backend**
+- `POST /platform/auth/magic-link`: già accetta `accepted_terms`; si aggiunge `cerchio_optin` (bool, default false) e `consenso_versione`. Al **verify del codice** (email ora provata): se `cerchio_optin` era stato chiesto, `iscrivi(gia_verificato=True)` con provenienza `account`; risposta arricchita con `cerchio: {stato}` e la prova del Cerchio (token) per il browser. Nulla cambia per chi non manda i campi nuovi.
+- `PATCH /platform/me`: accetta `phone`, `city` (già `name`, `language`). Validazione come il profilo.
+- Rate limit invariati (5/min codice, 10/min verifica); nginx: la zona `signup` (5 r/m) copre anche `/api/platform/auth/magic-link` (oggi solo slowapi).
 
-Verifiche per ogni lotto: guardie sui letterali (come sempre), prova dal vivo sull'org demo, prova nel browser da visitatore, suite completa sulla baseline, deploy con interruttore spento e accensione da `.env.production`.
+**Frontend**
+- `components/PortaAurya.jsx` (in `features/account`): estratto da `AuryaQuickLogin`, con i tre stati, la riga legale per email nuove, la riga del Cerchio, callback `onDentro(account, {cerchio})`. `AuryaQuickLogin` diventa un involucro di `PortaAurya` (nessuna differenza per il checkout di oggi).
+- `lib/cerchio.js`: `salvaProva` chiamata anche dal verify (la prova arriva dal server).
 
-## 5. Cosa può rompersi, e come si evita
+**Guardie**: `test_porta_aurya_r1.py` (contratto delle rotte, `gia_verificato` solo dal verify, mai dal request; testi consenso versionati; nessun account senza `accepted_terms`; AuryaQuickLogin inalterato per i test AP1). Suite: `test_platform_accounts`, `test_cerchio_dati_cb`, `test_porte_cerchio_ce`, `test_ticket_account_ta`.
 
-- **Il checkout inline dal profilo e dalle landing ritiro** (PN/PP): stesso `CheckoutForm`, quindi R3 li copre tutti con un solo interruttore; le guardie del checkout (`test_ap*`, `test_checkout_*`) vanno aggiornate al passo nuovo.
-- **AuryaQuickLogin oggi non tocca i consensi** (CG-4): in R3 la persona con account non vede le caselle legali, come già oggi; chi crea l'account dal checkout le accetta lì, una volta.
-- **Codici a raffica**: `/platform/auth/magic-link` ha già rate limit e honeypot; il cancello contatti lo esporrà di più → limite per IP a 5 richieste/10 minuti (nginx zone signup già esiste).
-- **Google e i fetcher AI**: nessun cambio a robots, sitemap, shell; solo `telephone` sparisce dal LocalBusiness. Da verificare in Search Console la settimana dopo.
-- **Operatori**: comunicare la novità come «da oggi vedi chi chiede i tuoi contatti». Chi ha `show_contacts` acceso continua a mostrarli, solo a persone identificate.
-- **Utenti già nel Cerchio senza account**: alla porta, se l'email è già confermata nel Cerchio, il codice la lega all'account e la casella non compare.
+**Rischi**: nessuno visibile; il verify che iscrive al Cerchio è additivo. **Stima**: 1 giorno.
 
-## 6. Cosa non fare
+### R5 · Legale (prima di accendere R2)
 
-- Casella del Cerchio preselezionata, o «iscrivendoti accetti la newsletter»: consenso non valido, e l'informativa dice il contrario.
-- Cancello sulla pagina link /@slug o sull'anteprima dei ritiri: taglia il traffico che gli operatori portano da soli.
-- Nascondere i contatti agli umani lasciandoli nello schema per Google.
-- Password obbligatoria: il codice a 6 cifre basta; la password resta un'opzione per chi la vuole (già così).
-- Accendere R3 prima di aver visto una settimana di R2.
+Informativa v2.8 e Termini: account necessario per vedere i contatti e per ordinare; la richiesta di contatto è comunicata all'operatore (nome ed email, base: esecuzione del servizio richiesto dall'utente, art. 6.1.b); il Cerchio resta facoltativo e separato; conservazione delle richieste di contatto (12 mesi). Versione legale nuova → re-consent operatori come da meccanismo esistente; per i clienti Aurya il timbro `aurya_legal` porta la versione e la modale di ri-accettazione già gestisce i bump. **Stima**: mezza giornata. **Guardie**: `test_legal_*` sulla versione.
 
-## 7. Decisioni che servono dal founder
+### R2 · Contatti dietro la porta (interruttore `CONTATTI_DIETRO_PORTA`)
 
-1. Contatti dietro la porta: **tutti** (telefono, email, social, sito) o solo telefono ed email? Consiglio tutti: è ciò che genera il lead per l'operatore.
-2. Via il telefono dal JSON-LD (coerenza con quanto vede la persona): sì/no. Consiglio sì.
-3. Ordine dei lotti come sopra (contatti prima, checkout dopo una settimana di numeri): ok?
-4. Il lead all'operatore (nome ed email di chi apre i contatti): sì/no. Consiglio sì, dichiarato all'utente.
+**Backend**
+- `GET /public/operator/{slug}`: con interruttore acceso, `contacts` e `socials` diventano **flag**: `{has_phone, has_email, has_instagram, has_facebook, has_website}`; niente valori. Spento: come oggi.
+- `GET /public/operator/{slug}/contatti`: con interruttore acceso richiede Bearer `type=platform` (401 altrimenti), risponde con telefono, email, instagram, facebook, sito (solo quelli che l'operatore ha scelto di mostrare: `show_contacts` per telefono/email; i social sono pubblici per scelta sua). Limite 30/min per account, 10/min per IP resta.
+- **Evento `richiesta_contatto`**: collezione `contact_requests {id, org_id, platform_account_id, email, nome, quando, da (o|store), ip}`; indice `(org_id, quando)` e unico su `(org_id, platform_account_id, giorno)` (una riga al giorno per persona, non una per clic). Scritta in background, mai bloccante.
+- `GET /organizations/current/contact-requests` per l'operatore (ultimi 90 giorni, conteggio + lista).
+- `seo_shell`: via `telephone` dal LocalBusiness quando l'interruttore è acceso.
+
+**Frontend**
+- Riquadro «Contatti e canali» (`ContattiOperatore.jsx`, usato da OperatorProfilePage e StoreAbout): con sessione → chiama `/contatti` e mostra tutto; senza → testo «Telefono, email e social: entra con la tua email per vederli. Venti secondi, senza password. L'operatore vedrà che hai chiesto i suoi contatti.» + `PortaAurya` inline → al successo carica e mostra. Interruttore spento → il riquadro di oggi.
+- Gestionale operatore: card «Chi ha chiesto i tuoi contatti» nella pagina Clienti (`customers-mgmt`), con nome, email, data. È il motivo per cui l'operatore accetta il cancello.
+- `LinkPage` (`/@slug`): non tocca nulla.
+
+**Guardie**: `test_contatti_porta_r2.py` (flag nel JSON, 401 senza token, evento scritto una volta al giorno, LinkPage senza `/contatti`, JSON-LD senza telephone con flag acceso e CON telephone spento, `MostraEmail` sostituito). Suite: `test_anti_scrape_as`, `test_reviews_*`, `test_seo_shell`, `test_anima_an`, `test_sedi_sd`, `test_llm_lx`.
+
+**Rischi e mitigazioni**: cache 45 s del profilo pubblico (il JSON dei flag è cacheabile: nessun dato personale); Googlebot vede i flag e non i valori, coerente con l'HTML; operatori: email «da oggi vedi chi chiede i tuoi contatti» (una riga nella Lettera degli operatori, non un giro nuovo). **Stima**: 1 giorno.
+
+### R4 · Misura e regia
+
+System admin → Cerchio: provenienza `account` nei conteggi e nelle vie. Operatori: colonna «richieste contatto (30 gg)». Dashboard: account creati per giorno, richieste di contatto, ordini con account, iscritti da account. Un solo endpoint `GET /admin/funnel` che legge le collezioni esistenti (nessuna scrittura). **Stima**: mezza giornata. **Guardie**: `test_regia_funnel_r4.py`.
+
+### Una settimana di numeri, poi:
+
+### R3 · Ordinare con l'account (interruttore `CHECKOUT_RICHIEDE_ACCOUNT`)
+
+**Backend**
+- `/public/order-request`: accetta anche il Bearer `type=platform` (oggi solo `customer`). Con token platform: `platform_account_id` sull'ordine **alla nascita**, `customer_email` = email dell'account (il corpo non può dirne un'altra), nome/telefono dal corpo se presenti, altrimenti dall'account; il cliente CRM nasce o si aggancia come oggi (`_find_or_create_customer` con l'account). Con interruttore acceso e senza token platform → 401 con codice `account_richiesto` (il frontend lo traduce nella porta). Il percorso embed (`embed_public`) **non passa da qui** e resta ospite.
+- `cerchio_optin` al checkout con token platform → `iscrivi(gia_verificato=True)` (oggi doppio opt-in). Senza token, come oggi.
+- Dopo l'ordine: telefono del corpo salvato sull'account se l'account non ce l'ha (una volta, mai sovrascritto).
+- `retroactive_claim` e claim email restano per gli ordini vecchi; per i nuovi non scattano (già agganciati).
+
+**Frontend**
+- `useCheckoutForm`: con interruttore acceso, il passo «I tuoi dati» è `PortaAurya` finché non c'è sessione; poi nome/email/telefono prefillati (email non modificabile), casella Aurya assente (regola AP-L di oggi), casella operatore come oggi, casella Cerchio come oggi ma con la nota «confermata subito». `useCheckoutSubmit`: manda il token platform (header `Authorization` se non c'è quello per-store). `wantRegister` (account per-store con password) sparisce dalla UI quando l'interruttore è acceso; resta per i corsi finché esistono.
+- Success page e email d'ordine invariate; `/account` mostra l'ordine subito (già legge `platform_account_id`).
+
+**Guardie**: `test_checkout_account_r3.py` (401 `account_richiesto` con flag; ordine con `platform_account_id` alla nascita; email del token vince; embed ospite intatto; `gia_verificato` solo con token; flag spento = payload byte-identico a oggi). Suite: `test_checkout_*`, `test_invariants_embed_checkout`, `test_invariants_embed_auth_checkout`, `test_listino_tw` (AP1-AP5, PN, LM), `test_payment_*`, `test_r1_checkout_lines`, `test_wave_gdpr_commerce_CG*`, e2e in `tests/e2e_*.py`.
+
+**Rischi e mitigazioni**: è il checkout → interruttore spento al deploy, prova generale sulla copia di prod (dump → restore → backend :8001 → ordine di prova con token), accensione in un momento di traffico basso, rollback = spegnere il flag (nessuna migrazione dati). Conversione: il passo in più è un codice via email; si misura con R4 prima e dopo (ordini iniziati / completati). **Stima**: 1 giorno + mezza di prova generale.
+
+---
+
+## 4. Ordine, tempi, punti di ritorno
+
+`R1 (1 g) → R5 (½ g) → R2 acceso (1 g) → R4 (½ g) → 7 giorni di misura → R3 spento (1½ g) → acceso.` Totale lavoro: circa 4 giorni e mezzo, distribuiti su due settimane per via della misura.
+
+Punti di ritorno: ogni interruttore si spegne da `.env.production` con un riavvio del backend (10 secondi) e riporta al comportamento di oggi. Nessuna migrazione irreversibile: la collezione nuova è additiva, i campi nuovi sull'account sono opzionali, gli ordini vecchi non si toccano.
+
+---
+
+## 5. Cosa NON cambia (elenco di controllo per le regressioni)
+
+- `/public/newsletter/subscribe` e tutte le porte del Cerchio (home, landing, meditazioni, cancello traccia, Magazine, checkout): stesso testo, stessa versione, stesso doppio opt-in dove l'email non è provata.
+- Signup con password, magic link da `/accedi`, `/account`, export GDPR, cancellazione account.
+- Embed (widget sui siti degli operatori): identità per-store o ospite, come oggi.
+- Ordini manuali, Stripe, webhook, numeri d'ordine, email transazionali, claim degli ordini vecchi.
+- Pagina link `/@slug`, directory `/operatori`, pagine locali, sitemap, robots, shell SEO (tranne `telephone`), fetcher AI, llms.txt.
+- Recensioni (OTP proprio, non tocca la porta).
+
+---
+
+## 6. SEO: cosa costa davvero
+
+Il solo cambio è `telephone` fuori dal LocalBusiness. Google usa il numero nello schema per i rich result locali, non per la classifica; la scheda locale vera è Google Business Profile dell'operatore, che Aurya non gestisce. Nome, indirizzo, geo, recensioni (`aggregateRating`), discipline, bio, intervista, listino (`OfferCatalog`) restano tutti. Se tra 30 giorni Search Console mostrasse un calo sulle query locali col nome dell'operatore, la mossa di ritorno è una riga (il telefono torna nello schema e resta dietro la porta per gli umani: accettato da Google come «click to reveal» se il numero compare dopo un'azione dell'utente sulla pagina).
+
+---
+
+## 7. Cosa non fare
+
+- Casella del Cerchio preselezionata o inglobata nell'accettazione legale.
+- Cancello sulla pagina link, sulla directory o sull'anteprima dei ritiri.
+- Password obbligatoria (il codice basta; la password resta opzionale).
+- Accendere R3 prima dei numeri di R2.
+- Toccare l'embed.
