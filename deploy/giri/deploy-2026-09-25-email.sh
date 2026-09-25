@@ -3,7 +3,8 @@
 # (modelli + ricerca), script per il pregresso, e risoluzione del doppione
 # vero di prod (spaziomarilisa: si tiene il PRIMO account, delle 08:55 del
 # 24/9, quello su cui ha anche riaccettato i termini alle 16:16; si
-# elimina il secondo, vuoto, delle 16:18). Solo backend. Si lancia DAL MAC.
+# elimina il secondo, vuoto, delle 16:18). Backend + frontend («Sei già
+# dentro» al posto del form per chi ha la sessione aperta). Si lancia DAL MAC.
 set -euo pipefail
 HOST=root@46.224.0.96
 KEY=$HOME/.ssh/aurya_deploy
@@ -31,8 +32,8 @@ rsync -avz --delete \
   --exclude='.DS_Store' --exclude='AFIANCO_Presentation_Report.docx' --exclude='Codice 2FA Demo.command' \
   -e "ssh -i $KEY" "$REPO/" "$HOST:/opt/aurya/" | tail -2
 
-echo "== [3] build + recreate del solo backend"
-$SSH "cd /opt/aurya && $C build backend 2>&1 | tail -1 && $C up -d --no-deps backend 2>&1 | tail -1"
+echo "== [3] build + recreate: frontend (scheda «Sei già dentro») poi backend"
+$SSH "cd /opt/aurya && $C build backend 2>&1 | tail -1 && $C build frontend 2>&1 | tail -1 && $C up -d --no-deps --force-recreate frontend 2>&1 | tail -1 && sleep 5 && $C up -d --no-deps backend 2>&1 | tail -1"
 for i in $(seq 1 30); do
   code=$(curl -s -o /dev/null -w "%{http_code}" https://aurya.life/api/health || true)
   [ "$code" = "200" ] && { echo "   health ok ($i)"; break; }
