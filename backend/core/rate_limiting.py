@@ -67,23 +67,28 @@ _FALLBACK_IP = "127.0.0.1"
 
 
 def _extract_forwarded_for(header_value: Optional[str]) -> Optional[str]:
-    """Parse an X-Forwarded-For header value into the leftmost (original) IP.
+    """Parse an X-Forwarded-For header value into the RIGHTMOST (trusted) IP.
+
+    25/9/2026 (anti-scrape, AS1): fino a oggi si prendeva il PRIMO
+    indirizzo della catena. Ma nginx accoda l'IP vero del client con
+    `$proxy_add_x_forwarded_for`: il primo elemento e' qualunque cosa il
+    client abbia scritto lui nell'header. Bastava mandare
+    `X-Forwarded-For: 1.2.3.4` diverso a ogni richiesta per cambiare
+    identita' e aggirare ogni limite per IP del backend (login,
+    iscrizioni, recensioni, ordini). L'ultimo elemento e' quello che ha
+    scritto nginx (il peer TCP): e' l'unico di cui fidarsi.
 
     Examples:
       "203.0.113.7"                       -> "203.0.113.7"
-      "203.0.113.7, 70.41.3.18"           -> "203.0.113.7"
-      "203.0.113.7,70.41.3.18, 150.0.0.1" -> "203.0.113.7"
+      "1.2.3.4, 203.0.113.7"              -> "203.0.113.7"   (1.2.3.4 = falso)
+      "1.2.3.4,5.6.7.8, 203.0.113.7"      -> "203.0.113.7"
       ""                                  -> None
       None                                -> None
-      ", , 1.2.3.4"                       -> None  (first non-empty wins)
-
-    Whitespace around each entry is stripped. The leftmost non-empty
-    entry is returned, matching the convention that proxies APPEND
-    their own IP, so the original client is at the start of the chain.
+      "1.2.3.4, , "                       -> "1.2.3.4"  (last non-empty wins)
     """
     if not header_value:
         return None
-    for candidate in header_value.split(","):
+    for candidate in reversed(header_value.split(",")):
         candidate = candidate.strip()
         if candidate:
             return candidate
@@ -93,8 +98,9 @@ def _extract_forwarded_for(header_value: Optional[str]) -> Optional[str]:
 def get_real_ip(request: Request) -> str:
     """slowapi key_func that returns the real client IP behind a proxy.
 
-    Reads `X-Forwarded-For` (case-insensitive) and returns the leftmost
-    IP. Falls back to `request.client.host`, then `127.0.0.1`.
+    Reads `X-Real-IP` (set by nginx, not spoofable), else the RIGHTMOST
+    `X-Forwarded-For` entry (case-insensitive). Falls back to
+    `request.client.host`, then `127.0.0.1`.
 
     Args:
         request: Starlette/FastAPI Request instance (slowapi passes
@@ -107,6 +113,13 @@ def get_real_ip(request: Request) -> str:
     # Starlette normalizes header names to lowercase. `request.headers`
     # is a multi-dict-like object that lookups case-insensitively, so
     # both "X-Forwarded-For" and "x-forwarded-for" work.
+    # AS1 (25/9/2026) — prima X-Real-IP: nginx lo SOVRASCRIVE sempre con
+    # $remote_addr (proxy_set_header rimpiazza, non accoda), quindi non e'
+    # falsificabile dal client. Poi l'ULTIMO X-Forwarded-For (quello che
+    # ha accodato nginx), mai il primo.
+    xri = (request.headers.get("x-real-ip") or "").strip()
+    if xri:
+        return xri
     xff = request.headers.get("x-forwarded-for")
     real_ip = _extract_forwarded_for(xff)
     if real_ip:

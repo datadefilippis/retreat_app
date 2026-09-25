@@ -4089,6 +4089,7 @@ async def public_network_members():
 
 
 @router.get("/operators")
+@limiter.limit("30/minute")   # AS1 (25/9/2026, anti-scrape): un umano che filtra non ci arriva, il raschiatore si'
 async def public_operators_index(
     request: Request = None,
     category: str = Query(default=None, max_length=50),
@@ -4602,7 +4603,8 @@ async def _ids_fondatori() -> set:
 
 
 @router.get("/operator/{org_slug}")
-async def public_operator_profile(org_slug: str, lang: Optional[str] = None):
+@limiter.limit("60/minute")   # AS1: 23 profili oggi, centinaia domani — a raffica no
+async def public_operator_profile(org_slug: str, request: Request = None, lang: Optional[str] = None):
     """Profilo pubblico organizzatore: bio, brand, prossimi ritiri.
     L'org_slug è quello dello storefront (store slug o public_slug)."""
     from datetime import datetime, timezone
@@ -4720,9 +4722,13 @@ async def public_operator_profile(org_slug: str, lang: Optional[str] = None):
         # GT3 — badge "In evidenza" anche sul profilo (piani featured)
         "featured": bool(org.get("directory_featured")),
     }
+    # AS2 (25/9/2026, anti-scrape): il telefono resta in chiaro (sta gia'
+    # nel LocalBusiness dell'HTML per la SEO locale); l'email NON viaggia
+    # nel profilo — il visitatore la chiede al clic da /contatti, rotta a
+    # parte con limite stretto. Qui solo «c'e'» (has_email).
     if pp.get("show_contacts"):
-        out["contacts"] = {k: pp.get(k) for k in ("public_email", "public_phone")
-                           if pp.get(k)}
+        out["contacts"] = {k: pp.get(k) for k in ("public_phone",) if pp.get(k)}
+        out["contacts"]["has_email"] = bool(pp.get("public_email"))
 
     # LK1 — pagina link (la bio di Instagram che vende): esposta SOLO
     # se l'operatore l'ha attivata, e dei link personalizzati solo
@@ -4766,6 +4772,21 @@ VISUAL_DEMO_TITLES = [
     "Campana tibetana lunga",
 ]
 
+
+
+@router.get("/operator/{org_slug}/contatti")
+@limiter.limit("10/minute")
+async def public_operator_contatti(org_slug: str, request: Request = None):
+    """AS2 (25/9/2026) — i contatti dell'operatore AL CLIC («Mostra
+    l'email» sul profilo). Rotta separata dal profilo con limite stretto
+    per IP: chi raccoglie indirizzi in massa deve pagarli uno a uno, il
+    visitatore vero ne chiede uno. Vuoto se l'operatore tiene i contatti
+    privati (show_contacts)."""
+    org = await _resolve_org(org_slug)   # 404 se non pubblico
+    pp = org.get("public_profile") or {}
+    if not pp.get("show_contacts"):
+        return {}
+    return {k: pp.get(k) for k in ("public_email", "public_phone") if pp.get(k)}
 
 @router.get("/visual-demos")
 async def visual_demos():

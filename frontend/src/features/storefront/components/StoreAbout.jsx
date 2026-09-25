@@ -7,6 +7,7 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import api from '../../../api/client';
+import MostraEmail from './MostraEmail';
 
 export default function StoreAbout({ slug }) {
   const { t, i18n } = useTranslation(['storefront', 'landings']);
@@ -88,10 +89,8 @@ export default function StoreAbout({ slug }) {
             <a href={extUrl(socials.facebook)} target="_blank" rel="noreferrer"
                className="text-primary hover:underline">Facebook</a>
           )}
-          {data.contacts?.public_email && (
-            <a href={`mailto:${data.contacts.public_email}`}
-               className="text-gray-600 hover:underline">{data.contacts.public_email}</a>
-          )}
+          {/* AS2 (25/9/2026): l'email arriva al clic, non nel JSON del profilo */}
+          {data.contacts?.has_email && <MostraEmail slug={slug} className="text-gray-600" />}
           {data.contacts?.public_phone && (
             <span className="text-gray-600">{data.contacts.public_phone}</span>
           )}

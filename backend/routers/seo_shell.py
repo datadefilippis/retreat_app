@@ -2353,11 +2353,12 @@ async def _meta_operator(org_slug: str) -> Optional[dict]:
                     profile.get("website"))
     if sa:
         jsonld["sameAs"] = sa
-    if profile.get("show_contacts"):
-        if profile.get("public_phone"):
-            jsonld["telephone"] = profile["public_phone"]
-        if profile.get("public_email"):
-            jsonld["email"] = profile["public_email"]
+    # AS2 (25/9/2026, anti-scrape): il telefono resta nel LocalBusiness
+    # (SEO locale, il founder lo vuole); l'email NO — per Google non conta
+    # e nell'HTML era il bottino piu' facile per chi raccoglie indirizzi.
+    # Il visitatore la ottiene al clic (GET /public/operator/{slug}/contatti).
+    if profile.get("show_contacts") and profile.get("public_phone"):
+        jsonld["telephone"] = profile["public_phone"]
 
     # TW2 (piano Listino) — il profilo E' il negozio: i servizi
     # pubblicati come OfferCatalog del LocalBusiness (schema.org).
