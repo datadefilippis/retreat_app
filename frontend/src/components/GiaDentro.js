@@ -20,17 +20,18 @@ export default function GiaDentro({ compatto = false }) {
   const { t } = useTranslation('landings');
   const { user, logout } = useAuth();
   if (!user) return null;
-  const nome = (user.name || '').trim().split(' ')[0];
   // il system admin non ha una pagina: solo la porta della regia
   const isSys = user.role === 'system_admin';
   const gestionale = isSys ? '/admin' : '/dashboard';
+  /* 25/9 sera (founder): il titolo diceva «Sei già dentro, Platform» quando
+     il nome dell'account era un segnaposto («Platform Admin», la regia). Il
+     titolo nomina la casa, non la persona; l'email nel corpo dice gia' con
+     chi sei dentro. */
   return (
     <div className="text-center" data-testid="gia-dentro">
       <CheckCircle2 className="mx-auto h-8 w-8 text-[#2f5749]" aria-hidden />
       <p className="mt-3 font-display text-xl text-[#2e4b3f]">
-        {nome
-          ? t('giaDentro.titoloNome', { defaultValue: 'Sei già dentro, {{nome}}.', nome })
-          : t('giaDentro.titolo', { defaultValue: 'Sei già dentro.' })}
+        {t('giaDentro.titolo', { defaultValue: 'Sei già dentro Aurya.' })}
       </p>
       <p className="mt-2 text-sm text-gray-600 leading-relaxed">
         {t('giaDentro.testo', { defaultValue: 'Il tuo spazio è già aperto con {{email}}: non serve registrarsi di nuovo.', email: user.email })}
