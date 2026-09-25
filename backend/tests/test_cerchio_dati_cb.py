@@ -194,6 +194,15 @@ class TestB2Consenso:
         assert 'set_["verificato_at"] = sub["confirmed_at"]' in src, "backfill B3"
 
 
+class TestEmailInviateRegistrate:
+    def test_il_registro_delle_email_importa_db(self):
+        """25/9 sera: in prod ogni conferma loggava «name 'db' is not defined»
+        e la colonna «Email inviate» restava vuota."""
+        src = (BACKEND / "routers" / "subscribers.py").read_text()
+        blocco = src[src.index("async def _registra_email_inviata"):][:700]
+        assert "from database import db" in blocco
+
+
 class TestB3VerificaPerUso:
     def test_il_contratto_che_lotto_c_importa(self):
         from services import verifica_email as v

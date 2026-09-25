@@ -784,6 +784,9 @@ async def _registra_email_inviata(email: str, tipo: str) -> None:
     """Traccia sul documento un'email automatica mandata (conferma,
     reinvio): e' quello che l'admin conta nella colonna «Email inviate»."""
     try:
+        # 25/9 sera: in prod usciva «name 'db' is not defined» a ogni
+        # conferma — il modulo non importa `db` a livello di file
+        from database import db
         await db.aurya_subscribers.update_one(
             {"email": email},
             {"$push": {"email_inviate": {"tipo": tipo, "at": datetime.now(timezone.utc)}}})
