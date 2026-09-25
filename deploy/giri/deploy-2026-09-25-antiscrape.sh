@@ -28,7 +28,7 @@ rsync -avz --delete \
 
 echo "== [2] nginx: il conf e' un FILE montato (bind): rsync cambia l'inode e il container vivo continua a vedere il vecchio."
 echo "       Quindi: prova del conf NUOVO in un container usa-e-getta nella rete di compose, poi force-recreate (servizio nginx-proxy)."
-$SSH 'cd /opt/aurya && C="docker compose -f docker-compose.prod.yml --env-file .env.production" && $C run --rm --no-deps --entrypoint nginx nginx-proxy -t 2>&1 | grep -q "test is successful" && $C up -d --force-recreate --no-deps nginx-proxy 2>&1 | tail -1 && sleep 4 && echo "   dentro il container: $(docker exec ms-nginx grep -c pubapi /etc/nginx/conf.d/default.conf) occorrenze di pubapi (attese 2), $(docker exec ms-nginx grep -c \"return 444\" /etc/nginx/conf.d/default.conf) regole 444 (attese 3)"'
+$SSH 'cd /opt/aurya && C="docker compose -f docker-compose.prod.yml --env-file .env.production" && $C run --rm --no-deps --entrypoint nginx nginx-proxy -t 2>&1 | grep -q "test is successful" && $C up -d --force-recreate --no-deps nginx-proxy 2>&1 | tail -1 && sleep 4 && echo "   dentro il container: $(docker exec ms-nginx grep -c pubapi /etc/nginx/conf.d/default.conf) occorrenze di pubapi (attese 2), $(docker exec ms-nginx grep -c "return 444" /etc/nginx/conf.d/default.conf) regole 444 (attese 3)"'
 printf "   /test.php → %s (atteso 000: connessione chiusa) · /.env → %s (atteso 000) · /api/public/operators → %s (atteso 200)\n" "$(curl -s -o /dev/null -w "%{http_code}" https://aurya.life/test.php)" "$(curl -s -o /dev/null -w "%{http_code}" https://aurya.life/.env)" "$(curl -s -o /dev/null -w "%{http_code}" "https://aurya.life/api/public/operators?preview=1")"
 
 echo "== [3] build + recreate (frontend, poi backend) sotto nohup"
