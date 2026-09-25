@@ -2,9 +2,10 @@
 # GIRO 25/9/2026 (2°) — rientrare e' semplice: striscia «sei dentro» sulle
 # pagine pubbliche, /spazio, «Accedi» in cima alla landing, email del
 # giorno zero che dice come si rientra. Backend + frontend + NGINX (la
-# rotta /spazio entra nella location del renderer: il conf e' montato in
-# sola lettura nel container vivo → si prova con `nginx -t` e si
-# ricarica con `nginx -s reload`, mai un force-recreate al buio).
+# rotta /spazio entra nella location del renderer: il conf e' un FILE
+# bind-mount, rsync ne cambia l'inode e `nginx -s reload` dentro il
+# container vivo rilegge il VECCHIO file → serve il force-recreate,
+# dopo un `nginx -t` in un container usa-e-getta; lezione del 25/9).
 # Si lancia DAL MAC.
 set -euo pipefail
 HOST=root@46.224.0.96
@@ -27,8 +28,9 @@ rsync -avz --delete \
   --exclude='.DS_Store' --exclude='AFIANCO_Presentation_Report.docx' --exclude='Codice 2FA Demo.command' \
   -e "ssh -i $KEY" "$REPO/" "$HOST:/opt/aurya/" | tail -2
 
-echo "== [2] nginx: prova del conf nuovo DENTRO il container vivo, poi reload"
-$SSH 'docker exec ms-nginx nginx -t 2>&1 | tail -1 && docker exec ms-nginx nginx -s reload && echo "   nginx ricaricato"'
+echo "== [2] nginx: il conf e' un FILE montato (bind): rsync cambia l'inode e il container vivo continua a vedere il vecchio."
+echo "       Quindi: prova del conf NUOVO in un container usa-e-getta nella rete di compose, poi force-recreate (servizio nginx-proxy)."
+$SSH 'cd /opt/aurya && C="docker compose -f docker-compose.prod.yml --env-file .env.production" && $C run --rm --no-deps --entrypoint nginx nginx-proxy -t 2>&1 | grep -q "test is successful" && $C up -d --force-recreate --no-deps nginx-proxy 2>&1 | tail -1 && sleep 4 && echo "   dentro il container: $(docker exec ms-nginx grep -c spazio /etc/nginx/conf.d/default.conf) occorrenze di spazio (attese 2)"'
 printf "   /spazio dal renderer → %s (atteso 200)\n" "$(curl -s -o /dev/null -w '%{http_code}' https://aurya.life/spazio)"
 
 echo "== [3] build + recreate (frontend, poi backend) sotto nohup"
