@@ -227,6 +227,8 @@ export async function resolveAudioLayers(ctx, score, soundsById) {
                  /* il taglio e' gia' DENTRO il buffer (senzaTesta):
                     il motore non deve saltare altro */
                  clip_in: 0,
+                 // RS (25/9): effetto opzionale sul clip (respiro/voce dalla libreria)
+                 fx: l.fx || null, fx_amount: l.fx_amount ?? 0.6,
                  /* CI-F2b (22/9 sera) — IL BUG DEL «NON SENTO NIENTE»:
                     lo strato risolto si ricostruisce campo per campo, e
                     `space` non c'era. Il motore (synth/render) chiede

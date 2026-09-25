@@ -203,6 +203,11 @@ def clean_layer(raw, duration):
             # o 0 = la base parte da capo, come sempre.
             "clip_in": round(_num(raw.get("clip_in"), 0, 3600, 0), 3),
         }
+        # RS (25/9): effetto della voce anche su un clip della libreria
+        # (respiro, voce) — solo se scelto: una ricetta di ieri resta uguale
+        if raw.get("fx") in VOICE_FX:
+            out["fx"] = raw.get("fx")
+            out["fx_amount"] = _num(raw.get("fx_amount"), 0.0, 1.0, 0.6)
         sp = clean_space("audio", raw.get("space"))
         if sp:
             out["space"] = sp

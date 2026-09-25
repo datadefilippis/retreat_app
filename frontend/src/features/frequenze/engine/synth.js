@@ -812,7 +812,15 @@ export function startPreview(ctx, score,
       src.loopEnd = l.buffer.duration;
     }
     const g = ctx.createGain(); src.connect(g);
-    spazializza(l, 'audio', g, uG, s0, span);   // CI-F2: g → (panner) → uG
+    /* RS (25/9): un clip registrato (respiro, voce dalla libreria) puo'
+       avere l'effetto della voce (tempio, sogno…): solo se scelto, sennò
+       il grafo e' quello di ieri */
+    let uscitaA = g;
+    if (l.fx) {
+      const chainA = buildVoiceChain(ctx, l.fx, l.fx_amount ?? 0.6);
+      g.connect(chainA.input); uscitaA = chainA.output;
+    }
+    spazializza(l, 'audio', uscitaA, uG, s0, span);   // CI-F2: g → [fx] → (panner) → uG
     const { a, r } = attackRelease(span);   // TS1a: stessi numeri del render
     g.gain.setValueAtTime(0.0001, at(s0));
     g.gain.linearRampToValueAtTime(l.gain, at(s0 + a));

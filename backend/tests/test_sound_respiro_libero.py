@@ -87,6 +87,23 @@ class TestRespiroConEffettoESpazio:
         ris = ASSETS.split("export async function resolveGuidaLayers")[1].split("export async function")[0]
         assert "fx: l.fx || null, fx_amount: l.fx_amount ?? 0.6, space: l.space," in ris
 
+    def test_anche_il_clip_registrato_ha_l_effetto(self):
+        from models.frequency_track import clean_score
+        base = {"kind": "audio", "asset_id": "b1", "start": 0, "end": 30, "gain": 0.7}
+        s = clean_score({"duration_sec": 30, "layers": [base]})
+        assert "fx" not in s["layers"][0]                                   # ieri = oggi
+        s2 = clean_score({"duration_sec": 30, "layers": [{**base, "fx": "temple", "fx_amount": 0.3}]})
+        assert s2["layers"][0]["fx"] == "temple" and s2["layers"][0]["fx_amount"] == 0.3
+        # motore vivo e master: catena solo se scelta, poi lo spazio come prima
+        assert "spazializza(l, 'audio', uscitaA, uG, s0, span)" in SYNTH and SYNTH.count("spazializza(l, 'audio'") == 1
+        blocco = RENDER.split("      audio.forEach((l) => {")[1].split("      });")[0]
+        assert "buildVoiceChain(off, l.fx" in blocco and "uscitaA.connect(sp.input)" in blocco and "uscitaA.connect(off.destination)" in blocco
+        ris = ASSETS.split("export async function resolveAudioLayers")[1].split("export async function")[0]
+        assert "fx: l.fx || null, fx_amount: l.fx_amount ?? 0.6," in ris
+        # nella riga, solo per i clip registrati (respiro, voce): le basi musicali no
+        assert "['respiro', 'voce'].includes(soundsById[l.asset_id]?.category)" in PAGE
+        assert 'data-testid={`fq-audio-fx-${l.id}`}' in PAGE
+
     def test_la_riga_ha_effetto_e_spazio(self):
         riga = PAGE.split("data-testid={`fq-guida-${l.id}`}")[1].split("l.kind === 'audio' ? (")[0]
         assert 'data-testid={`fq-guida-fx-${l.id}`}' in riga and '<option value="nessuno">Nessuno</option>' in riga

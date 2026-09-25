@@ -1944,6 +1944,34 @@ export default function FrequenzePage() {
               onClick={() => patchLayer(l.id, { loop: l.loop === false })}>loop</button>
             <button type="button" className={`chip m${l.mute ? ' on' : ''}`}
               onClick={() => patchLayer(l.id, { mute: !l.mute })}>muto</button>
+            {/* RS (25/9, founder: «i respiri importati non hanno il tempio
+                come le registrazioni vocali») — i clip REGISTRATI della
+                libreria (respiro, voce) hanno l'effetto della voce. Le basi
+                musicali no: compressore e taglio dei bassi le rovinerebbero. */}
+            {['respiro', 'voce'].includes(soundsById[l.asset_id]?.category) && (
+              <>
+                <span className="lbl" title="Un effetto sul clip, come sulla voce: nessuno, naturale, sogno, tempio, sussurro">effetto</span>
+                <select className="minisel" data-testid={`fq-audio-fx-${l.id}`}
+                  value={l.fx || 'nessuno'}
+                  title={l.fx ? (VOICE_PRESETS[l.fx] || VOICE_PRESETS.natural).hint : 'La registrazione com’è, senza effetto'}
+                  onChange={(e) => patchLayer(l.id, e.target.value === 'nessuno'
+                    ? { fx: undefined, fx_amount: undefined }
+                    : { fx: e.target.value, fx_amount: l.fx_amount ?? 0.6 })}>
+                  <option value="nessuno">Nessuno</option>
+                  {Object.entries(VOICE_PRESETS).map(([k, p]) => (
+                    <option key={k} value={k}>{p.label}</option>
+                  ))}
+                </select>
+                {l.fx && (
+                  <>
+                    <input className="sl vol" type="range" min="0" max="1" step="0.05"
+                      value={l.fx_amount ?? 0.6}
+                      onChange={(e) => patchLayer(l.id, { fx_amount: +e.target.value })} />
+                    <span className="val v1">{Math.round((l.fx_amount ?? 0.6) * 100)}%</span>
+                  </>
+                )}
+              </>
+            )}
             {/* TG (24/8, founder: «non sono interessato ai primi 10
                 secondi»), il taglio della base: i secondi saltati
                 dentro il file. Il file non si tocca: si rimette 0

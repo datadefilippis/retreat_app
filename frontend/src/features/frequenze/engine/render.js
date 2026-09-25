@@ -151,19 +151,24 @@ export async function renderPcm(score, { sampleRate = 44100, audioLayers = [],
         src.buffer = l.buffer; src.loop = l.loop;
         if (l.loop && tagl > 0) { src.loopStart = tagl; src.loopEnd = l.buffer.duration; }
         const g = off.createGain(); src.connect(g);
+        let uscitaA = g;   // RS (25/9): effetto opzionale sul clip, come dal vivo
+        if (l.fx) {
+          const chainA = buildVoiceChain(off, l.fx, l.fx_amount ?? 0.6);
+          g.connect(chainA.input); uscitaA = chainA.output;
+        }
         if (spaceValido('audio', l.space?.preset)) {
           /* la traiettoria e' funzione del tempo dello STRATO: il
              blocco 37 calcola lo stesso punto dell'anteprima */
           const sp = creaSpazio(off, l.space.preset,
             { tA: t0 - cs, uA: t0 - l.start, uB: tE - l.start });
-          g.connect(sp.input); sp.output.connect(off.destination);
+          uscitaA.connect(sp.input); sp.output.connect(off.destination);
           const send = stanza ? mandata(l.space.preset) : 0;
           if (send > 0) {
             const sg = off.createGain(); sg.gain.value = send;
             sp.output.connect(sg); sg.connect(stanza.input);
           }
         } else {
-          g.connect(off.destination);
+          uscitaA.connect(off.destination);
         }
         const { a, r } = attackRelease(span);   // TS1a: stessi numeri ovunque
         const ev = (t) => {
