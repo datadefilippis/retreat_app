@@ -1,0 +1,118 @@
+"""R2 + R5 (25/9/2026 sera) — i recapiti dell'operatore dietro la porta
+dell'account Aurya, con il lead all'operatore; informativa v2.8.
+
+  R5  privacy/termini v2.8: account per contatti e prenotazione, riga
+      7-ter (richieste di contatto, 12 mesi), Cerchio mai condizione,
+      verifica «per uso» (E6); tag e hash allineati.
+  R2  interruttore CONTATTI_DIETRO_PORTA (spento = come prima): il profilo
+      JSON dice solo cosa c'e' (contacts.porta + has_*), /contatti vuole il
+      Bearer piattaforma (401 «account_richiesto»), registra UNA richiesta
+      per (operatore, account, giorno) con TTL 12 mesi; l'operatore la vede
+      in GET /organizations/current/contact-requests e nella pagina Clienti;
+      il telefono esce dal LocalBusiness; /@slug non cambia.
+"""
+import hashlib
+import os
+from pathlib import Path
+
+import pytest
+import requests
+
+RADICE = Path(__file__).resolve().parents[2]
+BACKEND = RADICE / "backend"
+FE = RADICE / "frontend" / "src"
+BASE_URL = os.environ.get("REACT_APP_BACKEND_URL", "http://localhost:8000")
+
+PUBLIC = (BACKEND / "routers" / "public.py").read_text(encoding="utf-8")
+ORGS = (BACKEND / "routers" / "organizations.py").read_text(encoding="utf-8")
+SHELL = (BACKEND / "routers" / "seo_shell.py").read_text(encoding="utf-8")
+FLAGS = (BACKEND / "core" / "flags.py").read_text(encoding="utf-8")
+COMP = (FE / "features" / "storefront" / "components" / "ContattiOperatore.jsx").read_text(encoding="utf-8")
+PROF = (FE / "features" / "storefront" / "OperatorProfilePage.js").read_text(encoding="utf-8")
+ABOUT = (FE / "features" / "storefront" / "components" / "StoreAbout.jsx").read_text(encoding="utf-8")
+LINK = (FE / "features" / "storefront" / "LinkPage.js").read_text(encoding="utf-8")
+CLIENTI = (FE / "features" / "customers-mgmt" / "CustomersMgmtPage.js").read_text(encoding="utf-8")
+
+
+class TestR5Legale:
+    def test_v28_e_hash_allineato(self):
+        from core.legal_versions import CURRENT_VERSION_HASH, CURRENT_VERSION_TAG
+        assert CURRENT_VERSION_TAG == "v2.8"
+        priv = (BACKEND / "legal" / "privacy_it.md").read_text("utf-8")
+        terms = (BACKEND / "legal" / "terms_it.md").read_text("utf-8")
+        atteso = hashlib.sha256((priv + "\n\n--- TERMS BUNDLE ---\n\n" + terms).encode()).hexdigest()[:16]
+        assert CURRENT_VERSION_HASH == atteso
+        assert "| 7-ter |" in priv and "12 mesi, poi eliminazione automatica" in priv
+        assert "Richieste di contatto agli Operatori (art. 4, riga 7-ter) | 12 mesi" in priv
+        assert "l'iscrizione al Cerchio (art. 4, riga 7-bis) resta separata e facoltativa" in priv
+        assert "non e' mai condizione per prenotare" in terms
+        assert "consultabili dagli Utenti che dispongono di un account Aurya" in terms
+        assert "(/@nome) resta liberamente consultabile" in terms
+        assert "verificato anche al primo utilizzo di un link personale" in terms
+        # il Cerchio resta consenso specifico e non preselezionato (7-bis intatta)
+        assert "specifico, non preselezionato e revocabile" in priv
+
+
+class TestR2Backend:
+    def test_flag_spento_di_default(self, monkeypatch):
+        monkeypatch.delenv("CONTATTI_DIETRO_PORTA", raising=False)
+        from core.flags import contatti_dietro_porta
+        assert contatti_dietro_porta() is False
+        monkeypatch.setenv("CONTATTI_DIETRO_PORTA", "on")
+        assert contatti_dietro_porta() is True
+
+    def test_profilo_e_contatti_dietro_la_porta(self):
+        blocco = PUBLIC[PUBLIC.index("if contatti_dietro_porta():\n        _mostra"):][:700]
+        for k in ('"has_phone"', '"has_email"', '"has_instagram"', '"has_facebook"', '"has_website"', '"porta": True', 'out["socials"] = {}'):
+            assert k in blocco, k
+        rotta = PUBLIC[PUBLIC.index('@router.get("/operator/{org_slug}/contatti")'):][:2600]
+        assert "if not contatti_dietro_porta():" in rotta                      # spento = ieri
+        assert 'raise HTTPException(status_code=401, detail="account_richiesto")' in rotta
+        assert 'for k in ("instagram", "facebook", "website") if pp.get(k)' in rotta
+        assert "await _registra_richiesta_contatto(org, account, request)" in rotta
+        # il lead: una riga per operatore/account/giorno, TTL 12 mesi, mai bloccante
+        reg = PUBLIC[PUBLIC.index("async def _registra_richiesta_contatto"):][:1800]
+        assert '[("org_id", 1), ("platform_account_id", 1), ("giorno", 1)], unique=True' in reg
+        assert 'create_index("scade_il", expireAfterSeconds=0)' in reg and '"$setOnInsert"' in reg
+        # il Bearer: solo type=platform, account attivo, mai enumerazione
+        acc = PUBLIC[PUBLIC.index("async def _account_piattaforma"):][:900]
+        assert 'payload.get("type") != "platform"' in acc and "return None" in acc
+
+    def test_operatore_e_schema(self):
+        rotta = ORGS[ORGS.index('@router.get("/current/contact-requests")'):][:1200]
+        assert "Depends(require_admin)" in rotta and "timedelta(days=90)" in rotta and '"persone": persone' in rotta
+        assert "and not contatti_dietro_porta():\n        jsonld[\"telephone\"]" in SHELL
+
+    def test_dal_vivo_secondo_lo_stato_del_flag(self):
+        r = requests.get(f"{BASE_URL}/api/public/operator/masseria-demo", timeout=15)
+        if r.status_code != 200:
+            pytest.skip("org demo non pubblica in locale")
+        c = r.json().get("contacts") or {}
+        cc = requests.get(f"{BASE_URL}/api/public/operator/masseria-demo/contatti", timeout=15)
+        if c.get("porta"):
+            assert set(c) == {"has_phone", "has_email", "has_instagram", "has_facebook", "has_website", "porta"}
+            assert r.json().get("socials") == {}
+            assert cc.status_code == 401 and cc.json().get("detail") == "account_richiesto"
+        else:
+            assert "has_instagram" not in c and cc.status_code in (200, 429)
+        assert requests.get(f"{BASE_URL}/api/organizations/current/contact-requests", timeout=10).status_code in (401, 403)
+
+
+class TestR2Frontend:
+    def test_il_componente_decide_dal_json(self):
+        assert "export function haContatti(data)" in COMP and "if (c.porta) return" in COMP
+        assert "if (!c.porta) {" in COMP                                   # spento = i blocchi di ieri
+        assert "<MostraEmail slug={slug}" in COMP                          # email al clic resta nel ramo spento
+        for tid in ("contatti-aperti", "contatti-porta", "contatti-avviso", "contatti-carico", "contatti-errore"):
+            assert f'data-testid="{tid}"' in COMP, tid
+        assert "platformApi.get(`/public/operator/${slug}/contatti`)" in COMP
+        assert "if (err?.response?.status === 401) { setStato('chiuso'); return; }" in COMP
+        assert '<PortaAurya contesto="contatti" onDentro={() => apri()} />' in COMP
+        assert "L’operatore vedrà che hai chiesto i suoi contatti" in COMP     # trasparenza (7-ter)
+
+    def test_le_pagine_montano_il_componente_e_la_link_page_no(self):
+        assert '<ContattiOperatore slug={org_slug} data={data} variante="profilo" />' in PROF
+        assert "haContatti(data)" in PROF and "contacts?.public_email" not in PROF and "socials.instagram" not in PROF
+        assert '<ContattiOperatore slug={slug} data={data} variante="store" />' in ABOUT
+        assert "ContattiOperatore" not in LINK and "/contatti" not in LINK      # /@slug resta libera
+        assert 'data-testid="richieste-contatto"' in CLIENTI and "customersAPI.contactRequests()" in CLIENTI

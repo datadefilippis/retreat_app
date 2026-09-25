@@ -19,3 +19,11 @@ def login_senza_verifica() -> bool:
     una nostra email) e resta obbligatoria solo per soldi e terzi
     (Stripe/IBAN, pagamenti, embed, pagina online)."""
     return _acceso("LOGIN_SENZA_VERIFICA")
+
+
+def contatti_dietro_porta() -> bool:
+    """R2 (founder 25/9 sera): i recapiti dell'operatore (telefono, email,
+    social, sito) si vedono solo con l'account Aurya; il profilo JSON
+    porta solo «c'e'/non c'e'», /contatti chiede il Bearer piattaforma e
+    registra la richiesta per l'operatore. Spento = come prima."""
+    return _acceso("CONTATTI_DIETRO_PORTA")

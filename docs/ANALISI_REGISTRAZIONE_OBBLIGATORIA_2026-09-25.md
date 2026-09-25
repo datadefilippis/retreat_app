@@ -99,11 +99,11 @@ Ogni lotto: interruttore in `.env` (spento = comportamento di oggi, byte per byt
 
 **Guardia**: `test_porta_aurya_r1.py` (letterali, flag spento di default, signup dal vivo con Cerchio in attesa e login rigido, verifica che conferma il Cerchio sul db locale).
 
-### R5 · Legale (prima di accendere R2)
+### R5 · Legale (FATTO il 25/9 sera: informativa e termini v2.8, hash allineato, riga 7-ter)
 
 Informativa v2.8 e Termini: account necessario per vedere i contatti e per ordinare; la richiesta di contatto è comunicata all'operatore (nome ed email, base: esecuzione del servizio richiesto dall'utente, art. 6.1.b); il Cerchio resta facoltativo e separato; conservazione delle richieste di contatto (12 mesi). Versione legale nuova → re-consent operatori come da meccanismo esistente; per i clienti Aurya il timbro `aurya_legal` porta la versione e la modale di ri-accettazione già gestisce i bump. **Stima**: mezza giornata. **Guardie**: `test_legal_*` sulla versione.
 
-### R2 · Contatti dietro la porta (interruttore `CONTATTI_DIETRO_PORTA`)
+### R2 · Contatti dietro la porta (FATTO il 25/9 sera, in locale; interruttore `CONTATTI_DIETRO_PORTA`, spento al deploy)
 
 **Backend**
 - `GET /public/operator/{slug}`: con interruttore acceso, `contacts` e `socials` diventano **flag**: `{has_phone, has_email, has_instagram, has_facebook, has_website}`; niente valori. Spento: come oggi.
@@ -113,7 +113,7 @@ Informativa v2.8 e Termini: account necessario per vedere i contatti e per ordin
 - `seo_shell`: via `telephone` dal LocalBusiness quando l'interruttore è acceso.
 
 **Frontend**
-- Riquadro «Contatti e canali» (`ContattiOperatore.jsx`, usato da OperatorProfilePage e StoreAbout): con sessione → chiama `/contatti` e mostra tutto; senza → testo «Telefono, email e social: entra con la tua email per vederli. Venti secondi, senza password. L'operatore vedrà che hai chiesto i suoi contatti.» + `PortaAurya` inline → al successo carica e mostra. Interruttore spento → il riquadro di oggi.
+- Riquadro «Contatti» (`ContattiOperatore.jsx`, usato da OperatorProfilePage e StoreAbout; con la porta in vista «entra», crea con password a un clic): con sessione → chiama `/contatti` e mostra tutto; senza → testo «Telefono, email e social: entra con la tua email per vederli. Venti secondi, senza password. L'operatore vedrà che hai chiesto i suoi contatti.» + `PortaAurya` inline → al successo carica e mostra. Interruttore spento → il riquadro di oggi.
 - Gestionale operatore: card «Chi ha chiesto i tuoi contatti» nella pagina Clienti (`customers-mgmt`), con nome, email, data. È il motivo per cui l'operatore accetta il cancello.
 - `LinkPage` (`/@slug`): non tocca nulla.
 

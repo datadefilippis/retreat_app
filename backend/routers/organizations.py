@@ -2335,6 +2335,23 @@ async def imposta_risposte_clienti(payload: RisposteClientiUpdate,
     return await _risposte_clienti(current_user["organization_id"])
 
 
+@router.get("/current/contact-requests")
+async def contact_requests(current_user: dict = Depends(require_admin)):
+    """R2 (25/9/2026) — «Chi ha chiesto i tuoi contatti»: le persone con
+    account Aurya che hanno aperto i recapiti di questo operatore negli
+    ultimi 90 giorni (una riga per persona e giorno). E' il lead che
+    ripaga l'operatore del cancello sui contatti."""
+    from datetime import datetime, timedelta, timezone
+    from database import contact_requests_collection
+    org_id = current_user["organization_id"]
+    da = (datetime.now(timezone.utc) - timedelta(days=90)).isoformat()
+    righe = await contact_requests_collection.find(
+        {"org_id": org_id, "quando": {"$gte": da}},
+        {"_id": 0, "nome": 1, "email": 1, "quando": 1, "da": 1}).sort("quando", -1).to_list(500)
+    persone = len({r.get("email") for r in righe})
+    return {"items": righe, "total": len(righe), "persone": persone, "giorni": 90}
+
+
 @router.get("/current/cerchio-vicino")
 async def cerchio_vicino(region: str = "", current_user: dict = Depends(require_admin)):
     """P6 (10/9/2026, piano di business §5.2, il primo innesco): mentre

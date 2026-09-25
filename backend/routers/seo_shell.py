@@ -2357,7 +2357,10 @@ async def _meta_operator(org_slug: str) -> Optional[dict]:
     # (SEO locale, il founder lo vuole); l'email NO — per Google non conta
     # e nell'HTML era il bottino piu' facile per chi raccoglie indirizzi.
     # Il visitatore la ottiene al clic (GET /public/operator/{slug}/contatti).
-    if profile.get("show_contacts") and profile.get("public_phone"):
+    # R2: dietro la porta il telefono esce anche dallo schema — Google non
+    # deve vedere cio' che una persona senza account non vede.
+    from core.flags import contatti_dietro_porta
+    if profile.get("show_contacts") and profile.get("public_phone") and not contatti_dietro_porta():
         jsonld["telephone"] = profile["public_phone"]
 
     # TW2 (piano Listino) — il profilo E' il negozio: i servizi

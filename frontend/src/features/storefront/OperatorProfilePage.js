@@ -25,7 +25,7 @@ import MiniCalendario from './components/MiniCalendario';
 // listino si espande su un harness che riusa il checkout dello storefront
 // (CheckoutForm/OrderSummary/useCheckoutForm, zero fork di logica).
 import InlineServiceCheckout from './components/checkout/InlineServiceCheckout';
-import MostraEmail from './components/MostraEmail';
+import ContattiOperatore, { haContatti } from './components/ContattiOperatore';
 // DI — le chip discipline vivono nella testata (OperatorIdentityHeader)
 // HOTFIX 10/9/2026 notte — SEO-R usava disciplineLabel nel titolo senza
 // importarla: in produzione ogni profilo /o/{slug} cadeva nell'ErrorBoundary
@@ -514,14 +514,12 @@ export default function OperatorProfilePage() {
     );
   }
 
-  const socials = data.socials || {};
-  const extUrl = (u) => (u && !u.startsWith('http') ? `https://${u}` : u);
   /* IG5 (founder 3/9): «Prenota una sessione» esiste SOLO se c'e' un
      listino da cui prenotare — su un profilo senza servizi non c'e'
      nulla da prenotare, quindi niente bottone (ne' in card ne' flottante) */
   const hasListino = Array.isArray(data.listino) && data.listino.length > 0;
-  const hasContacts = !!(data.languages?.length || data.contacts?.has_email
-    || data.contacts?.public_phone || socials.instagram || socials.website || socials.facebook);
+  // R2 (25/9): cosa c'e' lo dice haContatti (in chiaro o dietro la porta)
+  const hasContacts = !!(data.languages?.length || haContatti(data));
   const hasUpcoming = Array.isArray(data.upcoming) && data.upcoming.length > 0;
 
   return (
@@ -785,38 +783,10 @@ export default function OperatorProfilePage() {
                   </span>
                 </div>
               )}
-              {/* AS2 (25/9/2026): l'email arriva al clic, non nel JSON del profilo */}
-              {data.contacts?.has_email && (
-                <div className="flex items-start gap-2">
-                  <span aria-hidden>✉️</span>
-                  <MostraEmail slug={org_slug} />
-                </div>
-              )}
-              {data.contacts?.public_phone && (
-                <div className="flex items-start gap-2">
-                  <span aria-hidden>📞</span>
-                  <span className="text-gray-700">{data.contacts.public_phone}</span>
-                </div>
-              )}
             </dl>
-            {(socials.instagram || socials.website || socials.facebook) && (
-              <div className="mt-4 pt-3 border-t border-border flex flex-wrap gap-3 text-sm">
-                {socials.instagram && (
-                  <a href={extUrl(socials.instagram)} target="_blank" rel="noreferrer"
-                     className="text-primary hover:underline">Instagram</a>
-                )}
-                {socials.website && (
-                  <a href={extUrl(socials.website)} target="_blank" rel="noreferrer"
-                     className="text-primary hover:underline">
-                    {t('landings:operator.website', { defaultValue: 'Sito web' })}
-                  </a>
-                )}
-                {socials.facebook && (
-                  <a href={extUrl(socials.facebook)} target="_blank" rel="noreferrer"
-                     className="text-primary hover:underline">Facebook</a>
-                )}
-              </div>
-            )}
+            {/* R2 (25/9/2026): telefono, email, social e sito — in chiaro o
+                dietro la porta dell'account (ContattiOperatore decide dal JSON) */}
+            <ContattiOperatore slug={org_slug} data={data} variante="profilo" />
           </div>
           )}
           {/* SEO-C (14/9 sera) — «Vedi anche»: le pagine locali sopra soglia

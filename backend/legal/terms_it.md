@@ -97,9 +97,11 @@ Aurya espone una directory pubblica di ritiri ed esperienze olistiche, con ricer
 
 Ogni Operatore dispone di una vetrina pubblica personale (profilo, offerta, recensioni) e di uno store con pagine dedicate a ritiri, esperienze, prodotti e corsi, disponibile nelle quattro lingue della Piattaforma (IT/EN/DE/FR). La vetrina e' raggiungibile anche direttamente (link proprio dell'Operatore), indipendentemente dal Calendario pubblico.
 
+I recapiti diretti dell'Operatore (telefono, email, profili social e sito), quando l'Operatore sceglie di renderli disponibili, sono consultabili dagli Utenti che dispongono di un account Aurya; l'Operatore riceve nome ed email dell'Utente che li ha consultati (Informativa privacy, art. 4 riga 7-ter). La pagina link personale dell'Operatore (/@nome) resta liberamente consultabile.
+
 ### 6.3 Prenotazioni, caparre e piani di pagamento
 
-Il Cliente finale prenota online con disponibilita' in tempo reale. L'Operatore puo' configurare:
+Il Cliente finale prenota online con disponibilita' in tempo reale, con il proprio account Aurya (email e password): i dati dell'account precompilano la prenotazione e l'Utente ritrova ordini e biglietti nel Passaporto Ritiri. L'iscrizione alla newsletter di Aurya non e' mai condizione per prenotare. L'Operatore puo' configurare:
 - **Caparra** (acconto) dovuta alla prenotazione, con saldo successivo
 - **Piani di pagamento** a rate, con scadenze definite
 - **Promemoria automatici via email** per saldo e rate, inviati dalla Piattaforma per conto dell'Operatore
@@ -204,7 +206,7 @@ La password deve rispettare i requisiti tecnici imposti dalla Piattaforma (almen
 
 ### 8.3 Verifica dell'email
 
-L'accesso al Servizio richiede la verifica dell'indirizzo email tramite link inviato all'atto della registrazione.
+L'accesso al Servizio richiede la verifica dell'indirizzo email tramite link inviato all'atto della registrazione. Il Fornitore puo' consentire un accesso immediato prima della verifica, che resta in ogni caso necessaria per l'esportazione dei dati e per le funzioni che comportano pagamenti o rapporti con terzi; l'indirizzo si considera verificato anche al primo utilizzo di un link personale ricevuto via email dalla Piattaforma.
 
 ### 8.4 Comunicazioni di sicurezza
 

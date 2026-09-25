@@ -38,10 +38,14 @@ from typing import Final
 # IMPORTANT: bump CURRENT_VERSION_TAG whenever the LEGAL CONTENT changes.
 # The hash is recomputed manually from the IT bundle (see procedure below).
 
-CURRENT_VERSION_TAG: Final[str] = "v2.7"
+CURRENT_VERSION_TAG: Final[str] = "v2.8"
 """Human-readable tag of the documents the user is currently shown.
 
 History:
+  - v2.8 (R5, 2026-09-25) — account Aurya necessario per consultare i
+    recapiti degli Operatori e per prenotare; richieste di contatto
+    comunicate all'Operatore (riga 7-ter, conservazione 12 mesi); il
+    Cerchio resta separato e facoltativo; verifica email «per uso» (E6).
   - v0.preD (Phase B, 2026-05-16 morning) — pre-finalization Italian
     text, bootstrap hash placeholder.
   - v0.9 (Wave GDPR-Admin D content, 2026-05-16 afternoon) — lawyer-
@@ -159,7 +163,7 @@ History:
     CERCHIO_SINGOLO_OPTIN. Stesse modifiche in EN/DE/FR.
 """
 
-CURRENT_VERSION_HASH: Final[str] = "7aa1dcc7ec721fff"
+CURRENT_VERSION_HASH: Final[str] = "f9b989f616aba7ec"
 """SHA256-hex16 of the rendered IT privacy + terms text bundle.
 
 Computed from the concatenation:

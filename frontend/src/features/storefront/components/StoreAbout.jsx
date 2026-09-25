@@ -7,7 +7,7 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import api from '../../../api/client';
-import MostraEmail from './MostraEmail';
+import ContattiOperatore, { haContatti } from './ContattiOperatore';
 
 export default function StoreAbout({ slug }) {
   const { t, i18n } = useTranslation(['storefront', 'landings']);
@@ -39,8 +39,6 @@ export default function StoreAbout({ slug }) {
     );
   }
 
-  const socials = data.socials || {};
-  const extUrl = (u) => (u && !u.startsWith('http') ? `https://${u}` : u);
 
   return (
     <div className="space-y-6 py-4">
@@ -72,28 +70,10 @@ export default function StoreAbout({ slug }) {
         <p className="text-gray-700 leading-relaxed max-w-2xl whitespace-pre-line">{data.bio}</p>
       )}
 
-      {/* Social + contatti */}
-      {(Object.keys(socials).length > 0 || data.contacts) && (
+      {/* Social + contatti — R2 (25/9): in chiaro o dietro la porta, decide il JSON */}
+      {haContatti(data) && (
         <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
-          {socials.instagram && (
-            <a href={extUrl(socials.instagram)} target="_blank" rel="noreferrer"
-               className="text-primary hover:underline">Instagram</a>
-          )}
-          {socials.website && (
-            <a href={extUrl(socials.website)} target="_blank" rel="noreferrer"
-               className="text-primary hover:underline">
-              {t('landings:operator.website', { defaultValue: 'Sito web' })}
-            </a>
-          )}
-          {socials.facebook && (
-            <a href={extUrl(socials.facebook)} target="_blank" rel="noreferrer"
-               className="text-primary hover:underline">Facebook</a>
-          )}
-          {/* AS2 (25/9/2026): l'email arriva al clic, non nel JSON del profilo */}
-          {data.contacts?.has_email && <MostraEmail slug={slug} className="text-gray-600" />}
-          {data.contacts?.public_phone && (
-            <span className="text-gray-600">{data.contacts.public_phone}</span>
-          )}
+          <ContattiOperatore slug={slug} data={data} variante="store" />
         </div>
       )}
     </div>

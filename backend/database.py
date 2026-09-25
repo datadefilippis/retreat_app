@@ -36,6 +36,8 @@ db = client[os.environ['DB_NAME']]
 
 # ── Legacy collections (do not rename – referenced by existing code) ──────────
 organizations_collection = db.organizations
+# R2 (25/9/2026) — chi ha chiesto i recapiti di un operatore (lead)
+contact_requests_collection = db.contact_requests
 users_collection = db.users
 datasets_collection = db.datasets
 sales_records_collection = db.sales_records

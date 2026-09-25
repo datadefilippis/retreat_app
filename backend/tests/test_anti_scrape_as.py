@@ -91,10 +91,13 @@ class TestAs1IpVero:
 
 class TestAs2EmailAlClic:
     def test_rotta_contatti_e_profilo_senza_email(self):
-        rotta = PUBLIC[PUBLIC.index('@router.get("/operator/{org_slug}/contatti")'):][:900]
+        rotta = PUBLIC[PUBLIC.index('@router.get("/operator/{org_slug}/contatti")'):][:2600]
         assert '@limiter.limit("10/minute")' in rotta
-        assert 'if not pp.get("show_contacts"):\n        return {}' in rotta
-        assert 'for k in ("public_email", "public_phone") if pp.get(k)' in rotta
+        # R2 (25/9 sera): con CONTATTI_DIETRO_PORTA spento il ramo e' quello di
+        # oggi pomeriggio (vuoto senza show_contacts, email+telefono al clic)
+        ramo = rotta.split("if not contatti_dietro_porta():")[1].split("# R2")[0]
+        assert 'if not pp.get("show_contacts"):' in ramo and "return {}" in ramo
+        assert 'for k in ("public_email", "public_phone") if pp.get(k)' in ramo
         blocco = PUBLIC[PUBLIC.index('if pp.get("show_contacts"):\n        out["contacts"]'):][:300]
         assert '("public_phone",)' in blocco and 'out["contacts"]["has_email"] = bool(pp.get("public_email"))' in blocco
         assert '"public_email", "public_phone")\n                           if pp.get(k)}' not in PUBLIC
@@ -106,8 +109,12 @@ class TestAs2EmailAlClic:
             assert f'data-testid="{tid}"' in comp, tid
         prof = (FE / "features" / "storefront" / "OperatorProfilePage.js").read_text(encoding="utf-8")
         about = (FE / "features" / "storefront" / "components" / "StoreAbout.jsx").read_text(encoding="utf-8")
+        # R2 (25/9 sera): l'email al clic vive nel ramo «interruttore spento» di
+        # ContattiOperatore, che le due pagine montano
+        cont = (FE / "features" / "storefront" / "components" / "ContattiOperatore.jsx").read_text(encoding="utf-8")
+        assert "<MostraEmail slug={slug}" in cont and "c.has_email" in cont
         for src, nome in ((prof, "profilo"), (about, "about")):
-            assert "<MostraEmail slug=" in src and "contacts?.has_email" in src, nome
+            assert "<ContattiOperatore slug=" in src, nome
             assert "contacts?.public_email" not in src and "contacts.public_email" not in src, nome
 
     def test_dal_vivo_il_profilo_non_porta_email(self):
@@ -123,6 +130,12 @@ class TestAs2EmailAlClic:
                 continue
             c = p.json().get("contacts") or {}
             assert "public_email" not in c, slug
+            if c.get("porta"):
+                # R2 acceso in locale: solo flag, e /contatti vuole l'account (401)
+                assert set(c) == {"has_phone", "has_email", "has_instagram", "has_facebook", "has_website", "porta"}, (slug, c)
+                cc = requests.get(f"{BASE_URL}/api/public/operator/{slug}/contatti", timeout=15)
+                assert cc.status_code in (401, 429), slug
+                continue
             assert set(c) <= {"public_phone", "has_email"}, (slug, c)
             cc = requests.get(f"{BASE_URL}/api/public/operator/{slug}/contatti", timeout=15)
             assert cc.status_code in (200, 429), slug

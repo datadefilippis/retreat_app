@@ -90,9 +90,14 @@ I rapporti tra Aurya e gli Operatori in materia di protezione dei dati sono rego
 - Denominazione, descrizione dell'attivita', foto, offerta (ritiri, esperienze, prodotti, corsi)
 - Localita' dell'attivita', indicata dall'Operatore e geocodificata in coordinate tramite OpenStreetMap/Nominatim (viene trasmessa al servizio di geocoding esclusivamente la stringa di localita', mai dati identificativi — vedi art. 6)
 
-**Dati di account Passaporto Ritiri (Cliente finale):**
+**Dati di account Aurya del Cliente finale (Passaporto Ritiri):**
 - Nome e cognome, indirizzo email, password (hash bcrypt come sopra), lingua preferita
+- Telefono e citta', facoltativi, indicati dall'Utente per precompilare le prenotazioni e ricevere proposte vicine
 - Storico ordini, biglietti con codice QR, esperienze prenotate
+- L'account e' necessario per consultare i recapiti diretti degli Operatori (telefono, email, social e sito, quando l'Operatore li rende disponibili) e per prenotare; l'iscrizione al Cerchio (art. 4, riga 7-bis) resta separata e facoltativa
+
+**Richieste di contatto agli Operatori:**
+- Quando l'Utente con account chiede di vedere i recapiti di un Operatore, la Piattaforma registra la richiesta (Operatore, data e ora, pagina di provenienza) e la comunica all'Operatore con nome ed email dell'Utente, perche' l'Operatore sappia chi lo sta cercando e possa rispondere; l'Utente ne e' informato prima di procedere
 
 **Dati di prenotazione e ordine (trattati per conto dell'Operatore):**
 - Nome, email, telefono di chi prenota
@@ -147,6 +152,7 @@ I ritiri olistici possono toccare temi di benessere personale: l'Operatore e' te
 | 5 | Email transazionali (verifica account, reset password, conferme d'ordine, biglietti, promemoria saldo/rate) | Esecuzione di un contratto (art. 6.1.b) | Email, nome, dettagli ordine | Fino a 12 mesi nel servizio email (Brevo) |
 | 6 | Verifica di autenticita' delle recensioni (codice OTP all'email dell'ordine) e loro pubblicazione | Consenso (art. 6.1.a) per la pubblicazione + legittimo interesse (art. 6.1.f) alla genuinita' delle recensioni | Email dell'ordine, OTP, nome, contenuto della recensione | Recensione: finche' pubblicata; OTP: durata di validita' del codice |
 | 7 | Newsletter e comunicazioni marketing dell'Operatore | Consenso (art. 6.1.a), specifico, separato e revocabile via link di disiscrizione | Email, nome, consenso con timestamp | Fino a revoca del consenso |
+| 7-ter | Richiesta di contatto a un Operatore: mostrare all'Utente con account i recapiti che l'Operatore rende disponibili e comunicare all'Operatore nome ed email di chi li ha chiesti | Esecuzione di misure precontrattuali adottate su richiesta dell'interessato (art. 6.1.b) | Nome ed email dell'account, Operatore richiesto, data e ora, pagina di provenienza | 12 mesi, poi eliminazione automatica |
 | 7-bis | Newsletter di Aurya «Il Cerchio» (Lettera, guide, meditazioni, avvisi sui ritiri in base alle preferenze indicate) | Consenso (art. 6.1.a), specifico, non preselezionato e revocabile via link di disiscrizione presente in ogni email | Email, nome facoltativo, preferenze (temi, citta', raggio, budget indicativo), prova del consenso (data e ora, testo e versione, IP, User-Agent, pagina di provenienza), data della conferma via clic | Fino a revoca del consenso; la prova del consenso per tutta la durata dell'iscrizione |
 | 8 | Traduzione automatica dei contenuti dell'Operatore (IT/EN/DE/FR) | Esecuzione di un contratto (art. 6.1.b) — attivata su richiesta dell'Operatore | Testi pubblici della vetrina (vedi art. 7) | Solo durante l'elaborazione |
 | 9 | Sicurezza, prevenzione frodi e abusi, audit | Legittimo interesse (art. 6.1.f) bilanciato con i diritti dell'interessato | IP, User-Agent, log di audit | 365 giorni (anonimizzati dopo cancellazione account) |
@@ -164,7 +170,7 @@ Laddove la base giuridica del trattamento sia il consenso (newsletter, marketing
 I trattamenti riguardano le seguenti categorie di interessati:
 
 1. **Operatori / Organizzatori**: le persone fisiche che si registrano ad Aurya per pubblicare e vendere la propria offerta (o che agiscono per conto della struttura registrata).
-2. **Clienti finali / Partecipanti**: le persone fisiche che prenotano, acquistano o partecipano tramite la Piattaforma, con o senza account Passaporto Ritiri. Per i dati raccolti nell'ambito di prenotazioni e ordini, Aurya e' Responsabile e l'Operatore e' Titolare (art. 2.2 e art. 18).
+2. **Clienti finali / Partecipanti**: le persone fisiche che prenotano, acquistano o partecipano tramite la Piattaforma con il proprio account Aurya (Passaporto Ritiri), o che chiedono i recapiti di un Operatore. Per i dati raccolti nell'ambito di prenotazioni e ordini, Aurya e' Responsabile e l'Operatore e' Titolare (art. 2.2 e art. 18).
 3. **Iscritti alle newsletter degli Operatori**: persone che si iscrivono tramite i form per-operatore. Aurya e' Responsabile, l'Operatore e' Titolare.
 4. **Visitatori** del sito pubblico: trattamento limitato ai dati tecnici essenziali (art. 15) e all'eventuale geolocalizzazione lato browser mai salvata (art. 3.3).
 
@@ -224,6 +230,7 @@ La Piattaforma **non effettua alcuna decisione automatizzata** che produca effet
 | Account Passaporto Ritiri del Cliente finale | Per tutta la durata dell'account attivo | Cancellazione su richiesta + grace period 30 giorni |
 | Dati di prenotazioni e ordini (trattati per conto dell'Operatore) | Determinati dall'Operatore titolare (default: durata account Operatore + 30 giorni); fermi gli obblighi fiscali dell'Operatore | Conformi alle istruzioni del Titolare |
 | Iscritti newsletter | Fino a revoca del consenso (disiscrizione) o cancellazione da parte dell'Operatore | Rimozione immediata dalle liste attive |
+| Richieste di contatto agli Operatori (art. 4, riga 7-ter) | 12 mesi | Eliminazione automatica tramite TTL del database |
 | Iscritti alla newsletter di Aurya «Il Cerchio» | Fino a revoca del consenso (disiscrizione, anche con un clic dall'email) o richiesta di cancellazione; gli indirizzi che non hanno mai confermato ne' interagito vengono sospesi dagli invii dopo 90 giorni | Rimozione immediata dalle liste attive; la prova del consenso resta finche' dura l'iscrizione |
 | Recensioni pubblicate | Finche' pubblicate sulla Piattaforma; rimozione su richiesta motivata del recensore | Rimozione manuale |
 | Codici OTP di verifica recensione | Durata di validita' del codice | Scadenza e invalidazione automatica |

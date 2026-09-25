@@ -4729,6 +4729,21 @@ async def public_operator_profile(org_slug: str, request: Request = None, lang: 
     if pp.get("show_contacts"):
         out["contacts"] = {k: pp.get(k) for k in ("public_phone",) if pp.get(k)}
         out["contacts"]["has_email"] = bool(pp.get("public_email"))
+    # R2 (25/9/2026, founder): con CONTATTI_DIETRO_PORTA acceso il profilo
+    # dice solo COSA c'e' (telefono, email, social, sito), mai i valori:
+    # arrivano da /contatti a chi ha l'account Aurya. Spento = come sopra.
+    from core.flags import contatti_dietro_porta
+    if contatti_dietro_porta():
+        _mostra = bool(pp.get("show_contacts"))
+        out["contacts"] = {
+            "has_phone": _mostra and bool(pp.get("public_phone")),
+            "has_email": _mostra and bool(pp.get("public_email")),
+            "has_instagram": bool(pp.get("instagram")),
+            "has_facebook": bool(pp.get("facebook")),
+            "has_website": bool(pp.get("website")),
+            "porta": True,
+        }
+        out["socials"] = {}
 
     # LK1 — pagina link (la bio di Instagram che vende): esposta SOLO
     # se l'operatore l'ha attivata, e dei link personalizzati solo
@@ -4784,9 +4799,78 @@ async def public_operator_contatti(org_slug: str, request: Request = None):
     privati (show_contacts)."""
     org = await _resolve_org(org_slug)   # 404 se non pubblico
     pp = org.get("public_profile") or {}
-    if not pp.get("show_contacts"):
-        return {}
-    return {k: pp.get(k) for k in ("public_email", "public_phone") if pp.get(k)}
+    from core.flags import contatti_dietro_porta
+    if not contatti_dietro_porta():
+        if not pp.get("show_contacts"):
+            return {}
+        return {k: pp.get(k) for k in ("public_email", "public_phone") if pp.get(k)}
+    # R2 — dietro la porta: serve il Bearer dell'account Aurya (type=platform,
+    # attivo). Niente enumerazione: 401 secco. La richiesta viene registrata
+    # UNA volta al giorno per persona e operatore (lead per l'operatore),
+    # in background e mai bloccante.
+    account = await _account_piattaforma(request)
+    if not account:
+        raise HTTPException(status_code=401, detail="account_richiesto")
+    out = {}
+    if pp.get("show_contacts"):
+        out.update({k: pp.get(k) for k in ("public_email", "public_phone") if pp.get(k)})
+    out.update({k: pp.get(k) for k in ("instagram", "facebook", "website") if pp.get(k)})
+    try:
+        await _registra_richiesta_contatto(org, account, request)
+    except Exception:  # noqa: BLE001 — il lead non blocca mai i contatti
+        logger.warning("richiesta di contatto non registrata", exc_info=True)
+    return out
+
+
+async def _account_piattaforma(request: Request):
+    """L'account Aurya dal Bearer, o None (token assente, di altro tipo,
+    scaduto, account disattivo). Stessa lettura tollerante di /order-request."""
+    auth_header = (request.headers.get("authorization") or "") if request else ""
+    if not auth_header.startswith("Bearer "):
+        return None
+    try:
+        from auth import decode_token
+        payload = decode_token(auth_header[7:])
+        if payload.get("type") != "platform" or not payload.get("sub"):
+            return None
+        from services.platform_account_service import get_account
+        account = await get_account(payload["sub"])
+        if not account or not account.get("is_active", True):
+            return None
+        return account
+    except Exception:  # noqa: BLE001
+        return None
+
+
+_INDICI_CONTATTI_PRONTI = False
+
+
+async def _registra_richiesta_contatto(org: dict, account: dict, request: Request) -> None:
+    """R2 — una riga per (operatore, account, giorno): la persona che
+    riapre la pagina dieci volte e' un lead, non dieci. TTL 12 mesi
+    (Informativa v2.8, riga 7-ter)."""
+    global _INDICI_CONTATTI_PRONTI
+    from datetime import datetime, timezone
+    from database import contact_requests_collection
+    from models.common import generate_id
+    if not _INDICI_CONTATTI_PRONTI:
+        await contact_requests_collection.create_index([("org_id", 1), ("quando", -1)])
+        await contact_requests_collection.create_index(
+            [("org_id", 1), ("platform_account_id", 1), ("giorno", 1)], unique=True)
+        await contact_requests_collection.create_index("scade_il", expireAfterSeconds=0)
+        _INDICI_CONTATTI_PRONTI = True
+    now = datetime.now(timezone.utc)
+    giorno = now.strftime("%Y-%m-%d")
+    referer = (request.headers.get("referer") or "")[:300] if request else ""
+    await contact_requests_collection.update_one(
+        {"org_id": org["id"], "platform_account_id": account["id"], "giorno": giorno},
+        {"$setOnInsert": {
+            "id": generate_id(), "org_id": org["id"], "platform_account_id": account["id"],
+            "email": account.get("email"), "nome": account.get("name"),
+            "quando": now.isoformat(), "giorno": giorno, "da": referer,
+            "scade_il": now.replace(year=now.year + 1),
+        }},
+        upsert=True)
 
 @router.get("/visual-demos")
 async def visual_demos():
