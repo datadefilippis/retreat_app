@@ -36,7 +36,13 @@ AUTH = (BACKEND / "auth.py").read_text(encoding="utf-8")
 class TestPortaFrontend:
     def test_la_porta_crea_con_password_e_caselle_separate(self):
         assert "vista: vistaIniziale = 'entra'" in PORTA
-        for v in ("porta-aurya-entra", "porta-aurya-codice", "porta-aurya-crea", "porta-aurya-inviata"):
+        for v in ("porta-aurya-entra", "porta-aurya-crea", "porta-aurya-inviata"):
+            assert f'data-testid="{v}"' in PORTA, v
+        # 26/9 (founder): solo account veri con password — niente codice nella porta
+        for v in ("porta-aurya-codice", "porta-aurya-vai-codice"):
+            assert f'data-testid="{v}"' not in PORTA, v
+        assert "/platform/auth/magic-link" not in PORTA and "code/verify" not in PORTA
+        for v in ():
             assert f'data-testid="{v}"' in PORTA, v
         # crea → signup con password, legale obbligatoria, Cerchio separato e spento
         blocco = PORTA.split("const crea = async")[1].split("};")[0]
@@ -54,8 +60,8 @@ class TestPortaFrontend:
         assert "if (res.data?.access_token) await apri(res);" in PORTA and "else setVista('inviata');" in PORTA
         # mai un submit del form padre: ogni bottone e' type=button e Enter e' intercettato
         assert 'type="submit"' not in PORTA and "e.preventDefault(); fn(e);" in PORTA
-        # vie di uscita: entra con password, codice, recupero (vista giusta di /accedi)
-        assert "/accedi?vista=recupero" in PORTA and "'/platform/auth/code/verify'" in PORTA
+        # vie di uscita: entra con password e recupero (vista giusta di /accedi)
+        assert "/accedi?vista=recupero" in PORTA
 
     def test_il_pannello_del_checkout_monta_la_porta(self):
         assert "import PortaAurya from '../../../account/PortaAurya';" in QUICK

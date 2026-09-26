@@ -5,13 +5,12 @@
  * porta si monta dove serve un'identita' — il checkout (R3), i contatti
  * dell'operatore (R2), oggi il pannello inline del checkout. Decisione
  * del founder (25/9 sera): l'account si CREA con una password; per chi
- * ce l'ha gia' l'accesso e' email+password, col codice a 6 cifre come
- * ripiego («Accedi senza password», gia' esistente).
+ * ce l'ha gia' l'accesso e' email+password.
  *
- * Due viste:
+ * Due viste (26/9, founder: «solo account veri con password» — niente
+ * codice a 6 cifre qui; resta su /accedi e nel pannello del checkout):
  *   entra — email + password (→ /platform/auth/login), «Password
- *           dimenticata» e «Accedi con un codice» (magic-link + code/verify),
- *           «Non hai un account? Crealo»;
+ *           dimenticata», «Non hai un account? Crealo»;
  *   crea  — nome, email, password (le 4 regole di AccountLoginPage), la
  *           casella legale obbligatoria (accepted_terms) e la casella del
  *           Cerchio SEPARATA e SPENTA (wants_newsletter + consenso_versione:
@@ -47,12 +46,10 @@ export const passwordValida = (p) => REGOLE_PASSWORD.every(([, ok]) => ok(p || '
 
 export default function PortaAurya({ vista: vistaIniziale = 'entra', emailIniziale = '', onDentro, contesto = 'porta' }) {
   const { t, i18n } = useTranslation('storefront');
-  const [vista, setVista] = useState(vistaIniziale);       // entra | codice | crea | inviata
+  const [vista, setVista] = useState(vistaIniziale);       // entra | crea | inviata
   const [email, setEmail] = useState(emailIniziale || '');
   const [password, setPassword] = useState('');
   const [nome, setNome] = useState('');
-  const [codice, setCodice] = useState('');
-  const [codiceInviato, setCodiceInviato] = useState(false);
   const [legale, setLegale] = useState(false);            // obbligatoria (AP-L)
   const [cerchio, setCerchio] = useState(false);          // SEPARATA, mai preselezionata (NL2)
   const [busy, setBusy] = useState(false);
@@ -75,7 +72,7 @@ export default function PortaAurya({ vista: vistaIniziale = 'entra', emailInizia
     const status = err?.response?.status;
     const detail = err?.response?.data?.detail || '';
     if (status === 429) return setErrore(t('porta.troppi', { defaultValue: 'Troppi tentativi ravvicinati: aspetta un minuto e riprova.' }));
-    if (status === 423) return setErrore(t('porta.bloccato', { defaultValue: 'Troppi tentativi: riprova più tardi o accedi con un codice.' }));
+    if (status === 423) return setErrore(t('porta.bloccato', { defaultValue: 'Troppi tentativi: riprova più tardi o usa «Password dimenticata».' }));
     if (status === 403 && detail === 'EMAIL_NOT_VERIFIED') return setErrore(t('porta.nonVerificata', { defaultValue: 'Prima conferma la tua email: controlla la posta (anche lo spam).' }));
     if (status === 409) { setVista('entra'); return setErrore(t('porta.esiste', { defaultValue: 'Questa email ha già un account Aurya: entra con la tua password.' })); }
     if (status === 400 && detail) return setErrore(String(detail));
@@ -91,30 +88,6 @@ export default function PortaAurya({ vista: vistaIniziale = 'entra', emailInizia
       await apri(res);
     } catch (err) {
       gestisciErrore(err, t('porta.credenziali', { defaultValue: 'Email o password non corretti.' }));
-    } finally { setBusy(false); }
-  };
-
-  const mandaCodice = async (e) => {
-    e?.preventDefault();
-    if (!emailOk) return;
-    setBusy(true); setErrore(null);
-    try {
-      await platformApi.post('/platform/auth/magic-link', { email: email.trim(), language: lingua() });
-      setCodiceInviato(true); setCodice('');
-    } catch (err) {
-      gestisciErrore(err, t('porta.invioFallito', { defaultValue: 'Qualcosa non ha funzionato. Riprova tra un minuto.' }));
-    } finally { setBusy(false); }
-  };
-
-  const verificaCodice = async (e) => {
-    e?.preventDefault();
-    if (codice.length !== 6) return;
-    setBusy(true); setErrore(null);
-    try {
-      const res = await platformApi.post('/platform/auth/code/verify', { email: email.trim(), code: codice });
-      await apri(res);
-    } catch (err) {
-      gestisciErrore(err, t('porta.codiceErrato', { defaultValue: 'Codice non valido o scaduto. Controlla e riprova.' }));
     } finally { setBusy(false); }
   };
 
@@ -208,42 +181,6 @@ export default function PortaAurya({ vista: vistaIniziale = 'entra', emailInizia
     );
   }
 
-  if (vista === 'codice') {
-    return (
-      <div className="space-y-2" data-testid="porta-aurya-codice">
-        <p className="text-[11px] text-gray-500">
-          {codiceInviato
-            ? t('porta.codiceInviato', { defaultValue: 'Codice a 6 cifre inviato a {{email}}. Vale 15 minuti.', email: email.trim() })
-            : t('porta.codiceHint', { defaultValue: 'Niente password: ti mandiamo un codice via email.' })}
-        </p>
-        {!codiceInviato ? (
-          <div className="flex gap-2">
-            <input type="email" value={email} autoComplete="email" onChange={(e) => setEmail(e.target.value)} onKeyDown={invio(mandaCodice)}
-              placeholder={t('porta.email', { defaultValue: 'La tua email' })} className={INPUT} data-testid="porta-aurya-email" />
-            <button type="button" onClick={mandaCodice} disabled={busy || !emailOk}
-              className="shrink-0 rounded-lg bg-gray-900 text-white px-3 py-2 text-sm font-medium disabled:opacity-50" data-testid="porta-aurya-manda-codice">
-              {busy ? t('porta.invio', { defaultValue: 'Invio…' }) : t('porta.mandaCodice', { defaultValue: 'Inviami il codice' })}
-            </button>
-          </div>
-        ) : (
-          <div className="flex gap-2">
-            <input type="text" inputMode="numeric" autoComplete="one-time-code" maxLength={6} value={codice} autoFocus
-              onChange={(e) => setCodice(e.target.value.replace(/\D/g, ''))} onKeyDown={invio(verificaCodice)}
-              placeholder="••••••" className={`${INPUT} text-center tracking-[0.4em] font-semibold`} data-testid="porta-aurya-codice-input" />
-            <button type="button" onClick={verificaCodice} disabled={busy || codice.length !== 6}
-              className="shrink-0 rounded-lg bg-gray-900 text-white px-3 py-2 text-sm font-medium disabled:opacity-50" data-testid="porta-aurya-verifica-codice">
-              {busy ? t('porta.verifico', { defaultValue: 'Verifico…' }) : t('porta.entra', { defaultValue: 'Entra' })}
-            </button>
-          </div>
-        )}
-        <button type="button" className={LINK} onClick={() => { setVista('entra'); setCodiceInviato(false); setErrore(null); }}>
-          {t('porta.conPassword', { defaultValue: 'Entra con la password' })}
-        </button>
-        {errore && <p className="text-[11px] text-red-600" data-testid="porta-aurya-errore">{errore}</p>}
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-2" data-testid="porta-aurya-entra">
       <input type="email" value={email} autoComplete="email" onChange={(e) => setEmail(e.target.value)} onKeyDown={invio(entra)}
@@ -259,9 +196,6 @@ export default function PortaAurya({ vista: vistaIniziale = 'entra', emailInizia
       <div className="flex flex-wrap gap-x-3 gap-y-1">
         <button type="button" className={LINK} data-testid="porta-aurya-vai-crea" onClick={() => { setVista('crea'); setErrore(null); }}>
           {t('porta.nonHaiAccount', { defaultValue: 'Non hai un account? Crealo' })}
-        </button>
-        <button type="button" className={LINK} data-testid="porta-aurya-vai-codice" onClick={() => { setVista('codice'); setErrore(null); }}>
-          {t('porta.senzaPassword', { defaultValue: 'Accedi senza password' })}
         </button>
         <a href={`/accedi?vista=recupero${email ? `&email=${encodeURIComponent(email.trim())}` : ''}`} className={LINK} data-testid="porta-aurya-reset">
           {t('porta.dimenticata', { defaultValue: 'Password dimenticata?' })}
