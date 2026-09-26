@@ -123,7 +123,9 @@ class TestR2Frontend:
         assert "haContatti(data)" in PROF and "contacts?.public_email" not in PROF and "socials.instagram" not in PROF
         assert '<ContattiOperatore slug={slug} data={data} variante="store" />' in ABOUT
         assert "ContattiOperatore" not in LINK and "/contatti" not in LINK      # /@slug resta libera
-        assert 'data-testid="richieste-contatto"' in CLIENTI and "customersAPI.contactRequests()" in CLIENTI
+        # 26/9 (founder): la card «Chi ha chiesto i tuoi contatti» NON si mostra
+        # all'operatore; i dati restano (12 mesi) per poterla riaccendere
+        assert 'data-testid="richieste-contatto"' not in CLIENTI and "contactRequests" not in CLIENTI
 
 
 class TestRitornoDopoLaConferma:

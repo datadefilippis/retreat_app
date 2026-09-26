@@ -24,8 +24,6 @@ export default function CustomersMgmtPage() {
   const [editing, setEditing] = useState(null);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({});
-  // R2 — le persone con account Aurya che hanno aperto i tuoi contatti
-  const [richieste, setRichieste] = useState(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -36,9 +34,6 @@ export default function CustomersMgmtPage() {
   }, []);
 
   useEffect(() => { load(); }, [load]);
-  useEffect(() => {
-    customersAPI.contactRequests().then((r) => setRichieste(r.data)).catch(() => setRichieste(null));
-  }, []);
   useDatiFreschi(load);   // DF1 — al ritorno sulla scheda dopo un'assenza
 
   const filtered = useMemo(() => {
@@ -90,28 +85,6 @@ export default function CustomersMgmtPage() {
 
   return (
     <AppLayout>
-    {/* R2 (25/9/2026) — «Chi ha chiesto i tuoi contatti»: il lead che ripaga
-        l'operatore del cancello sui recapiti (persone con account Aurya) */}
-    {richieste && richieste.total > 0 && (
-      <div className="mb-4 rounded-xl border border-[#c9b37e]/50 bg-[#faf6ec] p-4" data-testid="richieste-contatto">
-        <p className="text-sm font-semibold text-foreground">
-          {t('customers.richieste_titolo', { defaultValue: 'Chi ha chiesto i tuoi contatti' })} · {richieste.persone}
-        </p>
-        <p className="text-xs text-muted-foreground mb-2">
-          {t('customers.richieste_nota', { defaultValue: 'Persone con account Aurya che hanno aperto telefono, email o social dal tuo profilo negli ultimi 90 giorni. Scrivi tu per primo.' })}
-        </p>
-        <ul className="space-y-1 text-sm">
-          {richieste.items.slice(0, 20).map((r) => (
-            <li key={`${r.email}-${r.quando}`} className="flex flex-wrap items-baseline gap-x-2">
-              <span className="font-medium">{r.nome || r.email}</span>
-              {r.nome && <a href={`mailto:${r.email}`} className="text-primary hover:underline">{r.email}</a>}
-              <span className="text-xs text-muted-foreground">{new Date(r.quando).toLocaleDateString('it-IT')}</span>
-            </li>
-          ))}
-        </ul>
-      </div>
-    )}
-
       <Header title={t('customers.title')} subtitle={t('customers.subtitle')}>
         <Button variant="outline" size="sm" onClick={load} className="gap-1"><RefreshCw className="h-4 w-4" /></Button>
         <Button size="sm" onClick={openCreate} className="gap-2"><Plus className="h-4 w-4" /> {t('customers.add')}</Button>
