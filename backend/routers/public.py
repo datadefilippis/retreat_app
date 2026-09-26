@@ -4808,36 +4808,61 @@ async def public_operator_contatti(org_slug: str, request: Request = None):
     # attivo). Niente enumerazione: 401 secco. La richiesta viene registrata
     # UNA volta al giorno per persona e operatore (lead per l'operatore),
     # in background e mai bloccante.
-    account = await _account_piattaforma(request)
-    if not account:
+    identita = await _identita_dal_bearer(request)
+    if not identita:
         raise HTTPException(status_code=401, detail="account_richiesto")
     out = {}
     if pp.get("show_contacts"):
         out.update({k: pp.get(k) for k in ("public_email", "public_phone") if pp.get(k)})
     out.update({k: pp.get(k) for k in ("instagram", "facebook", "website") if pp.get(k)})
-    try:
-        await _registra_richiesta_contatto(org, account, request)
-    except Exception:  # noqa: BLE001 — il lead non blocca mai i contatti
-        logger.warning("richiesta di contatto non registrata", exc_info=True)
+    # 26/9 (founder): chi e' gia' dentro con QUALUNQUE cappello (cliente,
+    # operatore, regia) vede i contatti senza rifare l'accesso. Il lead si
+    # registra per clienti e operatori di altre org; mai per la regia, mai
+    # per l'operatore che guarda la propria pagina. Nessuna email a nessuno.
+    if identita.get("registra") and identita.get("org_id") != org.get("id"):
+        try:
+            await _registra_richiesta_contatto(org, identita, request)
+        except Exception:  # noqa: BLE001 — il lead non blocca mai i contatti
+            logger.warning("richiesta di contatto non registrata", exc_info=True)
     return out
 
 
-async def _account_piattaforma(request: Request):
-    """L'account Aurya dal Bearer, o None (token assente, di altro tipo,
-    scaduto, account disattivo). Stessa lettura tollerante di /order-request."""
+async def _identita_dal_bearer(request: Request):
+    """Chi e' dietro il Bearer, con qualunque cappello — o None (token
+    assente, scaduto, di tipo ignoto, account disattivo). Stessa lettura
+    tollerante di /order-request.
+      type=platform → account Aurya (cliente): {id, email, name, tipo: cliente}
+      senza type    → utente del gestionale (operatore o regia):
+                      {id: «utente:<id>», email, name, tipo, org_id}
+    `registra` dice se la richiesta vale come lead (mai la regia)."""
     auth_header = (request.headers.get("authorization") or "") if request else ""
     if not auth_header.startswith("Bearer "):
         return None
     try:
         from auth import decode_token
         payload = decode_token(auth_header[7:])
-        if payload.get("type") != "platform" or not payload.get("sub"):
+        sub = payload.get("sub")
+        if not sub:
             return None
-        from services.platform_account_service import get_account
-        account = await get_account(payload["sub"])
-        if not account or not account.get("is_active", True):
-            return None
-        return account
+        tipo = payload.get("type")
+        if tipo == "platform":
+            from services.platform_account_service import get_account
+            account = await get_account(sub)
+            if not account or not account.get("is_active", True):
+                return None
+            return {"id": account["id"], "email": account.get("email"), "name": account.get("name"),
+                    "tipo": "cliente", "org_id": None, "registra": True}
+        if tipo in (None, "access"):
+            from database import users_collection
+            user = await users_collection.find_one({"id": sub}, {"_id": 0, "id": 1, "email": 1, "name": 1,
+                                                                  "role": 1, "organization_id": 1, "is_active": 1})
+            if not user or user.get("is_active") is False:
+                return None
+            regia = user.get("role") == "system_admin"
+            return {"id": f"utente:{user['id']}", "email": user.get("email"), "name": user.get("name"),
+                    "tipo": "regia" if regia else "operatore", "org_id": user.get("organization_id"),
+                    "registra": not regia}
+        return None
     except Exception:  # noqa: BLE001
         return None
 
@@ -4846,6 +4871,8 @@ _INDICI_CONTATTI_PRONTI = False
 
 
 async def _registra_richiesta_contatto(org: dict, account: dict, request: Request) -> None:
+    # `account` e' l'identita' di _identita_dal_bearer: per gli utenti del
+    # gestionale l'id e' «utente:<id>» (stessa chiave unica per giorno)
     """R2 — una riga per (operatore, account, giorno): la persona che
     riapre la pagina dieci volte e' un lead, non dieci. TTL 12 mesi
     (Informativa v2.8, riga 7-ter)."""
@@ -4867,6 +4894,7 @@ async def _registra_richiesta_contatto(org: dict, account: dict, request: Reques
         {"$setOnInsert": {
             "id": generate_id(), "org_id": org["id"], "platform_account_id": account["id"],
             "email": account.get("email"), "nome": account.get("name"),
+            "tipo": account.get("tipo") or "cliente",
             "quando": now.isoformat(), "giorno": giorno, "da": referer,
             "scade_il": now.replace(year=now.year + 1),
         }},

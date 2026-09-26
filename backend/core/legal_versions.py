@@ -46,6 +46,7 @@ History:
     recapiti degli Operatori e per prenotare; richieste di contatto
     comunicate all'Operatore (riga 7-ter, conservazione 12 mesi); il
     Cerchio resta separato e facoltativo; verifica email «per uso» (E6).
+    Hash ricalcolato il 26/9 (una frase della riga 7-ter, stessa v2.8).
   - v0.preD (Phase B, 2026-05-16 morning) — pre-finalization Italian
     text, bootstrap hash placeholder.
   - v0.9 (Wave GDPR-Admin D content, 2026-05-16 afternoon) — lawyer-
@@ -163,7 +164,7 @@ History:
     CERCHIO_SINGOLO_OPTIN. Stesse modifiche in EN/DE/FR.
 """
 
-CURRENT_VERSION_HASH: Final[str] = "f9b989f616aba7ec"
+CURRENT_VERSION_HASH: Final[str] = "f5458ae5c56541b2"
 """SHA256-hex16 of the rendered IT privacy + terms text bundle.
 
 Computed from the concatenation:

@@ -97,7 +97,7 @@ I rapporti tra Aurya e gli Operatori in materia di protezione dei dati sono rego
 - L'account e' necessario per consultare i recapiti diretti degli Operatori (telefono, email, social e sito, quando l'Operatore li rende disponibili) e per prenotare; l'iscrizione al Cerchio (art. 4, riga 7-bis) resta separata e facoltativa
 
 **Richieste di contatto agli Operatori:**
-- Quando l'Utente con account chiede di vedere i recapiti di un Operatore, la Piattaforma registra la richiesta (Operatore, data e ora, pagina di provenienza) e la comunica all'Operatore con nome ed email dell'Utente, perche' l'Operatore sappia chi lo sta cercando e possa rispondere; l'Utente ne e' informato prima di procedere
+- Quando l'Utente con account chiede di vedere i recapiti di un Operatore, la Piattaforma registra la richiesta (Operatore, data e ora, pagina di provenienza) e la comunica all'Operatore con nome ed email dell'Utente, perche' l'Operatore sappia chi lo sta cercando e possa rispondere; la presente Informativa ne da' notizia all'Utente, che con l'account accetta questa modalita'
 
 **Dati di prenotazione e ordine (trattati per conto dell'Operatore):**
 - Nome, email, telefono di chi prenota

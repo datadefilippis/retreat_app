@@ -8,9 +8,10 @@
  * GET /public/operator/{slug}/contatti, che vuole il Bearer dell'account
  * Aurya e registra la richiesta per l'operatore (il lead).
  *
- * Con sessione aperta: chiama e mostra. Senza: spiega, dichiara che
- * l'operatore vedra' chi ha chiesto (trasparenza, Informativa 7-ter) e
- * monta PortaAurya (entra o crea con password). Con l'interruttore spento
+ * Con sessione aperta (cliente, operatore o regia): chiama e mostra.
+ * Senza: spiega e monta PortaAurya (entra o crea con password). La
+ * comunicazione all'operatore di chi ha chiesto sta nell'Informativa
+ * (7-ter); il founder (26/9) non la vuole scritta nel riquadro. Con l'interruttore spento
  * (`contacts.porta` assente) rende ESATTAMENTE i blocchi di ieri: telefono
  * in chiaro, email al clic (MostraEmail), social in chiaro.
  *
@@ -24,7 +25,15 @@ import PortaAurya from '../../account/PortaAurya';
 import MostraEmail from './MostraEmail';
 
 const extUrl = (u) => (u && !u.startsWith('http') ? `https://${u}` : u);
-const haToken = () => { try { return !!localStorage.getItem(PLATFORM_TOKEN_KEY); } catch { return false; } };
+/* 26/9 (founder): qualunque sessione aperta basta — cliente (platform_token)
+   o gestionale (token: operatore e regia). Il client giusto porta il suo Bearer. */
+const sessione = () => {
+  try {
+    if (localStorage.getItem(PLATFORM_TOKEN_KEY)) return 'cliente';
+    if (localStorage.getItem('token')) return 'gestionale';
+  } catch { /* private mode */ }
+  return null;
+};
 
 /** true se c'e' qualcosa da mostrare (chi monta decide se aprire il riquadro) */
 export function haContatti(data) {
@@ -63,19 +72,21 @@ export default function ContattiOperatore({ slug, data, variante = 'profilo' }) 
   const c = data?.contacts || {};
   const s = data?.socials || {};
   const [valori, setValori] = useState(null);
-  const [stato, setStato] = useState('chiuso');   // chiuso | carico | aperto | errore
+  // porta (nessuna sessione, o sessione scaduta) | carico | aperto | errore
+  const [stato, setStato] = useState(() => (sessione() ? 'carico' : 'porta'));
 
   const apri = async () => {
     setStato('carico');
     try {
-      const r = await platformApi.get(`/public/operator/${slug}/contatti`);
+      const client = sessione() === 'gestionale' ? api : platformApi;
+      const r = await client.get(`/public/operator/${slug}/contatti`);
       setValori(r.data || {}); setStato('aperto');
     } catch (err) {
-      if (err?.response?.status === 401) { setStato('chiuso'); return; }   // sessione scaduta: torna la porta
+      if (err?.response?.status === 401) { setStato('porta'); return; }   // sessione scaduta: torna la porta
       setStato('errore');
     }
   };
-  useEffect(() => { if (c.porta && haToken()) apri(); }, [slug]);   // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { if (c.porta && sessione()) apri(); }, [slug]);   // eslint-disable-line react-hooks/exhaustive-deps
 
   /* ── interruttore spento: i blocchi di ieri, identici ── */
   if (!c.porta) {
@@ -124,11 +135,6 @@ export default function ContattiOperatore({ slug, data, variante = 'profilo' }) 
       <p className="text-sm text-gray-700">
         {t('landings:operator.contattiPorta', {
           defaultValue: 'Per vedere {{cosa}} entra con il tuo account Aurya, o crealo in un minuto.', cosa,
-        })}
-      </p>
-      <p className="text-xs text-muted-foreground" data-testid="contatti-avviso">
-        {t('landings:operator.contattiAvviso', {
-          defaultValue: 'L’operatore vedrà che hai chiesto i suoi contatti (nome ed email): così sa chi lo cerca e può risponderti.',
         })}
       </p>
       <PortaAurya contesto="contatti" onDentro={() => apri()} />

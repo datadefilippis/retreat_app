@@ -69,14 +69,19 @@ class TestR2Backend:
         assert "if not contatti_dietro_porta():" in rotta                      # spento = ieri
         assert 'raise HTTPException(status_code=401, detail="account_richiesto")' in rotta
         assert 'for k in ("instagram", "facebook", "website") if pp.get(k)' in rotta
-        assert "await _registra_richiesta_contatto(org, account, request)" in rotta
+        assert "await _registra_richiesta_contatto(org, identita, request)" in rotta
+        # 26/9 (founder): chi e' gia' dentro con qualunque cappello non rifa' l'accesso;
+        # il lead vale per clienti e operatori di ALTRE org, mai per la regia
+        assert 'if identita.get("registra") and identita.get("org_id") != org.get("id"):' in rotta
+        assert "send_email" not in rotta and "email_service" not in rotta          # nessuna email a nessuno
         # il lead: una riga per operatore/account/giorno, TTL 12 mesi, mai bloccante
         reg = PUBLIC[PUBLIC.index("async def _registra_richiesta_contatto"):][:1800]
         assert '[("org_id", 1), ("platform_account_id", 1), ("giorno", 1)], unique=True' in reg
         assert 'create_index("scade_il", expireAfterSeconds=0)' in reg and '"$setOnInsert"' in reg
         # il Bearer: solo type=platform, account attivo, mai enumerazione
-        acc = PUBLIC[PUBLIC.index("async def _account_piattaforma"):][:900]
-        assert 'payload.get("type") != "platform"' in acc and "return None" in acc
+        acc = PUBLIC[PUBLIC.index("async def _identita_dal_bearer"):][:2200]
+        assert 'if tipo == "platform":' in acc and 'if tipo in (None, "access"):' in acc
+        assert '"registra": not regia' in acc and 'regia = user.get("role") == "system_admin"' in acc
 
     def test_operatore_e_schema(self):
         rotta = ORGS[ORGS.index('@router.get("/current/contact-requests")'):][:1200]
@@ -103,12 +108,15 @@ class TestR2Frontend:
         assert "export function haContatti(data)" in COMP and "if (c.porta) return" in COMP
         assert "if (!c.porta) {" in COMP                                   # spento = i blocchi di ieri
         assert "<MostraEmail slug={slug}" in COMP                          # email al clic resta nel ramo spento
-        for tid in ("contatti-aperti", "contatti-porta", "contatti-avviso", "contatti-carico", "contatti-errore"):
+        for tid in ("contatti-aperti", "contatti-porta", "contatti-carico", "contatti-errore"):
             assert f'data-testid="{tid}"' in COMP, tid
-        assert "platformApi.get(`/public/operator/${slug}/contatti`)" in COMP
-        assert "if (err?.response?.status === 401) { setStato('chiuso'); return; }" in COMP
+        assert "client.get(`/public/operator/${slug}/contatti`)" in COMP
+        assert "if (err?.response?.status === 401) { setStato('porta'); return; }" in COMP
+        assert "if (localStorage.getItem('token')) return 'gestionale';" in COMP       # anche la sessione del gestionale
+        assert "const client = sessione() === 'gestionale' ? api : platformApi;" in COMP
         assert '<PortaAurya contesto="contatti" onDentro={() => apri()} />' in COMP
-        assert "L’operatore vedrà che hai chiesto i suoi contatti" in COMP     # trasparenza (7-ter)
+        # 26/9 (founder): niente frase sull'operatore nel riquadro; l'informazione sta nell'Informativa (7-ter)
+        assert "contatti-avviso" not in COMP and "L’operatore vedrà" not in COMP
 
     def test_le_pagine_montano_il_componente_e_la_link_page_no(self):
         assert '<ContattiOperatore slug={org_slug} data={data} variante="profilo" />' in PROF
