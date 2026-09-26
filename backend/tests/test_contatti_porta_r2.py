@@ -124,3 +124,51 @@ class TestR2Frontend:
         assert '<ContattiOperatore slug={slug} data={data} variante="store" />' in ABOUT
         assert "ContattiOperatore" not in LINK and "/contatti" not in LINK      # /@slug resta libera
         assert 'data-testid="richieste-contatto"' in CLIENTI and "customersAPI.contactRequests()" in CLIENTI
+
+
+class TestRitornoDopoLaConferma:
+    """26/9 (founder, punto 2): il link di verifica riporta alla pagina
+    dell'operatore — SOLO quando il signup nasce dalla porta dei contatti.
+    Isolato: senza `return_to` link, pagina e risposte sono quelli di ieri."""
+
+    def test_backend_isolato(self):
+        router = (BACKEND / "routers" / "platform_accounts.py").read_text(encoding="utf-8")
+        svc = (BACKEND / "services" / "platform_account_service.py").read_text(encoding="utf-8")
+        assert "return_to: Optional[str] = Field(None, max_length=500)" in router
+        assert "return_to=body.return_to)" in router
+        invio = svc[svc.index("def _send_verify_email"):][:1400]
+        assert "from services.verifica_email import percorso_interno" in invio       # mai un open redirect
+        assert '_ritorno = percorso_interno(return_to) if return_to else "/"' in invio
+        assert 'if _ritorno != "/":' in invio and "&next=" in invio
+        assert 'return {"status": "verified", "email": account.get("email")}' in svc
+        assert svc.count("_send_verify_email(") == 2      # def + signup: nessun altro chiamante cambia
+
+    def test_il_link_porta_next_solo_se_chiesto(self, monkeypatch):
+        """Deterministico: si cattura l'HTML dell'email. Con return_to interno
+        il link ha &next=…; senza, o con un URL esterno, il link e' quello di ieri."""
+        import services.email_service as es
+        from services.platform_account_service import _send_verify_email
+        catturate = []
+        monkeypatch.setattr(es, "send_email", lambda to, subject, html, **kw: catturate.append(html))
+        _send_verify_email("a@example.com", "TOK1", "Anna", return_to="/o/anpoche")
+        _send_verify_email("b@example.com", "TOK2", None)
+        _send_verify_email("c@example.com", "TOK3", None, return_to="https://evil.example/x")
+        assert "/account/verifica?token=TOK1&next=/o/anpoche" in catturate[0]
+        assert "token=TOK2" in catturate[1] and "next=" not in catturate[1]
+        assert "token=TOK3" in catturate[2] and "next=" not in catturate[2] and "evil" not in catturate[2]
+
+    def test_frontend_isolato(self):
+        porta = (FE / "features" / "account" / "PortaAurya.jsx").read_text(encoding="utf-8")
+        assert "...(contesto === 'contatti' ? { return_to: window.location.pathname } : {})," in porta
+        verifica = (FE / "features" / "account" / "AccountVerifyEmailPage.js").read_text(encoding="utf-8")
+        assert "const next = rawNext.startsWith('/') && !rawNext.startsWith('//') ? rawNext : '';" in verifica
+        assert 'data-testid="verify-torna"' in verifica and "entraInAurya(emailConfermata, next)" in verifica
+        assert "{next ? (" in verifica                                     # senza next: la pagina di sempre
+        assert '<ContattiOperatore slug={org_slug} data={data} variante="profilo" />' in PROF
+        assert 'contesto="contatti"' in COMP
+
+    def test_percorso_interno(self):
+        from services.verifica_email import percorso_interno
+        assert percorso_interno("/o/anpoche") == "/o/anpoche"
+        assert percorso_interno("https://evil.example/x") == "/"
+        assert percorso_interno("//evil.example") == "/" and percorso_interno("") == "/"

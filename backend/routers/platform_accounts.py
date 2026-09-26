@@ -196,6 +196,9 @@ class PasswordSignup(BaseModel):
     wants_newsletter: bool = False
     # E2 (24/9) — la versione del testo della casella del Cerchio letto
     consenso_versione: Optional[str] = Field(None, max_length=30)
+    # 26/9 (founder) — solo la porta dei CONTATTI lo manda: il link di
+    # verifica riporta alla pagina dell'operatore. Assente = come prima.
+    return_to: Optional[str] = Field(None, max_length=500)
 
 
 class VerifyEmailBody(BaseModel):
@@ -265,7 +268,8 @@ async def password_signup_ep(body: PasswordSignup, request: Request):
                                     password=body.password,
                                     language=body.language,
                                     accepted_terms=True,
-                                    request_ip=_req_ip, user_agent=_ua)
+                                    request_ip=_req_ip, user_agent=_ua,
+                                    return_to=body.return_to)
         # NL2 — la Lettera viaggia sul suo flusso (double opt-in), mai
         # come effetto collaterale silenzioso della creazione account
         if body.wants_newsletter:

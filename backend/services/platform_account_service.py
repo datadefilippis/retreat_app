@@ -426,7 +426,8 @@ async def password_signup(*, name: Optional[str], email: str, password: str,
                           language: Optional[str] = None,
                           accepted_terms: bool = False,
                           request_ip: Optional[str] = None,
-                          user_agent: Optional[str] = None) -> Dict[str, Any]:
+                          user_agent: Optional[str] = None,
+                          return_to: Optional[str] = None) -> Dict[str, Any]:
     """Signup email+password: crea (o adotta) l'account e invia l'email
     di verifica. L'account NON e' loggabile con password finche' l'email
     non e' verificata.
@@ -499,6 +500,7 @@ async def password_signup(*, name: Optional[str], email: str, password: str,
             ip_address=request_ip, user_agent=user_agent)
 
     _send_verify_email(email_n, token, account.get("name"),
+                       return_to=return_to,
                        locale=account.get("language") or "it")
     logger.info("platform_account: signup password per %s (verifica inviata)",
                 account["id"])
@@ -506,14 +508,21 @@ async def password_signup(*, name: Optional[str], email: str, password: str,
 
 
 def _send_verify_email(email: str, token: str, name: Optional[str],
-                       locale: str = "it") -> None:
+                       locale: str = "it", return_to: Optional[str] = None) -> None:
     """Email di verifica account (AP1b): stesso template grafico delle
-    altre transazionali Aurya, 4 lingue. In dev (niente Brevo) loggata."""
+    altre transazionali Aurya, 4 lingue. In dev (niente Brevo) loggata.
+    26/9: `return_to` (solo dalla porta dei contatti) viaggia nel link come
+    `next`, ripulito da percorso_interno (mai un open redirect)."""
     import os
+    from urllib.parse import quote
     from services.email_service import send_email, _t, _wrap_template
+    from services.verifica_email import percorso_interno
 
     base = os.environ.get("PUBLIC_APP_URL", "http://localhost:3000")
     link = f"{base}/account/verifica?token={token}"
+    _ritorno = percorso_interno(return_to) if return_to else "/"
+    if _ritorno != "/":
+        link += f"&next={quote(_ritorno, safe='/')}"
     greeting = (_t("greeting_name", locale, name=name) if name
                 else _t("greeting", locale) + ",")
     content = f"""
@@ -567,7 +576,8 @@ async def verify_signup_email(token: str) -> Dict[str, Any]:
         await retroactive_claim(account)
     except Exception:
         logger.exception("claim retroattivo fallito per %s", account["id"])
-    return {"status": "verified"}
+    # 26/9: l'email serve alla pagina di conferma per precompilare l'accesso
+    return {"status": "verified", "email": account.get("email")}
 
 
 async def _handle_failed_password_login(account: Dict[str, Any]) -> None:

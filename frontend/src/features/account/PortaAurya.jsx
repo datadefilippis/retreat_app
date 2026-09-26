@@ -104,6 +104,9 @@ export default function PortaAurya({ vista: vistaIniziale = 'entra', emailInizia
         accepted_terms: true,
         wants_newsletter: !!cerchio,
         consenso_versione: VERSIONE_CORRENTE,
+        // 26/9 (founder): SOLO dalla porta dei contatti il link di verifica
+        // riporta qui; negli altri contesti nulla cambia
+        ...(contesto === 'contatti' ? { return_to: window.location.pathname } : {}),
       });
       if (res.data?.access_token) await apri(res);   // E6 acceso: dentro subito
       else setVista('inviata');                        // spento: prima il clic nell'email

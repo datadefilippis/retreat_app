@@ -12,6 +12,7 @@ import { Loader2, CheckCircle2, AlertTriangle } from 'lucide-react';
 import platformApi from '../../api/platformClient';
 import useSeoMeta from '../storefront/lib/useSeoMeta';
 import MarketplaceShell from '../storefront/components/MarketplaceShell';
+import { entraInAurya } from '../../utils/authLinks';
 
 // Il token e' one-shot: StrictMode in dev monta l'effect due volte, la
 // seconda POST perderebbe e mostrerebbe 'scaduto' su un link buono.
@@ -21,6 +22,12 @@ export default function AccountVerifyEmailPage() {
   const { t } = useTranslation('landings');
   const [params] = useSearchParams();
   const token = params.get('token');
+  // 26/9 — `next` arriva SOLO dai link nati dalla porta dei contatti: dopo la
+  // conferma «Entra e torna dove eri» (accesso con email precompilata, poi
+  // il profilo). Solo percorsi interni; senza next la pagina e' quella di sempre.
+  const rawNext = params.get('next') || '';
+  const next = rawNext.startsWith('/') && !rawNext.startsWith('//') ? rawNext : '';
+  const [emailConfermata, setEmailConfermata] = useState('');
   const [state, setState] = useState(token ? 'verifying' : 'invalid');
 
   useSeoMeta({ title: 'Conferma email', noindex: true });
@@ -29,7 +36,7 @@ export default function AccountVerifyEmailPage() {
     if (!token || attemptedTokens.has(token)) return;
     attemptedTokens.add(token);
     platformApi.post('/platform/auth/verify-email', { token })
-      .then(() => setState('ok'))
+      .then((res) => { setEmailConfermata(res.data?.email || ''); setState('ok'); })
       .catch(() => setState('invalid'));
   }, [token]);
 
@@ -55,10 +62,17 @@ export default function AccountVerifyEmailPage() {
             <p className="mt-2 text-sm text-gray-600">
               {t('landings:account.verifyOkBody', { defaultValue: 'Il tuo account Aurya è attivo. Ora puoi accedere con la tua password.' })}
             </p>
-            <Link to="/accedi"
-              className="mt-4 block w-full rounded-xl bg-primary text-primary-foreground py-2.5 text-sm font-semibold">
-              {t('landings:account.goToLogin', { defaultValue: 'Vai all\'accesso' })}
-            </Link>
+            {next ? (
+              <a href={entraInAurya(emailConfermata, next)} data-testid="verify-torna"
+                className="mt-4 block w-full rounded-xl bg-primary text-primary-foreground py-2.5 text-sm font-semibold">
+                {t('landings:account.verifyTorna', { defaultValue: 'Entra e torna dove eri' })}
+              </a>
+            ) : (
+              <Link to="/accedi"
+                className="mt-4 block w-full rounded-xl bg-primary text-primary-foreground py-2.5 text-sm font-semibold">
+                {t('landings:account.goToLogin', { defaultValue: 'Vai all\'accesso' })}
+              </Link>
+            )}
           </>
         )}
 
