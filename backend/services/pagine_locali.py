@@ -44,16 +44,16 @@ INTRO_FAMIGLIA = {
 
 # disciplina → categoria del Magazine con articoli (per il link «Leggi»)
 CATEGORIA_ARTICOLI = {
-    "yoga": "yoga", "pilates": "yoga",
-    "meditazione": "meditazione", "mindfulness": "meditazione", "training-autogeno": "meditazione",
+    "yoga": "yoga", "pilates": "yoga", "allineamento": "yoga",
+    "meditazione": "meditazione", "mindfulness": "meditazione", "training-autogeno": "meditazione", "mind-movie": "meditazione",
     "breathwork": "breathwork",
     "sound-healing": "suono",
-    "reiki": "reiki", "pranoterapia": "reiki", "cristalloterapia": "reiki", "theta-healing": "reiki",
+    "reiki": "reiki", "pranoterapia": "reiki", "cristalloterapia": "reiki", "theta-healing": "reiki", "pulizia-energetica": "reiki",
     "access-bars": "reiki", "kinesiologia": "reiki",
     "allineamento-chakra": "reiki", "lavoro-energetico-chakra": "reiki",
     "costellazioni-familiari": "costellazioni",
     "astrologia": "astrologia", "tarocchi-evolutivi": "astrologia", "numerologia": "astrologia",
-    "massaggio-olistico": "massaggio", "shiatsu": "massaggio", "massaggio-thai": "massaggio",
+    "massaggio": "massaggio", "massaggio-olistico": "massaggio", "shiatsu": "massaggio", "massaggio-thai": "massaggio",
     "riflessologia": "massaggio", "craniosacrale": "massaggio", "linfodrenaggio": "massaggio", "hot-stone": "massaggio",
     "massaggio-ayurvedico": "ayurveda", "consulenza-ayurvedica": "ayurveda",
     "cerchi-di-donne": "femminile", "sacro-femminile": "femminile",

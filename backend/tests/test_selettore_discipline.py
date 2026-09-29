@@ -81,6 +81,11 @@ class TestGestalt:
         from services.pagine_locali import CATEGORIA_ARTICOLI
         assert DISCIPLINA_TO_CATEGORIA["counseling-gestalt"] == "crescita"
         assert CATEGORIA_ARTICOLI["counseling-gestalt"] == "crescita"
-        # 53 voci (25/9: + percorsi-spirituali), 7 famiglie
-        assert len(DISCIPLINES) == 53 and len(DISCIPLINE_FAMILIES) == 7
+        # 57 voci (29/9: + allineamento, mind-movie, massaggio, pulizia-energetica), 7 famiglie
+        assert len(DISCIPLINES) == 57 and len(DISCIPLINE_FAMILIES) == 7
+        for slug, label, cat in (("allineamento", "Allineamento (colonna & postura)", "yoga"),
+                                 ("mind-movie", "Mind movie", "meditazione"),
+                                 ("massaggio", "Massaggio", "massaggio"),
+                                 ("pulizia-energetica", "Pulizia energetica", "reiki")):
+            assert DISCIPLINES[slug] == label and DISCIPLINA_TO_CATEGORIA[slug] == cat and CATEGORIA_ARTICOLI[slug] == cat, slug
         assert DISCIPLINES["percorsi-spirituali"] == "Percorsi spirituali" and DISCIPLINA_TO_CATEGORIA["percorsi-spirituali"] == "crescita" and CATEGORIA_ARTICOLI["percorsi-spirituali"] == "crescita"

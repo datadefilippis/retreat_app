@@ -22,6 +22,8 @@ export const DISCIPLINE_FAMILIES = Object.freeze([
       { slug: 'feldenkrais', label: 'Feldenkrais' },
       { slug: 'biodanza', label: 'Biodanza' },
       { slug: 'danze-sacre', label: 'Danze sacre & Danza della Dea' },
+      // 29/9/2026 (founder): l'allineamento della colonna come lavoro sul corpo
+      { slug: 'allineamento', label: 'Allineamento (colonna & postura)' },
     ],
   },
   {
@@ -32,11 +34,15 @@ export const DISCIPLINE_FAMILIES = Object.freeze([
       { slug: 'breathwork', label: 'Breathwork' },
       { slug: 'training-autogeno', label: 'Training autogeno' },
       { slug: 'ipnosi', label: 'Ipnosi & Rilassamento guidato' },
+      // 29/9/2026 (founder): visualizzazione guidata del futuro desiderato
+      { slug: 'mind-movie', label: 'Mind movie' },
     ],
   },
   {
     slug: 'massaggio', label: 'Massaggio & Bodywork',
     items: [
+      // 29/9/2026 (founder): il massaggio senza aggettivi, accanto all'olistico
+      { slug: 'massaggio', label: 'Massaggio' },
       { slug: 'massaggio-olistico', label: 'Massaggio olistico' },
       { slug: 'shiatsu', label: 'Shiatsu' },
       { slug: 'massaggio-ayurvedico', label: 'Massaggio ayurvedico' },
@@ -53,6 +59,8 @@ export const DISCIPLINE_FAMILIES = Object.freeze([
       { slug: 'reiki', label: 'Reiki' },
       { slug: 'pranoterapia', label: 'Pranoterapia' },
       { slug: 'cristalloterapia', label: 'Cristalloterapia' },
+      // 29/9/2026 (founder): pulizia e purificazione energetica (aura, ambienti)
+      { slug: 'pulizia-energetica', label: 'Pulizia energetica' },
       // 24/9/2026 (founder): due voci sui chakra, generiche, non di marchio
       { slug: 'allineamento-chakra', label: 'Allineamento chakra' },
       { slug: 'lavoro-energetico-chakra', label: 'Lavoro energetico coi chakra' },
@@ -130,7 +138,11 @@ export const CERCA_ANCHE = Object.freeze({
   'counseling-olistico': ['counselor', 'counselling'],
   'counseling-gestalt': ['gestalt', 'counselor gestalt', 'gestaltico'],
   'coaching-olistico': ['coach', 'life coach'],
-  'massaggio-olistico': ['massaggio', 'massaggiatrice', 'massaggiatore', 'massaggi'],
+  massaggio: ['massaggi', 'massaggiatrice', 'massaggiatore', 'massoterapia', 'massaggio rilassante', 'decontratturante', 'massaggio sportivo'],
+  'massaggio-olistico': ['olistico', 'massaggiatrice olistica', 'massaggiatore olistico'],
+  allineamento: ['colonna vertebrale', 'colonna', 'postura', 'posturale', 'allineamento posturale', 'schiena', 'riallineamento'],
+  'pulizia-energetica': ['purificazione energetica', 'pulizia dell\'aura', 'aura', 'riequilibrio energetico', 'pulizia degli ambienti', 'purificazione'],
+  'mind-movie': ['mind movies', 'visualizzazione', 'visualizzazione creativa', 'film mentale', 'manifestazione'],
   'massaggio-ayurvedico': ['ayurveda', 'abhyanga'],
   'massaggio-thai': ['thailandese'],
   riflessologia: ['riflessologo', 'riflessologa', 'plantare'],

@@ -499,9 +499,12 @@ async def password_signup(*, name: Optional[str], email: str, password: str,
             source="platform_signup", locale=lang_n,
             ip_address=request_ip, user_agent=user_agent)
 
+    # NB: `return_to` viaggia SOLO quando c'e' (porta dei contatti): le guardie
+    # storiche sostituiscono questa funzione con stub (e, t, n, locale) che
+    # non lo conoscono, e tutti gli altri chiamanti restano identici a ieri
+    _extra = {"return_to": return_to} if return_to else {}
     _send_verify_email(email_n, token, account.get("name"),
-                       return_to=return_to,
-                       locale=account.get("language") or "it")
+                       locale=account.get("language") or "it", **_extra)
     logger.info("platform_account: signup password per %s (verifica inviata)",
                 account["id"])
     return {"status": "verification_required"}

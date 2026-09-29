@@ -41,16 +41,17 @@ DISCIPLINA_TO_CATEGORIA = {
     # corpo & movimento
     "yoga": "yoga", "pilates": "yoga", "tai-chi": "yoga", "qi-gong": "yoga",
     "danzaterapia": "crescita", "bioenergetica": "crescita", "feldenkrais": "yoga",
-    "biodanza": "crescita", "danze-sacre": "femminile",
+    "biodanza": "crescita", "danze-sacre": "femminile", "allineamento": "yoga",
     # meditazione & mente
     "meditazione": "meditazione", "mindfulness": "meditazione", "breathwork": "breathwork",
-    "training-autogeno": "meditazione", "ipnosi": "meditazione",
+    "training-autogeno": "meditazione", "ipnosi": "meditazione", "mind-movie": "meditazione",
     # massaggio & bodywork
+    "massaggio": "massaggio",
     "massaggio-olistico": "massaggio", "shiatsu": "massaggio", "massaggio-ayurvedico": "ayurveda",
     "massaggio-thai": "massaggio", "riflessologia": "massaggio", "craniosacrale": "massaggio",
     "linfodrenaggio": "massaggio", "hot-stone": "massaggio",
     # energia & vibrazione
-    "reiki": "reiki", "pranoterapia": "reiki", "cristalloterapia": "reiki",
+    "reiki": "reiki", "pranoterapia": "reiki", "cristalloterapia": "reiki", "pulizia-energetica": "reiki",
     "allineamento-chakra": "reiki", "lavoro-energetico-chakra": "reiki",
     "sound-healing": "suono", "theta-healing": "reiki", "access-bars": "reiki", "kinesiologia": "reiki",
     # natura & rimedi

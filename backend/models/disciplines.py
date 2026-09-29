@@ -26,6 +26,8 @@ DISCIPLINE_FAMILIES = (
         ("feldenkrais", "Feldenkrais"),
         ("biodanza", "Biodanza"),
         ("danze-sacre", "Danze sacre & Danza della Dea"),
+        # 29/9/2026 (founder): l'allineamento della colonna come lavoro sul corpo
+        ("allineamento", "Allineamento (colonna & postura)"),
     )),
     ("mente", "Meditazione & Mente", (
         ("meditazione", "Meditazione"),
@@ -33,8 +35,12 @@ DISCIPLINE_FAMILIES = (
         ("breathwork", "Breathwork"),
         ("training-autogeno", "Training autogeno"),
         ("ipnosi", "Ipnosi & Rilassamento guidato"),
+        # 29/9/2026 (founder): visualizzazione guidata del futuro desiderato
+        ("mind-movie", "Mind movie"),
     )),
     ("massaggio", "Massaggio & Bodywork", (
+        # 29/9/2026 (founder): il massaggio senza aggettivi, accanto all'olistico
+        ("massaggio", "Massaggio"),
         ("massaggio-olistico", "Massaggio olistico"),
         ("shiatsu", "Shiatsu"),
         ("massaggio-ayurvedico", "Massaggio ayurvedico"),
@@ -48,6 +54,8 @@ DISCIPLINE_FAMILIES = (
         ("reiki", "Reiki"),
         ("pranoterapia", "Pranoterapia"),
         ("cristalloterapia", "Cristalloterapia"),
+        # 29/9/2026 (founder): pulizia e purificazione energetica (aura, ambienti)
+        ("pulizia-energetica", "Pulizia energetica"),
         # 24/9/2026 (founder): due voci sui chakra, generiche e non di
         # marchio, come da regola DI6. «Linfodrenaggio» c'era gia'.
         ("allineamento-chakra", "Allineamento chakra"),

@@ -1848,7 +1848,7 @@ class TestAccountAp1b:
             assert acc["verification_token_hash"] == svc._hash_token(token)
 
             out = await svc.verify_signup_email(token)
-            assert out == {"status": "verified"}
+            assert out["status"] == "verified"          # 26/9: la risposta porta anche l'email (additivo)
             acc = list(fake.docs.values())[0]
             assert acc["email_verified"] is True
             assert acc["verification_token_hash"] is None  # one-shot
