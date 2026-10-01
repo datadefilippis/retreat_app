@@ -63,7 +63,7 @@ DISCIPLINA_TO_CATEGORIA = {
     # anima & percorsi interiori
     "costellazioni-familiari": "costellazioni", "counseling-olistico": "crescita",
     "counseling-gestalt": "crescita",
-    "percorsi-spirituali": "crescita",
+    "percorsi-spirituali": "crescita", "crescita-personale": "crescita", "crescita-spirituale": "crescita",
     "coaching-olistico": "crescita", "cerchi-di-donne": "femminile", "sacro-femminile": "femminile",
     "sciamanesimo": "crescita", "astrologia": "astrologia", "numerologia": "astrologia",
     "tarocchi-evolutivi": "astrologia",

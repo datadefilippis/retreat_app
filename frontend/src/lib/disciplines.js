@@ -97,13 +97,17 @@ export const DISCIPLINE_FAMILIES = Object.freeze([
     items: [
       { slug: 'costellazioni-familiari', label: 'Costellazioni familiari' },
       { slug: 'counseling-olistico', label: 'Counseling olistico' },
-      { slug: 'counseling-gestalt', label: 'Counseling Gestalt' },
+      // 1/10/2026 (founder): l'etichetta diventa «Gestalt counseling», lo slug resta
+      { slug: 'counseling-gestalt', label: 'Gestalt counseling' },
       { slug: 'coaching-olistico', label: 'Coaching olistico' },
       { slug: 'cerchi-di-donne', label: 'Cerchi di donne' },
       { slug: 'sacro-femminile', label: 'Sacro femminile & Ciclicità' },
       { slug: 'sciamanesimo', label: 'Pratiche sciamaniche' },
       // 25/9/2026 (founder): la ricerca spirituale come pratica accompagnata
       { slug: 'percorsi-spirituali', label: 'Percorsi spirituali' },
+      // 1/10/2026 (founder): due voci di crescita, personale e spirituale
+      { slug: 'crescita-personale', label: 'Crescita personale' },
+      { slug: 'crescita-spirituale', label: 'Crescita spirituale' },
       { slug: 'astrologia', label: 'Astrologia' },
       { slug: 'numerologia', label: 'Numerologia' },
       { slug: 'tarocchi-evolutivi', label: 'Tarocchi evolutivi' },
@@ -136,7 +140,9 @@ export const CERCA_ANCHE = Object.freeze({
   psicoterapia: ['psicoterapeuta', 'terapia'],
   'sostegno-psicologico': ['colloqui', 'sostegno'],
   'counseling-olistico': ['counselor', 'counselling'],
-  'counseling-gestalt': ['gestalt', 'counselor gestalt', 'gestaltico'],
+  'counseling-gestalt': ['gestalt', 'counselor gestalt', 'gestaltico', 'counseling gestalt'],
+  'crescita-personale': ['crescita', 'sviluppo personale', 'evoluzione personale', 'autostima', 'consapevolezza'],
+  'crescita-spirituale': ['spirituale', 'evoluzione spirituale', 'risveglio', 'coscienza', 'anima'],
   'coaching-olistico': ['coach', 'life coach'],
   massaggio: ['massaggi', 'massaggiatrice', 'massaggiatore', 'massoterapia', 'massaggio rilassante', 'decontratturante', 'massaggio sportivo'],
   'massaggio-olistico': ['olistico', 'massaggiatrice olistica', 'massaggiatore olistico'],

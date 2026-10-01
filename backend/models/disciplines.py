@@ -88,13 +88,17 @@ DISCIPLINE_FAMILIES = (
         ("counseling-olistico", "Counseling olistico"),
         # 24/9/2026 (founder): il counselor a indirizzo Gestalt (approccio,
         # non marchio: regola DI6 rispettata)
-        ("counseling-gestalt", "Counseling Gestalt"),
+        # 1/10/2026 (founder): l'etichetta diventa «Gestalt counseling», lo slug resta
+        ("counseling-gestalt", "Gestalt counseling"),
         ("coaching-olistico", "Coaching olistico"),
         ("cerchi-di-donne", "Cerchi di donne"),
         ("sacro-femminile", "Sacro femminile & Ciclicità"),
         ("sciamanesimo", "Pratiche sciamaniche"),
         # 25/9/2026 (founder): la ricerca spirituale come pratica accompagnata
         ("percorsi-spirituali", "Percorsi spirituali"),
+        # 1/10/2026 (founder): due voci di crescita, personale e spirituale
+        ("crescita-personale", "Crescita personale"),
+        ("crescita-spirituale", "Crescita spirituale"),
         ("astrologia", "Astrologia"),
         ("numerologia", "Numerologia"),
         ("tarocchi-evolutivi", "Tarocchi evolutivi"),

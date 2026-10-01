@@ -59,7 +59,7 @@ CATEGORIA_ARTICOLI = {
     "cerchi-di-donne": "femminile", "sacro-femminile": "femminile",
     "naturopatia": "naturopatia", "aromaterapia": "naturopatia", "floriterapia": "naturopatia",
     "erboristeria": "naturopatia", "alimentazione-olistica": "naturopatia",
-    "counseling-olistico": "crescita", "coaching-olistico": "crescita", "counseling-gestalt": "crescita", "percorsi-spirituali": "crescita",
+    "counseling-olistico": "crescita", "coaching-olistico": "crescita", "counseling-gestalt": "crescita", "percorsi-spirituali": "crescita", "crescita-personale": "crescita", "crescita-spirituale": "crescita",
     "psicologia": "crescita", "psicoterapia": "crescita", "sostegno-psicologico": "crescita",
     "psicologia-perinatale": "femminile",
 }

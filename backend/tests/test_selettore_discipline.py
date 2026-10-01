@@ -9,7 +9,7 @@ Tenuto fermo qui:
      col backend), e coprono le voci nuove (psicologia, gestalt, chakra);
   3. lo stesso componente nelle due pagine, stessi data-testid, toggle
      funzionale (niente stale closure), tetto 10;
-  4. la voce «Counseling Gestalt» esiste nei due file e ha una casa.
+  4. la voce «Gestalt counseling» (slug counseling-gestalt) esiste nei due file e ha una casa.
 """
 import json
 import re
@@ -73,16 +73,19 @@ class TestSinonimi:
 
 class TestGestalt:
     def test_esiste_in_entrambi_i_file_e_ha_una_casa(self):
-        assert DISCIPLINES["counseling-gestalt"] == "Counseling Gestalt"
-        assert "{ slug: 'counseling-gestalt', label: 'Counseling Gestalt' }" in LIB
+        # 1/10/2026 (founder): etichetta «Gestalt counseling», slug invariato
+        assert DISCIPLINES["counseling-gestalt"] == "Gestalt counseling"
+        assert "{ slug: 'counseling-gestalt', label: 'Gestalt counseling' }" in LIB
         anima = {s for f, _l, items in DISCIPLINE_FAMILIES if f == "anima" for s, _ in items}
         assert "counseling-gestalt" in anima
         from models.retreat_taxonomy import DISCIPLINA_TO_CATEGORIA
         from services.pagine_locali import CATEGORIA_ARTICOLI
         assert DISCIPLINA_TO_CATEGORIA["counseling-gestalt"] == "crescita"
         assert CATEGORIA_ARTICOLI["counseling-gestalt"] == "crescita"
-        # 57 voci (29/9: + allineamento, mind-movie, massaggio, pulizia-energetica), 7 famiglie
-        assert len(DISCIPLINES) == 57 and len(DISCIPLINE_FAMILIES) == 7
+        # 59 voci (1/10: + crescita-personale, crescita-spirituale), 7 famiglie
+        assert len(DISCIPLINES) == 59 and len(DISCIPLINE_FAMILIES) == 7
+        for slug, label in (("crescita-personale", "Crescita personale"), ("crescita-spirituale", "Crescita spirituale")):
+            assert DISCIPLINES[slug] == label and DISCIPLINA_TO_CATEGORIA[slug] == "crescita" and CATEGORIA_ARTICOLI[slug] == "crescita", slug
         for slug, label, cat in (("allineamento", "Allineamento (colonna & postura)", "yoga"),
                                  ("mind-movie", "Mind movie", "meditazione"),
                                  ("massaggio", "Massaggio", "massaggio"),
