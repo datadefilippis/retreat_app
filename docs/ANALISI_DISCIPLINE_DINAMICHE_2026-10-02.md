@@ -69,14 +69,23 @@ Regole: lo slug non si modifica mai (vive nei profili degli operatori e negli UR
 
 ## 3. Lotti
 
-| Lotto | Cosa | Stima | Rischio |
-|---|---|---|---|
-| **DV1 registro** | collezione, `discipline_vive`, consumatori backend sulle funzioni, endpoint pubblico, guardia | 1 giorno | basso: con db vuoto il risultato è identico a oggi (guardia che lo prova) |
-| **DV2 regia** | rotte admin con motivo e audit, scheda «Discipline» in Operatori, anteprima e validazioni | 1 giorno | basso: solo regia |
-| **DV3 frontend vivo** | `useDiscipline()` nelle 8 schermate con fallback al codice, selettore e ricerca | mezza giornata | medio-basso: fallback identico a oggi, interruttore |
-| **DV4 prova e accensione** | deploy spento, prova sulla copia di prod, prima voce aggiunta dalla regia, accensione | mezza giornata | — |
+| Lotto | Cosa | Stato |
+|---|---|---|
+| **DV1 registro** | collezione `discipline_extra`, `services/discipline_vive.py`, endpoint pubblico, guardia | **fatto 2/10** (fb4ed35c) |
+| **DV2 regia** | rotte admin con motivo e audit, scheda «Discipline» in Operatori, anteprima e validazioni | **fatto 2/10** |
+| **DV3 frontend vivo** | `useDiscipline()` con fallback al codice, selettore, ricerca, filtro directory | **fatto 2/10** |
+| **DV4 prova e accensione** | deploy con `DISCIPLINE_VIVE=1`, prova in prod dalla regia | giro `deploy-2026-10-02-discipline-vive.sh` |
 
-Ordine DV1 → DV2 → DV3 → DV4, circa tre giorni. Dopo DV4 una disciplina nuova è un minuto in regia, senza deploy, e la vedono subito operatori, directory, pagine locali e Magazine.
+### 3.1 Com'è stato fatto davvero (differenze dal disegno)
+
+- **In place, non funzioni.** Invece di far passare i cinque consumatori dalle costanti a funzioni, il registro si applica *dentro* le strutture che già leggono (`DISCIPLINES`, `DISCIPLINE_FAMILIES` ora con liste mutabili, `DISCIPLINA_TO_CATEGORIA`, `CATEGORIA_ARTICOLI`, `FAMIGLIA_DI`). Zero righe toccate nei consumatori, quindi zero occasioni di regressione; `DISCIPLINE_CODICE` fissa gli slug nati nel codice, mai sovrascritti né rimossi.
+- **Ricarica:** all'avvio (lifespan), dopo ogni scrittura della regia, e pigramente ogni 60 s quando qualcuno chiede `/public/discipline`. Un solo worker in prod: basta.
+- **Frontend:** `caricaDiscipline()` una volta per sessione (10 min in `sessionStorage`), `famiglieVive()`, `etichette()` (le voci di codice vincono), `useDiscipline()`; `disciplineLabel` e `cercaDiscipline` leggono l'unione coi sinonimi extra. `App.js` avvia il caricamento. Il resto delle 8 schermate passa da `disciplineLabel`/`SelettoreDiscipline`, quindi vede l'unione senza cambi.
+- **Prova dal vivo (locale, flag acceso):** creata «Massaggio svedese» dalla regia → nel pubblico all'istante, trovata nel selettore dell'operatore demo scrivendo «svedese», filtro directory, etichetta nella shell SEO; spenta → via dal selettore ma risalvabile da chi l'ha; voce di codice: etichetta rifiutata (422), sinonimi accettati; slug di codice non creabile; 403 senza regia; audit `DISCIPLINA_ADMIN_EDIT`. Suite intera al baseline (15 rossi storici + 1 errore, nessuno nuovo).
+
+### 3.2 Come si usa (regia)
+
+System admin → **Operatori → scheda Discipline**. «Aggiungi disciplina»: etichetta (lo slug si propone da solo e si vede prima di salvare; dopo non cambia più), famiglia, categoria ritiri, categoria Magazine, sinonimi per la ricerca, motivo. Al salvataggio la voce è già nel selettore di tutti gli operatori e nella directory. Per una voce di codice si aggiungono solo sinonimi. Per togliere una voce la si **spegne**: esce dal selettore, resta valida per chi l'ha già.
 
 ## 4. Cosa può rompersi e come lo si evita
 
