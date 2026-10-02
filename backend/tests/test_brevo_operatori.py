@@ -68,6 +68,8 @@ class TestAgganci:
         sched = (BACKEND / "services" / "scheduler_service.py").read_text(encoding="utf-8")
         assert '@register_job("brevo_operatori", interval_seconds=24 * 3600)' in sched
         assert '"--operatori"' in SCRIPT and "ATTRIBUTI_BREVO_OP" in SCRIPT and "await tipo_contatto(d[\"email\"])" in SCRIPT
+        # un solo asyncio.run per i gesti sul DB (Motor e' legato al primo loop)
+        assert SCRIPT.count("asyncio.run(") == 1 and "asyncio.run(_gesti_db())" in SCRIPT
         for vietato in ("smtp", "sendTransacEmail", "emailCampaigns", "listIds", "sendEmail"):
             assert vietato not in SCRIPT and vietato not in OP, vietato
         assert 'update_users["comunicazioni_opposizione_at"] = now_iso' in WEBHOOK

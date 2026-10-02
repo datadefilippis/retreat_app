@@ -147,10 +147,19 @@ def main() -> int:
     esito = 0
     if a.attributi:
         esito |= attributi()
-    if a.backfill:
-        esito |= asyncio.run(_backfill())
-    if a.operatori:
-        esito |= asyncio.run(_operatori())
+
+    # UN solo ciclo asyncio per i gesti sul DB: il client Motor resta
+    # legato al primo loop e un secondo asyncio.run() lo trova chiuso
+    # («Event loop is closed», visto in prod il 2/10 sera)
+    async def _gesti_db() -> int:
+        e = 0
+        if a.backfill:
+            e |= await _backfill()
+        if a.operatori:
+            e |= await _operatori()
+        return e
+    if a.backfill or a.operatori:
+        esito |= asyncio.run(_gesti_db())
     if a.verifica:
         esito |= verifica()
     return esito
