@@ -388,7 +388,8 @@ class TestConsolidamentoTr6:
             testo = (BACKEND_DIR / "legal" / f).read_text()
             assert "Crea Studio" in testo, f
         from core.legal_versions import CURRENT_VERSION_TAG
-        assert CURRENT_VERSION_TAG >= "v2.6"
+        # confronto NUMERICO: come stringa «v2.10» verrebbe prima di «v2.6» (2/10/2026)
+        assert tuple(int(x) for x in CURRENT_VERSION_TAG.lstrip("v").split(".")) >= (2, 6)
 
 
 # ── TR6-bis · la SESSIONE DI ABBONAMENTO, dal percorso vero ───────────────
