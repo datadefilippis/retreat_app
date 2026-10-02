@@ -33,6 +33,50 @@ logger = logging.getLogger(__name__)
 _CONTACTS_URL = "https://api.brevo.com/v3/contacts"
 
 
+# BS (2/10/2026, founder: «segmentiamo gli utenti in Brevo in maniera solida,
+# con le vie e tutte le info di valore») — IL REGISTRO degli attributi che la
+# sync scrive: nome → tipo Brevo. Lo script scripts/brevo_segmentazione.py
+# li crea in Brevo (idempotente) e la guardia pretende che _attributes()
+# produca ESATTAMENTE queste chiavi. Scoperta del 2/10: fino a oggi nessun
+# attributo AURYA_* esisteva in Brevo e i valori venivano scartati in silenzio.
+ATTRIBUTI_BREVO = {
+    "NOME": "text",                    # il nome, per il «Ciao {{ contact.NOME }}» (attributo gia' in Brevo)
+    "AURYA_STATUS": "text",            # pending | confirmed | unsubscribed | deleted
+    "AURYA_INVIABILE": "boolean",      # LA chiave dei segmenti: true solo se confermato e col consenso
+    "AURYA_TOPICS": "text",            # csv temi Magazine
+    "AURYA_FORMAT": "text",            # all | practices
+    "AURYA_ALERT": "text",             # off | italy | csv regioni
+    "AURYA_SOURCE": "text",            # fonte grezza di iscrizione
+    "AURYA_CANALE": "text",            # provenienza.canale (sito, sound, account, magazine...)
+    "AURYA_SUPERFICIE": "text",        # provenienza.superficie (cerca-ritiro, cancello, signup-pro...)
+    "AURYA_PORTA": "text",             # meditazioni | altro
+    "AURYA_LANG": "text",
+    "AURYA_INTERESTS": "text",         # LE VIE, csv (yoga, meditazione, suono...)
+    "AURYA_CITY": "text",
+    "AURYA_TRAVEL": "text",            # near | italy | anywhere | abroad
+    "AURYA_BUDGET": "text",            # under500 | 500to1000 | over1000 | flexible
+    "AURYA_ETA": "text",               # 18-29 | 30-44 | 45-59 | 60+
+    "AURYA_ISCRITTO_IL": "date",       # YYYY-MM-DD
+    "AURYA_CONFERMATO_IL": "date",     # YYYY-MM-DD (assente finche' pending)
+    "AURYA_VERIFICATO": "boolean",     # indirizzo provato (clic / account / admin)
+    "AURYA_CONSENSO_VERSIONE": "text", # versione del testo della casella accettata
+}
+_PROIEZIONE_SYNC = {"_id": 0, "status": 1, "preferences": 1, "source": 1, "language": 1,
+                    "profile": 1, "provenienza": 1,
+                    # BS: le info di valore in piu'
+                    "name": 1, "created_at": 1, "confirmed_at": 1, "verificato_at": 1,
+                    "consent": 1, "consenso": 1}
+
+
+def _data(v) -> str:
+    """datetime o iso → «YYYY-MM-DD» (il formato delle date di Brevo); vuoto se manca."""
+    if not v:
+        return ""
+    if hasattr(v, "strftime"):
+        return v.strftime("%Y-%m-%d")
+    return str(v)[:10]
+
+
 def _attributes(doc: dict) -> dict:
     prefs = doc.get("preferences") or {}
     alert = prefs.get("retreat_alert") or {}
@@ -43,7 +87,20 @@ def _attributes(doc: dict) -> dict:
     else:
         alert_val = "italy"
     profile = doc.get("profile") or {}
-    return {
+    prov = doc.get("provenienza") or {}
+    from services.sequenze import porta_cerchio      # lazy: niente cicli d'import
+    out = {
+        "NOME": " ".join(str(doc.get("name") or "").split())[:80],
+        # BS — la chiave dei segmenti: la stessa regola con cui il Cerchio
+        # scrive (status confermato + consenso), cosi' una campagna fatta
+        # «a tutti» per sbaglio non raggiunge chi non ha confermato
+        "AURYA_INVIABILE": doc.get("status") == "confirmed" and doc.get("consent") is True,
+        "AURYA_SUPERFICIE": prov.get("superficie") or "",
+        "AURYA_PORTA": porta_cerchio(doc.get("source")),
+        "AURYA_ISCRITTO_IL": _data(doc.get("created_at")),
+        "AURYA_CONFERMATO_IL": _data(doc.get("confirmed_at")),
+        "AURYA_VERIFICATO": bool(doc.get("verificato_at")),
+        "AURYA_CONSENSO_VERSIONE": (doc.get("consenso") or {}).get("versione") or "",
         "AURYA_STATUS": doc.get("status") or "pending",
         "AURYA_TOPICS": ",".join(prefs.get("topics") or []),
         "AURYA_FORMAT": prefs.get("format") or "all",
@@ -62,15 +119,20 @@ def _attributes(doc: dict) -> dict:
         # ET1 (2/10/2026) — la fascia d'eta' (attributo da creare in Brevo)
         "AURYA_ETA": profile.get("eta") or "",
     }
+    # una data vuota farebbe rifiutare l'INTERO upsert da Brevo: si omette
+    # (le date non si cancellano mai, al massimo arrivano dopo)
+    return {k: v for k, v in out.items() if not (ATTRIBUTI_BREVO.get(k) == "date" and not v)}
 
 
-def _push_to_brevo(email: str, attributes: dict, blacklisted: bool) -> None:
-    """Chiamata bloccante (eseguita in thread): upsert contatto."""
+def _push_to_brevo(email: str, attributes: dict, blacklisted: bool) -> bool:
+    """Chiamata bloccante (eseguita in thread): upsert contatto.
+    Ritorna True se Brevo ha accettato (per il backfill); mai un raise
+    sull'esito, solo il warning di sempre."""
     api_key = os.environ.get("BREVO_API_KEY", "")
     if not api_key:
         logger.info("brevo sync [DRY RUN] %s status=%s", email,
                     attributes.get("AURYA_STATUS"))
-        return
+        return True
     import requests
     payload = {
         "email": email,
@@ -88,19 +150,18 @@ def _push_to_brevo(email: str, attributes: dict, blacklisted: bool) -> None:
     if resp.status_code not in (200, 201, 204):
         logger.warning("brevo sync failed for contact (%s): %s",
                        resp.status_code, resp.text[:200])
+        return False
+    return True
 
 
 async def sync_subscriber(email: str) -> None:
     """Legge il doc dal DB e lo riflette su Brevo. Mai un raise."""
     try:
         from database import db
-        doc = await db.aurya_subscribers.find_one(
-            {"email": email},
-            {"_id": 0, "status": 1, "preferences": 1, "source": 1,
-             "language": 1,
-             # B4 (24/9): la proiezione non portava `profile`, quindi
-             # AURYA_INTERESTS/CITY/TRAVEL arrivavano sempre vuoti
-             "profile": 1, "provenienza": 1})
+        # B4 (24/9): la proiezione non portava `profile`, quindi
+        # AURYA_INTERESTS/CITY/TRAVEL arrivavano sempre vuoti; BS (2/10):
+        # un'unica proiezione, la stessa del backfill
+        doc = await db.aurya_subscribers.find_one({"email": email}, _PROIEZIONE_SYNC)
         if not doc:
             return
         await asyncio.to_thread(
