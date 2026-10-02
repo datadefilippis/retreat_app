@@ -58,7 +58,7 @@ $SSH "grep -q 'health ok' /root/deploy-$GIRO.log" || { echo "HEALTH NON OK"; exi
 
 echo "== [3] verifica"
 for u in / /o/anpoche /operatori /meditazioni /accedi /entra-nella-rete /api/health /privacy /termini /api/public/discipline; do printf "   %s → %s\n" "$u" "$(curl -s -o /dev/null -w '%{http_code}' https://aurya.life$u)"; done
-printf "   discipline vive → %s (atteso vive:true, totale 60, extra [])\n" "$(curl -s https://aurya.life/api/public/discipline | python3 -c 'import sys,json; d=json.load(sys.stdin); print(d[\"vive\"], d[\"totale\"], d[\"extra\"], len(d[\"famiglie\"]))')"
+printf "   discipline vive → %s (atteso vive:true, totale 60, extra [])\n" "$(curl -s https://aurya.life/api/public/discipline | python3 -c "import sys,json; d=json.load(sys.stdin); print(d[\"vive\"], d[\"totale\"], d[\"extra\"], len(d[\"famiglie\"]))")"
 printf "   regia senza token → %s (atteso 401/403)\n" "$(curl -s -o /dev/null -w '%{http_code}' https://aurya.life/api/admin/discipline)"
 printf "   legale → %s (atteso v2.8) · contatti anpoche dietro la porta → %s (atteso 0)\n" "$(curl -s https://aurya.life/api/legal/versions | grep -o "\"version_tag\":\"[^\"]*\"")" "$(curl -s https://aurya.life/api/public/operator/anpoche | grep -c public_phone)"
 printf "   flag nel container → %s\n" "$($SSH "docker exec \$(docker ps -qf name=backend | head -1) printenv DISCIPLINE_VIVE")"
