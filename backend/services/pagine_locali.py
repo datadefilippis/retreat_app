@@ -45,7 +45,7 @@ INTRO_FAMIGLIA = {
 # disciplina → categoria del Magazine con articoli (per il link «Leggi»)
 CATEGORIA_ARTICOLI = {
     "yoga": "yoga", "pilates": "yoga", "allineamento": "yoga",
-    "meditazione": "meditazione", "mindfulness": "meditazione", "training-autogeno": "meditazione", "mind-movie": "meditazione",
+    "meditazione": "meditazione", "mindfulness": "meditazione", "training-autogeno": "meditazione", "mind-movie": "meditazione", "regressione-vite-passate": "meditazione",
     "breathwork": "breathwork",
     "sound-healing": "suono",
     "reiki": "reiki", "pranoterapia": "reiki", "cristalloterapia": "reiki", "theta-healing": "reiki", "pulizia-energetica": "reiki",

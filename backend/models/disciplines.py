@@ -35,6 +35,9 @@ DISCIPLINE_FAMILIES = (
         ("breathwork", "Breathwork"),
         ("training-autogeno", "Training autogeno"),
         ("ipnosi", "Ipnosi & Rilassamento guidato"),
+        # 2/10/2026 (founder): la regressione alle vite passate, generica (il
+        # metodo di marchio resta un sinonimo: regola DI6)
+        ("regressione-vite-passate", "Regressione & Vite passate"),
         # 29/9/2026 (founder): visualizzazione guidata del futuro desiderato
         ("mind-movie", "Mind movie"),
     )),

@@ -82,8 +82,11 @@ class TestGestalt:
         from services.pagine_locali import CATEGORIA_ARTICOLI
         assert DISCIPLINA_TO_CATEGORIA["counseling-gestalt"] == "crescita"
         assert CATEGORIA_ARTICOLI["counseling-gestalt"] == "crescita"
-        # 59 voci (1/10: + crescita-personale, crescita-spirituale), 7 famiglie
-        assert len(DISCIPLINES) == 59 and len(DISCIPLINE_FAMILIES) == 7
+        # 60 voci (2/10: + regressione-vite-passate), 7 famiglie
+        assert len(DISCIPLINES) == 60 and len(DISCIPLINE_FAMILIES) == 7
+        assert DISCIPLINES["regressione-vite-passate"] == "Regressione & Vite passate"
+        assert DISCIPLINA_TO_CATEGORIA["regressione-vite-passate"] == "meditazione" and CATEGORIA_ARTICOLI["regressione-vite-passate"] == "meditazione"
+        assert "'brian weiss'" in LIB and "'pranic healing'" in LIB     # i nomi che la gente usa, come sinonimi
         for slug, label in (("crescita-personale", "Crescita personale"), ("crescita-spirituale", "Crescita spirituale")):
             assert DISCIPLINES[slug] == label and DISCIPLINA_TO_CATEGORIA[slug] == "crescita" and CATEGORIA_ARTICOLI[slug] == "crescita", slug
         for slug, label, cat in (("allineamento", "Allineamento (colonna & postura)", "yoga"),

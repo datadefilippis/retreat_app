@@ -44,7 +44,7 @@ DISCIPLINA_TO_CATEGORIA = {
     "biodanza": "crescita", "danze-sacre": "femminile", "allineamento": "yoga",
     # meditazione & mente
     "meditazione": "meditazione", "mindfulness": "meditazione", "breathwork": "breathwork",
-    "training-autogeno": "meditazione", "ipnosi": "meditazione", "mind-movie": "meditazione",
+    "training-autogeno": "meditazione", "ipnosi": "meditazione", "mind-movie": "meditazione", "regressione-vite-passate": "meditazione",
     # massaggio & bodywork
     "massaggio": "massaggio",
     "massaggio-olistico": "massaggio", "shiatsu": "massaggio", "massaggio-ayurvedico": "ayurveda",

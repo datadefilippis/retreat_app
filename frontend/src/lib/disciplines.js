@@ -34,6 +34,8 @@ export const DISCIPLINE_FAMILIES = Object.freeze([
       { slug: 'breathwork', label: 'Breathwork' },
       { slug: 'training-autogeno', label: 'Training autogeno' },
       { slug: 'ipnosi', label: 'Ipnosi & Rilassamento guidato' },
+      // 2/10/2026 (founder): la regressione alle vite passate, generica (il metodo di marchio e' un sinonimo)
+      { slug: 'regressione-vite-passate', label: 'Regressione & Vite passate' },
       // 29/9/2026 (founder): visualizzazione guidata del futuro desiderato
       { slug: 'mind-movie', label: 'Mind movie' },
     ],
@@ -168,12 +170,13 @@ export const CERCA_ANCHE = Object.freeze({
   reiki: ['energia', 'energetico'],
   'allineamento-chakra': ['chakra'],
   'lavoro-energetico-chakra': ['chakra', 'energetico'],
-  pranoterapia: ['pranoterapeuta'],
+  pranoterapia: ['pranoterapeuta', 'pranic healing', 'pranic healer', 'guaritore pranico', 'prana'],
   cristalloterapia: ['cristalli', 'pietre'],
   'access-bars': ['bars'],
   'theta-healing': ['theta'],
   kinesiologia: ['kinesiologo', 'kinesiologa'],
   ipnosi: ['ipnoterapia', 'rilassamento'],
+  'regressione-vite-passate': ['vite passate', 'regressione', 'ipnosi regressiva', 'brian weiss', 'metodo weiss', 'vite precedenti'],
   'training-autogeno': ['autogeno'],
   yoga: ['hatha', 'vinyasa', 'yin', 'kundalini', 'insegnante di yoga'],
   pilates: ['postura'],
