@@ -700,6 +700,8 @@
     "bodyPlaceholder": "How did it go? Tell us about your experience (min 20 characters)…",
     "publish": "Publish review",
     "thanks": "Thank you for your review!",
+    "cerchioIscritto": "You are now in Aurya's Cerchio: the first Letter is on its way to your inbox.",
+    "cerchioGiaDentro": "You are already in Aurya's Cerchio.",
     "close": "Close",
     "basedOn_one": "based on {{count}} review",
     "basedOn_other": "based on {{count}} reviews",

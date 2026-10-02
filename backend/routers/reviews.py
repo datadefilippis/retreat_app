@@ -41,6 +41,11 @@ class ReviewSubmit(BaseModel):
     # honeypot: i bot compilano tutto; gli umani non lo vedono (campo
     # nascosto via CSS). Valorizzato → 202 finto, niente scrittura.
     website: Optional[str] = Field(default=None, max_length=200)
+    # RC1 (2/10/2026) — la casella facoltativa «mandami la Lettera del
+    # Cerchio»: falsa di default, quindi il payload di oggi resta valido
+    # tale e quale; la versione del testo letto viaggia col consenso.
+    cerchio: Optional[bool] = False
+    consenso_versione: Optional[str] = Field(default=None, max_length=30)
 
 
 @router.post("/public/reviews/request-otp", status_code=202)
@@ -55,6 +60,35 @@ async def review_request_otp(body: ReviewOtpRequest, request: Request):
     except Exception:
         logger.exception("review otp request fallita")
     return {"status": "accepted"}
+
+
+async def _cerchio_dalla_recensione(request: Request, body: ReviewSubmit) -> Optional[str]:
+    """RC1 — il Cerchio dalla recensione, DOPO che la recensione e' salvata
+    e il codice bruciato. Il codice OTP e' gia' la prova che l'indirizzo e'
+    suo: si iscrive con la funzione interna delle porte (gia_verificato) e
+    si segna la prova «otp», cosi' l'iscritto entra confermato senza
+    seconda email (parte solo il benvenuto del Cerchio, come a ogni
+    conferma). unlock_flow=True: a chi e' gia' dentro non si manda nessun
+    magic link. Best-effort assoluto: qualunque errore qui e' un warning,
+    la recensione e' gia' a posto e la risposta resta 200.
+    Ritorna «iscritto», «gia_dentro» o None."""
+    try:
+        from database import db
+        from routers.subscribers import SubscribePayload, iscrivi
+        from services.verifica_email import segna_verificato
+        email = body.email.lower().strip()
+        prima = await db.aurya_subscribers.find_one({"email": email}, {"_id": 0, "status": 1})
+        gia_dentro = bool(prima and prima.get("status") == "confirmed")
+        await iscrivi(SubscribePayload(
+            email=email, name=body.author_name, consent=True,
+            language=(body.language or "it")[:2], source="recensione",
+            consenso_versione=body.consenso_versione or None, unlock_flow=True,
+        ), request, gia_verificato=True)
+        await segna_verificato(email, "otp", f"recensione:{body.org_slug}")
+        return "gia_dentro" if gia_dentro else "iscritto"
+    except Exception:  # noqa: BLE001 — la recensione non deve mai pagare per il Cerchio
+        logger.warning("RC1: iscrizione al Cerchio dalla recensione fallita", exc_info=True)
+        return None
 
 
 @router.post("/public/reviews/submit")
@@ -73,8 +107,12 @@ async def review_submit(body: ReviewSubmit, request: Request):
     except ReviewError as exc:
         raise HTTPException(status_code=400, detail={
             "error": exc.code, "message": exc.message})
+    # RC1 — solo ora, a recensione salvata, e solo se la casella era spuntata
+    esito_cerchio = None
+    if body.cerchio:
+        esito_cerchio = await _cerchio_dalla_recensione(request, body)
     return {"status": review["status"], "verified": review["verified"],
-            "id": review["id"]}
+            "id": review["id"], "cerchio": esito_cerchio}
 
 
 @router.get("/public/reviews/{org_slug}")

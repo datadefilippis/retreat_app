@@ -700,6 +700,8 @@
     "bodyPlaceholder": "Comment ça s’est passé ? Racontez votre expérience (min 20 caractères)…",
     "publish": "Publier l’avis",
     "thanks": "Merci pour votre avis !",
+    "cerchioIscritto": "Vous faites maintenant partie du Cerchio d’Aurya : la première Lettre arrive dans votre boîte.",
+    "cerchioGiaDentro": "Vous faites déjà partie du Cerchio d’Aurya.",
     "close": "Fermer",
     "basedOn_one": "sur {{count}} avis",
     "basedOn_other": "sur {{count}} avis",

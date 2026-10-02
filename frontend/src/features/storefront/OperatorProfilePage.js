@@ -26,6 +26,9 @@ import MiniCalendario from './components/MiniCalendario';
 // (CheckoutForm/OrderSummary/useCheckoutForm, zero fork di logica).
 import InlineServiceCheckout from './components/checkout/InlineServiceCheckout';
 import ContattiOperatore, { haContatti } from './components/ContattiOperatore';
+// RC2 (2/10/2026) — la casella del Cerchio nel modal della recensione usa
+// LO STESSO testo versionato di tutte le altre porte
+import { testoConsenso } from '../../lib/testiConsenso';
 // DI — le chip discipline vivono nella testata (OperatorIdentityHeader)
 // HOTFIX 10/9/2026 notte — SEO-R usava disciplineLabel nel titolo senza
 // importarla: in produzione ogni profilo /o/{slug} cadeva nell'ErrorBoundary
@@ -112,6 +115,10 @@ function WriteReviewModal({ orgSlug, reviewsOpen = false, onClose, onDone, t, i1
   const [name, setName] = useState('');
   const [error, setError] = useState(null);
   const [busy, setBusy] = useState(false);
+  // RC2 — la casella del Cerchio (facoltativa, mai preselezionata) e l'esito
+  // che il server racconta nel «grazie»: iscritto | gia_dentro | null
+  const [cerchio, setCerchio] = useState(false);
+  const [esitoCerchio, setEsitoCerchio] = useState(null);
   const lang = (i18n.language || 'it').slice(0, 2);
 
   const requestOtp = async (e) => {
@@ -129,10 +136,13 @@ function WriteReviewModal({ orgSlug, reviewsOpen = false, onClose, onDone, t, i1
     e.preventDefault();
     setBusy(true); setError(null);
     try {
-      await api.post('/public/reviews/submit', {
+      // RC2 — UN solo invio, come sempre: la casella viaggia dentro
+      const r = await api.post('/public/reviews/submit', {
         org_slug: orgSlug, email, code, rating, body,
         author_name: name, language: lang, website: '',
+        cerchio, consenso_versione: cerchio ? testoConsenso().versione : null,
       });
+      setEsitoCerchio(r?.data?.cerchio || null);
       setStep('done');
       onDone?.();
     } catch (err) {
@@ -204,6 +214,16 @@ function WriteReviewModal({ orgSlug, reviewsOpen = false, onClose, onDone, t, i1
                       value={body} onChange={e => setBody(e.target.value)}
                       placeholder={t('landings:reviews.bodyPlaceholder', { defaultValue: 'Com\'è andata? Racconta la tua esperienza (min 20 caratteri)…' })}
                       className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40" />
+            {/* RC2 — la casella del Cerchio di Aurya: piccola, facoltativa,
+                mai preselezionata, con il testo versionato delle altre porte.
+                Dice «di Aurya» per non confondersi con la newsletter
+                dell'operatore. Il gesto principale resta la recensione. */}
+            <label className="flex items-start gap-2 text-xs leading-snug text-muted-foreground"
+                   style={{ cursor: 'pointer' }} data-testid="review-cerchio">
+              <input type="checkbox" checked={cerchio} onChange={e => setCerchio(e.target.checked)}
+                     className="mt-0.5 h-4 w-4 shrink-0" />
+              <span>{testoConsenso().testo}</span>
+            </label>
             {/* honeypot: invisibile agli umani */}
             <input type="text" name="website" tabIndex={-1} autoComplete="off"
                    className="hidden" aria-hidden="true" />
@@ -220,6 +240,15 @@ function WriteReviewModal({ orgSlug, reviewsOpen = false, onClose, onDone, t, i1
             <p className="font-semibold text-foreground">
               {t('landings:reviews.thanks', { defaultValue: 'Grazie della tua recensione!' })}
             </p>
+            {/* RC2 — una riga in piccolo, solo per chi ha spuntato la casella:
+                prima la recensione, sempre */}
+            {esitoCerchio && (
+              <p className="mt-2 text-sm text-muted-foreground" data-testid="review-cerchio-esito">
+                {esitoCerchio === 'gia_dentro'
+                  ? t('landings:reviews.cerchioGiaDentro', { defaultValue: 'Sei già nel Cerchio di Aurya.' })
+                  : t('landings:reviews.cerchioIscritto', { defaultValue: 'Ora sei nel Cerchio di Aurya: la prima Lettera arriva nella tua casella.' })}
+              </p>
+            )}
             <button type="button" onClick={onClose}
                     className="mt-4 rounded-full bg-primary text-white px-6 py-2 text-sm font-semibold">
               {t('landings:reviews.close', { defaultValue: 'Chiudi' })}

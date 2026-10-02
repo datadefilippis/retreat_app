@@ -700,6 +700,8 @@
     "bodyPlaceholder": "Wie war es? Erzähle von deiner Erfahrung (min. 20 Zeichen)…",
     "publish": "Bewertung veröffentlichen",
     "thanks": "Danke für deine Bewertung!",
+    "cerchioIscritto": "Du bist jetzt im Cerchio von Aurya: der erste Brief ist auf dem Weg in dein Postfach.",
+    "cerchioGiaDentro": "Du bist schon im Cerchio von Aurya.",
     "close": "Schließen",
     "basedOn_one": "basierend auf {{count}} Bewertung",
     "basedOn_other": "basierend auf {{count}} Bewertungen",

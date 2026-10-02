@@ -92,6 +92,7 @@ _ESATTE = {
     "pagina-grazie": ("commercio", "pagina-grazie"),
     "email-ordine": ("commercio", "email-ordine"),
     "email-recensione": ("commercio", "email-recensione"),
+    "recensione": ("sito", "recensione"),       # RC1 (2/10): la casella nel modal della recensione
 }
 
 

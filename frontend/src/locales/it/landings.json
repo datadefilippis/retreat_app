@@ -720,6 +720,8 @@
     "bodyPlaceholder": "Com'è andata? Racconta la tua esperienza (min 20 caratteri)…",
     "publish": "Pubblica la recensione",
     "thanks": "Grazie della tua recensione!",
+    "cerchioIscritto": "Ora sei nel Cerchio di Aurya: la prima Lettera arriva nella tua casella.",
+    "cerchioGiaDentro": "Sei già nel Cerchio di Aurya.",
     "close": "Chiudi",
     "basedOn_one": "su {{count}} recensione",
     "basedOn_other": "su {{count}} recensioni",
