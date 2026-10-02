@@ -178,3 +178,10 @@ async def dopo_salvataggio(org_id: str, updates: Optional[dict] = None) -> None:
             await allinea_account(org_id, updates["public_profile.nome_persona"])
         except Exception as exc:  # noqa: BLE001
             logger.warning("nome persona non allineato sull'account per %s: %s", org_id, exc)
+    # OP2 (2/10 sera) — il contatto Brevo dell'operatore segue il profilo
+    # (discipline, localita', pagina online). Fire-and-forget, mai blocca.
+    try:
+        from services.operatori_brevo_sync import sync_operatore_background
+        sync_operatore_background(org_id)
+    except Exception:  # noqa: BLE001
+        pass

@@ -152,4 +152,6 @@ class TestInformativa:
                         if l.startswith("| 7-bis"))
             assert frase in riga, lang
         from core.legal_versions import CURRENT_VERSION_TAG
-        assert CURRENT_VERSION_TAG == "v2.9"
+        # ET4 e' entrata con la v2.9; da allora la versione puo' solo salire
+        # (confronto numerico: «v2.10» viene DOPO «v2.9»)
+        assert tuple(int(x) for x in CURRENT_VERSION_TAG.lstrip("v").split(".")) >= (2, 9)

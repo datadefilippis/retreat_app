@@ -41,6 +41,7 @@ _CONTACTS_URL = "https://api.brevo.com/v3/contacts"
 # attributo AURYA_* esisteva in Brevo e i valori venivano scartati in silenzio.
 ATTRIBUTI_BREVO = {
     "NOME": "text",                    # il nome, per il «Ciao {{ contact.NOME }}» (attributo gia' in Brevo)
+    "AURYA_TIPO": "text",              # OP2: cerchio | operatore | operatore+cerchio (lo scrivono entrambe le sync)
     "AURYA_STATUS": "text",            # pending | confirmed | unsubscribed | deleted
     "AURYA_INVIABILE": "boolean",      # LA chiave dei segmenti: true solo se confermato e col consenso
     "AURYA_TOPICS": "text",            # csv temi Magazine
@@ -77,7 +78,7 @@ def _data(v) -> str:
     return str(v)[:10]
 
 
-def _attributes(doc: dict) -> dict:
+def _attributes(doc: dict, tipo: str = "cerchio") -> dict:
     prefs = doc.get("preferences") or {}
     alert = prefs.get("retreat_alert") or {}
     if not alert.get("enabled"):
@@ -91,6 +92,7 @@ def _attributes(doc: dict) -> dict:
     from services.sequenze import porta_cerchio      # lazy: niente cicli d'import
     out = {
         "NOME": " ".join(str(doc.get("name") or "").split())[:80],
+        "AURYA_TIPO": tipo if tipo in ("cerchio", "operatore", "operatore+cerchio") else "cerchio",
         # BS — la chiave dei segmenti: la stessa regola con cui il Cerchio
         # scrive (status confermato + consenso), cosi' una campagna fatta
         # «a tutti» per sbaglio non raggiunge chi non ha confermato
@@ -164,8 +166,10 @@ async def sync_subscriber(email: str) -> None:
         doc = await db.aurya_subscribers.find_one({"email": email}, _PROIEZIONE_SYNC)
         if not doc:
             return
+        from services.operatori_brevo_sync import tipo_contatto      # OP2: la faccia doppia
+        tipo = await tipo_contatto(email)
         await asyncio.to_thread(
-            _push_to_brevo, email, _attributes(doc),
+            _push_to_brevo, email, _attributes(doc, tipo),
             doc.get("status") == "unsubscribed")
     except Exception as exc:                # noqa: BLE001 — best-effort
         logger.warning("brevo sync error: %s", exc)

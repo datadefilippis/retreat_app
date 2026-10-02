@@ -38,10 +38,17 @@ from typing import Final
 # IMPORTANT: bump CURRENT_VERSION_TAG whenever the LEGAL CONTENT changes.
 # The hash is recomputed manually from the IT bundle (see procedure below).
 
-CURRENT_VERSION_TAG: Final[str] = "v2.9"
+CURRENT_VERSION_TAG: Final[str] = "v2.10"
 """Human-readable tag of the documents the user is currently shown.
 
 History:
+  - v2.10 (OP1, 2026-10-02 sera) — comunicazioni di servizio agli
+    Operatori: riga 1-bis dell'informativa (novita' e funzioni della
+    Piattaforma, cambi di condizioni, partnership e opportunita' legate
+    al Servizio; base contratto + legittimo interesse, opposizione da
+    ogni email) e Termini 19.4 che lo dicono. Nessun consenso nuovo:
+    l'Operatore e' cliente. Stesso giorno della v2.9: chi non l'ha
+    ancora accettata vede direttamente questa. Stesse modifiche EN/DE/FR.
   - v2.9 (ET4, 2026-10-02) — riga 7-bis (il Cerchio): fra le preferenze
     facoltative compare la «fascia d'eta'» chiesta dal modulo di
     /cerca-ritiro. Nessuna finalita' nuova, stessa base giuridica
@@ -171,7 +178,7 @@ History:
     CERCHIO_SINGOLO_OPTIN. Stesse modifiche in EN/DE/FR.
 """
 
-CURRENT_VERSION_HASH: Final[str] = "eaf17c5b4e2fccfc"
+CURRENT_VERSION_HASH: Final[str] = "5adf9946ab2ae554"
 """SHA256-hex16 of the rendered IT privacy + terms text bundle.
 
 Computed from the concatenation:

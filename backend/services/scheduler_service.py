@@ -237,3 +237,14 @@ async def heartbeat_job() -> Dict[str, Any]:
     Il journal di questo job è il primo posto dove guardare se 'i promemoria
     non partono'."""
     return {"alive": True, "runner": RUNNER_ID}
+
+
+# ── OP2 (2/10/2026) — gli operatori in Brevo, una volta al giorno ──────────
+
+@register_job("brevo_operatori", interval_seconds=24 * 3600)
+async def brevo_operatori_job() -> Dict[str, Any]:
+    """Riallinea ogni operatore sul suo contatto Brevo (ultimo accesso,
+    listino, Stripe, piano cambiano senza passare dal profilo). Solo API
+    contatti, nessuna email. Senza BREVO_API_KEY la sync e' un dry run."""
+    from services.operatori_brevo_sync import sync_tutti
+    return await sync_tutti()

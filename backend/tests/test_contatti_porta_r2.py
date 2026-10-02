@@ -37,7 +37,7 @@ CLIENTI = (FE / "features" / "customers-mgmt" / "CustomersMgmtPage.js").read_tex
 class TestR5Legale:
     def test_v28_e_hash_allineato(self):
         from core.legal_versions import CURRENT_VERSION_HASH, CURRENT_VERSION_TAG
-        assert CURRENT_VERSION_TAG == "v2.9"     # v2.8 R5 → v2.9 ET4 (2/10, fascia d'eta')
+        assert CURRENT_VERSION_TAG == "v2.10"    # v2.8 R5 → v2.9 ET4 → v2.10 OP1 (2/10)
         priv = (BACKEND / "legal" / "privacy_it.md").read_text("utf-8")
         terms = (BACKEND / "legal" / "terms_it.md").read_text("utf-8")
         atteso = hashlib.sha256((priv + "\n\n--- TERMS BUNDLE ---\n\n" + terms).encode()).hexdigest()[:16]

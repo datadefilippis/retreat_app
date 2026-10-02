@@ -492,6 +492,8 @@ Le Fournisseur envoie les communications transactionnelles nécessaires à la fo
 
 Le Fournisseur **n'envoie pas** de newsletters, promotions ou emails de marketing sans consentement explicite préalable de la personne concernée. Les newsletters des Opérateurs sont envoyées exclusivement aux inscrits ayant donné leur consentement, avec désinscription en libre-service dans chaque email (Politique de confidentialité art. 4.1).
 
+Pendant toute la durée du compte, l'Opérateur reçoit du Fournisseur les **communications de service et mises à jour sur la Plateforme** (nouveautés et fonctions, changements de conditions, partenariats et opportunités liés au Service, demandes de retour), en tant que client du Service (Politique de confidentialité, finalité 1-bis). L'Opérateur peut s'y opposer à tout moment via le lien présent dans chaque communication ou en écrivant à `info@aurya.life` ; les emails transactionnels de l'art. 19.3 continuent quoi qu'il en soit. Les promotions de tiers et les offres commerciales sans lien avec le Service requièrent un consentement distinct.
+
 ---
 
 ## 20. Modifications des Conditions

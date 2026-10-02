@@ -492,6 +492,8 @@ Der Anbieter versendet die zur Erbringung des Dienstes erforderlichen transaktio
 
 Der Anbieter **versendet keine** Newsletter, Werbeaktionen oder Marketing-E-Mails ohne vorherige ausdrückliche Einwilligung der betroffenen Person. Die Newsletter der Veranstalter werden ausschließlich an Abonnenten versendet, die ihre Einwilligung erteilt haben, mit Self-Service-Abmeldung in jeder E-Mail (Datenschutzerklärung Art. 4.1).
 
+Für die gesamte Dauer des Kontos erhält der Veranstalter vom Anbieter **Service-Mitteilungen und Aktualisierungen zur Plattform** (Neuigkeiten und Funktionen, Änderungen der Bedingungen, Partnerschaften und Gelegenheiten im Zusammenhang mit dem Dienst, Bitten um Rückmeldung), als Kunde des Dienstes (Datenschutzerklärung, Zweck 1-bis). Der Veranstalter kann jederzeit über den Link in jeder Mitteilung oder per E-Mail an `info@aurya.life` widersprechen; die Transaktions-E-Mails nach Art. 19.3 werden weiterhin versendet. Werbung Dritter und kommerzielle Angebote ohne Bezug zum Dienst erfordern eine gesonderte Einwilligung.
+
 ---
 
 ## 20. Änderungen der Bedingungen

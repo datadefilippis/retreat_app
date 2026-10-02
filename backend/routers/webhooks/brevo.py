@@ -215,9 +215,15 @@ async def brevo_webhook(
         # either (admin) or both (admin who is also a storefront customer).
         # Each update_one is independent — failure of one does not break the other.
         try:
+            # OP3 (2/10/2026) — un «unsubscribed» da una comunicazione agli
+            # operatori e' l'OPPOSIZIONE dell'art. 21: si registra sull'account
+            # e la sync spegne AURYA_OP_COMUNICAZIONI. Le transazionali continuano.
+            update_users = dict(update_doc)
+            if new_status == "unsubscribed":
+                update_users["comunicazioni_opposizione_at"] = now_iso
             await users_collection.update_one(
                 {"email": email},
-                {"$set": update_doc},
+                {"$set": update_users},
             )
         except Exception as e:
             logger.error(

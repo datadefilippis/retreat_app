@@ -494,6 +494,8 @@ Il Fornitore invia comunicazioni transazionali necessarie all'erogazione del Ser
 
 Il Fornitore **non invia** newsletter, promozioni o email di marketing senza esplicito consenso preventivo dell'interessato. Le newsletter degli Operatori sono inviate esclusivamente agli iscritti che hanno prestato consenso, con disiscrizione self-service in ogni email (Privacy Policy art. 4.1).
 
+Per tutta la durata dell'account l'Operatore riceve dal Fornitore le **comunicazioni di servizio e gli aggiornamenti sulla Piattaforma** (novita' e funzioni, cambi di condizioni, partnership e opportunita' legate al Servizio, richieste di riscontro), in quanto cliente del Servizio (Privacy Policy, finalita' 1-bis). L'Operatore puo' opporsi in ogni momento dal link presente in ogni comunicazione o scrivendo a `info@aurya.life`; le email transazionali dell'art. 19.3 continuano comunque. Promozioni di terzi e offerte commerciali non legate al Servizio richiedono un consenso separato.
+
 ---
 
 ## 20. Modifiche ai Termini

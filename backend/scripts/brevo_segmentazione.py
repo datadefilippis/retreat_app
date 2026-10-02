@@ -47,11 +47,12 @@ def _headers() -> dict:
 def attributi() -> int:
     import requests
     from services.subscriber_brevo_sync import ATTRIBUTI_BREVO
+    from services.operatori_brevo_sync import ATTRIBUTI_BREVO_OP     # OP2: anche le facce operatore
     r = requests.get(f"{BASE}/contacts/attributes", headers=_headers(), timeout=15)
     r.raise_for_status()
     esistenti = {a["name"].upper(): a for a in r.json().get("attributes", [])}
     creati, saltati, falliti = [], [], []
-    for nome, tipo in ATTRIBUTI_BREVO.items():
+    for nome, tipo in {**ATTRIBUTI_BREVO, **ATTRIBUTI_BREVO_OP}.items():
         if nome.upper() in esistenti:
             saltati.append(nome)
             continue
@@ -74,8 +75,9 @@ async def _backfill() -> int:
     from services.subscriber_brevo_sync import _PROIEZIONE_SYNC, _attributes, _push_to_brevo
     ok = ko = 0
     inviabili = 0
+    from services.operatori_brevo_sync import tipo_contatto
     async for d in db.aurya_subscribers.find({}, {**_PROIEZIONE_SYNC, "email": 1}).sort("created_at", 1):
-        attr = _attributes(d)
+        attr = _attributes(d, await tipo_contatto(d["email"]))
         inviabili += 1 if attr.get("AURYA_INVIABILE") else 0
         riuscito = await asyncio.to_thread(_push_to_brevo, d["email"], attr, d.get("status") == "unsubscribed")
         ok += 1 if riuscito else 0
@@ -83,6 +85,16 @@ async def _backfill() -> int:
         await asyncio.sleep(0.15)          # 56 contatti ≈ 10 s; Brevo non si lamenta
     print(f"backfill: {ok} contatti allineati, {ko} falliti, {inviabili} inviabili (confermati col consenso)")
     return 1 if ko else 0
+
+
+async def _operatori() -> int:
+    """OP2 — ogni operatore sul suo contatto Brevo (stesso contatto di un
+    eventuale iscritto al Cerchio: Brevo identifica per email)."""
+    from services.operatori_brevo_sync import sync_tutti
+    e = await sync_tutti()
+    print(f"operatori: {e['allineati']} allineati, {e['falliti']} falliti, {e['saltati']} saltati "
+          f"(campioni o senza titolare), {e['comunicazioni']} con le comunicazioni accese")
+    return 1 if e["falliti"] else 0
 
 
 def verifica() -> int:
@@ -107,6 +119,15 @@ def verifica() -> int:
     print(f"verifica: {len(contatti)} contatti in Brevo, {len(con_status)} con AURYA_STATUS, "
           f"{len(inviabili)} inviabili, {len(con_vie)} con le vie, {len(con_canale)} col canale, "
           f"{len(con_eta)} con l'eta', {len(black)} in blacklist")
+    # OP2 — le facce
+    tipi = {}
+    for c in contatti:
+        t = (c.get("attributes") or {}).get("AURYA_TIPO") or "(senza)"
+        tipi[t] = tipi.get(t, 0) + 1
+    op = [c for c in contatti if (c.get("attributes") or {}).get("AURYA_OP") is True]
+    op_com = [c for c in op if c["attributes"].get("AURYA_OP_COMUNICAZIONI") is True]
+    op_online = [c for c in op if c["attributes"].get("AURYA_OP_STATO") == "online"]
+    print(f"          tipi: {tipi} · operatori {len(op)}, con comunicazioni {len(op_com)}, con pagina online {len(op_online)}")
     mancanti = [k for k in ATTRIBUTI_BREVO if con_status and not any(k in (c.get("attributes") or {}) for c in con_status)]
     if mancanti:
         print(f"          attributi mai valorizzati su nessun contatto: {mancanti}")
@@ -117,9 +138,10 @@ def main() -> int:
     p = argparse.ArgumentParser()
     p.add_argument("--attributi", action="store_true")
     p.add_argument("--backfill", action="store_true")
+    p.add_argument("--operatori", action="store_true")
     p.add_argument("--verifica", action="store_true")
     a = p.parse_args()
-    if not (a.attributi or a.backfill or a.verifica):
+    if not (a.attributi or a.backfill or a.operatori or a.verifica):
         p.print_help()
         return 2
     esito = 0
@@ -127,6 +149,8 @@ def main() -> int:
         esito |= attributi()
     if a.backfill:
         esito |= asyncio.run(_backfill())
+    if a.operatori:
+        esito |= asyncio.run(_operatori())
     if a.verifica:
         esito |= verifica()
     return esito

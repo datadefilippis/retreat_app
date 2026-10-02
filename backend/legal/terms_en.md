@@ -492,6 +492,8 @@ The Provider sends transactional communications necessary for the delivery of th
 
 The Provider **does not send** newsletters, promotions or marketing emails without the prior explicit consent of the data subject. Operators' newsletters are sent exclusively to subscribers who have given consent, with self-service unsubscription in every email (Privacy Policy Art. 4.1).
 
+For the whole duration of the account the Operator receives from the Provider **service communications and updates about the Platform** (news and features, changes of terms, partnerships and opportunities related to the Service, feedback requests), as a customer of the Service (Privacy Policy, purpose 1-bis). The Operator may object at any time via the link in every communication or by writing to `info@aurya.life`; the transactional emails of Art. 19.3 continue regardless. Third-party promotions and commercial offers unrelated to the Service require separate consent.
+
 ---
 
 ## 20. Changes to the Terms
