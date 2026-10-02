@@ -9,6 +9,8 @@
  * Le label sono italiane e definitive (contenuti nuovi solo IT dal 2/8).
  */
 
+import { useEffect, useState } from 'react';
+
 export const DISCIPLINE_FAMILIES = Object.freeze([
   {
     slug: 'corpo', label: 'Corpo & Movimento',
@@ -125,7 +127,7 @@ export const DISCIPLINE_LABELS = Object.freeze(Object.fromEntries(
 /** Tetto della multi-selezione (stesso valore del backend). */
 export const DISCIPLINES_MAX = 10;
 
-export const disciplineLabel = (slug) => DISCIPLINE_LABELS[slug] || slug;
+export const disciplineLabel = (slug) => etichette()[slug] || slug;
 
 /* ── 24/9/2026 — orientarsi fra 52 voci (components/SelettoreDiscipline) ── */
 
@@ -207,11 +209,87 @@ export function cercaDiscipline(query) {
   const q = norm(query).trim();
   if (!q) return [];
   const out = [];
-  DISCIPLINE_FAMILIES.forEach((fam) => {
+  const extraSin = VIVO?.sinonimi || {};
+  famiglieVive().forEach((fam) => {
     fam.items.forEach((d) => {
-      const testi = [d.label, d.slug.replace(/-/g, ' '), fam.label, ...(CERCA_ANCHE[d.slug] || [])];
+      const testi = [d.label, d.slug.replace(/-/g, ' '), fam.label, ...(CERCA_ANCHE[d.slug] || []), ...(extraSin[d.slug] || [])];
       if (testi.some((t) => norm(t).includes(q))) out.push(d);
     });
   });
   return out;
+}
+
+/* ── DV3 (2/10/2026) — IL REGISTRO VIVO ──────────────────────────────────
+   Il system admin aggiunge discipline dalla regia (docs/ANALISI_DISCIPLINE_
+   DINAMICHE_2026-10-02.md). Il server le unisce a quelle di codice e le
+   serve da GET /public/discipline; qui si caricano UNA volta per sessione
+   e tutto il modulo (famiglie, etichette, ricerca) legge l'unione. Se la
+   rete manca o l'interruttore e' spento: lo specchio di codice qui sopra,
+   identico a ieri. Nessuna schermata vuota, mai. */
+let VIVO = null;            // { famiglie, sinonimi, extra, totale } dal server, o null
+let promessa = null;
+let etichetteCache = null;
+const CHIAVE_SESSIONE = 'aurya_discipline_vive_v1';
+const DURATA_MS = 10 * 60 * 1000;
+const ascoltatori = new Set();
+
+/** Le famiglie che il mondo vede: dal server se caricate, altrimenti il codice. */
+export function famiglieVive() {
+  return VIVO?.famiglie || DISCIPLINE_FAMILIES;
+}
+
+/** slug → etichetta, unione (le voci di codice vincono sempre). */
+export function etichette() {
+  if (!VIVO) return DISCIPLINE_LABELS;
+  if (!etichetteCache) {
+    const m = {};
+    VIVO.famiglie.forEach((f) => f.items.forEach((d) => { m[d.slug] = d.label; }));
+    etichetteCache = { ...m, ...DISCIPLINE_LABELS };
+  }
+  return etichetteCache;
+}
+
+function applica(dati) {
+  // interruttore spento lato server (vive=false) o risposta strana → codice
+  VIVO = (dati && dati.vive && Array.isArray(dati.famiglie) && dati.famiglie.length) ? dati : null;
+  etichetteCache = null;
+  ascoltatori.forEach((fn) => { try { fn(); } catch { /* un ascoltatore rotto non ferma gli altri */ } });
+}
+
+/** Carica il registro (una volta per sessione, 10 minuti in sessionStorage). */
+export async function caricaDiscipline(forza = false) {
+  if (!forza) {
+    if (promessa) return promessa;
+    try {
+      const raw = sessionStorage.getItem(CHIAVE_SESSIONE);
+      if (raw) {
+        const { t, dati } = JSON.parse(raw);
+        if (Date.now() - t < DURATA_MS) { applica(dati); promessa = Promise.resolve(VIVO); return promessa; }
+      }
+    } catch { /* private mode */ }
+  }
+  promessa = (async () => {
+    try {
+      const { default: api } = await import('../api/client');
+      const r = await api.get('/public/discipline');
+      applica(r.data);
+      try { sessionStorage.setItem(CHIAVE_SESSIONE, JSON.stringify({ t: Date.now(), dati: r.data })); } catch { /* private mode */ }
+    } catch {
+      applica(null);                  // riserva: il codice
+    }
+    return VIVO;
+  })();
+  return promessa;
+}
+
+/** Per i componenti: si ri-renderizzano quando il registro arriva o cambia. */
+export function useDiscipline() {
+  const [, setGiro] = useState(0);
+  useEffect(() => {
+    const fn = () => setGiro((n) => n + 1);
+    ascoltatori.add(fn);
+    caricaDiscipline();
+    return () => { ascoltatori.delete(fn); };
+  }, []);
+  return { famiglie: famiglieVive(), labels: etichette(), label: disciplineLabel, vive: !!VIVO };
 }

@@ -33,6 +33,11 @@ export const adminAPI = {
     return api.post(`/admin/organizations/${orgId}/public-profile/immagine`, fd,
       { headers: { 'Content-Type': 'multipart/form-data' } }).then((r) => r.data);
   },
+  // DV2 (2/10/2026) — le discipline dalla regia
+  getDiscipline: () => api.get('/admin/discipline').then((r) => r.data),
+  anteprimaDisciplina: (label) => api.get('/admin/discipline/anteprima', { params: { label } }).then((r) => r.data),
+  creaDisciplina: (body) => api.post('/admin/discipline', body).then((r) => r.data),
+  modificaDisciplina: (slug, body) => api.patch(`/admin/discipline/${slug}`, body).then((r) => r.data),
   deleteOrgProfileImage: (orgId, { tipo, url, motivo }) =>
     api.delete(`/admin/organizations/${orgId}/public-profile/immagine`,
       { params: { tipo, url, motivo } }).then((r) => r.data),

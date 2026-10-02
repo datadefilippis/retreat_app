@@ -196,6 +196,7 @@ import CustomerVerifyEmailPage from "./features/customer-portal/auth/VerifyEmail
 // served by the new pages/* below. The old files stay in the codebase
 // for the auth re-exports above (until Phase 6 turns them into a shim).
 import CustomerLayout from "./features/customer-portal/layout/CustomerLayout";
+import { caricaDiscipline } from './lib/disciplines';   // DV3: registro vivo delle discipline
 // PS4 — del portale clienti legacy restano SOLO i corsi (il player e
 // il suo indice): le email "Vai al corso" gia' spedite puntano a
 // /account/courses/<enrollment_id> e il player usa il JWT customer.
@@ -1188,6 +1189,8 @@ function AppRoutes() {
 }
 
 function App() {
+  // DV3 (2/10/2026): le discipline create dalla regia si caricano una volta per sessione
+  React.useEffect(() => { caricaDiscipline(); }, []);
   // v6.0: Banner precedence — when BillingStatusBanner (blocking) is visible,
   // suppress the softer ReadOnlyGraceBanner to avoid confusing double banners.
   const [billingBannerVisible, setBillingBannerVisible] = useState(false);

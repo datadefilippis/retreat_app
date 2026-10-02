@@ -38,6 +38,8 @@ db = client[os.environ['DB_NAME']]
 organizations_collection = db.organizations
 # R2 (25/9/2026) — chi ha chiesto i recapiti di un operatore (lead)
 contact_requests_collection = db.contact_requests
+# DV1 (2/10/2026) — discipline create dalla regia (il codice resta la base)
+discipline_extra_collection = db.discipline_extra
 users_collection = db.users
 datasets_collection = db.datasets
 sales_records_collection = db.sales_records

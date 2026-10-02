@@ -651,6 +651,184 @@ async def admin_delete_public_profile_image(
     return await _profilo_pubblico_payload(org_id)
 
 
+# ── DV2 (2/10/2026, founder): le discipline dalla regia ───────────────────
+# Il system admin aggiunge una disciplina (etichetta, famiglia, categorie,
+# sinonimi) e la rende disponibile a tutti senza deploy: finisce nel registro
+# `discipline_extra`, services/discipline_vive la applica subito. Slug
+# immutabile, mai cancellazioni (solo attiva=false), motivo + audit come per
+# il profilo. Le voci di codice ricevono dal registro solo sinonimi in piu'.
+
+async def _audit_disciplina(current_user: dict, *, slug: str, azione: str,
+                            prima, dopo, motivo: str) -> None:
+    from database import audit_logs_collection
+    from models.common import generate_id
+    now_dt = utc_now()
+    try:
+        await audit_logs_collection.insert_one({
+            "id": generate_id(),
+            "actor_user_id": current_user.get("user_id"),
+            "actor_role": "system_admin",
+            "organization_id": None,
+            "action": "DISCIPLINA_ADMIN_EDIT",
+            "target_type": "disciplina",
+            "target_id": slug,
+            "metadata": {"azione": azione, "prima": _valore_breve(prima),
+                         "dopo": _valore_breve(dopo), "motivo": motivo},
+            "created_at": now_dt.isoformat(),
+            "expire_at": now_dt,
+        })
+    except Exception:  # noqa: BLE001 — l'audit non rompe il salvataggio
+        pass
+
+
+@router.get(
+    "/discipline",
+    summary="Le discipline (codice + registro della regia) con usi e rosa delle scelte",
+)
+async def admin_discipline(_: dict = Depends(require_system_admin)) -> dict:
+    from database import discipline_extra_collection, organizations_collection
+    from models import disciplines as D
+    from services import discipline_vive as V
+    await V.assicura_fresco()
+    usi: dict = {}
+    async for r in organizations_collection.aggregate([
+            {"$match": {"public_profile.disciplines": {"$exists": True, "$ne": []}}},
+            {"$unwind": "$public_profile.disciplines"},
+            {"$group": {"_id": "$public_profile.disciplines", "n": {"$sum": 1}}}]):
+        usi[r["_id"]] = r["n"]
+    extra = {d["slug"]: d async for d in discipline_extra_collection.find({}, {"_id": 0})}
+    famiglie = []
+    for f, l, items in D.DISCIPLINE_FAMILIES:
+        voci = [{"slug": s, "label": lab, "origine": "codice" if s in D.DISCIPLINE_CODICE else "regia",
+                 "attiva": True, "usi": usi.get(s, 0),
+                 "sinonimi_extra": (extra.get(s) or {}).get("sinonimi") or []}
+                for s, lab in items]
+        # le voci della regia SPENTE non stanno nelle famiglie: si elencano comunque
+        for s, d in extra.items():
+            if d.get("famiglia") == f and s not in D.DISCIPLINE_CODICE and not d.get("attiva", True):
+                voci.append({"slug": s, "label": d.get("label"), "origine": "regia", "attiva": False,
+                             "usi": usi.get(s, 0), "sinonimi_extra": d.get("sinonimi") or []})
+        famiglie.append({"slug": f, "label": l, "items": voci})
+    return {
+        "vive": V.discipline_vive(),
+        "famiglie": famiglie,
+        "rosa": {"famiglie": V.famiglie_rosa(), "categorie_ritiro": V.categorie_ritiro_rosa(),
+                 "categorie_articoli": V.categorie_articoli_rosa()},
+        "totale": len(D.DISCIPLINES),
+        "extra": list(extra.values()),
+    }
+
+
+@router.post(
+    "/discipline",
+    status_code=201,
+    summary="Aggiunge una disciplina dal pannello (slug immutabile, motivo, audit)",
+)
+async def admin_disciplina_crea(
+    body: dict = Body(...),
+    current_user: dict = Depends(require_system_admin),
+) -> dict:
+    from database import discipline_extra_collection
+    from models.common import generate_id
+    from services import discipline_vive as V
+    body = body if isinstance(body, dict) else {}
+    motivo = _motivo_pulito(body.get("motivo"))
+    await V.assicura_fresco()
+    try:
+        doc = V.valida_nuova(body)
+    except ValueError as e:
+        raise HTTPException(status_code=422, detail=str(e))
+    if await discipline_extra_collection.find_one({"slug": doc["slug"]}, {"_id": 1}):
+        raise HTTPException(status_code=409, detail=f"«{doc['slug']}» esiste già nel registro.")
+    now = utc_now().isoformat()
+    doc.update({"id": generate_id(), "creata_da": current_user.get("user_id"), "creata_il": now,
+                "aggiornata_il": now, "motivo": motivo})
+    await discipline_extra_collection.insert_one(dict(doc))
+    await V.ricarica()
+    await _audit_disciplina(current_user, slug=doc["slug"], azione="crea", prima=None,
+                            dopo={k: doc[k] for k in ("label", "famiglia", "categoria", "cat_articoli", "sinonimi")},
+                            motivo=motivo)
+    doc.pop("_id", None)
+    return {"disciplina": doc, "pubblico": V.payload_pubblico()}
+
+
+@router.get(
+    "/discipline/anteprima",
+    summary="Slug proposto e voci simili, prima di salvare",
+)
+async def admin_disciplina_anteprima(label: str = Query("", max_length=80),
+                                     _: dict = Depends(require_system_admin)) -> dict:
+    from services import discipline_vive as V
+    slug = V.slugify(label)
+    return {"slug": slug, "slug_valido": V.slug_valido(slug), "simili": V.simili(label) if label else [],
+            "esiste": slug in __import__("models.disciplines", fromlist=["DISCIPLINES"]).DISCIPLINES}
+
+
+@router.patch(
+    "/discipline/{slug}",
+    summary="Modifica etichetta, sinonimi, famiglia, categorie o stato (mai lo slug, mai cancellazioni)",
+)
+async def admin_disciplina_modifica(
+    slug: str,
+    body: dict = Body(...),
+    current_user: dict = Depends(require_system_admin),
+) -> dict:
+    from database import discipline_extra_collection
+    from models import disciplines as D
+    from models import retreat_taxonomy as RT
+    from services import discipline_vive as V
+    body = body if isinstance(body, dict) else {}
+    motivo = _motivo_pulito(body.get("motivo"))
+    await V.assicura_fresco()
+    di_codice = slug in D.DISCIPLINE_CODICE
+    prima = await discipline_extra_collection.find_one({"slug": slug}, {"_id": 0})
+    if not di_codice and not prima:
+        raise HTTPException(status_code=404, detail="Disciplina non trovata")
+    updates: dict = {}
+    if "sinonimi" in body:
+        updates["sinonimi"] = V.pulisci_sinonimi(body.get("sinonimi"))
+    if di_codice:
+        # di una voce di codice si arricchiscono SOLO i sinonimi
+        if set(body) - {"sinonimi", "motivo"}:
+            raise HTTPException(status_code=422, detail="Di una voce di codice si cambiano solo i sinonimi.")
+    else:
+        if "label" in body:
+            label = " ".join(str(body.get("label") or "").split())
+            if not (V.LABEL_MIN <= len(label) <= V.LABEL_MAX):
+                raise HTTPException(status_code=422, detail=f"Etichetta: da {V.LABEL_MIN} a {V.LABEL_MAX} caratteri.")
+            updates["label"] = label
+        if "famiglia" in body:
+            if body["famiglia"] not in {f for f, _, _ in D.DISCIPLINE_FAMILIES}:
+                raise HTTPException(status_code=422, detail="Famiglia non valida.")
+            updates["famiglia"] = body["famiglia"]
+        if "categoria" in body:
+            if body["categoria"] not in RT.RETREAT_CATEGORIES:
+                raise HTTPException(status_code=422, detail="Categoria di ritiro non valida.")
+            updates["categoria"] = body["categoria"]
+        if "cat_articoli" in body:
+            if body["cat_articoli"] not in V.categorie_articoli_rosa() and body["cat_articoli"] not in RT.RETREAT_CATEGORIES:
+                raise HTTPException(status_code=422, detail="Categoria del Magazine non valida.")
+            updates["cat_articoli"] = body["cat_articoli"]
+        if "attiva" in body:
+            updates["attiva"] = bool(body["attiva"])
+    if not updates:
+        raise HTTPException(status_code=400, detail="Nessun campo valido")
+    updates["aggiornata_il"] = utc_now().isoformat()
+    if di_codice and not prima:
+        from models.common import generate_id
+        await discipline_extra_collection.insert_one({
+            "id": generate_id(), "slug": slug, "arricchimento": True, "attiva": True,
+            "creata_da": current_user.get("user_id"), "creata_il": updates["aggiornata_il"], **updates})
+    else:
+        await discipline_extra_collection.update_one({"slug": slug}, {"$set": updates})
+    await V.ricarica()
+    dopo = await discipline_extra_collection.find_one({"slug": slug}, {"_id": 0})
+    await _audit_disciplina(current_user, slug=slug, azione="modifica",
+                            prima={k: (prima or {}).get(k) for k in updates if k != "aggiornata_il"},
+                            dopo={k: updates[k] for k in updates if k != "aggiornata_il"}, motivo=motivo)
+    return {"disciplina": dopo, "pubblico": V.payload_pubblico()}
+
+
 @router.get(
     "/organizations/{org_id}",
     response_model=OrgDetailResponse,

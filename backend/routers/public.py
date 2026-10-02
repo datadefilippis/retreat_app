@@ -4088,6 +4088,17 @@ async def public_network_members():
     return {"items": items, "total": len(items)}
 
 
+@router.get("/discipline")
+@limiter.limit("60/minute")
+async def public_discipline(request: Request = None):
+    """DV1 (2/10/2026) — l'elenco delle discipline, codice + registro della
+    regia, nella forma di lib/disciplines.js (famiglie, voci, sinonimi
+    extra). Il frontend lo carica all'avvio; se manca, usa il suo specchio."""
+    from services.discipline_vive import assicura_fresco, payload_pubblico
+    await assicura_fresco()
+    return payload_pubblico()
+
+
 @router.get("/operators")
 @limiter.limit("30/minute")   # AS1 (25/9/2026, anti-scrape): un umano che filtra non ci arriva, il raschiatore si'
 async def public_operators_index(

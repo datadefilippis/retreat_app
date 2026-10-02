@@ -7,7 +7,7 @@
  * la coda delle recensioni segnalate e gli account degli operatori.
  */
 import React from 'react';
-import { Building2, Globe2, Mic, ShieldAlert, Users } from 'lucide-react';
+import { Building2, Globe2, Mic, ShieldAlert, Users, Sparkles } from 'lucide-react';
 import AdminPageShell from './AdminPageShell';
 import OrganizationsTab from './OrganizationsTab';
 import DirectoryAdminTab from './DirectoryAdminTab';
@@ -15,6 +15,7 @@ import InterviewsTab from './InterviewsTab';
 import FlaggedReviewsTab from './FlaggedReviewsTab';
 import UsersTab from './UsersTab';
 import LeadsTab from './LeadsTab';
+import DisciplineTab from './DisciplineTab';
 
 /* Lotto D (24/9/2026) — i lead professionisti delle landing stanno
    QUI, sotto gli account (stessa componente del Cerchio, filtrata):
@@ -37,6 +38,8 @@ const TABS = [
   { value: 'interviste', label: 'Interviste', icon: Mic, element: <InterviewsTab /> },
   { value: 'segnalazioni', label: 'Segnalazioni', icon: ShieldAlert, element: <FlaggedReviewsTab /> },
   { value: 'account', label: 'Account operatori', icon: Users, element: <AccountETab /> },
+  // DV2 (2/10/2026): le discipline dalla regia, senza deploy
+  { value: 'discipline', label: 'Discipline', icon: Sparkles, element: <DisciplineTab /> },
 ];
 
 export default function OperatoriPage() {

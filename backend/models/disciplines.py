@@ -16,7 +16,7 @@ frontend/src/lib/disciplines.js: una guardia impone la parita'.
 
 # (slug famiglia, label famiglia, [(slug, label), ...])
 DISCIPLINE_FAMILIES = (
-    ("corpo", "Corpo & Movimento", (
+    ("corpo", "Corpo & Movimento", [
         ("yoga", "Yoga"),
         ("pilates", "Pilates"),
         ("tai-chi", "Tai Chi"),
@@ -28,8 +28,8 @@ DISCIPLINE_FAMILIES = (
         ("danze-sacre", "Danze sacre & Danza della Dea"),
         # 29/9/2026 (founder): l'allineamento della colonna come lavoro sul corpo
         ("allineamento", "Allineamento (colonna & postura)"),
-    )),
-    ("mente", "Meditazione & Mente", (
+    ]),
+    ("mente", "Meditazione & Mente", [
         ("meditazione", "Meditazione"),
         ("mindfulness", "Mindfulness"),
         ("breathwork", "Breathwork"),
@@ -40,8 +40,8 @@ DISCIPLINE_FAMILIES = (
         ("regressione-vite-passate", "Regressione & Vite passate"),
         # 29/9/2026 (founder): visualizzazione guidata del futuro desiderato
         ("mind-movie", "Mind movie"),
-    )),
-    ("massaggio", "Massaggio & Bodywork", (
+    ]),
+    ("massaggio", "Massaggio & Bodywork", [
         # 29/9/2026 (founder): il massaggio senza aggettivi, accanto all'olistico
         ("massaggio", "Massaggio"),
         ("massaggio-olistico", "Massaggio olistico"),
@@ -52,8 +52,8 @@ DISCIPLINE_FAMILIES = (
         ("craniosacrale", "Craniosacrale"),
         ("linfodrenaggio", "Linfodrenaggio"),
         ("hot-stone", "Hot stone"),
-    )),
-    ("energia", "Energia & Vibrazione", (
+    ]),
+    ("energia", "Energia & Vibrazione", [
         ("reiki", "Reiki"),
         ("pranoterapia", "Pranoterapia"),
         ("cristalloterapia", "Cristalloterapia"),
@@ -67,8 +67,8 @@ DISCIPLINE_FAMILIES = (
         ("theta-healing", "Theta healing"),
         ("access-bars", "Access Bars"),
         ("kinesiologia", "Kinesiologia"),
-    )),
-    ("natura", "Natura & Rimedi", (
+    ]),
+    ("natura", "Natura & Rimedi", [
         ("naturopatia", "Naturopatia"),
         ("aromaterapia", "Aromaterapia"),
         ("floriterapia", "Floriterapia & Fiori di Bach"),
@@ -76,17 +76,17 @@ DISCIPLINE_FAMILIES = (
         ("alimentazione-olistica", "Alimentazione olistica"),
         ("bagni-di-bosco", "Bagni di bosco"),
         ("consulenza-ayurvedica", "Consulenza ayurvedica"),
-    )),
+    ]),
     # 24/9/2026 (founder): si iscrive uno psicoterapeuta. Le professioni
     # psicologiche sono regolamentate (albo): famiglia propria, voci
     # generiche, nessun metodo di marchio (regola DI6).
-    ("psiche", "Psicologia & Psicoterapia", (
+    ("psiche", "Psicologia & Psicoterapia", [
         ("psicologia", "Psicologia"),
         ("psicoterapia", "Psicoterapia"),
         ("sostegno-psicologico", "Sostegno psicologico"),
         ("psicologia-perinatale", "Psicologia perinatale"),
-    )),
-    ("anima", "Anima & Percorsi interiori", (
+    ]),
+    ("anima", "Anima & Percorsi interiori", [
         ("costellazioni-familiari", "Costellazioni familiari"),
         ("counseling-olistico", "Counseling olistico"),
         # 24/9/2026 (founder): il counselor a indirizzo Gestalt (approccio,
@@ -105,15 +105,21 @@ DISCIPLINE_FAMILIES = (
         ("astrologia", "Astrologia"),
         ("numerologia", "Numerologia"),
         ("tarocchi-evolutivi", "Tarocchi evolutivi"),
-    )),
+    ]),
 )
 
-# slug → label, piatto: validazione PATCH e risoluzione label nei payload
+# slug → label, piatto: validazione PATCH e risoluzione label nei payload.
+# DV1 (2/10/2026): le liste delle famiglie e questo dizionario sono MUTABILI
+# di proposito — services/discipline_vive.py vi aggiunge in place le voci
+# create dalla regia (registro `discipline_extra`), cosi' ogni consumatore
+# vede l'unione senza cambiare una riga. Le voci di codice non si toccano.
 DISCIPLINES = {
     slug: label
     for _fslug, _flabel, items in DISCIPLINE_FAMILIES
     for slug, label in items
 }
+# gli slug nati nel codice: mai sovrascritti ne' rimossi dal registro vivo
+DISCIPLINE_CODICE = frozenset(DISCIPLINES)
 
 # tetto della multi-selezione: dieci discipline dicono gia' tutto,
 # oltre il profilo diventa un elenco telefonico

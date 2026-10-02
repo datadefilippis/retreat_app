@@ -140,6 +140,12 @@ async def lifespan(app: FastAPI):
         logging.warning("lifespan init_logging() failed: %s", _e)
 
     await create_indexes()
+    # DV1 (2/10/2026) — il registro vivo delle discipline si applica all'avvio
+    try:
+        from services.discipline_vive import ricarica as _ricarica_discipline
+        logging.info("discipline vive: %s voci extra applicate", await _ricarica_discipline())
+    except Exception as _e:  # noqa: BLE001
+        logging.warning("discipline vive non caricate (resta il codice): %s", _e)
     # Seed pricing plans (idempotent — runs in all environments)
     try:
         await seed_pricing_plans_if_empty()

@@ -7628,7 +7628,7 @@ class TestDisciplineDi:
         # DI5 — solo le discipline PRESENTI (conteggio accanto),
         # raggruppate per famiglia: mai il catalogo intero che
         # "non filtra nulla" (decisione founder 14/8, sera)
-        assert "optgroup" in esplora and "DISCIPLINE_FAMILIES" in esplora
+        assert "optgroup" in esplora and ("DISCIPLINE_FAMILIES" in esplora or "famiglieVive" in esplora)   # DV3: famiglie dal registro vivo
         assert "presenti" in esplora and "data?.disciplines?.[d.slug]" in esplora, \
             "il filtro mostra di nuovo il catalogo intero"
         # IG5 (3/9/2026): le chip discipline sono identita', quindi

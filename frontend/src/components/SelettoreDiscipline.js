@@ -19,7 +19,7 @@
 import React, { useMemo, useState } from 'react';
 import { ChevronDown, X } from 'lucide-react';
 import {
-  DISCIPLINE_FAMILIES, DISCIPLINES_MAX, PIU_SCELTE, cercaDiscipline, disciplineLabel,
+  DISCIPLINES_MAX, PIU_SCELTE, cercaDiscipline, disciplineLabel, useDiscipline,
 } from '../lib/disciplines';
 
 const chipCls = (sel, full) => `rounded-full border px-3 py-1 text-xs transition-colors ${
@@ -31,6 +31,8 @@ export default function SelettoreDiscipline({
   value = [], onToggle, query = '', onQuery, max = DISCIPLINES_MAX,
   placeholder = 'Cerca: yoga, reiki, psicoterapia, massaggio…', autoFocus = false,
 }) {
+  // DV3 (2/10/2026): famiglie dal registro vivo (codice + regia), codice come riserva
+  const { famiglie } = useDiscipline();
   const [aperta, setAperta] = useState(null);      // una famiglia alla volta
   const scelte = value || [];
   const full = scelte.length >= max;
@@ -77,7 +79,7 @@ export default function SelettoreDiscipline({
           </p>
         ) : (
           <div className="space-y-2" data-testid="disc-risultati">
-            {DISCIPLINE_FAMILIES.map((fam) => {
+            {famiglie.map((fam) => {
               const dentro = risultati.filter((d) => fam.items.some((i) => i.slug === d.slug));
               if (!dentro.length) return null;
               return (
@@ -102,7 +104,7 @@ export default function SelettoreDiscipline({
           )}
           {/* 2b. le famiglie, chiuse: una riga ciascuna, se ne apre una */}
           <div className="rounded-lg border divide-y" data-testid="disc-famiglie">
-            {DISCIPLINE_FAMILIES.map((fam) => {
+            {famiglie.map((fam) => {
               const n = fam.items.filter((d) => scelte.includes(d.slug)).length;
               const open = aperta === fam.slug;
               return (

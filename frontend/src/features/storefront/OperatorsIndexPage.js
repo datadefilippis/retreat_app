@@ -26,7 +26,7 @@ import { Leaf, MapPin, SearchX } from 'lucide-react';
 import { Skeleton } from '../../components/ui/skeleton';
 import VerifiedAuryaBadge from '../../components/VerifiedAuryaBadge';
 // DI — tassonomia discipline (specchio backend)
-import { disciplineLabel, DISCIPLINE_FAMILIES } from '../../lib/disciplines';
+import { disciplineLabel, useDiscipline } from '../../lib/disciplines';
 
 // LM3 — l'URL parla italiano (?ordina=), l'API il gergo suo (sort=):
 // la mappa e' l'unico punto di traduzione.
@@ -300,6 +300,8 @@ function OperatorCard({ op, t, lang }) {
 }
 
 export default function OperatorsIndexPage() {
+  // DV3 (2/10/2026): il filtro «Disciplina» legge il registro vivo
+  const { famiglie: famiglieVive } = useDiscipline();
   const { t, i18n } = useTranslation('landings');
   const { categoria: seg1, sub: seg2 } = useParams();
   // SEO-B (14/9 sera) — i segmenti sono disciplina / regione / categoria
@@ -550,7 +552,7 @@ export default function OperatorsIndexPage() {
                 <option value="">
                   {t('landings:operators.disciplineAll', { defaultValue: 'Tutte le discipline' })}
                 </option>
-                {DISCIPLINE_FAMILIES.map(fam => {
+                {famiglieVive.map(fam => {
                   const presenti = fam.items.filter(
                     d => data?.disciplines?.[d.slug] || d.slug === disciplina);
                   if (presenti.length === 0) return null;

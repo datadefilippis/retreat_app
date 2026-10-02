@@ -27,3 +27,10 @@ def contatti_dietro_porta() -> bool:
     porta solo «c'e'/non c'e'», /contatti chiede il Bearer piattaforma e
     registra la richiesta per l'operatore. Spento = come prima."""
     return _acceso("CONTATTI_DIETRO_PORTA")
+
+
+def discipline_vive() -> bool:
+    """DV1 (founder 2/10): le discipline create dalla regia (collezione
+    discipline_extra) si uniscono a quelle di codice. Spento = codice e
+    basta, registro ignorato."""
+    return _acceso("DISCIPLINE_VIVE")
