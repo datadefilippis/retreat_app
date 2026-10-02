@@ -149,7 +149,7 @@ def main() -> int:
         esito |= attributi()
 
     # UN solo ciclo asyncio per i gesti sul DB: il client Motor resta
-    # legato al primo loop e un secondo asyncio.run() lo trova chiuso
+    # legato al primo loop e un secondo ciclo lo trova chiuso
     # («Event loop is closed», visto in prod il 2/10 sera)
     async def _gesti_db() -> int:
         e = 0
