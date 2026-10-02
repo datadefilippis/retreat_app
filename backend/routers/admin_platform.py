@@ -108,6 +108,8 @@ async def numeri_del_lunedi(
         {"status": "confirmed", "profile.city": {"$nin": [None, ""]}})
     con_ritiri = await sub_.count_documents(
         {"status": "confirmed", "preferences.retreat_alert.enabled": True})
+    con_eta = await sub_.count_documents(                   # ET1 (2/10/2026)
+        {"status": "confirmed", "profile.eta": {"$nin": [None, ""]}})
     nuovi_7g = await sub_.count_documents(
         {"status": "confirmed",
          "$or": [{"confirmed_at": {"$gte": d7}}, {"confirmed_at": {"$gte": iso(d7)}}]})
@@ -205,7 +207,8 @@ async def numeri_del_lunedi(
                               "login_senza_verifica": login_senza_verifica()}}
 
     payload = {"cerchio": {"confermati": confermati, "con_citta": con_citta,
-                           "con_ritiri": con_ritiri, "nuovi_7g": nuovi_7g, "porte_30g": porte},
+                           "con_ritiri": con_ritiri, "con_eta": con_eta,
+                           "nuovi_7g": nuovi_7g, "porte_30g": porte},
                "ritiri": ritiri, "visite": visite, "operatori": operatori,
                "richieste": richieste, "euro": euro, "sequenze_30g": sequenze,
                "porta": porta,

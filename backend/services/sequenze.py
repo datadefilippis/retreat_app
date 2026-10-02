@@ -229,6 +229,7 @@ def contesto_cerchio(sub: dict) -> dict:
             "citta": (profilo.get("city") or "").strip(),
             "interessi": list(profilo.get("interests") or []),
             "travel": profilo.get("travel") or "",
+            "eta": profilo.get("eta") or "",          # ET1 — disponibile ai template, nessuno lo usa ancora
             "porta": stato["porta"], "vuole_ritiri": stato["vuole_ritiri"]}
 
 

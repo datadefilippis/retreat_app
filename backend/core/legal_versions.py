@@ -38,10 +38,17 @@ from typing import Final
 # IMPORTANT: bump CURRENT_VERSION_TAG whenever the LEGAL CONTENT changes.
 # The hash is recomputed manually from the IT bundle (see procedure below).
 
-CURRENT_VERSION_TAG: Final[str] = "v2.8"
+CURRENT_VERSION_TAG: Final[str] = "v2.9"
 """Human-readable tag of the documents the user is currently shown.
 
 History:
+  - v2.9 (ET4, 2026-10-02) — riga 7-bis (il Cerchio): fra le preferenze
+    facoltative compare la «fascia d'eta'» chiesta dal modulo di
+    /cerca-ritiro. Nessuna finalita' nuova, stessa base giuridica
+    (consenso), nessun nuovo sub-responsabile; la casella di consenso
+    del Cerchio NON cambia (dice gia' «in base alle mie preferenze»).
+    Il bump innesca il re-consent degli operatori (~20): e' il
+    meccanismo esistente, un clic. Stesse modifiche in EN/DE/FR.
   - v2.8 (R5, 2026-09-25) — account Aurya necessario per consultare i
     recapiti degli Operatori e per prenotare; richieste di contatto
     comunicate all'Operatore (riga 7-ter, conservazione 12 mesi); il
@@ -164,7 +171,7 @@ History:
     CERCHIO_SINGOLO_OPTIN. Stesse modifiche in EN/DE/FR.
 """
 
-CURRENT_VERSION_HASH: Final[str] = "f5458ae5c56541b2"
+CURRENT_VERSION_HASH: Final[str] = "eaf17c5b4e2fccfc"
 """SHA256-hex16 of the rendered IT privacy + terms text bundle.
 
 Computed from the concatenation:

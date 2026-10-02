@@ -49,6 +49,7 @@ const INPUT_CHIARO = 'w-full rounded-xl border border-input bg-white px-4 py-3 t
 export default function AvvisamiRitiri({
   enabled, setEnabled,
   interests, onToggleInterest, city, setCity, travel, setTravel, budget, setBudget,
+  eta = '', setEta = null,       // ET2 — solo LeadForm la passa; i cancelli no
   accent = '#376254', scuro = false,
   inputCls = INPUT_CHIARO, selectCls = null, ringStyle = {},
   testid = 'avvisami-ritiri',
@@ -82,7 +83,7 @@ export default function AvvisamiRitiri({
         <div className="mt-3 duration-300 animate-in fade-in slide-in-from-top-2">
           <PreferenzeRitiri accent={accent} interests={interests} onToggleInterest={onToggleInterest}
                             city={city} setCity={setCity} travel={travel} setTravel={setTravel}
-                            budget={budget} setBudget={setBudget} scuro={scuro}
+                            budget={budget} setBudget={setBudget} eta={eta} setEta={setEta} scuro={scuro}
                             inputCls={inputCls} selectCls={sel} ringStyle={stile} />
         </div>
       )}

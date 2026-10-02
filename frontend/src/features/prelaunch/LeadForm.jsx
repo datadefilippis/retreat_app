@@ -123,6 +123,7 @@ export default function LeadForm({ type = 'traveler', accent = '#376254', contex
   const [interests, setInterests] = useState(() => initialInterests || []);
   const [travel, setTravel] = useState('');
   const [budget, setBudget] = useState('');
+  const [eta, setEta] = useState('');            // ET2 — fascia d'eta', facoltativa
   const [activity, setActivity] = useState('');
   const [link, setLink] = useState('');
   const [message, setMessage] = useState('');
@@ -175,6 +176,7 @@ export default function LeadForm({ type = 'traveler', accent = '#376254', contex
           city: city.trim() || null,
           travel: travel || null,
           budget: budget || null,
+          eta: eta || null,                     // ET2 — vuota = come oggi
           consent: true,
           // il cancello di una guida (onSbloccato presente) sblocca
           // con la chiamata successiva: niente magic link ridondante
@@ -397,7 +399,7 @@ export default function LeadForm({ type = 'traveler', accent = '#376254', contex
               della pagina, quindi stanno aperte */}
           <PreferenzeRitiri accent={accent} interests={interests} onToggleInterest={toggleInterest}
                             city={city} setCity={setCity} travel={travel} setTravel={setTravel}
-                            budget={budget} setBudget={setBudget} vieAperte
+                            budget={budget} setBudget={setBudget} eta={eta} setEta={setEta} vieAperte
                             inputCls={inputCls} selectCls={selectCls} ringStyle={ringStyle} />
         </>
       )}
@@ -411,7 +413,7 @@ export default function LeadForm({ type = 'traveler', accent = '#376254', contex
         <AvvisamiRitiri enabled={wantsExperiences} setEnabled={setWantsExperiences}
                         interests={interests} onToggleInterest={toggleInterest}
                         city={city} setCity={setCity} travel={travel} setTravel={setTravel}
-                        budget={budget} setBudget={setBudget}
+                        budget={budget} setBudget={setBudget} eta={eta} setEta={setEta}
                         accent={accent} inputCls={inputCls} selectCls={selectCls} ringStyle={ringStyle} />
       )}
 

@@ -35,6 +35,8 @@ export const BASE_TO_EXP = {
 export const EXP_TO_BASE = Object.fromEntries(Object.entries(BASE_TO_EXP).map(([b, e]) => [e, b]));
 export const TRAVELS = ['near', 'italy', 'abroad'];
 export const BUDGETS = ['under500', '500to1000', 'over1000', 'flexible'];
+// ET2 — le fasce d'eta' (ETA_FASCE in routers/subscribers.py): chiavi = valori
+export const ETA = ['18-29', '30-44', '45-59', '60+'];
 
 export const versoBackend = (interessi) =>
   [...new Set((interessi || []).map((i) => BASE_TO_EXP[i]).filter(Boolean))];
@@ -49,6 +51,10 @@ export default function PreferenzeRitiri({
   city = '', setCity,
   travel = '', setTravel,
   budget = '', setBudget = null,
+  // ET2 (2/10/2026) — la fascia d'eta', facoltativa e motivata: si vede
+  // SOLO dove si passa setEta (LeadForm e preferenze dell'iscritto); i
+  // cancelli delle meditazioni non la passano e restano com'erano
+  eta = '', setEta = null,
   vieAperte = false,             // le 14 vie aperte subito (solo /cerca-ritiro)
   scuro = false,                 // il mondo Sound: chip scelte col testo scuro sull'oro
   inputCls = INPUT, selectCls = null, ringStyle = {},
@@ -90,6 +96,24 @@ export default function PreferenzeRitiri({
                 <option key={k} value={k}>{t(`form.budget.${k}`, { defaultValue: k })}</option>
               ))}
             </select>
+          )}
+          {setEta && (
+            <div data-testid="preferenze-eta">
+              <select value={eta} onChange={(e) => setEta(e.target.value)}
+                      className={sel(eta)} style={ringStyle}
+                      aria-label={t('form.etaLabel', { defaultValue: 'La tua età (facoltativo)' })}>
+                <option value="">{t('form.etaLabel', { defaultValue: 'La tua età (facoltativo)' })}</option>
+                {ETA.map((k) => (
+                  <option key={k} value={k}>{t(`form.eta.${k}`, { defaultValue: k })}</option>
+                ))}
+              </select>
+              {/* la riga che motiva la domanda: vera, perche' la fascia entra
+                  nei filtri delle proposte e nelle liste da subito */}
+              <p className="mt-1.5 text-xs leading-snug"
+                 style={{ color: scuro ? 'inherit' : '#1f2f28', opacity: 0.7 }}>
+                {t('form.etaHint', { defaultValue: 'Molti ritiri sono pensati per età diverse, nei ritmi e nel gruppo. Così ti proponiamo quelli giusti per te.' })}
+              </p>
+            </div>
           )}
           <div>
             {/* la riga che apre le vie: stile inline perche' nel mondo Sound

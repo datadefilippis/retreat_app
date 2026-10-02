@@ -4,7 +4,7 @@
     "intro_first": "To use Aurya you need to accept our Privacy Policy and Terms of Service.",
     "intro_update": "We have updated our Privacy Policy and Terms of Service. To continue using Aurya, please accept the new version.",
     "what_changed_title": "What changed",
-    "what_changed_body": "The new version clarifies how we process your data, lists our sub-processors by name (Hetzner, Anthropic, Stripe, Brevo) and formalises your GDPR rights (access, portability, erasure).",
+    "what_changed_body": "Version 2.9: in the entry about Il Cerchio, Aurya's newsletter, the optional preferences subscribers may state now include an age range. No new purpose, no new sub-processor, no change for your account or your data.",
     "read_privacy": "Read the Privacy Policy",
     "read_terms": "Read the Terms of Service",
     "read_sub_processors": "View the sub-processor list",

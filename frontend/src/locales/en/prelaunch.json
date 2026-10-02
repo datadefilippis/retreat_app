@@ -42,6 +42,14 @@
       "over1000": "Over 1,000 €",
       "flexible": "Depends on the experience"
     },
+    "etaLabel": "Your age (optional)",
+    "eta": {
+      "18-29": "18-29",
+      "30-44": "30-44",
+      "45-59": "45-59",
+      "60+": "60 and over"
+    },
+    "etaHint": "Many retreats are designed for different ages, in pace and group. This way we suggest the right ones for you.",
     "activityLabel": "What do you do?",
     "activity": {
       "teacher": "Teacher or facilitator",

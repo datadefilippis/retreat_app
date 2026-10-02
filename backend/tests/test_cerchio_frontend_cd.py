@@ -163,11 +163,12 @@ class TestD3IscrittiTab:
         chiavi = re.findall(r"\{ k: '([\w_]+)', label: '([^']+)'", blocco)
         # 24/9 sera (founder): «Vie» torna fra le predefinite; «Email inviate»
         # dice cosa conta (automatiche mandate, non aperte)
-        assert [c[1] for c in chiavi[:11]] == ["Email", "Nome", "Stato", "Provenienza", "Iscritto il",
-                                                "Budget", "Dove", "Città", "Avviso ritiri", "Vie", "Email inviate"]
-        assert "COLONNE.slice(0, 11)" in ISCRITTI
+        # ET3 (2/10): «Età» entra fra le predefinite, dopo Budget
+        assert [c[1] for c in chiavi[:12]] == ["Email", "Nome", "Stato", "Provenienza", "Iscritto il",
+                                                "Budget", "Età", "Dove", "Città", "Avviso ritiri", "Vie", "Email inviate"]
+        assert "COLONNE.slice(0, 12)" in ISCRITTI
         assert "Email ricevute" not in ISCRITTI and "function emailDettaglio" in ISCRITTI
-        extra = {c[1] for c in chiavi[11:]}
+        extra = {c[1] for c in chiavi[12:]}
         assert extra == {"Temi", "Lingua", "Confermato il", "Porta", "Ultima email", "Tag", "Consenso", "Verificato"}
 
     def test_la_scheda_coi_sei_blocchi_e_la_cronologia(self):

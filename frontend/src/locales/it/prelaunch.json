@@ -51,6 +51,14 @@
       "over1000": "Oltre 1.000 €",
       "flexible": "Dipende dall’esperienza"
     },
+    "etaLabel": "La tua età (facoltativo)",
+    "eta": {
+      "18-29": "18-29 anni",
+      "30-44": "30-44 anni",
+      "45-59": "45-59 anni",
+      "60+": "60 anni e oltre"
+    },
+    "etaHint": "Molti ritiri sono pensati per età diverse, nei ritmi e nel gruppo. Così ti proponiamo quelli giusti per te.",
     "activityLabel": "Di cosa ti occupi?",
     "activity": {
       "teacher": "Insegnante o facilitatore",

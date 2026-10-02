@@ -51,6 +51,15 @@ Fuori perimetro, di proposito: `/public/leads` e la scheda «Contatti dalle land
 
 Ordine ET1 → ET2 → ET3 → ET4 → ET5, un giro solo. Stima: mezza giornata di lavoro più la prova.
 
+### 2.1 Stato (2/10 pomeriggio): ET1-ET4 fatti in locale, provati
+
+- **Backend**: `ETA_FASCE`, `_eta_valida`, `_set_eta` (scrive / toglie con `""` / ignora il resto); subscribe scrive solo la rosa; preferenze pubbliche e PATCH regia con audit (`campi` include `eta`); `_riga_iscritto`, `_query_iscritti(eta=)`, `by_eta` nell'ordine delle fasce, CSV con `eta` in coda, `AURYA_ETA` verso Brevo, `cerchio.con_eta` nei numeri del lunedì, `eta` nel contesto delle sequenze.
+- **Modulo**: `PreferenzeRitiri` rende il select e la riga di motivazione solo con `setEta`; `LeadForm` lo passa (modulo pieno e blocco «avvisami»), i cancelli no; `NewsletterPreferencesPage` legge e scrive. Etichette ×4 (trattino semplice: la guardia PL24 vieta i trattini lunghi nel copy di pre-lancio).
+- **Regia**: colonna «Età» dopo Budget (`nuova: true` → si offre una volta anche a chi ha una scelta di colonne salvata, chiave `iscritti-colonne-offerte`), riga nella scheda, filtro, ripartizione «Per età» (griglia a 4), select nell'editor, card del lunedì «N con l'età».
+- **Informativa**: riga 7-bis ×4, `v2.9`, hash `eaf17c5b4e2fccfc`, testo «Cosa è cambiato» del modal riscritto (prima era quello generico di maggio).
+- **Prova dal vivo (locale)**: subscribe con `eta: 45-59` → `profile.eta` scritto; payload senza `eta` (bundle vecchio) e con `eta: banana` → 201, profilo senza il campo; regia: colonna, filtro `?eta=45-59` (1 riga), ripartizione «45–59 · 1», CSV con la colonna in coda; preferenze dell'iscritto precompilate «45-59 anni»; modal di ri-accettazione con il testo nuovo (visto da un operatore loggato). Guardia `test_cerchio_eta.py`.
+- **Prima del deploy**: creare in Brevo l'attributo di contatto `AURYA_ETA` (testo), come per `AURYA_BUDGET` il 24/9.
+
 ## 3. Perché non può rompere la pagina sponsorizzata
 
 - **Il campo è facoltativo e in più.** Chi non lo tocca manda lo stesso payload di oggi più `eta: null`; il backend ignora `null` e ignora i valori fuori rosa. Il flusso di iscrizione, il doppio opt-in, lo sblocco delle meditazioni e il «grazie» non cambiano di una riga.

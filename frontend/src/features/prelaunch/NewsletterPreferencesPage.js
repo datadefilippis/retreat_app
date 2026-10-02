@@ -47,6 +47,7 @@ export default function NewsletterPreferencesPage() {
   const [city, setCity] = useState('');
   const [travel, setTravel] = useState('');
   const [budget, setBudget] = useState('');
+  const [eta, setEta] = useState('');           // ET2 — la fascia, modificabile dall'iscritto
 
   useSeoMeta({
     title: t('nlPrefs.seoTitle', { defaultValue: 'Le tue preferenze | Aurya' }),
@@ -67,6 +68,7 @@ export default function NewsletterPreferencesPage() {
         setCity(res.data.city || '');
         setTravel(res.data.travel || '');
         setBudget(res.data.budget || '');
+        setEta(res.data.eta || '');
         setState('ready');
       })
       .catch(() => { if (mounted) setState('gone'); });
@@ -99,7 +101,8 @@ export default function NewsletterPreferencesPage() {
       await api.put('/public/newsletter/preferences',
         { token, topics, format, retreat_alert: alert,
           interests: versoBackend(interests), city: city.trim(), travel: travel || null,
-          budget: budget || null });
+          budget: budget || null,
+          eta: eta || '' });                   // ET2 — "" = togli la fascia
       setState('saved');
       setTimeout(indietro, 900);
     } catch { setState('error'); }
@@ -206,7 +209,7 @@ export default function NewsletterPreferencesPage() {
             </p>
             <PreferenzeRitiri accent={GREEN} interests={interests} onToggleInterest={toggleInterest}
                               city={city} setCity={setCity} travel={travel} setTravel={setTravel}
-                              budget={budget} setBudget={setBudget} />
+                              budget={budget} setBudget={setBudget} eta={eta} setEta={setEta} />
           </section>
 
           <section className="mt-4 rounded-2xl border border-gray-200 bg-white p-5">

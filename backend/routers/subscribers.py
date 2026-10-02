@@ -60,6 +60,16 @@ EXPERIENCE_INTERESTS = ("yoga", "meditazione", "breathwork", "suono", "reiki",
 # near = nella mia zona; anywhere/italy = ovunque in Italia; abroad = anche
 # all'estero (la landing di luglio mandava italy/abroad e venivano scartati)
 TRAVEL_OPTIONS = ("near", "anywhere", "italy", "abroad")
+# ET1 (2/10/2026) — la fascia d'eta', facoltativa, dal modulo di
+# /cerca-ritiro: una rosa chiusa, tutto il resto si scarta. Mai l'eta'
+# esatta, mai una fascia sotto i 18 (la regola 18+ resta su account e
+# prenotazioni). Piano: docs/PIANO_ETA_CERCHIO_2026-10-02.md
+ETA_FASCE = ("18-29", "30-44", "45-59", "60+")
+
+
+def _eta_valida(raw) -> Optional[str]:
+    v = str(raw or "").strip()
+    return v if v in ETA_FASCE else None
 
 # Le 20 regioni italiane: le zone dell'alert ritiri (stessa geografia
 # della directory). Slug stabili minuscoli, label lato frontend.
@@ -116,6 +126,7 @@ class SubscribePayload(BaseModel):
     city: Optional[str] = Field(default=None, max_length=120)
     travel: Optional[str] = Field(default=None, max_length=40)
     budget: Optional[str] = Field(default=None, max_length=40)
+    eta: Optional[str] = Field(default=None, max_length=10)     # ET1 — fascia, facoltativa
     # NW1 — il flag «avvisami anche su esperienze e ritiri» e gli
     # interessi esperienziali del form espanso
     wants_experiences: Optional[bool] = None
@@ -151,6 +162,7 @@ class PreferencesPayload(BaseModel):
     travel: Optional[str] = Field(default=None, max_length=40)
     # US (10/9/2026 notte) — il budget come ovunque (stesso blocco)
     budget: Optional[str] = Field(default=None, max_length=40)
+    eta: Optional[str] = Field(default=None, max_length=10)     # ET1 — "" = togli
 
 
 def _decode_or_http(token: str) -> str:
@@ -334,11 +346,13 @@ async def iscrivi(payload: SubscribePayload, request: Request, *,
             {"enabled": payload.wants_experiences})
     if payload.interests is not None:
         doc_set["profile.interests"] = _clean_interests(payload.interests)
-    for field in ("city", "travel", "budget"):
+    for field in ("city", "travel", "budget", "eta"):
         val = (getattr(payload, field) or "").strip()
         if val:
             if field == "travel" and val not in TRAVEL_OPTIONS:
                 continue                     # NW1 — solo near/anywhere
+            if field == "eta" and val not in ETA_FASCE:
+                continue                     # ET1 — solo la rosa; vuoto = non scritto
             doc_set[f"profile.{field}"] = val[:120]
 
     try:
@@ -676,7 +690,10 @@ async def newsletter_stats(
     from services.provenienza import ETICHETTE
     by_budget = [{"budget": r["valore"], "n": r["n"]} for r in await _conta("profile.budget")]
     by_travel = [{"travel": r["valore"], "n": r["n"]} for r in await _conta("profile.travel")]
-    by_canale = [{"canale": r["valore"], "label": ETICHETTE.get(r["valore"], r["valore"]), "n": r["n"]}
+    # ET1 — la fascia d'eta', nell'ordine delle fasce (non per numero)
+    conta_eta = {r["valore"]: r["n"] for r in await _conta("profile.eta")}
+    by_eta = [{"eta": f, "n": conta_eta[f]} for f in ETA_FASCE if conta_eta.get(f)]
+    by_canale =[{"canale": r["valore"], "label": ETICHETTE.get(r["valore"], r["valore"]), "n": r["n"]}
                  for r in await _conta("provenienza.canale")]
     by_regione = [{"regione": r["valore"], "n": r["n"]}
                   for r in await _conta("preferences.retreat_alert.regions", unwind=True, limite=25)]
@@ -693,6 +710,7 @@ async def newsletter_stats(
         "weekly_new": weekly,
         "by_budget": by_budget,
         "by_travel": by_travel,
+        "by_eta": by_eta,
         "by_canale": by_canale,
         "by_regione": by_regione,
         "verificati": verificati,
@@ -735,6 +753,7 @@ def _riga_iscritto(d: dict) -> dict:
         "city": profile.get("city"),
         "travel": profile.get("travel") if profile.get("travel") in TRAVEL_OPTIONS else None,
         "budget": profile.get("budget"),
+        "eta": _eta_valida(profile.get("eta")),          # ET1
         "sequenza": [k for k, v in (d.get("sequenza") or {}).items() if v and not str(v).startswith("saltato")],
         "provenienza": provenienza,
         "consenso": consenso,
@@ -842,9 +861,12 @@ def _query_iscritti(status: Optional[str], source: Optional[str], q: Optional[st
                     canale: Optional[str] = None, superficie: Optional[str] = None,
                     budget: Optional[str] = None, travel: Optional[str] = None,
                     dal: Optional[str] = None, al: Optional[str] = None,
-                    verificato: Optional[str] = None, tag: Optional[str] = None) -> dict:
+                    verificato: Optional[str] = None, tag: Optional[str] = None,
+                    eta: Optional[str] = None) -> dict:
     import re as _re
     query: dict = {}
+    if _eta_valida(eta):                                   # ET1
+        query["profile.eta"] = _eta_valida(eta)
     if status in ("pending", "confirmed", "unsubscribed"):
         query["status"] = status
     if source:
@@ -915,6 +937,7 @@ async def list_subscribers(
         al: Optional[str] = None,
         verificato: Optional[str] = None,
         tag: Optional[str] = None,
+        eta: Optional[str] = None,
         skip: int = 0,
         limit: int = 50,
         current_user: dict = Depends(require_system_admin)):
@@ -926,7 +949,7 @@ async def list_subscribers(
     from database import db
     from services.provenienza import canali_per_admin
     query = _query_iscritti(status, source, q, experiences, region, interest, porta,
-                            canale, superficie, budget, travel, dal, al, verificato, tag)
+                            canale, superficie, budget, travel, dal, al, verificato, tag, eta)
     limit = max(1, min(int(limit or 50), 200))
     skip = max(0, int(skip or 0))
     total = await db.aurya_subscribers.count_documents(query)
@@ -947,20 +970,22 @@ async def export_subscribers(
         budget: Optional[str] = None, travel: Optional[str] = None,
         dal: Optional[str] = None, al: Optional[str] = None,
         verificato: Optional[str] = None, tag: Optional[str] = None,
+        eta: Optional[str] = None,
         current_user: dict = Depends(require_system_admin)):
     """SA-R — lo stesso elenco, in CSV (max 5000 righe), con gli stessi filtri."""
     import csv, io
     from fastapi.responses import Response
     from database import db
     query = _query_iscritti(status, source, q, experiences, region, interest, porta,
-                            canale, superficie, budget, travel, dal, al, verificato, tag)
+                            canale, superficie, budget, travel, dal, al, verificato, tag, eta)
     buf = io.StringIO()
     w = csv.writer(buf, delimiter=";")
     w.writerow(["email", "nome", "stato", "porta", "fonte", "iscritto_il", "confermato_il", "disiscritto_il",
                 "vie", "citta", "dove", "budget", "avviso_ritiri", "regioni", "temi", "email_ricevute",
                 # B4 (24/9) — le colonne nuove in coda (le vecchie restano dove sono)
                 "canale", "superficie", "porta_arrivo", "consenso_modalita", "consenso_versione",
-                "verificato_at", "n_email"])
+                "verificato_at", "n_email",
+                "eta"])                                    # ET1 (2/10) — in coda
     async for d in db.aurya_subscribers.find(query, _PROIEZIONE_ISCRITTO).sort("created_at", -1).limit(5000):
         r = _riga_iscritto(d)
         a = r["retreat_alert"]
@@ -973,7 +998,8 @@ async def export_subscribers(
                     " ".join(r["topics"]), " ".join(r["sequenza"]),
                     p.get("canale") or "", p.get("superficie") or "", p.get("porta") or "",
                     c.get("modalita") or "", c.get("versione") or "",
-                    r["verificato_at"] or "", r["n_email"]])
+                    r["verificato_at"] or "", r["n_email"],
+                    r["eta"] or ""])
     return Response(content="\ufeff" + buf.getvalue(), media_type="text/csv; charset=utf-8",
                     headers={"Content-Disposition": 'attachment; filename="iscritti-cerchio.csv"'})
 
@@ -1040,7 +1066,18 @@ class PreferenzeAdminPayload(BaseModel):
     city: Optional[str] = Field(default=None, max_length=120)
     travel: Optional[str] = Field(default=None, max_length=40)
     budget: Optional[str] = Field(default=None, max_length=40)
+    eta: Optional[str] = Field(default=None, max_length=10)     # ET1 — "" = togli
     name: Optional[str] = Field(default=None, max_length=120)
+
+
+def _set_eta(doc_set: dict, doc_unset: dict, raw: Optional[str]) -> None:
+    """ET1 — fascia nella rosa → scritta; vuota → tolta; altro → ignorato."""
+    if raw is None:
+        return
+    if _eta_valida(raw):
+        doc_set["profile.eta"] = _eta_valida(raw)
+    elif not str(raw).strip():
+        doc_unset["profile.eta"] = ""
 
 
 async def _iscritto_o_404(email: str) -> dict:
@@ -1182,12 +1219,15 @@ async def preferenze_da_admin(email: str, payload: PreferenzeAdminPayload,
         doc_set["profile.budget"] = payload.budget.strip()[:40]
     if payload.name is not None:
         doc_set["name"] = payload.name.strip()[:120] or None
-    await db.aurya_subscribers.update_one({"email": email}, {"$set": doc_set})
+    doc_unset: dict = {}
+    _set_eta(doc_set, doc_unset, payload.eta)              # ET1
+    await db.aurya_subscribers.update_one(
+        {"email": email}, {"$set": doc_set, **({"$unset": doc_unset} if doc_unset else {})})
     from services.subscriber_brevo_sync import sync_subscriber_background
     sync_subscriber_background(email)
     riga_prima = _riga_iscritto(prima)
     dopo = _riga_iscritto(await _iscritto_o_404(email))
-    campi = [k for k in ("topics", "format", "retreat_alert", "interests", "city", "travel", "budget", "name")
+    campi = [k for k in ("topics", "format", "retreat_alert", "interests", "city", "travel", "budget", "eta", "name")
              if riga_prima.get(k) != dopo.get(k)]
     await _audit_iscritto(current_user, "SUBSCRIBER_PREFERENCES_EDITED", email,
                           {"campi": campi,
@@ -1279,6 +1319,7 @@ async def get_preferences(token: str):
         "travel": (profile.get("travel")
                    if profile.get("travel") in TRAVEL_OPTIONS else ""),
         "budget": profile.get("budget") or "",
+        "eta": _eta_valida(profile.get("eta")) or "",        # ET1
         "available_topics": list(subscriber_topics()),
         "available_regions": list(ITALIAN_REGIONS),
         "available_interests": list(EXPERIENCE_INTERESTS),
@@ -1307,7 +1348,10 @@ async def update_preferences(request: Request, payload: PreferencesPayload):
         doc_set["profile.travel"] = payload.travel
     if payload.budget is not None:
         doc_set["profile.budget"] = payload.budget.strip()[:40]
-    await db.aurya_subscribers.update_one({"email": email}, {"$set": doc_set})
+    doc_unset: dict = {}
+    _set_eta(doc_set, doc_unset, payload.eta)              # ET1
+    await db.aurya_subscribers.update_one(
+        {"email": email}, {"$set": doc_set, **({"$unset": doc_unset} if doc_unset else {})})
     from services.subscriber_brevo_sync import sync_subscriber_background
     sync_subscriber_background(email)     # BN6 — attributi aggiornati
     return {"ok": True}

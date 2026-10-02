@@ -59,6 +59,8 @@ def _attributes(doc: dict) -> dict:
         # cosi' le liste Brevo si segmentano per budget e per canale
         "AURYA_BUDGET": profile.get("budget") or "",
         "AURYA_CANALE": (doc.get("provenienza") or {}).get("canale") or "",
+        # ET1 (2/10/2026) — la fascia d'eta' (attributo da creare in Brevo)
+        "AURYA_ETA": profile.get("eta") or "",
     }
 
 

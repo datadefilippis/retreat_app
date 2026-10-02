@@ -42,6 +42,14 @@
       "over1000": "Plus de 1 000 €",
       "flexible": "Selon l’expérience"
     },
+    "etaLabel": "Ton âge (facultatif)",
+    "eta": {
+      "18-29": "18-29 ans",
+      "30-44": "30-44 ans",
+      "45-59": "45-59 ans",
+      "60+": "60 ans et plus"
+    },
+    "etaHint": "Beaucoup de retraites sont pensées pour des âges différents, dans le rythme et le groupe. Ainsi nous te proposons celles qui te conviennent.",
     "activityLabel": "Quelle est ton activité ?",
     "activity": {
       "teacher": "Enseignant ou facilitateur",

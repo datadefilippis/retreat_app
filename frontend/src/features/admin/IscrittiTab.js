@@ -52,6 +52,8 @@ const VIE = {
 };
 const DOVE = { near: 'vicino a casa', italy: 'in Italia', anywhere: 'ovunque', abroad: 'anche all’estero' };
 const BUDGET = { under500: 'fino a 500 €', '500to1000': '500–1000 €', over1000: 'oltre 1000 €', flexible: 'flessibile' };
+// ET3 (2/10/2026) — le fasce d'eta' (ETA_FASCE nel backend)
+const ETA = { '18-29': '18–29', '30-44': '30–44', '45-59': '45–59', '60+': '60 e oltre' };
 const REGIONI = {
   abruzzo: 'Abruzzo', basilicata: 'Basilicata', calabria: 'Calabria', campania: 'Campania',
   'emilia-romagna': 'Emilia-Romagna', 'friuli-venezia-giulia': 'Friuli-Venezia Giulia', lazio: 'Lazio',
@@ -92,6 +94,9 @@ const COLONNE = [
   { k: 'provenienza', label: 'Provenienza', cella: (r, e) => <Provenienza p={r.provenienza} etich={e} /> },
   { k: 'created_at', label: 'Iscritto il', cella: (r) => data(r.created_at) },
   { k: 'budget', label: 'Budget', cella: (r) => BUDGET[r.budget] || r.budget || '—' },
+  // ET3 — la fascia d'eta', se l'iscritto l'ha data; `nuova` = si accende
+  // anche per chi aveva gia' salvato la sua scelta di colonne
+  { k: 'eta', label: 'Età', nuova: true, cella: (r) => ETA[r.eta] || '—' },
   { k: 'travel', label: 'Dove', cella: (r) => DOVE[r.travel] || '—' },
   { k: 'city', label: 'Città', cella: (r) => r.city || '—' },
   { k: 'alert', label: 'Avviso ritiri', cella: (r) => alertTesto(r) },
@@ -111,7 +116,7 @@ const COLONNE = [
   { k: 'consenso', label: 'Consenso', cella: (r) => (r.consenso ? `${MODALITA[r.consenso.modalita] || r.consenso.modalita || '?'} · ${r.consenso.versione || '?'}` : '—') },
   { k: 'verificato', label: 'Verificato', cella: (r) => (r.verificato_at ? data(r.verificato_at) : 'no') },
 ];
-const COLONNE_DEFAULT = COLONNE.slice(0, 11).map((c) => c.k);
+const COLONNE_DEFAULT = COLONNE.slice(0, 12).map((c) => c.k);   // ET3: 11 → 12 (Età)
 
 /* «conferma 12/09, benvenuto_ritiri 15/09»: il dettaglio dietro il numero */
 function emailDettaglio(r) {
@@ -125,11 +130,25 @@ function leggiColonne() {
     const raw = JSON.parse(localStorage.getItem(CHIAVE_COLONNE) || 'null');
     if (Array.isArray(raw) && raw.length) {
       const valide = raw.filter((k) => COLONNE.some((c) => c.k === k));
-      if (valide.length) return valide.includes('email') ? valide : ['email', ...valide];
+      if (valide.length) {
+        const base = valide.includes('email') ? valide : ['email', ...valide];
+        // ET3 — una colonna `nuova` si offre UNA volta anche a chi ha gia' una
+        // scelta salvata (al suo posto nell'ordine di COLONNE); poi l'admin la
+        // tiene o la toglie come le altre
+        let offerte = [];
+        try { offerte = JSON.parse(localStorage.getItem(CHIAVE_OFFERTE) || '[]'); } catch { offerte = []; }
+        const nuove = COLONNE.filter((c) => c.nuova && !base.includes(c.k) && !offerte.includes(c.k)).map((c) => c.k);
+        if (!nuove.length) return base;
+        try { localStorage.setItem(CHIAVE_OFFERTE, JSON.stringify([...offerte, ...nuove])); } catch { /* private mode */ }
+        const unione = COLONNE.map((c) => c.k).filter((k) => base.includes(k) || nuove.includes(k));
+        salvaColonne(unione);
+        return unione;
+      }
     }
   } catch { /* private mode o JSON rotto: predefinite */ }
   return COLONNE_DEFAULT;
 }
+const CHIAVE_OFFERTE = 'iscritti-colonne-offerte';
 function salvaColonne(keys) {
   try { localStorage.setItem(CHIAVE_COLONNE, JSON.stringify(keys)); } catch { /* private mode */ }
 }
@@ -168,6 +187,7 @@ const chipCls = (attivo) => `rounded-full border px-2.5 py-0.5 text-xs transitio
 const FILTRI_VUOTI = {
   status: '', porta: '', source: '', experiences: '', region: '', interest: '', q: '',
   canale: '', superficie: '', budget: '', travel: '', verificato: '', dal: '', al: '', tag: '',
+  eta: '',                                                   // ET3
 };
 
 export default function IscrittiTab() {
@@ -290,6 +310,7 @@ export default function IscrittiTab() {
         const p = azione.pref;
         await api.patch(`/admin/subscribers/${encodeURIComponent(email)}/preferenze`, {
           name: p.name, city: p.city, travel: p.travel || null, budget: p.budget || null,
+          eta: p.eta || '',                                  // ET3 — "" = togli
           interests: p.interests,
           retreat_alert: { enabled: p.alertEnabled, scope: p.alertScope, regions: p.alertRegions },
         });
@@ -342,6 +363,7 @@ export default function IscrittiTab() {
       tipo: 'preferenze',
       pref: {
         name: s.name || '', city: s.city || '', travel: s.travel || '', budget: s.budget || '',
+        eta: s.eta || '',
         interests: [...(s.interests || [])],
         alertEnabled: !!a.enabled, alertScope: a.scope || 'italy', alertRegions: [...(a.regions || [])],
       },
@@ -369,10 +391,13 @@ export default function IscrittiTab() {
       </div>
 
       {stats && (
-        <div className="grid gap-3 md:grid-cols-3" data-testid="iscritti-ripartizioni">
+        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4" data-testid="iscritti-ripartizioni">
           <Ripartizione titolo="Per budget" testid="iscritti-rip-budget"
                         voci={(stats.by_budget || []).map((x) => ({ k: x.budget, label: BUDGET[x.budget] || x.budget, n: x.n }))}
                         attivo={f.budget} onClick={(k) => toggleFiltro('budget', k)} />
+          <Ripartizione titolo="Per età" testid="iscritti-rip-eta"
+                        voci={(stats.by_eta || []).map((x) => ({ k: x.eta, label: ETA[x.eta] || x.eta, n: x.n }))}
+                        attivo={f.eta} onClick={(k) => toggleFiltro('eta', k)} />
           <Ripartizione titolo="Per dove" testid="iscritti-rip-dove"
                         voci={(stats.by_travel || []).map((x) => ({ k: x.travel, label: DOVE[x.travel] || x.travel, n: x.n }))}
                         attivo={f.travel} onClick={(k) => toggleFiltro('travel', k)} />
@@ -425,6 +450,10 @@ export default function IscrittiTab() {
             <select value={f.travel} onChange={setFiltro('travel')} className={selCls} data-testid="iscritti-f-dove">
               <option value="">dove: tutti</option>
               {Object.entries(DOVE).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+            </select>
+            <select value={f.eta} onChange={setFiltro('eta')} className={selCls} data-testid="iscritti-f-eta">
+              <option value="">età: tutte</option>
+              {Object.entries(ETA).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
             </select>
             <select value={f.region} onChange={setFiltro('region')} className={selCls} data-testid="iscritti-f-regione">
               <option value="">tutte le regioni</option>
@@ -632,6 +661,7 @@ export default function IscrittiTab() {
                 <Riga k="Città" v={s.city || '—'} />
                 <Riga k="Dove" v={DOVE[s.travel] || '—'} />
                 <Riga k="Budget" v={BUDGET[s.budget] || s.budget || '—'} />
+                <Riga k="Età" v={ETA[s.eta] || '—'} />
               </Blocco>
 
               {/* 5 · ritiri */}
@@ -760,6 +790,12 @@ export default function IscrittiTab() {
                       <select value={azione.pref.budget} onChange={(e) => setPref('budget', e.target.value)} className={`${selCls} mt-1 w-full`}>
                         <option value="">—</option>
                         {Object.entries(BUDGET).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+                      </select>
+                    </label>
+                    <label className="text-xs">Età
+                      <select value={azione.pref.eta} onChange={(e) => setPref('eta', e.target.value)} className={`${selCls} mt-1 w-full`} data-testid="iscritti-pref-eta">
+                        <option value="">—</option>
+                        {Object.entries(ETA).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
                       </select>
                     </label>
                   </div>

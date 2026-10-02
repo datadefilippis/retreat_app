@@ -99,7 +99,7 @@ export default function PlatformOverviewTab() {
         <div className="grid grid-cols-2 lg:grid-cols-6 gap-3">
           <StatCard loading={loading} icon={Users} label="Il Cerchio (confermati)"
                     value={lunedi ? `${lunedi.cerchio.confermati}` : '—'}
-                    sublabel={lunedi ? `${lunedi.cerchio.con_citta} con la città · ${lunedi.cerchio.con_ritiri} vogliono i ritiri · +${lunedi.cerchio.nuovi_7g} in 7 giorni` : ''} />
+                    sublabel={lunedi ? `${lunedi.cerchio.con_citta} con la città · ${lunedi.cerchio.con_ritiri} vogliono i ritiri${lunedi.cerchio.con_eta != null ? ` · ${lunedi.cerchio.con_eta} con l’età` : ''} · +${lunedi.cerchio.nuovi_7g} in 7 giorni` : ''} />
           <StatCard loading={loading} icon={CalendarCheck} label="Ritiri in programma"
                     value={lunedi ? `${lunedi.ritiri.in_programma}` : '—'}
                     sublabel={lunedi ? `${lunedi.ritiri.online} online · ${lunedi.ritiri.su_richiesta} su richiesta` : ''} />
