@@ -101,8 +101,8 @@ export default function PreferenzeRitiri({
             <div data-testid="preferenze-eta">
               <select value={eta} onChange={(e) => setEta(e.target.value)}
                       className={sel(eta)} style={ringStyle}
-                      aria-label={t('form.etaLabel', { defaultValue: 'La tua età (facoltativo)' })}>
-                <option value="">{t('form.etaLabel', { defaultValue: 'La tua età (facoltativo)' })}</option>
+                      aria-label={t('form.etaLabel', { defaultValue: 'La tua età' })}>
+                <option value="">{t('form.etaLabel', { defaultValue: 'La tua età' })}</option>
                 {ETA.map((k) => (
                   <option key={k} value={k}>{t(`form.eta.${k}`, { defaultValue: k })}</option>
                 ))}

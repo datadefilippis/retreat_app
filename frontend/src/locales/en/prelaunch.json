@@ -42,7 +42,7 @@
       "over1000": "Over 1,000 €",
       "flexible": "Depends on the experience"
     },
-    "etaLabel": "Your age (optional)",
+    "etaLabel": "Your age",
     "eta": {
       "18-29": "18-29",
       "30-44": "30-44",

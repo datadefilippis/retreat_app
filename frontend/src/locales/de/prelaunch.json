@@ -42,7 +42,7 @@
       "over1000": "Über 1.000 €",
       "flexible": "Kommt aufs Erlebnis an"
     },
-    "etaLabel": "Dein Alter (optional)",
+    "etaLabel": "Dein Alter",
     "eta": {
       "18-29": "18-29",
       "30-44": "30-44",

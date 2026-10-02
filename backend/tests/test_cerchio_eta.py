@@ -123,7 +123,7 @@ class TestFrontend:
             assert "etaLabel" in form and "etaHint" in form, lang
             assert set(form["eta"]) == {"18-29", "30-44", "45-59", "60+"}, lang
         it = json.loads((FE / "locales" / "it" / "prelaunch.json").read_text(encoding="utf-8"))["form"]
-        assert it["etaLabel"] == "La tua età (facoltativo)"
+        assert it["etaLabel"] == "La tua età"            # founder 2/10: niente «(facoltativo)», lo e' e basta
         assert it["etaHint"].startswith("Molti ritiri sono pensati per età diverse")
 
     def test_regia(self):
