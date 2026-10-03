@@ -38,10 +38,12 @@ class TestRegistro:
             if t == "boolean":
                 assert isinstance(got[k], bool), k
 
-    def test_pending_senza_date_e_senza_consenso(self):
+    def test_pending_senza_date_e_senza_consenso(self, monkeypatch):
+        monkeypatch.delenv("CERCHIO_SINGOLO_OPTIN", raising=False)      # doppio opt-in: come oggi
         from services.subscriber_brevo_sync import _attributes
         got = _attributes({"status": "pending", "source": "meditazioni-cancello", "created_at": "2026-09-30T10:00:00"})
         assert got["AURYA_INVIABILE"] is False and got["AURYA_VERIFICATO"] is False
+        assert _attributes({"status": "pending", "consent": True})["AURYA_INVIABILE"] is False   # pending col consenso: no, a interruttore spento
         assert "AURYA_CONFERMATO_IL" not in got          # data vuota = omessa (Brevo rifiuterebbe l'upsert)
         assert got["AURYA_ISCRITTO_IL"] == "2026-09-30" and got["AURYA_PORTA"] == "meditazioni"
         assert got["NOME"] == "" and got["AURYA_ETA"] == ""
@@ -49,9 +51,28 @@ class TestRegistro:
         assert _attributes({"status": "confirmed"})["AURYA_INVIABILE"] is False
         assert _attributes({"status": "unsubscribed", "consent": True})["AURYA_INVIABILE"] is False
 
+    def test_inviabile_segue_l_interruttore_del_singolo_optin(self, monkeypatch):
+        """SO (3/10): Brevo e il motore del Cerchio dicono la stessa cosa.
+        Acceso: il consenso basta (il clic resta la prova di qualita');
+        i sospesi e chi non ha consenso restano fuori. Spento: come prima."""
+        from services.subscriber_brevo_sync import inviabile, _attributes
+        from services.sequenze import filtro_sub
+        monkeypatch.setenv("CERCHIO_SINGOLO_OPTIN", "1")
+        assert inviabile({"status": "pending", "consent": True}) is True
+        assert inviabile({"status": "confirmed", "consent": True}) is True
+        assert inviabile({"status": "pending", "consent": True, "sospeso_at": "2026-10-01"}) is False
+        assert inviabile({"status": "pending"}) is False
+        assert inviabile({"status": "unsubscribed", "consent": True}) is False
+        assert _attributes({"status": "pending", "consent": True})["AURYA_INVIABILE"] is True
+        assert filtro_sub()["status"] == {"$in": ["pending", "confirmed"]}      # la stessa regola del motore
+        monkeypatch.delenv("CERCHIO_SINGOLO_OPTIN", raising=False)
+        assert inviabile({"status": "pending", "consent": True}) is False
+        assert filtro_sub()["status"] == "confirmed"
+
     def test_proiezione_unica_e_push_che_risponde(self):
         from services.subscriber_brevo_sync import _PROIEZIONE_SYNC
-        for k in ("profile", "provenienza", "name", "created_at", "confirmed_at", "verificato_at", "consent", "consenso"):
+        for k in ("profile", "provenienza", "name", "created_at", "confirmed_at", "verificato_at", "consent", "consenso",
+                  "sospeso_at"):
             assert _PROIEZIONE_SYNC.get(k) == 1, k
         assert "find_one({\"email\": email}, _PROIEZIONE_SYNC)" in SYNC
         assert "def _push_to_brevo(email: str, attributes: dict, blacklisted: bool) -> bool:" in SYNC

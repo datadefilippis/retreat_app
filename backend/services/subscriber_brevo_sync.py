@@ -66,7 +66,22 @@ _PROIEZIONE_SYNC = {"_id": 0, "status": 1, "preferences": 1, "source": 1, "langu
                     "profile": 1, "provenienza": 1,
                     # BS: le info di valore in piu'
                     "name": 1, "created_at": 1, "confirmed_at": 1, "verificato_at": 1,
-                    "consent": 1, "consenso": 1}
+                    "consent": 1, "consenso": 1,
+                    "sospeso_at": 1}        # SO (3/10): la sospensione conta per l'inviabilita'
+
+
+def inviabile(doc: dict) -> bool:
+    """SO (3/10/2026) — LA regola di «a chi scrive il Cerchio», la stessa di
+    services/sequenze.filtro_sub(), cosi' Brevo e il motore dicono la stessa
+    cosa: consenso dato E (confermato, oppure — con CERCHIO_SINGOLO_OPTIN
+    acceso — in attesa e non sospeso). Il clic resta la prova di qualita'
+    (AURYA_VERIFICATO), non la condizione per ricevere."""
+    if doc.get("consent") is not True:
+        return False
+    if doc.get("status") == "confirmed":
+        return True
+    from services.sequenze import singolo_optin
+    return bool(singolo_optin() and doc.get("status") == "pending" and not doc.get("sospeso_at"))
 
 
 def _data(v) -> str:
@@ -93,10 +108,11 @@ def _attributes(doc: dict, tipo: str = "cerchio") -> dict:
     out = {
         "NOME": " ".join(str(doc.get("name") or "").split())[:80],
         "AURYA_TIPO": tipo if tipo in ("cerchio", "operatore", "operatore+cerchio") else "cerchio",
-        # BS — la chiave dei segmenti: la stessa regola con cui il Cerchio
-        # scrive (status confermato + consenso), cosi' una campagna fatta
-        # «a tutti» per sbaglio non raggiunge chi non ha confermato
-        "AURYA_INVIABILE": doc.get("status") == "confirmed" and doc.get("consent") is True,
+        # BS/SO — la chiave dei segmenti: la stessa regola con cui il Cerchio
+        # scrive (inviabile(): consenso + confermato, o in attesa col singolo
+        # opt-in acceso), cosi' una campagna fatta «a tutti» per sbaglio non
+        # raggiunge chi non deve riceverla
+        "AURYA_INVIABILE": inviabile(doc),
         "AURYA_SUPERFICIE": prov.get("superficie") or "",
         "AURYA_PORTA": porta_cerchio(doc.get("source")),
         "AURYA_ISCRITTO_IL": _data(doc.get("created_at")),

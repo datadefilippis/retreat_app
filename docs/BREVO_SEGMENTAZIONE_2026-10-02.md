@@ -4,7 +4,11 @@
 
 ## La regola d'oro
 
-**Ogni campagna si manda al segmento `AURYA_INVIABILE = true`.** È vero solo per chi è confermato e ha il consenso registrato: la stessa regola con cui il Cerchio scrive. Chi è in attesa del clic sta in Brevo (così la conferma lo trova già pronto) ma con `AURYA_INVIABILE = false`. I disiscritti sono in blacklist: Brevo non gli manda nulla, qualunque segmento.
+**Ogni campagna si manda al segmento `AURYA_INVIABILE = true`.** È la stessa regola con cui il Cerchio scrive (`services/sequenze.filtro_sub`), e segue l'interruttore `CERCHIO_SINGOLO_OPTIN`:
+- **acceso (dal 3/10/2026)**: basta il consenso registrato, confermato o in attesa, purché non sospeso per rimbalzi. Il clic non è più la condizione per ricevere: è la **prova di qualità**, `AURYA_VERIFICATO = true` («Attivi»).
+- spento: solo i confermati.
+
+I disiscritti sono in blacklist: Brevo non gli manda nulla, qualunque segmento. Le campagne importanti vanno agli **Attivi** (inviabile e verificato), le altre a tutti gli inviabili.
 
 ## Gli attributi
 
