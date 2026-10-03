@@ -24,7 +24,7 @@
  * confermato, altrimenti double opt-in con ritorno.
  */
 import React, { useState } from 'react';
-import { sblocca, iscriviESblocca } from '../../lib/cerchio';
+import { sblocca, iscriviESblocca, testoAttesa } from '../../lib/cerchio';
 import { testoConsenso } from '../../lib/testiConsenso';
 import { creaAccount, entraInAurya } from '../../utils/authLinks';
 import AvvisamiRitiri, { useAvvisamiRitiri } from '../prelaunch/AvvisamiRitiri';
@@ -105,8 +105,8 @@ export default function CancelloLettera({
         <div className={chiaro ? S.warn : 'warnbox'}
           style={chiaro ? undefined : { margin: '14px 0 0', textAlign: 'left' }}
           data-testid="cancello-attesa">
-          Ti abbiamo scritto: apri l&rsquo;email e clicca «Entro nel
-          Cerchio». Ti riporta qui, con la meditazione intera sbloccata.
+          {/* SO (3/10): la riga dice cosa e' partito davvero (benvenuto o conferma) */}
+          {testoAttesa('con la meditazione intera sbloccata')}
         </div>
       )}
       <form onSubmit={iscrivi} className={chiaro ? 'mt-5' : 'cerchio-form'}>

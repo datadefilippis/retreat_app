@@ -406,7 +406,8 @@ export default function AccountPage() {
                nulla: manca solo un clic, e glielo diciamo. */
             <div className="rounded-2xl border border-gray-200 bg-white p-5" data-testid="guides-pending">
               <p className="text-sm text-gray-600">
-                {t('landings:account.guidesPending', { defaultValue: 'Manca solo la conferma: ti abbiamo scritto per confermare l\u2019iscrizione alla lettera. Apri l\u2019email e clicca il link \u2014 le guide si sbloccano subito dopo.' })}
+                {/* SO (3/10): vale con entrambi gli opt-in: le guide si aprono al primo clic in una email del Cerchio */}
+                {t('landings:account.guidesPending', { defaultValue: 'Manca solo un clic: apri una delle email del Cerchio e tocca un suo link. Le guide si sbloccano subito dopo.' })}
               </p>
               <button type="button" onClick={resendLetter} disabled={resending || resendSent}
                 data-testid="guides-resend"
@@ -415,7 +416,7 @@ export default function AccountPage() {
                   ? t('landings:account.guidesResent', { defaultValue: 'Email rimandata \u2713' })
                   : resending
                     ? t('landings:account.guidesResending', { defaultValue: 'Invio\u2026' })
-                    : t('landings:account.guidesResend', { defaultValue: 'Rimanda l\u2019email di conferma' })}
+                    : t('landings:account.guidesResend', { defaultValue: 'Rimandami l\u2019email' })}
               </button>
             </div>
           ) : (

@@ -16,7 +16,7 @@ import platformApi, { PLATFORM_TOKEN_KEY } from '../../api/platformClient';
 import { frequenciesAPI } from '../../api/frequencies';
 import { SafetyCurtain, SafetyLine } from './SafetyCurtain';
 import { creaAccount, entraInAurya } from '../../utils/authLinks';
-import { prova, emailDellaProva, sblocca, iscriviESblocca, migraVecchieChiavi } from '../../lib/cerchio';
+import { prova, emailDellaProva, sblocca, iscriviESblocca, migraVecchieChiavi, testoAttesa } from '../../lib/cerchio';
 import { testoConsenso } from '../../lib/testiConsenso';
 import AvvisamiRitiri, { useAvvisamiRitiri } from '../prelaunch/AvvisamiRitiri';
 import { ValoreCerchio, FiduciaCerchio, PorteCerchio, CTA_ISCRIVITI } from './CorpoCerchio';
@@ -196,8 +196,8 @@ export default function MeditazioniPage() {
                  clic nell'email, come per le guide del Magazine */
               <div className="warnbox" style={{ margin: '14px 0 0', textAlign: 'left' }}
                 data-testid="med-attesa-conferma">
-                Ti abbiamo scritto: apri l’email e clicca «Entro nel Cerchio».
-                Il link ti riporta qui, con le meditazioni sbloccate.
+                {/* SO (3/10): la riga dice cosa e' partito davvero (benvenuto o conferma) */}
+                {testoAttesa('con le meditazioni sbloccate')}
               </div>
             )}
             <form onSubmit={subscribe} className="cerchio-form">

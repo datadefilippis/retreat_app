@@ -13,7 +13,7 @@
  * schermata: chi monta InvitoSound non monta altro.
  */
 import React, { useState } from 'react';
-import { prova, iscriviESblocca } from '../../lib/cerchio';
+import { prova, iscriviESblocca, ultimaModalita } from '../../lib/cerchio';
 import { testoConsenso } from '../../lib/testiConsenso';
 import { PLATFORM_TOKEN_KEY } from '../../api/platformClient';
 import AvvisamiRitiri, { useAvvisamiRitiri } from '../prelaunch/AvvisamiRitiri';
@@ -60,7 +60,9 @@ export default function InvitoSound({ fonte, dove = '/sound', variante = 'scuro'
         data-testid="invito-sound-grazie">
         {stato === 'dentro'
           ? 'Sei nel Cerchio: la Lettera ti raggiunge alla prossima uscita.'
-          : 'Ti abbiamo scritto: clicca «Entro nel Cerchio» nell’email che ti arriva e sei dentro.'}
+          : ultimaModalita() === 'benvenuto'
+            ? 'Sei nel Cerchio: la prima Lettera è in arrivo. Un clic su un suo link apre anche le meditazioni riservate.'
+            : 'Ti abbiamo scritto: clicca «Entro nel Cerchio» nell’email che ti arriva e sei dentro.'}
       </p>
     );
   }

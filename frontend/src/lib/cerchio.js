@@ -69,10 +69,25 @@ export async function sblocca(email) {
   return r.data.subscriber_token;
 }
 
+/* SO (3/10/2026) — cosa ha mandato il server all'ultima iscrizione:
+   «benvenuto» (singolo opt-in acceso: la prima Lettera e' gia' in arrivo,
+   un suo link apre i contenuti) oppure «conferma» (doppio opt-in: l'email
+   con «Entro nel Cerchio»). I cancelli lo leggono per dire la cosa vera. */
+let _ultimaModalita = 'conferma';
+export const ultimaModalita = () => _ultimaModalita;
+
+/** La riga d'attesa dei cancelli, secondo la modalita' del server. */
+export function testoAttesa(cosa = 'con le meditazioni sbloccate') {
+  return _ultimaModalita === 'benvenuto'
+    ? `Ti abbiamo mandato la prima Lettera del Cerchio: apri l’email e tocca un suo link. Ti riporta qui, ${cosa}.`
+    : `Ti abbiamo scritto: apri l’email e clicca «Entro nel Cerchio». Ti riporta qui, ${cosa}.`;
+}
+
 /**
  * SB2 — il cervello unico dei form della Lettera.
  * Ritorna 'sbloccato' (gia' confermato: prova salvata, tutto aperto)
- * oppure 'attesa' (double opt-in in corso: si aspetta il click).
+ * oppure 'attesa' (si aspetta il clic nell'email: di conferma o di benvenuto,
+ * vedi ultimaModalita()).
  * Gli errori del subscribe risalgono al chiamante (il copy e' suo).
  */
 export async function iscriviESblocca({ email, source, returnTo,
@@ -85,7 +100,7 @@ export async function iscriviESblocca({ email, source, returnTo,
   // US (10/9 notte) — i cancelli ora LO CHIEDONO, col blocco condiviso
   // AvvisamiRitiri: `ritiri` e' il suo payload (wants_experiences, vie,
   // citta', dove, budget), e vince sul vecchio flag nudo.
-  await api.post('/public/newsletter/subscribe', {
+  const risposta = await api.post('/public/newsletter/subscribe', {
     email: (email || '').trim(), consent: true, language, source,
     ...(typeof wantsExperiences === 'boolean' ? { wants_experiences: wantsExperiences } : {}),
     ...(ritiri && typeof ritiri === 'object' ? ritiri : {}),
@@ -100,6 +115,7 @@ export async function iscriviESblocca({ email, source, returnTo,
     ...provenienzaCorrente(),
     consenso_versione: VERSIONE_CORRENTE,
   });
+  _ultimaModalita = risposta?.data?.modalita === 'benvenuto' ? 'benvenuto' : 'conferma';
   try {
     await sblocca(email);
     return 'sbloccato';
