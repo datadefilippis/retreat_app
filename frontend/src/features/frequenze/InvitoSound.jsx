@@ -61,7 +61,7 @@ export default function InvitoSound({ fonte, dove = '/sound', variante = 'scuro'
         {stato === 'dentro'
           ? 'Sei nel Cerchio: la Lettera ti raggiunge alla prossima uscita.'
           : ultimaModalita() === 'benvenuto'
-            ? 'Sei nel Cerchio: la prima Lettera è in arrivo. Un clic su un suo link apre anche le meditazioni riservate.'
+            ? 'Sei nel Cerchio: la prima Lettera è in arrivo. Un clic su un suo link apre anche le meditazioni intere.'
             : 'Ti abbiamo scritto: clicca «Entro nel Cerchio» nell’email che ti arriva e sei dentro.'}
       </p>
     );
