@@ -83,7 +83,8 @@ async def _backfill() -> int:
         ok += 1 if riuscito else 0
         ko += 0 if riuscito else 1
         await asyncio.sleep(0.15)          # 56 contatti ≈ 10 s; Brevo non si lamenta
-    print(f"backfill: {ok} contatti allineati, {ko} falliti, {inviabili} inviabili (confermati col consenso)")
+    print(f"backfill: {ok} contatti allineati, {ko} falliti, {inviabili} inviabili (la regola di inviabile(): "
+          f"consenso + confermato, o in attesa col singolo opt-in acceso)")
     return 1 if ko else 0
 
 
