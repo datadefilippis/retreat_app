@@ -125,16 +125,35 @@ Regole del disegno:
 - Cache: profilo pubblico 45 s come oggi; landing con la shell SEO già in cache.
 - Quando serve il secondo server: lo storage privato passa a S3 con URL firmati (adapter già scritto per la parte pubblica), Bunny non cambia.
 
+## 6-bis. Lotto S — Stripe giusto (il muro prima del muro)
+
+**Il sintomo** (segnalato dagli operatori il 4/10): chi prova a collegare Stripe dall'Italia si ritrova un modulo che lo tratta come svizzero, con indirizzo svizzero e IBAN svizzero richiesti. Fuorviante, e infatti nessuno ha mai finito.
+
+**La causa, verificata in prod.** La piattaforma Stripe di Aurya è registrata in **Svizzera** (paese CH, valuta CHF). Quando creiamo l'account Express dell'operatore (`stripe_connect_express._create_express_account`) non passiamo il paese: Stripe allora assegna **il paese della piattaforma**. I tre account collegati finora sono tutti `country=CH`, due in CHF e uno in EUR, nessuno completato; i requisiti che Stripe chiede loro sono quelli svizzeri. Il paese di un account Stripe **non si può cambiare dopo la creazione**. Nel nostro database `payment_connections` e `organizations` non hanno nemmeno un campo paese: 44 su 44 senza. In più chiediamo sempre la capacità TWINT, che ha senso solo in Svizzera.
+
+**La correzione, isolata in un punto.**
+1. **Il paese lo dice l'operatore, prima di andare da Stripe.** Nel riquadro «Collega gli incassi» (Impostazioni oggi, Strumenti domani) un select con **Italia preselezionata**, Svizzera e gli altri paesi UE dove Stripe Express esiste. Si salva su `organizations.country` e `payment_connections.country`, e viaggia nella creazione dell'account: `country`, `default_currency` coerente (EUR per IT, CHF per CH), `twint_payments` richiesta **solo** per CH. Il modulo Stripe parla italiano e chiede dati italiani.
+2. **Ricomincia col paese giusto.** Per i tre account nati svizzeri (e per chiunque abbia un account non completato col paese sbagliato): un bottone «Ricomincia con il paese giusto» che, solo se Stripe dice `details_submitted=false` e `charges_enabled=false`, elimina l'account connesso via API, azzera la connessione e ne crea una nuova. Audit con motivo. Un account già operativo non si tocca mai: in quel caso il messaggio spiega e rimanda al supporto.
+3. **Il webhook `account.updated` salva anche `country` e `default_currency`**, così la regia vede a colpo d'occhio chi è nato nel paese giusto, e il pannello Operatori mostra una colonna «Incassi: non collegato · in corso (IT) · pronto».
+4. **Copy onesto nel riquadro**: «Stripe ti chiederà i dati della tua attività e l'IBAN del paese che scegli qui. Se sei in Italia lascia Italia.» E la riga di stato in italiano (oggi è «needs_auth»).
+
+**Una verifica prima di promettere commissioni.** Piattaforma svizzera e operatore italiano con addebiti diretti funzionano (l'operatore incassa sul suo conto nel suo paese). La **commissione di piattaforma** su addebiti diretti tra piattaforma CH e account IT va provata in modalità test prima di scriverla nei piani: una sessione con `application_fee` su un account IT di prova, e si legge cosa risponde Stripe. Se Stripe la rifiuta tra paesi diversi, la via è una piattaforma Stripe italiana per Aurya (decisione societaria, non tecnica) oppure il modello «moduli nel Pro» senza commissione. Oggi la fee è zero, quindi il lotto S sblocca gli incassi comunque.
+
+**Isolamento e sicurezza.** Si tocca una funzione (creazione account), un webhook (salvataggio paese), un endpoint nuovo (ricomincia, con le due condizioni di Stripe come lucchetto), un select nel riquadro. Il checkout, gli ordini, i rimborsi e il motore delle fee non cambiano. Guardie: il paese scelto arriva a Stripe; IT non chiede TWINT; CH sì; «ricomincia» rifiuta un account con `charges_enabled` o `details_submitted`; la copia è in italiano. Prova in modalità test con un account IT fino a «pronto».
+
+**Tempo: 1 giorno**, e va fatto per primo: senza, né i ritiri né i corsi incassano. Ai tre operatori che hanno provato, una riga di cortesia dalla regia dopo il deploy: «Abbiamo corretto: ricomincia da Impostazioni, ora ti chiede i dati italiani».
+
 ## 7. I lotti, con i tempi veri
 
 | Lotto | Contenuto | Giorni | Dipende |
 |---|---|---|---|
-| **A0 Fondamenta** | volume per `private_uploads`; «Collega gli incassi» negli Strumenti; condizioni per-negozio precompilate e pubblicate in un passo; fee per riga nel motore + piani con `fee_per_tipo` + testi (Termini, /costi, landing: «ritiri e servizi senza commissioni, sempre; guide, corsi e prodotti 10%, zero col Pro»); registro moduli con le tre chiavi e le schede «in arrivo» | 3 | decisioni 1 e 3 |
+| **S Stripe giusto** | paese scelto dall'operatore (Italia preselezionata) e passato a Stripe con valuta coerente; TWINT solo CH; «Ricomincia col paese giusto» per gli account non completati; paese nel webhook e nella regia; copy italiano; prova della commissione CH→IT in test | 1 | — |
+| **A0 Fondamenta** | volume per `private_uploads`; «Collega gli incassi» negli Strumenti; condizioni per-negozio precompilate e pubblicate in un passo; fee per riga nel motore + piani con `fee_per_tipo` + testi (Termini, /costi, landing: «ritiri e servizi senza commissioni, sempre; guide, corsi e prodotti 10%, zero col Pro»); registro moduli con le tre chiavi e le schede «in arrivo» | 3 | S, decisioni 1 e 3 |
 | **A Guide e file** | wizard in tre gesti; upload diretto; sezione sul profilo + landing `/dg/`; accessi su account Aurya; «I miei file» in `/account`; email; regia (vendite, revoca) | 3 | A0 |
 | **B Videocorsi** | Bunny gestito (account Aurya, libreria per org via API, upload TUS, webhook codifica, quote); editor in tre gesti con lezioni a trascinamento e materiali; sezione sul profilo + landing `/co/` con anteprime; player in `/account/corsi` con progresso e rinnovo firme; email; regia studenti | 6 | A |
 | **C Prodotti fisici** | wizard in tre gesti; spedizione e magazzino già pronti; sezione sul profilo + landing `/ph/`; stati di evasione nel gestionale | 2 | A0 |
 | **D Directory** | `/guide`, `/corsi`, `/prodotti` con filtri per disciplina dal registro vivo, soglia minima di voci (come le pagine locali), sitemap, llms.txt, JSON-LD | 2 | contenuti veri |
-| **Totale** | | **16** | |
+| **Totale** | | **17** | |
 
 Ogni lotto: suite al baseline, prova in locale, deploy separato, interruttore di emergenza, documento e memoria. A0+A si consegnano in una settimana e già vendono guide. B è il cuore dell'accademia e vale la settimana e mezza che costa. C e D sono brevi perché quasi tutto esiste.
 
@@ -142,7 +161,8 @@ Ogni lotto: suite al baseline, prova in locale, deploy separato, interruttore di
 
 | Rischio | Risposta |
 |---|---|
-| Nessun operatore collega Stripe | A0 lo mette come primo riquadro con un bottone; la regia vede chi non l'ha fatto; l'operatore pilota lo fa con noi al telefono |
+| Nessun operatore collega Stripe | la causa era il paese svizzero ereditato dalla piattaforma (lotto S); poi A0 lo mette come primo riquadro con un bottone; la regia vede chi non l'ha fatto; l'operatore pilota lo fa con noi al telefono |
+| Commissione rifiutata tra piattaforma CH e account IT | prova in test nel lotto S, prima dei testi sui piani; vie d'uscita: piattaforma Stripe italiana o modello «moduli nel Pro» |
 | L'operatore carica video enormi o in formati strani | limiti per piano, Bunny codifica tutto, stato «in codifica» visibile, email quando è pronto |
 | Il player non parte su iPhone / Safari | iframe Bunny (HLS nativo), già usato; prova sui tre browser prima del rilascio come per il Lab |
 | Rimborso dopo che il corso è stato visto | regola nelle condizioni per-negozio (recesso escluso per contenuti digitali avviati con consenso), revoca automatica dell'accesso al rimborso già esistente |
