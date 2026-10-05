@@ -33,6 +33,7 @@
  *   fuoco   il blu che diventa arancio — il futuro, la vibrazione
  */
 import React, { useEffect, useRef, useState } from 'react';
+import { Esito } from '../../lib/esito';   // FL1: il risultato si vede dove hai cliccato
 import { Link } from 'react-router-dom';
 import { frequenciesAPI } from '../../api/frequencies';
 import CancelloLettera from './CancelloLettera';
@@ -132,7 +133,7 @@ function AnteprimaMeditazione({ track, ctaMeditazioni }) {
       {fine ? (
         sbloccato ? (
           /* FN3, iscritto SUL POSTO: la landing non ti molla */
-          <div data-testid="sh-anteprima-sbloccata">
+          <Esito data-testid="sh-anteprima-sbloccata">
             <Rilievo>Sei dentro. Buon ascolto.</Rilievo>
             <div className="mt-6 flex flex-wrap items-center gap-6">
               <Bottone to={`/frequenze/${track.slug}`}>
@@ -140,7 +141,7 @@ function AnteprimaMeditazione({ track, ctaMeditazioni }) {
               </Bottone>
               <Richiamo to="/meditazioni">{ctaMeditazioni}</Richiamo>
             </div>
-          </div>
+          </Esito>
         ) : (
           /* FN2+FN3 — a fine anteprima il cancello appare QUI, subito,
              col form: niente salti di pagina tra il desiderio e l'email */

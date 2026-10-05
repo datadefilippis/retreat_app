@@ -18,6 +18,7 @@
  * Mobile-first (si apre quasi sempre dal telefono, dall'email). noindex.
  */
 import React, { useEffect, useRef, useState } from 'react';
+import { Esito } from '../../lib/esito';   // FL1: il risultato si vede dove hai cliccato
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Loader2, Mail, CheckCircle2, KeyRound, UserPlus, Briefcase } from 'lucide-react';
@@ -881,7 +882,7 @@ export default function AccountLoginPage() {
         )}
 
         {state === 'signupSent' && (
-          <>
+          <Esito data-testid="signup-sent-esito">
             <CheckCircle2 className="h-8 w-8 text-primary mx-auto" />
             <h1 className="mt-3 text-lg font-bold text-gray-900">
               {t('landings:account.signupSentTitle', { defaultValue: 'Controlla la tua email' })}
@@ -892,13 +893,13 @@ export default function AccountLoginPage() {
             <button type="button" onClick={() => goTo('form')} className={`mt-4 ${linkBtnCls}`}>
               {t('landings:account.backToLogin', { defaultValue: 'Torna al login con password' })}
             </button>
-          </>
+          </Esito>
         )}
 
         {/* RU — esito della registrazione OPERATORE dalla scheda unica:
             verifica email, poi login e /benvenuto (ID-octies) */}
         {state === 'signupSentPro' && (
-          <>
+          <Esito data-testid="signup-sent-pro-esito">
             <CheckCircle2 className="h-8 w-8 text-primary mx-auto" />
             <h1 className="mt-3 text-lg font-bold text-gray-900">
               {t('landings:account.signupSentTitle', { defaultValue: 'Controlla la tua email' })}
@@ -906,10 +907,16 @@ export default function AccountLoginPage() {
             <p className="mt-2 text-sm text-gray-600" data-testid="signup-sent-pro-body">
               {t('landings:account.proSignupSentBody', { defaultValue: 'Ti abbiamo scritto: apri l’email e clicca il link di verifica. Poi entri con email e password e ti guidiamo nel tuo spazio.' })}
             </p>
+            {/* FL1 — l'iscrizione al Cerchio chiesta con la casella non resta muta */}
+            {wantsLetter && (
+              <p className="mt-2 text-sm text-gray-600" data-testid="signup-sent-pro-cerchio">
+                {t('landings:account.proSignupSentCerchio', { defaultValue: 'Ti abbiamo iscritto anche al Cerchio di Aurya: la prima Lettera è in arrivo.' })}
+              </p>
+            )}
             <button type="button" onClick={() => goTo('form')} className={`mt-4 ${linkBtnCls}`}>
               {t('landings:account.backToLogin', { defaultValue: 'Torna al login con password' })}
             </button>
-          </>
+          </Esito>
         )}
 
         <p className="mt-6 text-xs text-gray-400">

@@ -15,6 +15,7 @@
  * formati, niente foto), nessuna urgenza. Solo italiano.
  */
 import React, { useState } from 'react';
+import { Esito } from '../../lib/esito';   // FL1: il risultato si vede dove hai cliccato
 import { Link } from 'react-router-dom';
 import api from '../../api/client';
 import MarketplaceShell from '../storefront/components/MarketplaceShell';
@@ -68,12 +69,12 @@ function Modulo() {
 
   if (fatto) {
     return (
-      <div data-testid="az-fatto" className="rounded-[1.5rem] border border-border bg-card p-6">
+      <Esito data-testid="az-fatto" className="rounded-[1.5rem] border border-border bg-card p-6">
         <p className="font-display text-2xl text-foreground">Ricevuta.</p>
         <p className="mt-2 text-base text-muted-foreground">
           Vi scriviamo entro due giorni lavorativi per fissare una chiamata. Vi abbiamo mandato una ricevuta via email.
         </p>
-      </div>
+      </Esito>
     );
   }
   return (

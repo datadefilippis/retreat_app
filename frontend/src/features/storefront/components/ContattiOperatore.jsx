@@ -18,6 +18,7 @@
  * Due varianti di vestito: 'profilo' (/o/, lista dl) e 'store' (riga).
  */
 import React, { useEffect, useState } from 'react';
+import { Esito } from '../../../lib/esito';   // FL1: il risultato si vede dove hai cliccato
 import { useTranslation } from 'react-i18next';
 import platformApi, { PLATFORM_TOKEN_KEY } from '../../../api/platformClient';
 import api from '../../../api/client';
@@ -48,7 +49,7 @@ function Recapiti({ valori, variante, t }) {
   const riga = variante === 'store';
   const link = riga ? 'text-primary hover:underline' : 'text-primary hover:underline break-all';
   return (
-    <div className={riga ? 'flex flex-wrap items-center gap-x-4 gap-y-2 text-sm' : 'space-y-2 text-sm'} data-testid="contatti-aperti">
+    <Esito className={riga ? 'flex flex-wrap items-center gap-x-4 gap-y-2 text-sm' : 'space-y-2 text-sm'} data-testid="contatti-aperti">
       {valori.public_phone && (
         <div className="flex items-start gap-2"><span aria-hidden>📞</span>
           <a href={`tel:${valori.public_phone}`} className="text-gray-700 hover:underline">{valori.public_phone}</a></div>
@@ -64,7 +65,7 @@ function Recapiti({ valori, variante, t }) {
           {valori.facebook && <a href={extUrl(valori.facebook)} target="_blank" rel="noreferrer" className="text-primary hover:underline">Facebook</a>}
         </div>
       )}
-    </div>
+    </Esito>
   );
 }
 

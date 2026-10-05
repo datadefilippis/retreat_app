@@ -17,6 +17,7 @@
  * dalla pagina.
  */
 import React, { useState } from 'react';
+import { Esito } from '../../lib/esito';   // FL1: il risultato si vede dove hai cliccato
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
@@ -100,7 +101,7 @@ export default function InlineSignupForm() {
     // FV1 (10/9/2026) — dopo la registrazione: un'email, un clic, sei dentro.
     // Il reinvio e' qui, non in una pagina a parte.
     return (
-      <div className="text-center py-6" data-testid="ol-signup-verify">
+      <Esito className="text-center py-6" data-testid="ol-signup-verify">
         <p className="font-display text-xl text-[#2e4b3f] mb-3">
           {t('signup.verify_email_title', { defaultValue: 'Apri la tua email: un clic e sei dentro' })}
         </p>
@@ -121,7 +122,7 @@ export default function InlineSignupForm() {
               : t('signup.resend', { defaultValue: 'Non è arrivata? Rimandala' })}
         </button>
         {error && <p className="mt-2 text-xs text-red-700">{error}</p>}
-      </div>
+      </Esito>
     );
   }
 

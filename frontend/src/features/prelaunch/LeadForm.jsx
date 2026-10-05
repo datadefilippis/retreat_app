@@ -19,6 +19,7 @@
  * un errore non blocca mai l'utente.
  */
 import React, { useEffect, useState } from 'react';
+import { Esito } from '../../lib/esito';   // FL1: il risultato si vede dove hai cliccato
 import { useTranslation } from 'react-i18next';
 import { ArrowRight, Check, Loader2 } from 'lucide-react';
 import api from '../../api/client';
@@ -245,7 +246,7 @@ export default function LeadForm({ type = 'traveler', accent = '#376254', contex
 
   if (state === 'done') {
     return (
-      <div className="rounded-2xl border p-6 text-center"
+      <Esito className="rounded-2xl border p-6 text-center" data-testid="lead-esito"
            style={{ borderColor: `${accent}55`, background: `${accent}0d` }}>
         <div className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-full"
              style={{ background: accent }}>
@@ -302,7 +303,7 @@ export default function LeadForm({ type = 'traveler', accent = '#376254', contex
         )}
         {/* RT4 — spazio per la consegna del lead magnet (o altro) */}
         {successExtra ? <div className="mt-4">{successExtra}</div> : null}
-      </div>
+      </Esito>
     );
   }
 

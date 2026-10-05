@@ -27,6 +27,7 @@
  * del padre.
  */
 import React, { useState } from 'react';
+import { Esito } from '../../lib/esito';   // FL1: il risultato si vede dove hai cliccato
 import { useTranslation } from 'react-i18next';
 import platformApi, { PLATFORM_TOKEN_KEY } from '../../api/platformClient';
 import { salvaProva } from '../../lib/cerchio';
@@ -125,7 +126,7 @@ export default function PortaAurya({ vista: vistaIniziale = 'entra', emailInizia
 
   if (vista === 'inviata') {
     return (
-      <div className="rounded-lg border border-emerald-200 bg-emerald-50/60 p-3 space-y-2" data-testid="porta-aurya-inviata">
+      <Esito className="rounded-lg border border-emerald-200 bg-emerald-50/60 p-3 space-y-2" data-testid="porta-aurya-inviata">
         <p className="text-sm text-emerald-900">
           {t('porta.inviata', { defaultValue: 'Ti abbiamo scritto a {{email}}: apri l’email e conferma. Poi entra con la tua password.', email: email.trim() })}
         </p>
@@ -133,7 +134,7 @@ export default function PortaAurya({ vista: vistaIniziale = 'entra', emailInizia
           onClick={() => { setVista('entra'); setErrore(null); }}>
           {t('porta.hoConfermato', { defaultValue: 'Ho confermato: entro' })}
         </button>
-      </div>
+      </Esito>
     );
   }
 

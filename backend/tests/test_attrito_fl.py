@@ -110,3 +110,77 @@ console.log('OK');
         assert "dove = _con_prova(dove, token)" in sub and "build_public_url(_con_prova(dove, token))" in sub
         med = (FE / "features" / "frequenze" / "MeditazioniPage.js").read_text(encoding="utf-8")
         assert "useState(() => emailDellaProva() || '')" in med
+
+
+class TestFL1Esito:
+    """FL1 — il risultato si vede dove hai cliccato: UN helper (lib/esito.js,
+    <Esito>), montato su ogni box di successo; via i due reload del blog."""
+
+    PUNTI = (
+        ("features/prelaunch/LeadForm.jsx", 'data-testid="lead-esito"'),
+        ("features/frequenze/InvitoSound.jsx", '<Esito as="p"'),
+        ("features/storefront/components/checkout/GrazieCerchio.jsx", '<Esito as="p"'),
+        ("features/account/PortaAurya.jsx", '<Esito className="rounded-lg border border-emerald-200'),
+        ("features/prelaunch/InlineSignupForm.js", '<Esito className="text-center py-6" data-testid="ol-signup-verify">'),
+        ("features/frequenze/ProfessionalLanding.jsx", 'data-testid="prof-grazie"'),
+        ("features/frequenze/CreaStudioLanding.jsx", 'data-testid="studio-grazie"'),
+        ("features/network/AziendePage.js", '<Esito data-testid="az-fatto"'),
+        ("features/frequenze/CancelloLettera.jsx", 'data-testid="cancello-attesa"'),
+        ("features/frequenze/MeditazioniPage.js", 'data-testid="med-attesa-conferma"'),
+        ("features/frequenze/SoundHomePage.jsx", '<Esito data-testid="sh-anteprima-sbloccata">'),
+        ("features/account/AccountLoginPage.js", '<Esito data-testid="signup-sent-esito">'),
+        ("features/storefront/components/ContattiOperatore.jsx", 'data-testid="contatti-aperti"'),
+        ("features/storefront/OperatorProfilePage.js", '<Esito className="text-center py-4" data-testid="review-done">'),
+    )
+
+    def test_ogni_punto_usa_esito(self):
+        for rel, pin in self.PUNTI:
+            src = (FE / rel).read_text(encoding="utf-8")
+            assert "from '" in src and "/lib/esito'" in src, rel
+            assert pin in src, (rel, pin)
+            # il tag si apre e si chiude lo stesso numero di volte
+            assert src.count("<Esito") == src.count("</Esito>"), rel
+        acc = (FE / "features" / "account" / "AccountLoginPage.js").read_text(encoding="utf-8")
+        assert '<Esito data-testid="signup-sent-pro-esito">' in acc and 'data-testid="signup-sent-pro-cerchio"' in acc
+        blog = (FE / "features" / "storefront" / "BlogArticlePage.js").read_text(encoding="utf-8")
+        assert "window.location.reload()" not in blog and "onSbloccato={ricarica}" in blog
+        assert "}, [slug, lang, versione]);" in blog
+
+    def test_helper_in_node(self):
+        import shutil
+        node = shutil.which("node")
+        if not node:
+            pytest.skip("node assente")
+        fe = RADICE / "frontend"
+        prova = tempfile.NamedTemporaryFile("w", suffix=".js", dir=str(fe), delete=False)
+        prova.write(r"""
+const babel = require('@babel/core'); const path = require('path'); const Module = require('module');
+process.env.NODE_ENV = 'development';
+function carica(rel) {
+  const file = path.join(__dirname, 'src', rel);
+  const out = babel.transformFileSync(file, {presets: ['babel-preset-react-app'], babelrc: false, configFile: false}).code;
+  const m = new Module(file, module); m.filename = file; m.paths = Module._nodeModulePaths(path.dirname(file));
+  m._compile(out, file); return m.exports;
+}
+global.window = { innerHeight: 800, matchMedia: () => ({ matches: false }) }; global.document = { documentElement: { clientHeight: 800 } };
+const e = carica('lib/esito.js');
+const fuori = { chiamate: [], getBoundingClientRect: () => ({ top: 1200, bottom: 1300 }), scrollIntoView(o) { this.chiamate.push(['scroll', o]); }, focus(o) { this.chiamate.push(['focus', o]); } };
+console.assert(e.mostraEsito(fuori) === true, 'ritorna true');
+console.assert(fuori.chiamate.length === 2 && fuori.chiamate[0][0] === 'scroll' && fuori.chiamate[0][1].block === 'center' && fuori.chiamate[0][1].behavior === 'smooth', 'scorre al centro, morbido');
+console.assert(fuori.chiamate[1][0] === 'focus' && fuori.chiamate[1][1].preventScroll === true, 'focus senza riscorrere');
+const dentro = { chiamate: [], getBoundingClientRect: () => ({ top: 100, bottom: 300 }), scrollIntoView(o) { this.chiamate.push(['scroll', o]); }, focus(o) { this.chiamate.push(['focus', o]); } };
+e.mostraEsito(dentro);
+console.assert(dentro.chiamate.length === 1 && dentro.chiamate[0][0] === 'focus', 'gia visibile: solo il focus');
+global.window.matchMedia = () => ({ matches: true });
+const ridotto = { chiamate: [], getBoundingClientRect: () => ({ top: -500, bottom: -400 }), scrollIntoView(o) { this.chiamate.push(['scroll', o]); }, focus() {} };
+e.mostraEsito(ridotto);
+console.assert(ridotto.chiamate[0][1].behavior === 'auto', 'reduced motion: secco');
+console.assert(e.mostraEsito(null) === false, 'null tollerato');
+console.log('OK');
+""")
+        prova.close()
+        try:
+            r = subprocess.run([node, prova.name], cwd=str(fe), capture_output=True, text=True, timeout=120)
+        finally:
+            os.unlink(prova.name)
+        assert r.returncode == 0 and "OK" in r.stdout and "Assertion failed" not in r.stderr, r.stdout + r.stderr

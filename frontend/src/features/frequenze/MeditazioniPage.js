@@ -11,6 +11,7 @@
  * Lettera vede il cuore come invito a creare l'account.
  */
 import React, { useEffect, useState } from 'react';
+import { Esito } from '../../lib/esito';   // FL1: il risultato si vede dove hai cliccato
 import { Link, useNavigate } from 'react-router-dom';
 import platformApi, { PLATFORM_TOKEN_KEY } from '../../api/platformClient';
 import { frequenciesAPI } from '../../api/frequencies';
@@ -195,11 +196,11 @@ export default function MeditazioniPage() {
             {attesaConferma && (
               /* NL-septies — prima iscrizione: il cancello si apre col
                  clic nell'email, come per le guide del Magazine */
-              <div className="warnbox" style={{ margin: '14px 0 0', textAlign: 'left' }}
+              <Esito className="warnbox" style={{ margin: '14px 0 0', textAlign: 'left' }}
                 data-testid="med-attesa-conferma">
                 {/* SO (3/10): la riga dice cosa e' partito davvero (benvenuto o conferma) */}
                 {testoAttesa('con le meditazioni sbloccate')}
-              </div>
+              </Esito>
             )}
             <form onSubmit={subscribe} className="cerchio-form">
               {/* US: il nome sopra l'email, facoltativo, come in ogni form del Cerchio */}

@@ -13,6 +13,7 @@
  * Stripe e' un full reload, lo state di router non sopravvive).
  */
 import React, { useState } from 'react';
+import { Esito } from '../../../../lib/esito';   // FL1: il risultato si vede dove hai cliccato
 import { iscriviESblocca } from '../../../../lib/cerchio';
 import { testoConsenso } from '../../../../lib/testiConsenso';
 
@@ -31,9 +32,9 @@ export default function GrazieCerchio({ email: emailProp, source = 'pagina-grazi
   const [stato, setStato] = useState('idle');        // idle | sending | done | error
   if (nascosto || stato === 'done') {
     return stato === 'done' ? (
-      <p className={`text-sm text-gray-700 ${className}`} data-testid="grazie-cerchio-done">
+      <Esito as="p" className={`text-sm text-gray-700 ${className}`} data-testid="grazie-cerchio-done">
         Fatto: sei nel Cerchio di Aurya. Controlla l'email, la prima Lettera sta arrivando.
-      </p>
+      </Esito>
     ) : null;
   }
   const invia = async () => {

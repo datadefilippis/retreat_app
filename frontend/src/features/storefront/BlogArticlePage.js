@@ -113,10 +113,14 @@ export default function BlogArticlePage() {
   // NL-septies — mini-form «sono gia' iscritto» dentro il cancello
   const [giaIscritto, setGiaIscritto] = useState('');
   const [sbloccoMsg, setSbloccoMsg] = useState('');
+  // FL1 — lo sblocco ricarica SOLO l'articolo (con la prova nuova), non la
+  // pagina: la posizione resta, la guida si apre dove stavi leggendo
+  const [versione, setVersione] = useState(0);
+  const ricarica = () => setVersione((v) => v + 1);
 
   useEffect(() => {
     let mounted = true;
-    setArticle(null);
+    setArticle((a) => (a && a.slug === slug ? a : null));   // allo sblocco l'anteprima resta finche' arriva la guida
     setError(false);
     // BN3 — il token del subscriber confermato (salvato alla conferma)
     // sblocca le guide riservate; assente o invalido → anteprima
@@ -125,7 +129,7 @@ export default function BlogArticlePage() {
       .then(res => { if (mounted) setArticle(res.data); })
       .catch(() => { if (mounted) setError(true); });
     return () => { mounted = false; };
-  }, [slug, lang]);
+  }, [slug, lang, versione]);
 
   /* "Continua a leggere" (BN1, riscritto in PE7).
      Prima l'ordine era: stessa categoria, poi i piu' recenti. Con tre
@@ -396,7 +400,7 @@ export default function BlogArticlePage() {
                       experiencesOptIn
                       context={`gate_${article.category || slug}`}
                       returnTo={`/blog/${slug}`}
-                      onSbloccato={() => window.location.reload()}
+                      onSbloccato={ricarica}
                       /* Lotto D (24/9/2026): il testo della casella e' UNO
                          su tutte le porte, versionato in lib/testiConsenso.js */
                       consentText={testoConsenso().testo}
@@ -419,7 +423,7 @@ export default function BlogArticlePage() {
                         setSbloccoMsg('');
                         try {
                           await sblocca(giaIscritto);
-                          window.location.reload();
+                          ricarica();
                         } catch (err) {
                           setSbloccoMsg(err?.response?.status === 404
                             ? t('blog.gateAlreadyKo', { defaultValue: 'Questo indirizzo non risulta iscritto e confermato: iscriviti qui sopra, ci vuole un minuto.' })

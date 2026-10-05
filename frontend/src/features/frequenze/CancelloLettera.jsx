@@ -24,6 +24,7 @@
  * confermato, altrimenti double opt-in con ritorno.
  */
 import React, { useState } from 'react';
+import { Esito } from '../../lib/esito';   // FL1: il risultato si vede dove hai cliccato
 import { sblocca, iscriviESblocca, testoAttesa } from '../../lib/cerchio';
 import { testoConsenso } from '../../lib/testiConsenso';
 import { creaAccount, entraInAurya } from '../../utils/authLinks';
@@ -102,12 +103,12 @@ export default function CancelloLettera({
         intro={<>Questa esperienza sonora è disponibile per intero all’interno del Cerchio di Aurya.
           {durataSec > 120 && <> Sono {fmtMin(durataSec)} in tutto.</>}</>} />
       {attesa && (
-        <div className={chiaro ? S.warn : 'warnbox'}
+        <Esito className={chiaro ? S.warn : 'warnbox'}
           style={chiaro ? undefined : { margin: '14px 0 0', textAlign: 'left' }}
           data-testid="cancello-attesa">
           {/* SO (3/10): la riga dice cosa e' partito davvero (benvenuto o conferma) */}
           {testoAttesa('con la meditazione intera sbloccata')}
-        </div>
+        </Esito>
       )}
       <form onSubmit={iscrivi} className={chiaro ? 'mt-5' : 'cerchio-form'}>
         {/* US: il nome sopra l'email, facoltativo, come in ogni form del Cerchio */}

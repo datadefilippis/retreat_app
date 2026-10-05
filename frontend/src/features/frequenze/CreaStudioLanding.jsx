@@ -20,6 +20,7 @@
  * score del catalogo (costruisci()), e la pagina NON suona.
  */
 import React, { useEffect, useMemo, useState } from 'react';
+import { Esito } from '../../lib/esito';   // FL1: il risultato si vede dove hai cliccato
 import { Link } from 'react-router-dom';
 import api from '../../api/client';
 import { provenienzaCorrente } from '../../lib/testiConsenso';
@@ -259,7 +260,7 @@ export default function CreaStudioLanding() {
           </Rilievo>
 
           {stato === 'fatto' ? (
-            <div className="mt-10 max-w-2xl rounded-2xl border-2 p-8"
+            <Esito className="mt-10 max-w-2xl rounded-2xl border-2 p-8"
               style={{ borderColor: ORO }} data-testid="studio-grazie">
               <p className="font-serif text-2xl mb-3">
                 Ricevuto. Ti ricontattiamo noi.
@@ -269,7 +270,7 @@ export default function CreaStudioLanding() {
                 <Link to="/sound" className="underline">esplorare Aurya Sound</Link>:
                 la biblioteca, il Lab e le esperienze sono liberi.
               </p>
-            </div>
+            </Esito>
           ) : (
             <form className="mt-12 max-w-2xl rounded-2xl border-2 p-8 sm:p-10"
               style={{ borderColor: ORO }} onSubmit={chiedi}>

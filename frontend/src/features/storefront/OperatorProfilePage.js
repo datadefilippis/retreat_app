@@ -10,6 +10,7 @@
  */
 
 import React, { useEffect, useState } from 'react';
+import { Esito } from '../../lib/esito';   // FL1: il risultato si vede dove hai cliccato
 import { useParams, useLocation, Link, Link as RouterLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ArrowRight, Flower2, Play } from 'lucide-react';
@@ -240,7 +241,7 @@ function WriteReviewModal({ orgSlug, reviewsOpen = false, onClose, onDone, t, i1
         )}
 
         {step === 'done' && (
-          <div className="text-center py-4">
+          <Esito className="text-center py-4" data-testid="review-done">
             <p className="text-3xl mb-2" aria-hidden>🙏</p>
             <p className="font-semibold text-foreground">
               {t('landings:reviews.thanks', { defaultValue: 'Grazie della tua recensione!' })}
@@ -258,7 +259,7 @@ function WriteReviewModal({ orgSlug, reviewsOpen = false, onClose, onDone, t, i1
                     className="mt-4 rounded-full bg-primary text-white px-6 py-2 text-sm font-semibold">
               {t('landings:reviews.close', { defaultValue: 'Chiudi' })}
             </button>
-          </div>
+          </Esito>
         )}
 
         {error && <p className="mt-3 text-sm text-red-600">{error}</p>}

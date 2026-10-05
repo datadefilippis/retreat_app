@@ -13,6 +13,7 @@
  * schermata: chi monta InvitoSound non monta altro.
  */
 import React, { useState } from 'react';
+import { Esito } from '../../lib/esito';   // FL1: il risultato si vede dove hai cliccato
 import { prova, iscriviESblocca, ultimaModalita } from '../../lib/cerchio';
 import { testoConsenso } from '../../lib/testiConsenso';
 import { PLATFORM_TOKEN_KEY } from '../../api/platformClient';
@@ -56,14 +57,14 @@ export default function InvitoSound({ fonte, dove = '/sound', variante = 'scuro'
   const chiaro = variante === 'chiaro';
   if (stato === 'dentro' || stato === 'attesa') {
     return (
-      <p className={chiaro ? 'text-sm text-muted-foreground' : 'fqz-invito-sound'}
+      <Esito as="p" className={chiaro ? 'text-sm text-muted-foreground' : 'fqz-invito-sound'}
         data-testid="invito-sound-grazie">
         {stato === 'dentro'
           ? 'Sei nel Cerchio: la Lettera ti raggiunge alla prossima uscita.'
           : ultimaModalita() === 'benvenuto'
             ? 'Sei nel Cerchio: la prima Lettera è in arrivo. Un clic su un suo link apre anche le meditazioni intere.'
             : 'Ti abbiamo scritto: clicca «Entro nel Cerchio» nell’email che ti arriva e sei dentro.'}
-      </p>
+      </Esito>
     );
   }
 
