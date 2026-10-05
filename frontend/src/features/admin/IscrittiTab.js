@@ -111,6 +111,9 @@ const COLONNE = [
   { k: 'language', label: 'Lingua', cella: (r) => r.language || '—' },
   { k: 'confirmed_at', label: 'Confermato il', cella: (r) => data(r.confirmed_at) },
   { k: 'porta', label: 'Porta', cella: (r) => PORTE[r.porta] || r.porta || '—' },
+  // MP4 (5/10/2026) — la campagna (utm_campaign) e l'inserzione (utm_content) delle sponsorizzate
+  { k: 'campagna', label: 'Campagna', titolo: 'utm_campaign · utm_content della provenienza (le sponsorizzate)',
+    cella: (r) => (r.provenienza?.utm?.campaign ? `${r.provenienza.utm.campaign}${r.provenienza.utm.content ? ` · ${r.provenienza.utm.content}` : ''}` : '—') },
   { k: 'ultima_email_at', label: 'Ultima email', cella: (r) => data(r.ultima_email_at) },
   { k: 'tag', label: 'Tag', cella: (r) => (r.tag || []).join(', ') || '—' },
   { k: 'consenso', label: 'Consenso', cella: (r) => (r.consenso ? `${MODALITA[r.consenso.modalita] || r.consenso.modalita || '?'} · ${r.consenso.versione || '?'}` : '—') },
@@ -188,6 +191,7 @@ const FILTRI_VUOTI = {
   status: '', porta: '', source: '', experiences: '', region: '', interest: '', q: '',
   canale: '', superficie: '', budget: '', travel: '', verificato: '', dal: '', al: '', tag: '',
   eta: '',                                                   // ET3
+  campagna: '', inserzione: '',                              // MP4
 };
 
 export default function IscrittiTab() {
@@ -246,7 +250,9 @@ export default function IscrittiTab() {
     setSkip(0);
     setF((prev) => (k === 'canale'
       ? { ...prev, canale: v, superficie: '' }      // le due tendine sono collegate
-      : { ...prev, [k]: v }));
+      : k === 'campagna'
+        ? { ...prev, campagna: v, inserzione: '' }  // MP4: idem campagna › inserzione
+        : { ...prev, [k]: v }));
   };
   const toggleFiltro = (k, v) => setFiltro(k)(f[k] === v ? '' : v);
   const azzera = () => { setSkip(0); setF(FILTRI_VUOTI); };
@@ -375,6 +381,7 @@ export default function IscrittiTab() {
 
   const byStatus = stats?.by_status || {};
   const canaleScelto = (canali || []).find((c) => c.canale === f.canale);
+  const campagnaScelta = (stats?.by_campagna || []).find((c) => c.campagna === f.campagna);   // MP4
 
   return (
     <div className="space-y-6" data-testid="iscritti-tab">
@@ -404,6 +411,10 @@ export default function IscrittiTab() {
           <Ripartizione titolo="Per canale" testid="iscritti-rip-canale"
                         voci={(stats.by_canale || []).map((x) => ({ k: x.canale, label: x.label || etich(x.canale), n: x.n }))}
                         attivo={f.canale} onClick={(k) => toggleFiltro('canale', k)} />
+          {/* MP4 — le sponsorizzate: «campagna 12 · 7 conf.» = 12 iscritti, 7 confermati */}
+          <Ripartizione titolo="Per campagna" testid="iscritti-rip-campagna"
+                        voci={(stats.by_campagna || []).map((x) => ({ k: x.campagna, label: x.campagna, n: `${x.n} · ${x.confermati} conf.` }))}
+                        attivo={f.campagna} onClick={(k) => toggleFiltro('campagna', k)} />
         </div>
       )}
 
@@ -442,6 +453,16 @@ export default function IscrittiTab() {
             <select value={f.source} onChange={setFiltro('source')} className={selCls} data-testid="iscritti-f-fonte">
               <option value="">tutte le fonti</option>
               {sources.map((x) => <option key={x} value={x}>{x}</option>)}
+            </select>
+            {/* MP4 — campagna › inserzione (dalle ripartizioni del server) */}
+            <select value={f.campagna} onChange={setFiltro('campagna')} className={selCls} data-testid="iscritti-f-campagna">
+              <option value="">tutte le campagne</option>
+              {(stats?.by_campagna || []).map((c) => <option key={c.campagna} value={c.campagna}>{c.campagna} ({c.n})</option>)}
+            </select>
+            <select value={f.inserzione} onChange={setFiltro('inserzione')} className={selCls}
+                    disabled={!campagnaScelta} data-testid="iscritti-f-inserzione">
+              <option value="">{campagnaScelta ? 'tutte le inserzioni' : 'inserzione (scegli una campagna)'}</option>
+              {(campagnaScelta?.inserzioni || []).map((x) => <option key={x.inserzione} value={x.inserzione}>{x.inserzione} ({x.n})</option>)}
             </select>
             <select value={f.budget} onChange={setFiltro('budget')} className={selCls} data-testid="iscritti-f-budget">
               <option value="">budget: tutti</option>
@@ -648,7 +669,11 @@ export default function IscrittiTab() {
                 {s.provenienza?.url && <Riga k="URL" v={<span className="break-all text-xs">{s.provenienza.url}</span>} />}
                 {s.provenienza?.referrer && <Riga k="Arrivo da" v={<span className="break-all text-xs">{s.provenienza.referrer}</span>} />}
                 {s.provenienza?.utm && (
-                  <Riga k="UTM" v={['source', 'medium', 'campaign'].map((k) => s.provenienza.utm[k] && `${k}=${s.provenienza.utm[k]}`).filter(Boolean).join(' · ') || '—'} />
+                  <Riga k="UTM" v={['source', 'medium', 'campaign', 'content', 'term'].map((k) => s.provenienza.utm[k] && `${k}=${s.provenienza.utm[k]}`).filter(Boolean).join(' · ') || '—'} />
+                )}
+                {s.provenienza?.click_ids && <Riga k="Clic pubblicitario" v={Object.keys(s.provenienza.click_ids).join(', ')} />}
+                {s.provenienza?.tracciamento && (
+                  <Riga k="Pixel Meta" v={s.provenienza.tracciamento.marketing ? 'consenso marketing: sì (evento mandato anche dal server)' : 'consenso marketing: no (nessun evento)'} />
                 )}
                 {s.provenienza?.dispositivo && <Riga k="Dispositivo" v={s.provenienza.dispositivo} />}
               </Blocco>

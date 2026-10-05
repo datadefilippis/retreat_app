@@ -255,3 +255,54 @@ def canali_per_admin() -> list:
     return [{"canale": c, "label": ETICHETTE[c],
              "superfici": [{"superficie": s, "label": ETICHETTE[s]} for s in sups]}
             for c, sups in TASSONOMIA.items()]
+
+
+async def ripartizione_campagne(coll, da=None, limite: int = 15,
+                                conferma: Optional[dict] = {"$eq": ["$status", "confirmed"]}) -> list:
+    """MP4 (5/10/2026) — la ripartizione per campagna (utm_campaign) e
+    inserzione (utm_content), con quanti si sono poi CONFERMATI: e' il
+    numero che dice se la spesa pubblicitaria rende. `coll` e' una
+    collezione con `provenienza` (iscritti, organizzazioni, account);
+    `da` limita per created_at (datetime o ISO, come i documenti);
+    `conferma` e' l'espressione booleana di aggregazione del «confermato»
+    (None = non si conta). Ritorna
+    [{campagna, n, confermati, inserzioni: [{inserzione, n, confermati}]}]
+    ordinato per n."""
+    match: dict = {"provenienza.utm.campaign": {"$nin": [None, ""]}}
+    if da is not None:
+        iso = da.isoformat() if hasattr(da, "isoformat") else str(da)
+        match["$or"] = [{"created_at": {"$gte": da}}, {"created_at": {"$gte": iso}}]
+    gruppo: dict = {"_id": {"c": "$provenienza.utm.campaign", "i": "$provenienza.utm.content"},
+                    "n": {"$sum": 1}}
+    if conferma:
+        gruppo["confermati"] = {"$sum": {"$cond": [conferma, 1, 0]}}
+    camp: dict = {}
+    async for r in coll.aggregate([{"$match": match}, {"$group": gruppo}]):
+        c = (r.get("_id") or {}).get("c")
+        i = (r.get("_id") or {}).get("i")
+        if not c:
+            continue
+        voce = camp.setdefault(c, {"campagna": c, "n": 0, "confermati": 0, "inserzioni": []})
+        voce["n"] += int(r.get("n") or 0)
+        voce["confermati"] += int(r.get("confermati") or 0)
+        if i:
+            voce["inserzioni"].append({"inserzione": i, "n": int(r.get("n") or 0),
+                                       "confermati": int(r.get("confermati") or 0)})
+    out = sorted(camp.values(), key=lambda v: -v["n"])[:max(1, int(limite))]
+    for v in out:
+        v["inserzioni"].sort(key=lambda x: -x["n"])
+    return out
+
+
+def provenienza_breve(p) -> Optional[dict]:
+    """MP4 — la provenienza in una riga per le liste della regia (operatori,
+    account): canale › superficie, sorgente/campagna/inserzione, referrer,
+    dispositivo, e se c'era il consenso marketing (pixel). None se vuota."""
+    if not isinstance(p, dict):
+        return None
+    utm = p.get("utm") if isinstance(p.get("utm"), dict) else {}
+    out = {"canale": p.get("canale"), "superficie": p.get("superficie"), "porta": p.get("porta"),
+           "utm_source": utm.get("source"), "campagna": utm.get("campaign"), "inserzione": utm.get("content"),
+           "referrer": p.get("referrer"), "dispositivo": p.get("dispositivo"),
+           "marketing": bool((p.get("tracciamento") or {}).get("marketing"))}
+    return out if any(v for k, v in out.items() if k != "marketing") else None

@@ -70,6 +70,9 @@ class OrgSummary(BaseModel):
     n_servizi: Optional[int] = None
     bio_len: Optional[int] = None
     email_verificata: Optional[bool] = None
+    # MP4 (5/10/2026) — la provenienza della registrazione, in breve
+    # (services/provenienza.provenienza_breve): solo AGGIUNTA, facoltativa
+    provenienza: Optional[dict] = None
     created_at: datetime
     updated_at: datetime
 

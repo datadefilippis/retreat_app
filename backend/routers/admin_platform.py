@@ -206,12 +206,33 @@ async def numeri_del_lunedi(
              "interruttori": {"contatti_dietro_porta": contatti_dietro_porta(),
                               "login_senza_verifica": login_senza_verifica()}}
 
+    # 9. MP4 (5/10/2026) — LE CAMPAGNE: iscritti al Cerchio, professionisti e
+    #    account degli ultimi 30 giorni per utm_campaign (con i confermati),
+    #    e lo stato di Meta: pixel + Conversions API configurati, modalita'
+    #    prova, eventi server delle ultime 24 ore (inviati/accettati/falliti).
+    #    Solo conteggi, mai email. Best-effort: un errore qui non spegne il resto.
+    campagne = {"cerchio_30g": [], "professionisti_30g": [], "account_30g": []}
+    meta = {"configurato": False, "test": False, "ore": 24, "totale": 0, "accettati": 0, "falliti": 0, "per_nome": {}}
+    try:
+        from services.provenienza import ripartizione_campagne
+        from services.meta_capi import riepilogo as meta_riepilogo
+        campagne["cerchio_30g"] = await ripartizione_campagne(sub_, da=d30, limite=10)
+        campagne["professionisti_30g"] = await ripartizione_campagne(
+            organizations_collection, da=d30, limite=10, conferma=None)
+        campagne["account_30g"] = await ripartizione_campagne(
+            platform_accounts_collection, da=d30, limite=10, conferma={"$eq": ["$email_verified", True]})
+        meta = await meta_riepilogo(24)
+    except Exception:  # noqa: BLE001
+        import logging
+        logging.getLogger(__name__).warning("lunedi: blocco campagne/meta non disponibile", exc_info=True)
+
     payload = {"cerchio": {"confermati": confermati, "con_citta": con_citta,
                            "con_ritiri": con_ritiri, "con_eta": con_eta,
                            "nuovi_7g": nuovi_7g, "porte_30g": porte},
                "ritiri": ritiri, "visite": visite, "operatori": operatori,
                "richieste": richieste, "euro": euro, "sequenze_30g": sequenze,
                "porta": porta,
+               "campagne_30g": campagne, "meta": meta,   # MP4
                "generated_at": iso(now)}
     _cache["lunedi"] = (time.monotonic(), payload)
     return payload

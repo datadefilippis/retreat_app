@@ -420,3 +420,81 @@ class TestMP3Capi:
         assert ReviewSubmit(**base).tracciamento is None                                   # payload di ieri
         r = ReviewSubmit(**base, cerchio=True, tracciamento={"marketing": True, "event_id": "lead_0123456789abcdef"})
         assert r.tracciamento["event_id"] == "lead_0123456789abcdef"
+
+
+class TestMP4Regia:
+    """MP4 — la regia legge le campagne: filtri campagna › inserzione negli
+    Iscritti (lista + CSV), ripartizione «Per campagna» coi confermati,
+    provenienza in riga negli Operatori, campagne 30 giorni e stato Meta
+    nei numeri del lunedi'."""
+
+    def test_ripartizione_campagne_dal_vivo(self):
+        import asyncio
+        from datetime import datetime, timezone
+        from database import db
+        from services.provenienza import ripartizione_campagne
+        tag = "mp4-prova-campagna"
+        docs = [
+            {"email": f"{tag}-{i}@example.com", "status": st, "created_at": datetime.now(timezone.utc),
+             "provenienza": {"utm": {"source": "facebook", "campaign": tag, "content": ins}}}
+            for i, (st, ins) in enumerate([("confirmed", "video-1"), ("pending", "video-1"), ("confirmed", "foto-2")])
+        ]
+
+        async def scena():
+            await db.aurya_subscribers.delete_many({"email": {"$regex": f"^{tag}-"}})
+            await db.aurya_subscribers.insert_many(docs)
+            try:
+                tutte = await ripartizione_campagne(db.aurya_subscribers, limite=50)
+                senza_conferma = await ripartizione_campagne(db.aurya_subscribers, limite=50, conferma=None)
+                vecchie = await ripartizione_campagne(db.aurya_subscribers, da=datetime(2999, 1, 1, tzinfo=timezone.utc))
+            finally:
+                await db.aurya_subscribers.delete_many({"email": {"$regex": f"^{tag}-"}})
+            return tutte, senza_conferma, vecchie
+        tutte, senza_conferma, vecchie = asyncio.run(scena())
+        voce = next(v for v in tutte if v["campagna"] == tag)
+        assert voce["n"] == 3 and voce["confermati"] == 2
+        assert voce["inserzioni"] == [{"inserzione": "video-1", "n": 2, "confermati": 1},
+                                      {"inserzione": "foto-2", "n": 1, "confermati": 1}]
+        assert next(v for v in senza_conferma if v["campagna"] == tag)["confermati"] == 0
+        assert not any(v["campagna"] == tag for v in vecchie)
+
+    def test_provenienza_breve(self):
+        from services.provenienza import provenienza_breve
+        assert provenienza_breve(None) is None and provenienza_breve({}) is None
+        p = provenienza_breve({"canale": "social", "superficie": "facebook", "url": "https://aurya.life/x",
+                               "utm": {"source": "facebook", "campaign": "pro-ott", "content": "ad-1"},
+                               "referrer": "https://l.facebook.com/", "dispositivo": "mobile",
+                               "tracciamento": {"marketing": True, "event_id": "reg_0123456789abcdef"}})
+        assert p == {"canale": "social", "superficie": "facebook", "porta": None, "utm_source": "facebook",
+                     "campagna": "pro-ott", "inserzione": "ad-1", "referrer": "https://l.facebook.com/",
+                     "dispositivo": "mobile", "marketing": True}
+        assert "event_id" not in json.dumps(p)                       # in riga mai gli identificativi
+
+    def test_filtri_e_ripartizioni_nel_codice(self):
+        sub = (BACKEND / "routers" / "subscribers.py").read_text(encoding="utf-8")
+        assert sub.count("campagna=campagna, inserzione=inserzione") == 2          # lista + CSV
+        assert 'query["provenienza.utm.campaign"] = campagna.strip()[:80]' in sub
+        assert 'query["provenienza.utm.content"] = inserzione.strip()[:80]' in sub
+        assert '"by_campagna": by_campagna' in sub
+        lun = (BACKEND / "routers" / "admin_platform.py").read_text(encoding="utf-8")
+        assert '"campagne_30g": campagne, "meta": meta' in lun and "meta_riepilogo(24)" in lun
+        adm = (BACKEND / "routers" / "admin.py").read_text(encoding="utf-8")
+        assert 'provenienza=_provenienza_breve_sicura(doc.get("provenienza"))' in adm
+        assert '"provenienza": 1' in (BACKEND / "repositories" / "admin_repository.py").read_text(encoding="utf-8")
+        assert "provenienza: Optional[dict] = None" in (BACKEND / "models" / "admin.py").read_text(encoding="utf-8")
+        isc = (FE / "features" / "admin" / "IscrittiTab.js").read_text(encoding="utf-8")
+        for k in ("campagna: '', inserzione: ''", 'testid="iscritti-rip-campagna"', 'data-testid="iscritti-f-campagna"',
+                  'data-testid="iscritti-f-inserzione"', "{ ...prev, campagna: v, inserzione: '' }", "k: 'campagna'",
+                  "['source', 'medium', 'campaign', 'content', 'term']", 'k="Pixel Meta"'):
+            assert k in isc, k
+        org = (FE / "features" / "admin" / "OrganizationsTab.js").read_text(encoding="utf-8")
+        assert 'data-testid="org-provenienza"' in org
+        ov = (FE / "features" / "admin" / "PlatformOverviewTab.js").read_text(encoding="utf-8")
+        assert 'data-testid="numeri-lunedi-campagne"' in ov and 'data-testid="numeri-lunedi-meta"' in ov
+
+    def test_riepilogo_meta_forma(self):
+        import asyncio
+        from services.meta_capi import riepilogo
+        r = asyncio.run(riepilogo(24))
+        assert set(r) == {"configurato", "test", "ore", "totale", "accettati", "falliti", "per_nome"}
+        assert r["ore"] == 24 and isinstance(r["per_nome"], dict)

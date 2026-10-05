@@ -723,6 +723,10 @@ async def newsletter_stats(
     by_regione = [{"regione": r["valore"], "n": r["n"]}
                   for r in await _conta("preferences.retreat_alert.regions", unwind=True, limite=25)]
     verificati = await db.aurya_subscribers.count_documents({"verificato_at": {"$exists": True}})
+    # MP4 (5/10/2026) — per campagna › inserzione, con i confermati: la
+    # ripartizione che dice se le sponsorizzate portano contatti veri
+    from services.provenienza import ripartizione_campagne
+    by_campagna = await ripartizione_campagne(db.aurya_subscribers)
 
     total = sum(by_status.values())
     confirmed = by_status.get("confirmed", 0)
@@ -739,6 +743,7 @@ async def newsletter_stats(
         "by_canale": by_canale,
         "by_regione": by_regione,
         "verificati": verificati,
+        "by_campagna": by_campagna,      # MP4
     }
 
 
@@ -887,9 +892,16 @@ def _query_iscritti(status: Optional[str], source: Optional[str], q: Optional[st
                     budget: Optional[str] = None, travel: Optional[str] = None,
                     dal: Optional[str] = None, al: Optional[str] = None,
                     verificato: Optional[str] = None, tag: Optional[str] = None,
-                    eta: Optional[str] = None) -> dict:
+                    eta: Optional[str] = None,
+                    campagna: Optional[str] = None, inserzione: Optional[str] = None) -> dict:
     import re as _re
     query: dict = {}
+    # MP4 (5/10/2026) — campagna e inserzione (utm_campaign / utm_content
+    # della provenienza): i filtri per leggere le sponsorizzate
+    if campagna:
+        query["provenienza.utm.campaign"] = campagna.strip()[:80]
+    if inserzione:
+        query["provenienza.utm.content"] = inserzione.strip()[:80]
     if _eta_valida(eta):                                   # ET1
         query["profile.eta"] = _eta_valida(eta)
     if status in ("pending", "confirmed", "unsubscribed"):
@@ -963,6 +975,8 @@ async def list_subscribers(
         verificato: Optional[str] = None,
         tag: Optional[str] = None,
         eta: Optional[str] = None,
+        campagna: Optional[str] = None,      # MP4
+        inserzione: Optional[str] = None,    # MP4
         skip: int = 0,
         limit: int = 50,
         current_user: dict = Depends(require_system_admin)):
@@ -974,7 +988,8 @@ async def list_subscribers(
     from database import db
     from services.provenienza import canali_per_admin
     query = _query_iscritti(status, source, q, experiences, region, interest, porta,
-                            canale, superficie, budget, travel, dal, al, verificato, tag, eta)
+                            canale, superficie, budget, travel, dal, al, verificato, tag, eta,
+                            campagna=campagna, inserzione=inserzione)
     limit = max(1, min(int(limit or 50), 200))
     skip = max(0, int(skip or 0))
     total = await db.aurya_subscribers.count_documents(query)
@@ -996,13 +1011,15 @@ async def export_subscribers(
         dal: Optional[str] = None, al: Optional[str] = None,
         verificato: Optional[str] = None, tag: Optional[str] = None,
         eta: Optional[str] = None,
+        campagna: Optional[str] = None, inserzione: Optional[str] = None,   # MP4
         current_user: dict = Depends(require_system_admin)):
     """SA-R — lo stesso elenco, in CSV (max 5000 righe), con gli stessi filtri."""
     import csv, io
     from fastapi.responses import Response
     from database import db
     query = _query_iscritti(status, source, q, experiences, region, interest, porta,
-                            canale, superficie, budget, travel, dal, al, verificato, tag, eta)
+                            canale, superficie, budget, travel, dal, al, verificato, tag, eta,
+                            campagna=campagna, inserzione=inserzione)
     buf = io.StringIO()
     w = csv.writer(buf, delimiter=";")
     w.writerow(["email", "nome", "stato", "porta", "fonte", "iscritto_il", "confermato_il", "disiscritto_il",

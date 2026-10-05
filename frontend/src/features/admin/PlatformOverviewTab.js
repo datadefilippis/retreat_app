@@ -136,6 +136,22 @@ export default function PlatformOverviewTab() {
             Email delle sequenze partite in 30 giorni: {Object.entries(lunedi.sequenze_30g).map(([pub, passi]) => `${pub} ${Object.entries(passi).map(([k, n]) => `${k} ${n}`).join(' ')}`).join(' · ')}
           </p>
         )}
+        {/* MP4 (5/10/2026) — le campagne (utm_campaign) degli ultimi 30 giorni:
+            «nome 7/12» = 7 confermati su 12 iscritti; e lo stato di Meta */}
+        {lunedi?.campagne_30g && (
+          <p className="mt-2 text-xs text-muted-foreground" data-testid="numeri-lunedi-campagne">
+            Campagne degli ultimi 30 giorni · Cerchio: {(lunedi.campagne_30g.cerchio_30g || []).map((c) => `${c.campagna} ${c.confermati}/${c.n}`).join(' · ') || 'nessuna'}
+            {' '}· professionisti: {(lunedi.campagne_30g.professionisti_30g || []).map((c) => `${c.campagna} ${c.n}`).join(' · ') || 'nessuno'}
+            {' '}· account: {(lunedi.campagne_30g.account_30g || []).map((c) => `${c.campagna} ${c.confermati}/${c.n}`).join(' · ') || 'nessuno'}
+          </p>
+        )}
+        {lunedi?.meta && (
+          <p className="mt-2 text-xs text-muted-foreground" data-testid="numeri-lunedi-meta">
+            Meta (pixel + Conversions API): {lunedi.meta.configurato ? 'ACCESI' : 'spenti'}{lunedi.meta.test ? ' · modalità prova' : ''}
+            {' '}· eventi dal server in 24 ore: {lunedi.meta.totale} inviati, {lunedi.meta.accettati} accettati, {lunedi.meta.falliti} falliti
+            {Object.keys(lunedi.meta.per_nome || {}).length > 0 ? ` · ${Object.entries(lunedi.meta.per_nome).map(([k, v]) => `${k} ${v.accettati}/${v.inviati}`).join(' · ')}` : ''}
+          </p>
+        )}
       </div>
 
 

@@ -153,9 +153,20 @@ def _org_summary(doc: dict, *, profile_published: bool = False,
         profile_published=profile_published,
         admin_email=admin_email,
         profile_slug=profile_slug,
+        # MP4 (5/10/2026) — da dove e' arrivata la registrazione (campagna,
+        # inserzione, referrer): una riga, solo se c'e'
+        provenienza=_provenienza_breve_sicura(doc.get("provenienza")),
         created_at=_dt(created),
         updated_at=_dt(doc.get("updated_at") or created),
     )
+
+
+def _provenienza_breve_sicura(p) -> dict | None:
+    try:
+        from services.provenienza import provenienza_breve
+        return provenienza_breve(p)
+    except Exception:  # noqa: BLE001 — una riga in piu' non butta giu' la lista
+        return None
 
 
 def _interview_status(doc: dict) -> str:

@@ -789,6 +789,15 @@ const OrganizationsTab = () => {
                             {org.admin_email}
                           </div>
                         )}
+                        {/* MP4 (5/10/2026) — da dove e' arrivata la registrazione (campagna › inserzione) */}
+                        {org.provenienza && (org.provenienza.campagna || org.provenienza.utm_source || org.provenienza.referrer) && (
+                          <div className="text-[11px] text-muted-foreground" data-testid="org-provenienza"
+                               title={`Provenienza della registrazione${org.provenienza.referrer ? ` · da ${org.provenienza.referrer}` : ''}${org.provenienza.dispositivo ? ` · ${org.provenienza.dispositivo}` : ''}`}>
+                            da {org.provenienza.campagna
+                              ? `${org.provenienza.utm_source || 'campagna'} · ${org.provenienza.campagna}${org.provenienza.inserzione ? ` · ${org.provenienza.inserzione}` : ''}`
+                              : (org.provenienza.utm_source || (() => { try { return new URL(org.provenienza.referrer).hostname.replace(/^www\./, ''); } catch { return org.provenienza.referrer; } })())}
+                          </div>
+                        )}
                         {org.telefono ? (
                           <div className="text-xs text-muted-foreground flex items-center gap-1">
                             {!org.telefono_pubblico && <Lock className="h-3 w-3" aria-hidden />}

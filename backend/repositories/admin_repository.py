@@ -59,6 +59,7 @@ PROIEZIONE_REGIA = {
     "legacy_commerce": 1, "exclude_from_listings": 1, "directory_featured": 1,
     "fondatore_forzato": 1, "created_at": 1, "updated_at": 1,
     "public_slug": 1, "bank_iban": 1,
+    "provenienza": 1,   # MP4 — da dove e' arrivata la registrazione
     "store_settings.is_storefront_published": 1,
     "public_profile.interview_published": 1,
     "public_profile.interview_verified_at": 1,
