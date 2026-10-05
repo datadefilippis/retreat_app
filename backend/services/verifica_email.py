@@ -100,7 +100,8 @@ async def segna_verificato(email: str, tipo: str, dettaglio: str = "") -> dict:
 
     sub = await db.aurya_subscribers.find_one(
         {"email": email},
-        {"_id": 0, "status": 1, "verificato_at": 1, "consenso": 1, "language": 1})
+        {"_id": 0, "status": 1, "verificato_at": 1, "consenso": 1, "language": 1,
+         "provenienza": 1})   # MP3: il tracciamento (consenso marketing) per l'evento di conferma
     if sub:
         esito["iscritto"] = True
         esito["era_verificato"] = bool(sub.get("verificato_at"))
@@ -133,6 +134,19 @@ async def segna_verificato(email: str, tipo: str, dettaglio: str = "") -> dict:
                 sync_subscriber_background(email)
             except Exception as exc:        # noqa: BLE001
                 logger.warning("brevo sync dopo verifica fallito per %s: %s", _mask(email), exc)
+            # MP3 (5/10/2026) — «LeadConfermato» a Meta: il segnale di qualita'
+            # (chi ha cliccato) per ottimizzare le campagne sui contatti veri.
+            # Solo se all'iscrizione c'era il consenso marketing; event_id
+            # deterministico (una conferma, un evento). Mai bloccante.
+            try:
+                from services.meta_capi import evento_da_provenienza, id_derivato
+                evento_da_provenienza(
+                    "LeadConfermato", sub.get("provenienza"), email=email,
+                    event_id=id_derivato("conf", email),
+                    custom_data={"content_category": "cerchio", "content_name": tipo},
+                    contesto=f"conferma:{tipo}")
+            except Exception:               # noqa: BLE001
+                pass
             try:
                 from services.sequenze import invia_subito
                 await invia_subito("cerchio", email)

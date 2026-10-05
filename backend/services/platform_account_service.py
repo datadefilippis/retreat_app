@@ -502,6 +502,15 @@ async def password_signup(*, name: Optional[str], email: str, password: str,
             pass
         await platform_accounts_collection.insert_one(doc)
         account = doc
+        # MP3 (5/10/2026) — CompleteRegistration dell'account alla Conversions API
+        try:
+            from services.meta_capi import evento_da_provenienza
+            evento_da_provenienza(
+                "CompleteRegistration", doc.get("provenienza"), email=email_n,
+                ip=request_ip, user_agent=user_agent,
+                custom_data={"content_name": "account", "status": True}, contesto="account_signup")
+        except Exception:  # noqa: BLE001
+            pass
 
     # AP-L — audit immutabile del consenso appena timbrato (best-effort)
     if accepted_terms:

@@ -265,3 +265,158 @@ console.log('OK');
         finally:
             os.unlink(prova.name)
         assert r.returncode == 0 and "OK" in r.stdout and "Assertion failed" not in r.stderr, r.stdout + r.stderr
+
+
+class TestMP3Capi:
+    """MP3 — la Conversions API lato server: stesso event_id del pixel, email
+    solo hashata, parte SOLO col consenso marketing, mai bloccante, token mai
+    in URL o log, registro per la regia."""
+
+    @pytest.fixture
+    def configurato(self, monkeypatch):
+        monkeypatch.setenv("META_PIXEL_ID", "1093685309713150")
+        monkeypatch.setenv("META_CAPI_TOKEN", "TOKEN-DI-PROVA-mai-nei-log")
+        monkeypatch.delenv("META_TEST_EVENT_CODE", raising=False)
+        from services import meta_capi
+        return meta_capi
+
+    def test_evento_senza_pii_in_chiaro(self, configurato):
+        mc = configurato
+        ev = mc.costruisci_evento("Lead", "lead_0123456789abcdef01234567", email="  Mario.Rossi@Example.com ",
+                                  fbp="fb.1.1700000000000.123456789", ip="127.0.0.1", user_agent="UA/1",
+                                  url="https://aurya.life/cerca-ritiro?utm_source=facebook",
+                                  custom_data={"content_name": "landing", "vuoto": None, "content_category": "cerchio"})
+        dump = json.dumps(ev)
+        assert "mario" not in dump.lower() and "example.com" not in dump
+        assert ev["user_data"]["em"] == [mc.hash_email("mario.rossi@example.com")]
+        assert "client_ip_address" not in ev["user_data"]          # localhost non si manda
+        assert ev["user_data"]["fbp"] == "fb.1.1700000000000.123456789"
+        assert ev["action_source"] == "website" and ev["event_id"] == "lead_0123456789abcdef01234567"
+        assert ev["custom_data"] == {"content_name": "landing", "content_category": "cerchio"}
+        assert mc.id_derivato("conf", "A@b.it") == mc.id_derivato("conf", "a@b.it") and "a@b" not in mc.id_derivato("conf", "a@b.it")
+
+    def test_parte_solo_col_consenso_e_configurato(self, configurato, monkeypatch):
+        import asyncio
+        mc = configurato
+        accodati = []
+
+        async def finto(evento, contesto):
+            accodati.append((evento, contesto))
+        monkeypatch.setattr(mc, "_invia_e_registra", finto)
+        pieno = {"url": "https://aurya.life/x", "porta": "landing",
+                 "tracciamento": {"marketing": True, "event_id": "lead_0123456789abcdef", "fbp": "fb.1.1.2"}}
+
+        async def scena():
+            assert mc.evento_da_provenienza("Lead", {"tracciamento": {"marketing": False}}, email="a@b.it") is False
+            assert mc.evento_da_provenienza("Lead", {"tracciamento": {"marketing": True}}, email="a@b.it") is False
+            assert mc.evento_da_provenienza("Lead", {"tracciamento": {"marketing": True, "event_id": "x"}}) is False
+            assert mc.evento_da_provenienza("Lead", None, email="a@b.it") is False
+            assert mc.evento_da_provenienza("Lead", pieno, email="a@b.it", contesto="prova") is True
+            await asyncio.sleep(0)
+        asyncio.run(scena())
+        assert len(accodati) == 1
+        ev, ctx = accodati[0]
+        assert ev["event_id"] == "lead_0123456789abcdef" and ev["event_source_url"] == "https://aurya.life/x" and ctx == "prova"
+        # senza loop (chiamata sincrona) non esplode: False e basta
+        assert mc.evento_da_provenienza("Lead", pieno, email="a@b.it") is False
+        # senza configurazione: tutto spento
+        monkeypatch.delenv("META_CAPI_TOKEN")
+        assert mc.configurato() is False
+        assert asyncio.run(mc.invia_eventi([{"event_name": "Lead"}]))["errore"] == "non configurato"
+        assert mc.evento_da_provenienza("Lead", pieno, email="a@b.it") is False
+
+    def test_invio_token_nel_corpo_e_tentativi(self, configurato, monkeypatch):
+        import asyncio
+        import httpx
+        mc = configurato
+        monkeypatch.setenv("META_TEST_EVENT_CODE", "TEST123")
+        chiamate = []
+        risposte = [500, 200]
+
+        class Risposta:
+            def __init__(self, code):
+                self.status_code = code
+                self.text = "{}"
+
+            def json(self):
+                return {"events_received": 1} if self.status_code == 200 else {"error": {"code": 190, "message": "boh"}}
+
+        class FintoClient:
+            def __init__(self, **kw):
+                chiamate.append(("timeout", kw.get("timeout")))
+
+            async def __aenter__(self):
+                return self
+
+            async def __aexit__(self, *a):
+                return False
+
+            async def post(self, url, json=None, **kw):
+                chiamate.append((url, json, kw))
+                return Risposta(risposte.pop(0))
+
+        monkeypatch.setattr(httpx, "AsyncClient", FintoClient)
+
+        async def niente(_):
+            return None
+        monkeypatch.setattr(mc.asyncio, "sleep", niente)
+        ev = mc.costruisci_evento("Lead", "lead_0123456789abcdef", email="a@b.it")
+        esito = asyncio.run(mc.invia_eventi([ev], codice_test=mc.test_event_code()))
+        assert esito == {"ok": True, "accettati": 1, "tentativi": 2, "errore": None}
+        post = [c for c in chiamate if isinstance(c[1], dict)]
+        assert len(post) == 2
+        url, corpo, kw = post[0]
+        assert url == "https://graph.facebook.com/v21.0/1093685309713150/events"
+        assert "TOKEN" not in url and "params" not in kw            # il token mai in URL
+        assert corpo["access_token"] == "TOKEN-DI-PROVA-mai-nei-log" and corpo["test_event_code"] == "TEST123"
+        assert corpo["data"][0]["event_id"] == "lead_0123456789abcdef"
+        assert chiamate[0] == ("timeout", 5.0)
+        # un 4xx (non 429) e' definitivo: UN tentativo, errore corto senza segreti
+        risposte[:] = [400]
+        esito = asyncio.run(mc.invia_eventi([ev]))
+        assert esito["ok"] is False and esito["tentativi"] == 1 and esito["errore"] == "http 400: 190 boh"
+        # 3 errori di rete: 3 tentativi
+        class Rete(FintoClient):
+            async def post(self, url, json=None, **kw):
+                raise httpx.ConnectError("giu'")
+        monkeypatch.setattr(httpx, "AsyncClient", Rete)
+        esito = asyncio.run(mc.invia_eventi([ev]))
+        assert esito == {"ok": False, "accettati": 0, "tentativi": 3, "errore": "ConnectError"}
+
+    def test_mai_segreti_nei_log(self):
+        src = (BACKEND / "services" / "meta_capi.py").read_text(encoding="utf-8")
+        assert src.count("_token()") == 3                          # definizione, configurato() e il corpo della POST
+        assert '"access_token": _token()' in src and "params=" not in src
+        for riga in src.splitlines():
+            if "logger." in riga:
+                assert "token" not in riga.lower() and "email" not in riga.lower(), riga
+
+    def test_agganci_nel_codice(self):
+        sub = (BACKEND / "routers" / "subscribers.py").read_text(encoding="utf-8")
+        assert '"Lead", doc_set.get("provenienza"), email=email, request=request,' in sub
+        ver = (BACKEND / "services" / "verifica_email.py").read_text(encoding="utf-8")
+        assert '"LeadConfermato", sub.get("provenienza"), email=email,' in ver and 'event_id=id_derivato("conf", email)' in ver
+        assert '"provenienza": 1})' in ver
+        auth = (BACKEND / "services" / "auth_service.py").read_text(encoding="utf-8")
+        assert '"CompleteRegistration", org_doc.get("provenienza"), email=user_data.email,' in auth
+        acc = (BACKEND / "services" / "platform_account_service.py").read_text(encoding="utf-8")
+        assert '"CompleteRegistration", doc.get("provenienza"), email=email_n,' in acc
+        pub = (BACKEND / "routers" / "public.py").read_text(encoding="utf-8")
+        assert 'out["registrato"] = bool(nuovo)' in pub and "_contact_a_meta(request, org, identita)" in pub
+        assert 'return bool(getattr(esito, "upserted_id", None))' in pub
+        pay = (BACKEND / "services" / "payment_checkout_service.py").read_text(encoding="utf-8")
+        assert '"Purchase", confirmed.get("provenienza"), event_id=f"acq_{order_id}",' in pay
+        rev = (BACKEND / "routers" / "reviews.py").read_text(encoding="utf-8")
+        assert "tracciamento=body.tracciamento if isinstance(body.tracciamento, dict) else None," in rev
+        # ogni aggancio e' dentro un try/except: mai bloccante
+        for testo, nome in ((sub, "subscribers"), (ver, "verifica"), (auth, "auth"), (acc, "account"), (pay, "checkout")):
+            i = testo.index("from services.meta_capi import evento_da_provenienza")
+            assert "try:" in testo[i - 120:i], nome
+
+    def test_modello_recensione_accetta_il_tracciamento(self):
+        from routers.reviews import ReviewSubmit
+        base = {"org_slug": "demo-org", "email": "a@b.it", "code": "123456", "rating": 5,
+                "body": "bello", "author_name": "A"}
+        assert ReviewSubmit(**base).tracciamento is None                                   # payload di ieri
+        r = ReviewSubmit(**base, cerchio=True, tracciamento={"marketing": True, "event_id": "lead_0123456789abcdef"})
+        assert r.tracciamento["event_id"] == "lead_0123456789abcdef"

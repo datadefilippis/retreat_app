@@ -116,6 +116,16 @@ async def signup(
         pass
     from database import organizations_collection
     await organizations_collection.insert_one(org_doc)
+    # MP3 (5/10/2026) — CompleteRegistration del professionista alla
+    # Conversions API (stesso event_id del pixel, solo col consenso marketing)
+    try:
+        from services.meta_capi import evento_da_provenienza
+        evento_da_provenienza(
+            "CompleteRegistration", org_doc.get("provenienza"), email=user_data.email,
+            ip=request_ip, user_agent=user_agent,
+            custom_data={"content_name": "operatore", "status": True}, contesto="signup_pro")
+    except Exception:  # noqa: BLE001
+        pass
 
     # v5.9: Provision free-tier module subscriptions for the new org.
     # Creates the 4 ModuleSubscription records (cashflow_monitor_free,

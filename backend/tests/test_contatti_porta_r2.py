@@ -69,7 +69,7 @@ class TestR2Backend:
         assert "if not contatti_dietro_porta():" in rotta                      # spento = ieri
         assert 'raise HTTPException(status_code=401, detail="account_richiesto")' in rotta
         assert 'for k in ("instagram", "facebook", "website") if pp.get(k)' in rotta
-        assert "await _registra_richiesta_contatto(org, identita, request)" in rotta
+        assert "nuovo = await _registra_richiesta_contatto(org, identita, request)" in rotta   # MP3: True = lead nuovo
         # 26/9 (founder): chi e' gia' dentro con qualunque cappello non rifa' l'accesso;
         # il lead vale per clienti e operatori di ALTRE org, mai per la regia
         assert 'if identita.get("registra") and identita.get("org_id") != org.get("id"):' in rotta

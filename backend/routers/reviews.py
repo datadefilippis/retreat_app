@@ -46,6 +46,10 @@ class ReviewSubmit(BaseModel):
     # tale e quale; la versione del testo letto viaggia col consenso.
     cerchio: Optional[bool] = False
     consenso_versione: Optional[str] = Field(default=None, max_length=30)
+    # MP2/MP3 (5/10/2026) — il blocco di tracciamento del pixel (event_id,
+    # cookie), solo con la casella spuntata: viaggia tale e quale a `iscrivi`,
+    # che lo pulisce (pulisci_tracciamento) e lo scrive nella provenienza
+    tracciamento: Optional[dict] = None
 
 
 @router.post("/public/reviews/request-otp", status_code=202)
@@ -83,6 +87,7 @@ async def _cerchio_dalla_recensione(request: Request, body: ReviewSubmit) -> Opt
             email=email, name=body.author_name, consent=True,
             language=(body.language or "it")[:2], source="recensione",
             consenso_versione=body.consenso_versione or None, unlock_flow=True,
+            tracciamento=body.tracciamento if isinstance(body.tracciamento, dict) else None,
         ), request, gia_verificato=True)
         await segna_verificato(email, "otp", f"recensione:{body.org_slug}")
         return "gia_dentro" if gia_dentro else "iscritto"

@@ -948,6 +948,22 @@ async def reconcile_checkout_event(event: dict) -> dict:
         order_number = confirmed.get("order_number")
         logger.info("payment_reconcile: order %s confirmed (number=%s)", order_id, order_number)
 
+        # MP3 (5/10/2026) — Purchase alla Conversions API, stesso event_id del
+        # pixel («acq_<order_id>», CheckoutResultPage). Parte SOLO se l'ordine
+        # porta `provenienza.tracciamento` con consenso marketing: oggi il
+        # checkout non lo scrive ancora (il Purchase arriva dal browser), il
+        # giorno che lo scrivera' qui e' gia' pronto. Mai bloccante.
+        try:
+            from services.meta_capi import evento_da_provenienza
+            evento_da_provenienza(
+                "Purchase", confirmed.get("provenienza"), event_id=f"acq_{order_id}",
+                custom_data={"value": float(confirmed.get("total") or 0),
+                             "currency": str(confirmed.get("currency") or "EUR").upper(),
+                             "content_type": "ordine"},
+                contesto="checkout")
+        except Exception:  # noqa: BLE001
+            pass
+
         # The "new order arrived" merchant email is part of the request-mode
         # flow (sent from POST /order-request immediately on submission).
         # For direct-mode orders we deliberately deferred it to here, after

@@ -410,6 +410,17 @@ async def iscrivi(payload: SubscribePayload, request: Request, *,
 
     if consenso:
         await _audit_consenso_subscribe(email, consenso, payload.language)
+    # MP3 (5/10/2026) — lo stesso Lead del pixel alla Conversions API, in
+    # background: parte SOLO se il blocco `tracciamento` dice marketing=si
+    # (consenso nel banner) e porta l'event_id del browser. Mai bloccante.
+    try:
+        from services.meta_capi import evento_da_provenienza
+        evento_da_provenienza(
+            "Lead", doc_set.get("provenienza"), email=email, request=request,
+            custom_data={"content_name": doc_set.get("source") or "cerchio", "content_category": "cerchio"},
+            contesto=doc_set.get("source"))
+    except Exception:  # noqa: BLE001
+        pass
     if gia_verificato:
         return {"ok": True}                  # E3: la conferma (e il benvenuto) arrivano dal chiamante
     # C4/B (24/9): con CERCHIO_SINGOLO_OPTIN acceso la prima email e' il

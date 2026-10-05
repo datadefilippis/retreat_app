@@ -4835,10 +4835,39 @@ async def public_operator_contatti(org_slug: str, request: Request = None):
     # per l'operatore che guarda la propria pagina. Nessuna email a nessuno.
     if identita.get("registra") and identita.get("org_id") != org.get("id"):
         try:
-            await _registra_richiesta_contatto(org, identita, request)
+            nuovo = await _registra_richiesta_contatto(org, identita, request)
+            # MP3 (5/10/2026) — `registrato` dice al browser che QUESTA e' una
+            # richiesta nuova (il pixel manda Contact solo allora); lo stesso
+            # Contact parte da qui alla Conversions API, con l'event_id e i
+            # cookie che il browser passa in query SOLO col consenso marketing
+            out["registrato"] = bool(nuovo)
+            if nuovo:
+                _contact_a_meta(request, org, identita)
         except Exception:  # noqa: BLE001 — il lead non blocca mai i contatti
             logger.warning("richiesta di contatto non registrata", exc_info=True)
     return out
+
+
+def _contact_a_meta(request: Request, org: dict, identita: dict) -> bool:
+    """MP3 — il Contact alla Conversions API. I parametri ev/fbp/fbc arrivano
+    solo col consenso marketing (frontend ContattiOperatore); senza `ev`
+    non parte nulla. Mai bloccante."""
+    try:
+        q = request.query_params if request is not None else {}
+        ev = (q.get("ev") or "").strip()
+        if not ev:
+            return False
+        from services.meta_capi import evento_da_provenienza
+        from services.provenienza import pulisci_tracciamento
+        tracc = pulisci_tracciamento({"marketing": True, "event_id": ev,
+                                      "fbp": q.get("fbp"), "fbc": q.get("fbc")})
+        referer = (request.headers.get("referer") or "")[:500] or None
+        return evento_da_provenienza(
+            "Contact", {"tracciamento": tracc, "url": referer}, email=identita.get("email"),
+            request=request, custom_data={"content_name": org.get("slug") or "operatore"},
+            contesto="contatti")
+    except Exception:  # noqa: BLE001
+        return False
 
 
 async def _identita_dal_bearer(request: Request):
@@ -4884,7 +4913,7 @@ async def _identita_dal_bearer(request: Request):
 _INDICI_CONTATTI_PRONTI = False
 
 
-async def _registra_richiesta_contatto(org: dict, account: dict, request: Request) -> None:
+async def _registra_richiesta_contatto(org: dict, account: dict, request: Request) -> bool:
     # `account` e' l'identita' di _identita_dal_bearer: per gli utenti del
     # gestionale l'id e' «utente:<id>» (stessa chiave unica per giorno)
     """R2 — una riga per (operatore, account, giorno): la persona che
@@ -4903,7 +4932,7 @@ async def _registra_richiesta_contatto(org: dict, account: dict, request: Reques
     now = datetime.now(timezone.utc)
     giorno = now.strftime("%Y-%m-%d")
     referer = (request.headers.get("referer") or "")[:300] if request else ""
-    await contact_requests_collection.update_one(
+    esito = await contact_requests_collection.update_one(
         {"org_id": org["id"], "platform_account_id": account["id"], "giorno": giorno},
         {"$setOnInsert": {
             "id": generate_id(), "org_id": org["id"], "platform_account_id": account["id"],
@@ -4913,6 +4942,8 @@ async def _registra_richiesta_contatto(org: dict, account: dict, request: Reques
             "scade_il": now.replace(year=now.year + 1),
         }},
         upsert=True)
+    # True solo alla PRIMA richiesta del giorno (riga inserita): e' il lead
+    return bool(getattr(esito, "upserted_id", None))
 
 @router.get("/visual-demos")
 async def visual_demos():
