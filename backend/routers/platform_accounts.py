@@ -315,14 +315,34 @@ async def password_signup_ep(body: PasswordSignup, request: Request):
 async def verify_email_ep(body: VerifyEmailBody, request: Request):
     """Consuma il token di verifica del signup (one-shot)."""
     _flag_enabled()
-    from services.platform_account_service import verify_signup_email
+    from services.platform_account_service import (get_account, newsletter_status,
+                                                   verify_signup_email)
     try:
-        return await verify_signup_email(body.token)
+        esito = await verify_signup_email(body.token)
     except ValueError:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Link non valido o scaduto. Richiedine uno nuovo.",
         )
+    # FL5 (5/10/2026 sera, founder) — il clic di verifica fa ENTRARE, come
+    # per il professionista (FV1): stessa sessione del magic link (il token
+    # di verifica e' monouso: un secondo clic da' 400 e la pagina manda al
+    # login). Senza account attivo si risponde come prima. Mai bloccante.
+    try:
+        account = await get_account(esito.get("account_id") or "") if esito.get("account_id") else None
+        if account and account.get("is_active", True):
+            token = create_platform_token(
+                {"sub": account["id"], "email": account["email"]},
+                expires_delta=timedelta(days=PLATFORM_SESSION_DAYS),
+            )
+            esito = {**esito, "access_token": token, "token_type": "bearer",
+                     "account": {"id": account["id"], "email": account["email"],
+                                 "name": account.get("name"),
+                                 "language": account.get("language", "it")},
+                     **await newsletter_status(account["email"])}
+    except Exception:  # noqa: BLE001 — la verifica e' gia' fatta: al peggio si entra dal login
+        logging.getLogger(__name__).warning("FL5: sessione dopo la verifica non rilasciata", exc_info=True)
+    return esito
 
 
 @router.post("/auth/login")

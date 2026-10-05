@@ -142,7 +142,7 @@ class TestRitornoDopoLaConferma:
         assert "from services.verifica_email import percorso_interno" in invio       # mai un open redirect
         assert '_ritorno = percorso_interno(return_to) if return_to else "/"' in invio
         assert 'if _ritorno != "/":' in invio and "&next=" in invio
-        assert 'return {"status": "verified", "email": account.get("email")}' in svc
+        assert 'return {"status": "verified", "email": account.get("email"), "account_id": account["id"]}' in svc   # FL5: +id per la sessione
         assert svc.count("_send_verify_email(") == 2      # def + signup: nessun altro chiamante cambia
 
     def test_il_link_porta_next_solo_se_chiesto(self, monkeypatch):
@@ -165,7 +165,7 @@ class TestRitornoDopoLaConferma:
         verifica = (FE / "features" / "account" / "AccountVerifyEmailPage.js").read_text(encoding="utf-8")
         assert "const next = rawNext.startsWith('/') && !rawNext.startsWith('//') ? rawNext : '';" in verifica
         assert 'data-testid="verify-torna"' in verifica and "entraInAurya(emailConfermata, next)" in verifica
-        assert "{next ? (" in verifica                                     # senza next: la pagina di sempre
+        assert ") : next ? (" in verifica                                  # senza next: la pagina di sempre (FL5: dopo «dentro»)
         assert '<ContattiOperatore slug={org_slug} data={data} variante="profilo" />' in PROF
         assert 'contesto="contatti"' in COMP
 

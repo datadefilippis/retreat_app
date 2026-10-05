@@ -599,8 +599,9 @@ async def verify_signup_email(token: str) -> Dict[str, Any]:
         await retroactive_claim(account)
     except Exception:
         logger.exception("claim retroattivo fallito per %s", account["id"])
-    # 26/9: l'email serve alla pagina di conferma per precompilare l'accesso
-    return {"status": "verified", "email": account.get("email")}
+    # 26/9: l'email serve alla pagina di conferma per precompilare l'accesso;
+    # FL5: l'id serve alla rotta per rilasciare la sessione (mai esposto dalla pagina)
+    return {"status": "verified", "email": account.get("email"), "account_id": account["id"]}
 
 
 async def _handle_failed_password_login(account: Dict[str, Any]) -> None:

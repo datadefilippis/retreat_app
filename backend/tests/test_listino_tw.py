@@ -1734,7 +1734,8 @@ class TestHubAccountAp2:
         # OTP e — da AP1b — anche il login password)
         # R1 (25/9/2026): quattro — magic link, OTP, password e il signup
         # con password quando LOGIN_SENZA_VERIFICA risponde gia' con la sessione
-        assert router.count("**await newsletter_status(account[\"email\"])") == 4
+        # FL5 (5/10/2026): cinque — anche la verifica email del signup rilascia la sessione
+        assert router.count("**await newsletter_status(account[\"email\"])") == 5
         # /platform/me espone il booleano per il render (senza token)
         assert "with_token=False" in router
 

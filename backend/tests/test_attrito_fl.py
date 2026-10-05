@@ -184,3 +184,54 @@ console.log('OK');
         finally:
             os.unlink(prova.name)
         assert r.returncode == 0 and "OK" in r.stdout and "Assertion failed" not in r.stderr, r.stdout + r.stderr
+
+
+class TestFL4Testo:
+    """FL4 — una frase sola per «sei dentro, cosa succede adesso», vera (FL2),
+    senza declinazioni; i tre form del Cerchio la leggono da lib/cerchio.js."""
+
+    def test_frase_unica(self):
+        c = (FE / "lib" / "cerchio.js").read_text(encoding="utf-8")
+        assert "export const TESTO_BENVENUTO = 'Sei nel Cerchio: la prima Lettera è in arrivo" in c
+        assert "export const TESTO_CONFERMA = 'Ti abbiamo scritto:" in c
+        assert "export const testoEsito = () => (_ultimaModalita === 'benvenuto' ? TESTO_BENVENUTO : TESTO_CONFERMA);" in c
+        lead = (FE / "features" / "prelaunch" / "LeadForm.jsx").read_text(encoding="utf-8")
+        assert "defaultValue: TESTO_BENVENUTO" in lead and "Benvenuto.'" not in lead
+        assert "defaultValue: 'Ci sei.' }" in lead
+        inv = (FE / "features" / "frequenze" / "InvitoSound.jsx").read_text(encoding="utf-8")
+        assert ": testoEsito()}" in inv and "apre anche le meditazioni intere" not in inv
+        gr = (FE / "features" / "storefront" / "components" / "checkout" / "GrazieCerchio.jsx").read_text(encoding="utf-8")
+        assert "{testoEsito()}" in gr and "la prima Lettera sta arrivando" not in gr
+        import json
+        it = json.loads((FE / "locales" / "it" / "prelaunch.json").read_text(encoding="utf-8"))
+        assert it["form"]["thanksTitle"] == "Ci sei."
+        # mai piu' «Benvenuto» come saluto nei testi di successo dei form
+        for rel in ("features/prelaunch/LeadForm.jsx", "features/frequenze/InvitoSound.jsx",
+                    "features/storefront/components/checkout/GrazieCerchio.jsx", "lib/cerchio.js"):
+            assert "Benvenuto." not in (FE / rel).read_text(encoding="utf-8"), rel
+
+
+class TestFL5VerificaEntra:
+    """FL5 — il clic di verifica dell'account cliente FA ENTRARE (stessa
+    sessione del magic link), come per il professionista; token rotto = 400."""
+
+    def test_nel_codice(self):
+        r = (BACKEND / "routers" / "platform_accounts.py").read_text(encoding="utf-8")
+        i = r.index("async def verify_email_ep(")
+        blocco = r[i:i + 2500]
+        assert "esito = await verify_signup_email(body.token)" in blocco
+        assert 'if account and account.get("is_active", True):' in blocco
+        assert "expires_delta=timedelta(days=PLATFORM_SESSION_DAYS)" in blocco
+        assert '**await newsletter_status(account["email"])' in blocco           # anche la prova del Cerchio, se c'e'
+        s = (BACKEND / "services" / "platform_account_service.py").read_text(encoding="utf-8")
+        assert '"account_id": account["id"]}' in s
+        p = (FE / "features" / "account" / "AccountVerifyEmailPage.js").read_text(encoding="utf-8")
+        assert "localStorage.setItem(PLATFORM_TOKEN_KEY, d.access_token);" in p
+        assert "if (d.subscriber_token) salvaProva(d.subscriber_token);" in p
+        assert 'data-testid="verify-vai"' in p and 'data-testid="verify-torna"' in p    # la strada di ieri resta
+
+    def test_token_rotto_dal_vivo(self):
+        if not _vivo():
+            pytest.skip("backend locale spento")
+        r = requests.post(API + "/platform/auth/verify-email", json={"token": "non-esiste"}, timeout=10)
+        assert r.status_code == 400 and "access_token" not in r.text
