@@ -116,3 +116,19 @@ Un giro di deploy dopo FL2+FL1+FL0+FL4 (il grosso dell'attrito sparisce in un gi
 3. **FL3**: ti va bene leggere il file prima/dopo delle 47 email prima che tocchi il codice? Sono circa 20 minuti di lettura.
 4. **FL5**: il clic di verifica dell'account cliente fa entrare direttamente (come il professionista)? Consiglio di sì.
 5. Scelta del nome per l'oggetto del benvenuto: «Sei nel Cerchio di Aurya» (consigliato) o altro.
+
+## 5. Stato (5/10/2026 notte): FL0-FL2, FL4, FL5 implementati in locale; FL3 in lettura; deploy sul via
+
+| Lotto | Stato | Commit |
+|---|---|---|
+| FL2 pulsante dell'email | fatto | ea0d65c2 |
+| FL1 risultato visibile (14 punti + via i reload) | fatto | 934e2753 + 4b766206 (fix build) |
+| FL0 banner | fatto | 0d99a7f7 + 7c46d685 |
+| FL4 frase unica | fatto | 748af6ae |
+| FL5 verifica account = entra | fatto | 2f0bf411 |
+| FL3 email | **prima/dopo in `docs/EMAIL_COPY_2026-10.md`, in lettura dal founder**; codice dopo | 935bcd73 |
+| FL6 | script `deploy/giri/deploy-2026-10-05-attrito.sh` pronto; deploy solo sul via | — |
+
+Verificato in locale dal browser interno: banner nuovo (primo e secondo livello), «Accetta tutto» salva marketing=sì, iscrizione da /cerca-ritiro con la pagina scorsa di 514 px → il box «Ci sei.» torna al centro dello schermo con il focus (role=status); il dev server compila senza errori (un commento ESLint malformato in esito.js avrebbe rotto il build di produzione: trovato e corretto prima del giro). Suite intera: nessun rosso nuovo rispetto alla base.
+
+Decisioni del founder (5/10 sera): banner come proposto; il clic nell'email resta la prova (niente sblocco immediato); i testi delle email li verifica lui prima del codice; la verifica dell'account fa entrare; oggetto «Sei nel Cerchio di Aurya».
