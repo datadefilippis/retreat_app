@@ -574,3 +574,18 @@ class TestMPCoperturaPorte:
         assert prov.get("utm", {}).get("campaign") == "prova-mp" and prov.get("utm", {}).get("content") == "ad-1"
         assert prov.get("porta") == "facebook" and prov.get("canale")      # classificata come il Cerchio
         assert prov.get("tracciamento") == {"marketing": False}      # senza consenso: niente identificativi
+
+    def test_csp_lascia_passare_il_pixel(self):
+        """5/10 sera, trovato in prod al primo giro: la CSP bloccava fbevents.js
+        (stato 0, nessun cookie, nessun evento dal browser). Ogni riga CSP di
+        nginx deve ammettere connect.facebook.net negli script e www.facebook.com
+        nelle connessioni; e niente unsafe-inline (resta l'invariante SEC-1)."""
+        import re as _re
+        conf = (RADICE / "deploy" / "nginx" / "nginx.conf").read_text(encoding="utf-8")
+        righe = _re.findall(r'add_header Content-Security-Policy "([^"]+)"', conf)
+        assert len(righe) >= 2
+        for csp in righe:
+            script = _re.search(r"script-src\s+([^;]+);", csp).group(1)
+            connect = _re.search(r"connect-src\s+([^;]+);", csp).group(1)
+            assert "https://connect.facebook.net" in script and "'unsafe-inline'" not in script, script
+            assert "https://www.facebook.com" in connect and "https://connect.facebook.net" in connect, connect
