@@ -142,7 +142,7 @@ Ordine: MP0 → MP1 → MP2 → MP3 → MP4 → MP5, un giro di deploy solo alla
 | MP2 Pixel browser (`lib/meta.js`, eventi con `eventID`) | fatto | 0ab621ee |
 | MP3 Conversions API (`services/meta_capi.py`, agganci, registro `tracciamento_eventi`) | fatto | dbb52693 |
 | MP4 Regia (campagna › inserzione, provenienza operatori, campagne + Meta nel lunedì) | fatto | 01ef9847 |
-| MP5 Prova e accensione | **script pronto** (`deploy/giri/deploy-2026-10-05-meta.sh`), deploy solo su via esplicito | — |
+| MP5 Prova e accensione | **IN PROD** dal 5/10 sera: `prod-2026-10-05-meta` (backend+frontend) + `prod-2026-10-05-meta-csp` e `-csp2` (solo nginx, vedi sotto). Prova dal vivo riuscita: Lead dal browser e dal server con lo stesso event_id, accettato da Meta, dati di prova cancellati | c8d886a2, 7b82670d |
 
 Scostamenti rispetto al piano, tutti voluti:
 - **Purchase lato server è dormiente**: l'aggancio nel webhook Stripe c'è, ma il checkout non scrive ancora `provenienza.tracciamento` sull'ordine (sarebbe un lotto a sé sul flusso d'acquisto). Il Purchase arriva dal browser sulla pagina di grazie, col consenso. Quando il checkout scriverà il tracciamento, il server partirà da solo.
@@ -158,3 +158,6 @@ Verità della suite prima del giro: 15 rossi + 1 errore noti (stessa lista della
 3. **Campagna**: obiettivo «Contatti» → evento di conversione `Lead` (o `LeadConfermato` per ottimizzare sui contatti che cliccano davvero, quando ce ne saranno almeno 50 a settimana).
 4. **Parametri URL** in ogni inserzione: `utm_source=facebook&utm_medium=paid&utm_campaign={{campaign.name}}&utm_content={{ad.name}}` (già detto il 5/10): senza, la regia non può distinguere le campagne.
 5. Nell'area admin: **Iscritti → ripartizione «Per campagna»** e tendine campagna › inserzione; **Operatori** con «da facebook · campagna · inserzione» sotto l'email; **Panoramica → I numeri del lunedì**: riga «Campagne degli ultimi 30 giorni» e riga «Meta».
+
+### 11. Lezione del primo giro (5/10 sera): la CSP
+Al primo giro il pixel non partiva in prod: la Content-Security-Policy di nginx (`script-src`) non ammetteva `connect.facebook.net`, quindi col consenso marketing lo script veniva bloccato in silenzio (stato 0, nessun cookie, nessun evento dal browser), mentre il server verso la Conversions API funzionava. Trovato provando dal browser, non dai curl. Fix in due giri di solo nginx: `script-src` + `connect-src` (connect.facebook.net, www.facebook.com), poi `form-action` + `frame-src` per `www.facebook.com` (il POST di ripiego del pixel in un iframe). Niente `unsafe-inline`: l'invariante SEC-1 resta, e la guardia ora pretende le quattro voci su ogni riga CSP. Regola: **ogni integrazione di terzi che carica script si prova dal browser in prod prima di dirla fatta.**
