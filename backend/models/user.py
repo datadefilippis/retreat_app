@@ -50,6 +50,10 @@ class UserCreate(BaseModel):
     # se malformato (services/telefono.py). Resta PRIVATO (show_contacts off).
     phone: Optional[str] = None
     invite_token: Optional[str] = None       # Platform invite token (invite-only mode)
+    # MP0 (5/10/2026) — da dove arriva il professionista: url, referrer, utm,
+    # click_ids (lo stesso blocco che il Cerchio salva da settembre). Facoltativo:
+    # i client vecchi non lo mandano e tutto resta com'e'.
+    provenienza: Optional[dict] = None
 
     @field_validator("phone")
     @classmethod

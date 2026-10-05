@@ -51,17 +51,27 @@ export function testoConsenso(versione = VERSIONE_CORRENTE) {
 export function provenienzaCorrente() {
   if (typeof window === 'undefined') return {};
   let utm = null;
+  let click = null;
   try {
     const q = new URLSearchParams(window.location.search);
     const pulisci = (k) => (q.get(k) || '').trim().slice(0, 80) || null;
     const source = pulisci('utm_source');
     const medium = pulisci('utm_medium');
     const campaign = pulisci('utm_campaign');
-    if (source || medium || campaign) utm = { source, medium, campaign };
+    // MP0 (5/10/2026) — l'inserzione (utm_content) e la parola chiave (utm_term)
+    const content = pulisci('utm_content');
+    const term = pulisci('utm_term');
+    if (source || medium || campaign || content || term) utm = { source, medium, campaign, content, term };
+    // MP0 — gli identificativi di clic delle piattaforme (fbclid, gclid):
+    // regia e Conversions API; viaggiano solo se presenti nell'URL
+    const fbclid = (q.get('fbclid') || '').trim().slice(0, 256) || null;
+    const gclid = (q.get('gclid') || '').trim().slice(0, 256) || null;
+    if (fbclid || gclid) click = { ...(fbclid ? { fbclid } : {}), ...(gclid ? { gclid } : {}) };
   } catch { /* query illeggibile: niente utm */ }
   return {
     url: String(window.location.href || '').slice(0, 500) || null,
     referrer: String((typeof document !== 'undefined' && document.referrer) || '').slice(0, 500) || null,
     ...(utm ? { utm } : {}),
+    ...(click ? { click_ids: click } : {}),
   };
 }

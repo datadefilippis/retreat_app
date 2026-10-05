@@ -144,6 +144,11 @@ class SubscribePayload(BaseModel):
     referrer: Optional[str] = Field(default=None, max_length=500)
     utm: Optional[dict] = None
     consenso_versione: Optional[str] = Field(default=None, max_length=30)
+    # MP0 (5/10/2026) — identificativi di clic (fbclid, gclid) e il blocco di
+    # tracciamento per Meta: {event_id, fbp, fbc, marketing}. Facoltativi:
+    # un bundle vecchio non li manda e tutto resta com'e'.
+    click_ids: Optional[dict] = None
+    tracciamento: Optional[dict] = None
 
 
 class TokenPayload(BaseModel):
@@ -453,7 +458,8 @@ def _modalita_risposta() -> str:
 def _provenienza_da_payload(payload: "SubscribePayload", user_agent: str) -> dict:
     """B1 — il blocco `provenienza` dell'iscritto, dalla fonte e da quello
     che il form ci manda in piu' (url, referrer, utm)."""
-    from services.provenienza import classifica, dispositivo, pulisci_utm
+    from services.provenienza import (classifica, dispositivo, pulisci_click_ids,
+                                      pulisci_tracciamento, pulisci_utm)
     url = (payload.url or "").strip()[:500] or None
     referrer = (payload.referrer or "").strip()[:500] or None
     utm = pulisci_utm(payload.utm)
@@ -461,8 +467,16 @@ def _provenienza_da_payload(payload: "SubscribePayload", user_agent: str) -> dic
     if not base.get("porta") and utm and utm.get("source"):
         # senza ?porta= la porta e' l'utm_source (traffico esterno)
         base["porta"] = utm["source"][:20].lower()
-    return {**base, "url": url, "referrer": referrer, "utm": utm,
-            "dispositivo": dispositivo(user_agent)}
+    out = {**base, "url": url, "referrer": referrer, "utm": utm,
+           "dispositivo": dispositivo(user_agent)}
+    # MP0 — clic pubblicitari e blocco di tracciamento (solo se il client li manda)
+    click = pulisci_click_ids(payload.click_ids)
+    if click:
+        out["click_ids"] = click
+    tracc = pulisci_tracciamento(payload.tracciamento)
+    if tracc:
+        out["tracciamento"] = tracc
+    return out
 
 
 def _consenso_da_payload(payload: "SubscribePayload", request: Request,

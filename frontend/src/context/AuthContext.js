@@ -149,6 +149,12 @@ export const AuthProvider = ({ children }) => {
     if (website !== undefined && website !== null) {
       payload.website = website;
     }
+    // MP0 (5/10/2026) — da dove arriva il professionista (url, referrer,
+    // utm, clic pubblicitari): lo stesso blocco del Cerchio. Mai bloccante.
+    try {
+      const { provenienzaCorrente } = await import('../lib/testiConsenso');
+      payload.provenienza = provenienzaCorrente();
+    } catch { /* senza provenienza la registrazione va avanti uguale */ }
     const response = await axios.post(`${apiUrl}/api/auth/signup`, payload);
 
     // v6.0: Backend returns 202 with status=verification_required for open signups

@@ -172,15 +172,82 @@ def dispositivo(user_agent: Optional[str]) -> Optional[str]:
 
 
 def pulisci_utm(raw) -> Optional[dict]:
-    """Tiene solo source/medium/campaign, corte e minuscole."""
+    """Tiene solo source/medium/campaign (+ content/term dal 5/10, MP0:
+    l'inserzione e la parola chiave), corte."""
     if not isinstance(raw, dict):
         return None
     out = {}
-    for k in ("source", "medium", "campaign"):
+    for k in ("source", "medium", "campaign", "content", "term"):
         v = raw.get(k) or raw.get(f"utm_{k}")
         if isinstance(v, str) and v.strip():
             out[k] = v.strip()[:80]
     return out or None
+
+
+# MP0 (5/10/2026) — gli identificativi di clic delle piattaforme pubblicitarie:
+# servono alla Conversions API (fbc) e alla regia («questo iscritto viene
+# da un clic su un'inserzione»). Solo questi due, corti, mai altro.
+_CLICK_RX = re.compile(r"^[A-Za-z0-9_\-.]{4,256}$")
+
+
+def pulisci_click_ids(raw) -> Optional[dict]:
+    if not isinstance(raw, dict):
+        return None
+    out = {}
+    for k in ("fbclid", "gclid"):
+        v = raw.get(k)
+        if isinstance(v, str) and _CLICK_RX.match(v.strip()):
+            out[k] = v.strip()
+    return out or None
+
+
+# MP0/MP3 — il blocco di tracciamento che il browser manda con un gesto
+# (iscrizione, registrazione, contatti): l'event_id condiviso con il pixel
+# (dedup lato Meta), i cookie _fbp/_fbc e il consenso marketing letto dal
+# banner. Senza consenso marketing si tiene SOLO il flag (false) e nessun
+# identificativo: il server non manda niente a Meta per quella persona.
+_EVENT_ID_RX = re.compile(r"^[A-Za-z0-9_\-]{8,64}$")
+_FB_COOKIE_RX = re.compile(r"^fb\.[0-9]\.[0-9]{6,16}\.[A-Za-z0-9_\-]{1,128}$")
+
+
+def pulisci_tracciamento(raw) -> Optional[dict]:
+    if not isinstance(raw, dict):
+        return None
+    marketing = raw.get("marketing") is True
+    out = {"marketing": marketing}
+    if not marketing:
+        return out
+    eid = raw.get("event_id")
+    if isinstance(eid, str) and _EVENT_ID_RX.match(eid.strip()):
+        out["event_id"] = eid.strip()
+    for k in ("fbp", "fbc"):
+        v = raw.get(k)
+        if isinstance(v, str) and _FB_COOKIE_RX.match(v.strip()):
+            out[k] = v.strip()
+    return out
+
+
+def provenienza_registrazione(source: str, raw, user_agent: Optional[str]) -> dict:
+    """MP0 — il blocco `provenienza` per una REGISTRAZIONE (professionista o
+    account cliente), dallo stesso oggetto che il browser costruisce per il
+    Cerchio (url, referrer, utm, click_ids, tracciamento). `raw` puo'
+    mancare (client vecchio): resta la classificazione dalla fonte."""
+    raw = raw if isinstance(raw, dict) else {}
+    url = (str(raw.get("url") or "").strip()[:500]) or None
+    referrer = (str(raw.get("referrer") or "").strip()[:500]) or None
+    utm = pulisci_utm(raw.get("utm"))
+    base = classifica(source, None, url)
+    if not base.get("porta") and utm and utm.get("source"):
+        base["porta"] = utm["source"][:20].lower()
+    out = {**base, "url": url, "referrer": referrer, "utm": utm,
+           "dispositivo": dispositivo(user_agent)}
+    click = pulisci_click_ids(raw.get("click_ids"))
+    if click:
+        out["click_ids"] = click
+    tracc = pulisci_tracciamento(raw.get("tracciamento"))
+    if tracc:
+        out["tracciamento"] = tracc
+    return out
 
 
 def canali_per_admin() -> list:

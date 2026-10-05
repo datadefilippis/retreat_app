@@ -30,7 +30,7 @@ import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import platformApi, { PLATFORM_TOKEN_KEY } from '../../api/platformClient';
 import { salvaProva } from '../../lib/cerchio';
-import { testoConsenso, VERSIONE_CORRENTE } from '../../lib/testiConsenso';
+import { testoConsenso, VERSIONE_CORRENTE, provenienzaCorrente } from '../../lib/testiConsenso';
 
 const INPUT = 'w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-gray-800 focus:border-transparent outline-none';
 const BOTTONE = 'w-full rounded-lg bg-gray-900 text-white px-3 py-2 text-sm font-medium disabled:opacity-50';
@@ -104,6 +104,8 @@ export default function PortaAurya({ vista: vistaIniziale = 'entra', emailInizia
         accepted_terms: true,
         wants_newsletter: !!cerchio,
         consenso_versione: VERSIONE_CORRENTE,
+        // MP0 (5/10/2026) — da dove arriva l'account: campagna, inserzione, clic
+        provenienza: provenienzaCorrente(),
         // 26/9 (founder): SOLO dalla porta dei contatti il link di verifica
         // riporta qui; negli altri contesti nulla cambia
         ...(contesto === 'contatti' ? { return_to: window.location.pathname } : {}),

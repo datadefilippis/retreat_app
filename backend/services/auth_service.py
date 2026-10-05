@@ -105,6 +105,15 @@ async def signup(
     # resta assente/spento, quindi sul profilo pubblico non compare
     if getattr(user_data, "phone", None):
         org_doc.setdefault("public_profile", {})["public_phone"] = user_data.phone
+    # MP0 (5/10/2026) — la provenienza del professionista (campagna, inserzione,
+    # referrer, clic), con la stessa tassonomia del Cerchio. Best-effort: mai
+    # un'eccezione da qui puo' fermare una registrazione.
+    try:
+        from services.provenienza import provenienza_registrazione
+        org_doc["provenienza"] = provenienza_registrazione(
+            "signup_pro", getattr(user_data, "provenienza", None), user_agent)
+    except Exception:  # noqa: BLE001
+        pass
     from database import organizations_collection
     await organizations_collection.insert_one(org_doc)
 

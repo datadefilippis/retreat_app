@@ -67,6 +67,11 @@ services:
       # niente rebuild). Al lancio: false + wipe dei sample.
       - PRELAUNCH_MODE=${PRELAUNCH_MODE:-}
       - GA_MEASUREMENT_ID=${GA_MEASUREMENT_ID:-}
+      # MP0 (5/10/2026) — Meta Pixel + Conversions API: senza META_PIXEL_ID
+      # il sito e' identico a prima; il token resta solo qui, mai nel bundle.
+      - META_PIXEL_ID=${META_PIXEL_ID:-}
+      - META_CAPI_TOKEN=${META_CAPI_TOKEN:-}
+      - META_TEST_EVENT_CODE=${META_TEST_EVENT_CODE:-}
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
       - BACKGROUND_ALERT_INTERVAL_HOURS=${BACKGROUND_ALERT_INTERVAL_HOURS:-6}
       - BACKGROUND_INITIAL_DELAY_SECONDS=${BACKGROUND_INITIAL_DELAY_SECONDS:-60}

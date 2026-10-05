@@ -53,6 +53,9 @@ async def site_config():
         # è un flip di env + restart, identico al flag di pre-lancio.
         # Nessuna riconfigurazione al lancio: l'ID viaggia col deploy.
         "ga_measurement_id": (os.environ.get("GA_MEASUREMENT_ID") or "").strip() or None,
+        # MP0 (5/10/2026) — Meta Pixel: stesso schema di GA (env runtime, flip +
+        # restart). Vuoto = niente pixel, nessuna richiesta verso Meta.
+        "meta_pixel_id": (os.environ.get("META_PIXEL_ID") or "").strip() or None,
     }
 
 

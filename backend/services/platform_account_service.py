@@ -427,10 +427,15 @@ async def password_signup(*, name: Optional[str], email: str, password: str,
                           accepted_terms: bool = False,
                           request_ip: Optional[str] = None,
                           user_agent: Optional[str] = None,
-                          return_to: Optional[str] = None) -> Dict[str, Any]:
+                          return_to: Optional[str] = None,
+                          provenienza: Optional[dict] = None) -> Dict[str, Any]:
     """Signup email+password: crea (o adotta) l'account e invia l'email
     di verifica. L'account NON e' loggabile con password finche' l'email
     non e' verificata.
+
+    MP0 (5/10/2026): `provenienza` e' il blocco che il browser costruisce
+    (url, referrer, utm, click_ids, tracciamento); si salva sull'account
+    nuovo con la tassonomia del Cerchio. Facoltativo, mai bloccante.
 
     Email gia' registrata → ValueError("EMAIL_EXISTS") (il router la
     traduce in un 409 onesto). Eccezione VOLUTA: un account "guscio"
@@ -489,6 +494,12 @@ async def password_signup(*, name: Optional[str], email: str, password: str,
             if isinstance(doc.get(f), datetime):
                 doc[f] = _iso(doc[f])
         doc.update(verify_fields)
+        # MP0 — da dove arriva l'account (campagna, inserzione, clic): best-effort
+        try:
+            from services.provenienza import provenienza_registrazione
+            doc["provenienza"] = provenienza_registrazione("account_signup", provenienza, user_agent)
+        except Exception:  # noqa: BLE001
+            pass
         await platform_accounts_collection.insert_one(doc)
         account = doc
 
