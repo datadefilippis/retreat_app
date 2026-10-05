@@ -589,3 +589,6 @@ class TestMPCoperturaPorte:
             connect = _re.search(r"connect-src\s+([^;]+);", csp).group(1)
             assert "https://connect.facebook.net" in script and "'unsafe-inline'" not in script, script
             assert "https://www.facebook.com" in connect and "https://connect.facebook.net" in connect, connect
+            # il POST di ripiego del pixel (iframe + form verso www.facebook.com/tr)
+            assert _re.search(r"form-action 'self' https://www\.facebook\.com;", csp), csp
+            assert _re.search(r"frame-src 'self' https://iframe\.mediadelivery\.net https://www\.facebook\.com;", csp), csp
