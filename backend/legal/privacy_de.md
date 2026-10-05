@@ -182,6 +182,7 @@ Zur Erbringung des Dienstes bedient sich Aurya der folgenden Unterauftragsverarb
 | **Sendinblue SAS (Brevo)** | Versand transaktionaler E-Mails (Bestellbestätigungen, Tickets, Restzahlungserinnerungen, Bewertungs-OTPs) und der Newsletter der Veranstalter | E-Mail-Adresse des Empfängers, Name, Inhalt der E-Mail | Frankreich (EU) | EU-Unterauftragsverarbeiter; DSGVO-konform — https://www.brevo.com/legal/privacypolicy/ |
 | **Anthropic, PBC** | Automatische Übersetzung der öffentlichen Inhalte des Schaufensters, auf Anforderung des Veranstalters | Ausschließlich die zu übersetzenden öffentlichen Texte (Titel, Beschreibungen von Retreats/Erlebnissen/Produkten). Niemals Daten von Endkunden, Bestellungen oder Zahlungen. | Vereinigte Staaten von Amerika | EU-Standardvertragsklauseln (SCC) gemäß Beschluss (EU) 2021/914 und/oder EU-U.S. Data Privacy Framework (DPF) — https://www.anthropic.com/legal |
 | **OpenStreetMap Foundation (Nominatim)** | Geokodierung des vom Veranstalter angegebenen Standorts (Umwandlung in Koordinaten für die geografische Suche) | Ausschließlich die Ortsangabe als Zeichenkette (z. B. „Ostuni, Apulien"); niemals Namen, E-Mail-Adressen oder andere identifizierende Daten | EU/Vereinigtes Königreich | Öffentlicher Dienst; Policy https://osmfoundation.org/wiki/Privacy_Policy |
+| **Meta Platforms Ireland Limited** | Messung und Optimierung der Anzeigen von Aurya (Meta Pixel und Conversions API), **nur mit der Einwilligung „Marketing" des Cookie-Banners** (Abschnitt 15) | Cookie-Kennungen `_fbp`/`_fbc`, Seite und ausgefuehrte Aktion; bei serverseitigen Ereignissen pseudonymisierte E-Mail (SHA-256-Hash), IP und User Agent | Irland (EU) + USA fuer die Verarbeitung | SCC + EU-U.S. DPF — https://www.facebook.com/privacy/policy |
 
 Die aktuelle Liste der Unterauftragsverarbeiter kann jederzeit per E-Mail an info@aurya.life angefordert werden.
 
@@ -386,7 +387,12 @@ Die Mitteilung an die betroffene Person umfasst mindestens: Art der Verletzung, 
 
 ## 15. Cookies und ähnliche Technologien
 
-Aurya verwendet **Google Analytics 4** (Google Ireland Limited) ausschliesslich fuer aggregierte Statistiken zur Nutzung der Website, und **nur nach ausdruecklicher Einwilligung** des Nutzers ueber das Cookie-Banner. Der Dienst ist mit dem Consent Mode integriert: Ohne Einwilligung wird kein Mess-Cookie gesetzt und es werden keine Nutzer-Identifikatoren uebertragen. Die Einwilligung kann jederzeit widerrufen werden, indem die Website-Daten des Browsers geloescht werden oder der Verantwortliche kontaktiert wird. Rechtsgrundlage: Einwilligung (Art. 6.1.a DSGVO). Es werden **keine** Werbe-Profiling-Cookies, Mixpanel, Hotjar, Facebook Pixel oder andere Tracking-Dienste eingesetzt.
+Aurya verwendet, **nur nach ausdruecklicher Einwilligung** des Nutzers ueber das Cookie-Banner und je Kategorie getrennt:
+
+- **Statistiken** — **Google Analytics 4** (Google Ireland Limited), ausschliesslich fuer aggregierte Statistiken zur Nutzung der Website. Der Dienst ist mit dem Consent Mode integriert: Ohne Einwilligung wird kein Mess-Cookie gesetzt und es werden keine Nutzer-Identifikatoren uebertragen.
+- **Marketing** — **Meta Pixel und Meta Conversions API** (Meta Platforms Ireland Limited), ausschliesslich zur Messung und Optimierung der Anzeigen von Aurya auf Facebook und Instagram (welche Anzeigen zu Anmeldungen im Cerchio oder Registrierungen von Veranstaltern fuehren). Ohne Einwilligung wird das Meta-Skript nicht geladen, kein Cookie gesetzt und nichts an Meta uebertragen. Mit Einwilligung werden uebertragen: die Cookie-Kennungen `_fbp` und `_fbc`, die besuchte Seite und die ausgefuehrte Aktion (Besuch, Anmeldung, Registrierung, Kontaktanfrage, Kauf); bei serverseitig gesendeten Ereignissen die E-Mail-Adresse in pseudonymisierter Form (SHA-256-Hash), die IP-Adresse und der User Agent, wie von der Conversions API vorgesehen. Meta handelt fuer die weitere Verarbeitung als eigenstaendiger Verantwortlicher gemaess eigener Datenschutzerklaerung (https://www.facebook.com/privacy/policy).
+
+Die Einwilligung kann jederzeit ueber den Link „Cookie-Einstellungen" in der Fusszeile, durch Loeschen der Website-Daten des Browsers oder durch Kontakt mit dem Verantwortlichen widerrufen werden. Rechtsgrundlage: Einwilligung (Art. 6.1.a DSGVO). Es werden **keine** weiteren Tracking-Dienste wie Mixpanel oder Hotjar eingesetzt.
 
 ### 15.1 Eingesetzte Technologien (essenziell, einwilligungsfrei gemäß Art. 122 des italienischen Datenschutzkodex und der ePrivacy-Richtlinie)
 
@@ -399,7 +405,7 @@ Alle diese Technologien arbeiten ausschließlich clientseitig (im Browser des Nu
 
 ### 15.2 Cookies von Drittanbietern
 
-**Keine Drittanbieter-Cookies** werden von den Aurya-Seiten ohne Einwilligung gesetzt; die einzige Ausnahme, abhaengig von der ueber das Banner erteilten Einwilligung, sind die Mess-Cookies von Google Analytics 4 (Abschnitt 15 oben). Die Unterauftragsverarbeiter (Stripe, Brevo) können eigene Cookies ausschließlich in ihren jeweiligen Abläufen setzen (z. B. Stripe-Checkout-Formular) und gemäß ihren eigenen Datenschutzerklärungen.
+**Keine Drittanbieter-Cookies** werden von den Aurya-Seiten ohne Einwilligung gesetzt; die einzigen Ausnahmen, abhaengig von der ueber das Banner fuer die jeweilige Kategorie erteilten Einwilligung, sind die Mess-Cookies von Google Analytics 4 (Kategorie „Statistiken") und die Meta-Pixel-Cookies `_fbp` und `_fbc` (Kategorie „Marketing", Hoechstdauer 90 Tage) gemaess Abschnitt 15. Die Unterauftragsverarbeiter (Stripe, Brevo) können eigene Cookies ausschließlich in ihren jeweiligen Abläufen setzen (z. B. Stripe-Checkout-Formular) und gemäß ihren eigenen Datenschutzerklärungen.
 
 ---
 

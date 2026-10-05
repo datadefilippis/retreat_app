@@ -92,4 +92,4 @@ class TestInformativaOP1:
             t = (BACKEND / "legal" / f"terms_{lang}.md").read_text(encoding="utf-8")
             assert termini in t and "19.3" in t, lang
         from core.legal_versions import CURRENT_VERSION_TAG
-        assert CURRENT_VERSION_TAG == "v2.10"
+        assert tuple(int(x) for x in CURRENT_VERSION_TAG.lstrip("v").split(".")) >= (2, 10)   # OP1 e' entrata con la 2.10

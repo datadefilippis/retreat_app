@@ -4,7 +4,7 @@
     "intro_first": "Um Aurya zu nutzen, müssen Sie unsere Datenschutzerklärung und die Allgemeinen Geschäftsbedingungen akzeptieren.",
     "intro_update": "Wir haben unsere Datenschutzerklärung und die Allgemeinen Geschäftsbedingungen aktualisiert. Bitte akzeptieren Sie die neue Version, um Aurya weiterhin zu nutzen.",
     "what_changed_title": "Was hat sich geändert",
-    "what_changed_body": "Version 2.10: Die Datenschutzerklärung stellt nun klar, dass Sie als Kunde der Plattform von Aurya Service-Mitteilungen und Aktualisierungen erhalten (Neuigkeiten und Funktionen, Änderungen der Bedingungen, Partnerschaften mit Bezug zum Dienst), mit Widerspruchsmöglichkeit in jeder E-Mail. Keine Werbung Dritter ohne gesonderte Einwilligung. Im Abschnitt zu Il Cerchio, dem Newsletter, gehört zu den optionalen Präferenzen nun eine Altersgruppe. Kein neuer Auftragsverarbeiter.",
+    "what_changed_body": "Version 2.11: Das Cookie-Banner hat jetzt zwei getrennte Kategorien, Statistiken (Google Analytics) und Marketing (Meta Pixel und Conversions API, nur zur Messung unserer Anzeigen auf Facebook und Instagram); nichts läuft ohne Ihr Ja, und Sie können Ihre Wahl unter „Cookie-Einstellungen“ ändern. Meta Platforms Ireland kommt für diesen einzigen Zweck zu den Auftragsverarbeitern hinzu. Die vorherigen Änderungen bleiben: Service-Mitteilungen an Veranstalter mit Widerspruchsrecht und die optionale Altersgruppe im Cerchio.",
     "read_privacy": "Datenschutzerklärung lesen",
     "read_terms": "AGB lesen",
     "read_sub_processors": "Liste der Auftragsverarbeiter anzeigen",
@@ -17,9 +17,12 @@
   },
   "cookie_banner": {
     "title": "Cookies und Messung",
-    "body": "Wir verwenden essenzielle technische Cookies (Anmeldung und Sprache) und, nur mit deiner Einwilligung, Google Analytics, um die Nutzung der Website zu verstehen und sie zu verbessern. Keine Werbe-Cookies, niemals.",
+    "body": "Wir verwenden essenzielle technische Cookies (Anmeldung und Sprache) und, nur wenn du zustimmst, Google Analytics, um die Nutzung der Website zu verstehen, und Meta, um unsere Anzeigen zu messen. Du entscheidest und kannst es jederzeit unter „Cookie-Einstellungen“ ändern.",
     "details_link": "Details in der Datenschutzerklärung",
     "accept_button": "Akzeptieren",
+    "stats_button": "Statistiken",
+    "all_button": "Alle akzeptieren",
+    "preferences_link": "Cookie-Einstellungen",
     "essential_button": "Nur essenzielle",
     "close_button": "Schließen und nur mit essenziellen Cookies fortfahren"
   },

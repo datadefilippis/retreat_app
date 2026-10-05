@@ -15,6 +15,8 @@
  *    (send_page_view: false), così ogni navigazione conta una volta.
  */
 
+import { leggiConsenso } from './consenso';   // MP1: il punto di verita' del consenso
+
 const CONSENT_KEY = 'aurya_analytics_consent_v1';
 
 let loaded = false;
@@ -66,8 +68,11 @@ export function initAnalytics(id) {
   document.head.appendChild(s);
   loaded = true;
 
-  // consenso già espresso in una visita precedente → riapplica in silenzio
-  const stored = readStoredConsent();
+  // consenso già espresso in una visita precedente → riapplica in silenzio.
+  // MP1 (5/10/2026): la verita' e' lib/consenso.js (categorie statistiche e
+  // marketing); la chiave v1 resta letta come ripiego per chi non ha ancora
+  // rivisto il banner.
+  const stored = leggiConsenso() || readStoredConsent();
   if (stored?.analytics === true) grantAnalyticsConsent(false);
 
   // GA2 — flush della coda accumulata prima dell'init (page_view di

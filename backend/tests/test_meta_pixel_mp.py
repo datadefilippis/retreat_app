@@ -7,6 +7,7 @@ marketing), provenienza alla registrazione del professionista e
 dell'account cliente. Tutto facoltativo: un client vecchio non manda
 nulla e il server risponde come prima.
 """
+import json
 import os
 from pathlib import Path
 
@@ -106,3 +107,51 @@ class TestMP0Fondamenta:
                            json={"email": "mp0-guardia@example.com", "consent": False,
                                  "click_ids": {"fbclid": "x"}, "tracciamento": {"marketing": False}}, timeout=10)
         assert r1.status_code == r2.status_code and r1.status_code != 500
+
+
+class TestMP1Consenso:
+    """Banner a tre scelte, lib/consenso.js come verita', informativa v2.11."""
+
+    def test_consenso_js(self):
+        c = (FE / "lib" / "consenso.js").read_text(encoding="utf-8")
+        for k in ("const CHIAVE = 'aurya_consent_v3';", "export function leggiConsenso()", "export function bannerDaMostrare()",
+                  "export const consensoMarketing", "export function salvaConsenso(", "export function onCambio(",
+                  "export function apriPreferenzeCookie()", "legacy: true"):
+            assert k in c, k
+        # nessun ciclo: consenso.js non importa GA ne' Meta
+        assert "from './analytics'" not in c and "from './meta'" not in c
+
+    def test_banner_tre_scelte_mai_consenso_implicito(self):
+        b = (FE / "components" / "legal" / "CookieConsentBanner.js").read_text(encoding="utf-8")
+        for t in ("cookie-solo-essenziali", "cookie-statistiche", "cookie-accetta-tutto"):
+            assert f'data-testid="{t}"' in b, t
+        assert "scegli(false, false)" in b and "scegli(true, false)" in b and "scegli(true, true)" in b
+        assert "bannerDaMostrare()" in b and "salvaConsenso({ analytics, marketing })" in b
+        assert "EVENTO_APRI" in b                                     # il pie' di pagina lo riapre
+        # la X = solo essenziali: nessun «chiudi = accetto»
+        assert b.count("scegli(false, false)") >= 2
+        a = (FE / "lib" / "analytics.js").read_text(encoding="utf-8")
+        assert "leggiConsenso() || readStoredConsent()" in a
+        import json
+        for lang in ("it", "en", "de", "fr"):
+            cb = json.loads((FE / "locales" / lang / "legal.json").read_text(encoding="utf-8"))["cookie_banner"]
+            for k in ("stats_button", "all_button", "preferences_link", "essential_button", "body"):
+                assert cb.get(k), (lang, k)
+            assert "Meta" in cb["body"]
+            assert "mai" not in cb["body"].lower().split("pubblicitari")[-1][:12] if lang == "it" else True
+        it = json.loads((FE / "locales" / "it" / "legal.json").read_text(encoding="utf-8"))["cookie_banner"]
+        assert "Nessun cookie pubblicitario, mai" not in it["body"]
+
+    def test_informativa_v211(self):
+        from core.legal_versions import CURRENT_VERSION_TAG
+        assert CURRENT_VERSION_TAG == "v2.11"
+        for lang, (meta, cat) in {"it": ("Meta Pixel e Meta Conversions API", "Marketing"),
+                                  "en": ("Meta Pixel and Meta Conversions API", "Marketing"),
+                                  "de": ("Meta Pixel und Meta Conversions API", "Marketing"),
+                                  "fr": ("Meta Pixel et Meta Conversions API", "Marketing")}.items():
+            p = (BACKEND / "legal" / f"privacy_{lang}.md").read_text(encoding="utf-8")
+            assert meta in p and "Facebook Pixel" not in p, lang          # via la vecchia smentita
+            assert "_fbp" in p and "SHA-256" in p, lang
+            assert "| **Meta Platforms Ireland Limited** |" in p, lang
+        modal = json.loads((FE / "locales" / "it" / "legal.json").read_text(encoding="utf-8"))["reconsent"]["what_changed_body"]
+        assert modal.startswith("Versione 2.11")

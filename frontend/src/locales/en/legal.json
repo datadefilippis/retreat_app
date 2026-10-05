@@ -4,7 +4,7 @@
     "intro_first": "To use Aurya you need to accept our Privacy Policy and Terms of Service.",
     "intro_update": "We have updated our Privacy Policy and Terms of Service. To continue using Aurya, please accept the new version.",
     "what_changed_title": "What changed",
-    "what_changed_body": "Version 2.10: the policy now states clearly that, as a customer of the platform, you receive service communications and updates from Aurya (news and features, changes of terms, partnerships related to the service), with the option to object from every email. No third-party promotions without separate consent. In the entry about Il Cerchio, the newsletter, the optional preferences now include an age range. No new sub-processor.",
+    "what_changed_body": "Version 2.11: the cookie banner now has two separate categories, Statistics (Google Analytics) and Marketing (Meta Pixel and Conversions API, only to measure our ads on Facebook and Instagram); nothing runs without your yes and you can change your mind from \"Cookie preferences\". Meta Platforms Ireland joins the sub-processors for this sole purpose. Previous changes remain: service communications to professionals with the right to object, and the optional age range in the Cerchio.",
     "read_privacy": "Read the Privacy Policy",
     "read_terms": "Read the Terms of Service",
     "read_sub_processors": "View the sub-processor list",
@@ -17,9 +17,12 @@
   },
   "cookie_banner": {
     "title": "Cookies and measurement",
-    "body": "We use essential technical cookies (authentication and language) and, only with your consent, Google Analytics to understand how the site is used and improve it. No advertising cookies, ever.",
+    "body": "We use essential technical cookies (authentication and language) and, only if you accept, Google Analytics to understand how the site is used and Meta to measure our ads. You choose, and you can change your mind any time from “Cookie preferences”.",
     "details_link": "Details in the Privacy Policy",
     "accept_button": "Accept",
+    "stats_button": "Statistics",
+    "all_button": "Accept all",
+    "preferences_link": "Cookie preferences",
     "essential_button": "Essential only",
     "close_button": "Close and continue with essential cookies only"
   },

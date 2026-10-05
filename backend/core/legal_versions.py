@@ -38,10 +38,17 @@ from typing import Final
 # IMPORTANT: bump CURRENT_VERSION_TAG whenever the LEGAL CONTENT changes.
 # The hash is recomputed manually from the IT bundle (see procedure below).
 
-CURRENT_VERSION_TAG: Final[str] = "v2.10"
+CURRENT_VERSION_TAG: Final[str] = "v2.11"
 """Human-readable tag of the documents the user is currently shown.
 
 History:
+  - v2.11 (MP1, 2026-10-05) — cookie e misurazione: art. 15 con DUE
+    categorie a consenso separato (Statistiche = GA4; Marketing = Meta
+    Pixel e Conversions API, solo per misurare le inserzioni di Aurya),
+    cosa viaggia verso Meta e con quale base, revoca da «Preferenze
+    cookie»; via la frase «non Facebook Pixel»; 15.2 con i cookie
+    _fbp/_fbc; Meta Platforms Ireland fra i sub-responsabili. Nessun
+    cambio ai Termini. Stesse modifiche in EN/DE/FR.
   - v2.10 (OP1, 2026-10-02 sera) — comunicazioni di servizio agli
     Operatori: riga 1-bis dell'informativa (novita' e funzioni della
     Piattaforma, cambi di condizioni, partnership e opportunita' legate
@@ -178,7 +185,7 @@ History:
     CERCHIO_SINGOLO_OPTIN. Stesse modifiche in EN/DE/FR.
 """
 
-CURRENT_VERSION_HASH: Final[str] = "5adf9946ab2ae554"
+CURRENT_VERSION_HASH: Final[str] = "59ea2e3789691c7d"
 """SHA256-hex16 of the rendered IT privacy + terms text bundle.
 
 Computed from the concatenation:

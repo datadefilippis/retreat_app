@@ -4,7 +4,7 @@
     "intro_first": "Pour utiliser Aurya, vous devez accepter notre Politique de confidentialité et les Conditions générales d'utilisation.",
     "intro_update": "Nous avons mis à jour notre Politique de confidentialité et nos Conditions générales d'utilisation. Pour continuer à utiliser Aurya, veuillez accepter la nouvelle version.",
     "what_changed_title": "Ce qui a changé",
-    "what_changed_body": "Version 2.10 : la politique indique clairement qu'en tant que client de la plateforme, vous recevez d'Aurya les communications de service et mises à jour (nouveautés et fonctions, changements de conditions, partenariats liés au service), avec la possibilité de vous y opposer depuis chaque email. Aucune promotion de tiers sans consentement distinct. Dans la rubrique sur Il Cerchio, la newsletter, les préférences facultatives incluent désormais une tranche d'âge. Aucun nouveau sous-traitant.",
+    "what_changed_body": "Version 2.11 : le bandeau cookies a désormais deux catégories distinctes, Statistiques (Google Analytics) et Marketing (Meta Pixel et Conversions API, uniquement pour mesurer nos publicités sur Facebook et Instagram) ; rien ne démarre sans votre oui et vous pouvez changer d'avis depuis « Préférences cookies ». Meta Platforms Ireland rejoint les sous-traitants pour cette seule finalité. Les changements précédents demeurent : communications de service aux professionnels avec droit d'opposition, et la tranche d'âge facultative dans le Cerchio.",
     "read_privacy": "Lire la Politique de confidentialité",
     "read_terms": "Lire les Conditions générales",
     "read_sub_processors": "Voir la liste des sous-traitants",
@@ -17,9 +17,12 @@
   },
   "cookie_banner": {
     "title": "Cookies et mesure",
-    "body": "Nous utilisons des cookies techniques essentiels (authentification et langue) et, uniquement avec ton consentement, Google Analytics pour comprendre comment le site est utilisé et l'améliorer. Aucun cookie publicitaire, jamais.",
+    "body": "Nous utilisons des cookies techniques essentiels (authentification et langue) et, uniquement si tu acceptes, Google Analytics pour comprendre comment le site est utilisé et Meta pour mesurer nos publicités. C'est toi qui choisis, et tu peux changer d'avis à tout moment depuis « Préférences cookies ».",
     "details_link": "Détails dans la Politique de confidentialité",
     "accept_button": "Accepter",
+    "stats_button": "Statistiques",
+    "all_button": "Tout accepter",
+    "preferences_link": "Préférences cookies",
     "essential_button": "Essentiels uniquement",
     "close_button": "Fermer et continuer avec les seuls cookies essentiels"
   },

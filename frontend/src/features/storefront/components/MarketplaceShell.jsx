@@ -39,6 +39,7 @@ import {
 } from '../../../components/ui/dropdown-menu';
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from '../../../components/ui/sheet';
 import { scordaProva } from '../../../lib/cerchio';
+import { apriPreferenzeCookie } from '../../../lib/consenso';   // MP1: «Preferenze cookie» riapre il banner
 import { vociAccount } from '../../../lib/cappelli';
 import StrisciaBentornato from '../../../components/StrisciaBentornato';
 
@@ -875,6 +876,16 @@ const PRO_CTA = `rounded-full border border-[#8a7440] bg-[#8a7440]/[0.07]
                         cosi' la voce non e' piu' un doppione muto del
                         link Privacy qui sopra. */}
                     <li><Link to="/privacy#cookie-e-tecnologie-simili" className="hover:text-white">Cookie</Link></li>
+                    {/* MP1 (5/10/2026) — con due categorie (statistiche, marketing) la
+                        revoca deve essere un gesto visibile: riapre il banner. */}
+                    <li>
+                      <button type="button" onClick={apriPreferenzeCookie} data-testid="preferenze-cookie"
+                              className="hover:text-white"
+                              style={{ background: 'transparent', border: 'none', padding: 0, font: 'inherit',
+                                       color: 'inherit', cursor: 'pointer', textTransform: 'none', letterSpacing: 0 }}>
+                        {t('legal:cookie_banner.preferences_link', { defaultValue: 'Preferenze cookie' })}
+                      </button>
+                    </li>
                     {/* OF1 (founder 2/8) — l'indirizzo si VEDE. Un link
                         che dice "Contatti" funziona solo per chi ha un
                         programma di posta configurato: tutti gli altri

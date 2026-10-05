@@ -182,6 +182,7 @@ Pour la fourniture du service, Aurya fait appel aux sous-traitants ultérieurs s
 | **Sendinblue SAS (Brevo)** | Envoi des emails transactionnels (confirmations de commande, billets, rappels de solde, OTP d'avis) et des newsletters des Opérateurs | Adresse email du destinataire, nom, contenu de l'email | France (UE) | Sous-traitant UE ; conforme au RGPD — https://www.brevo.com/legal/privacypolicy/ |
 | **Anthropic, PBC** | Traduction automatique des contenus publics de la vitrine, à la demande de l'Opérateur | Exclusivement les textes publics à traduire (titres, descriptions de retraites/expériences/produits). Jamais de données de Clients finaux, de commandes ou de paiements. | États-Unis d'Amérique | Clauses Contractuelles Types UE (SCC) au sens de la Décision (UE) 2021/914 et/ou EU-U.S. Data Privacy Framework (DPF) — https://www.anthropic.com/legal |
 | **OpenStreetMap Foundation (Nominatim)** | Géocodage de la localité indiquée par l'Opérateur (conversion en coordonnées pour la recherche géographique) | Exclusivement la chaîne de localité (par ex. « Ostuni, Puglia ») ; jamais de noms, emails ou autres données identifiantes | UE/Royaume-Uni | Service public ; politique https://osmfoundation.org/wiki/Privacy_Policy |
+| **Meta Platforms Ireland Limited** | Mesure et optimisation des publicités d'Aurya (Meta Pixel et Conversions API), **uniquement avec le consentement « Marketing » du bandeau cookies** (art. 15) | Identifiants des cookies `_fbp`/`_fbc`, page et action effectuée ; pour les événements côté serveur, email pseudonymisé (hachage SHA-256), IP et user agent | Irlande (UE) + USA pour le traitement | SCC + EU-U.S. DPF — https://www.facebook.com/privacy/policy |
 
 La liste à jour des sous-traitants ultérieurs peut être demandée à tout moment par email à info@aurya.life.
 
@@ -386,7 +387,12 @@ La communication à la Personne concernée inclut au minimum : la nature de la v
 
 ## 15. Cookies et technologies similaires
 
-Aurya utilise **Google Analytics 4** (Google Ireland Limited) exclusivement pour des statistiques agregees sur l'utilisation du site, et **uniquement apres consentement explicite** de l'Utilisateur exprime via le bandeau cookies. Le service est integre avec le Consent Mode : sans consentement, aucun cookie de mesure n'est depose et aucun identifiant de l'Utilisateur n'est transmis. Le consentement est revocable a tout moment en effacant les donnees de navigation du navigateur ou en contactant le Responsable du traitement. Base juridique : consentement (art. 6.1.a RGPD). **Aucun** cookie de profilage publicitaire, ni Mixpanel, Hotjar, Facebook Pixel ou autre service de tracage n'est utilise.
+Aurya utilise, **uniquement apres consentement explicite** de l'Utilisateur exprime via le bandeau cookies et par categorie separee :
+
+- **Statistiques** — **Google Analytics 4** (Google Ireland Limited), exclusivement pour des statistiques agregees sur l'utilisation du site. Le service est integre avec le Consent Mode : sans consentement, aucun cookie de mesure n'est depose et aucun identifiant de l'Utilisateur n'est transmis.
+- **Marketing** — **Meta Pixel et Meta Conversions API** (Meta Platforms Ireland Limited), exclusivement pour mesurer et optimiser les publicites d'Aurya sur Facebook et Instagram (quelles publicites menent a des inscriptions au Cerchio ou a des inscriptions de Professionnels). Sans consentement, le script Meta n'est pas charge, aucun cookie n'est depose et aucune donnee n'est transmise a Meta. Avec consentement sont transmis : les identifiants des cookies `_fbp` et `_fbc`, la page visitee et l'action effectuee (visite, inscription, enregistrement, demande de contact, achat) ; pour les evenements envoyes depuis le serveur, l'adresse email sous forme pseudonymisee (hachage SHA-256), l'adresse IP et le user agent, comme prevu par la Conversions API. Meta agit comme responsable autonome pour les traitements ulterieurs selon sa propre politique (https://www.facebook.com/privacy/policy).
+
+Le consentement est revocable a tout moment depuis le lien « Préférences cookies » en pied de page, en effacant les donnees de navigation du navigateur ou en contactant le Responsable du traitement. Base juridique : consentement (art. 6.1.a RGPD). **Aucun** autre service de tracage (Mixpanel, Hotjar) n'est utilise.
 
 ### 15.1 Technologies utilisées (essentielles, exemptées de consentement au sens de l'art. 122 du Code Privacy italien et de la Directive ePrivacy)
 
@@ -399,7 +405,7 @@ Toutes ces technologies opèrent exclusivement côté client (dans le navigateur
 
 ### 15.2 Cookies de tiers
 
-**Aucun cookie de tiers** n'est déposé par les pages d'Aurya sans consentement ; la seule exception, subordonnée au consentement exprimé via le bandeau, sont les cookies de mesure de Google Analytics 4 (art. 15 ci-dessus). Les sous-traitants ultérieurs (Stripe, Brevo) peuvent déposer leurs propres cookies exclusivement dans leurs flux respectifs (par ex. module de checkout Stripe) et conformément à leurs propres politiques de confidentialité.
+**Aucun cookie de tiers** n'est déposé par les pages d'Aurya sans consentement ; les seules exceptions, subordonnées au consentement exprimé via le bandeau pour la catégorie respective, sont les cookies de mesure de Google Analytics 4 (catégorie « Statistiques ») et les cookies du Meta Pixel `_fbp` et `_fbc` (catégorie « Marketing », durée maximale 90 jours) décrits à l'art. 15. Les sous-traitants ultérieurs (Stripe, Brevo) peuvent déposer leurs propres cookies exclusivement dans leurs flux respectifs (par ex. module de checkout Stripe) et conformément à leurs propres politiques de confidentialité.
 
 ---
 

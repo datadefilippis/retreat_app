@@ -4,7 +4,7 @@
     "intro_first": "Per usare Aurya devi accettare la nostra Informativa sulla Privacy e i Termini di Servizio.",
     "intro_update": "Abbiamo aggiornato la nostra Informativa sulla Privacy e i Termini di Servizio. Per continuare a usare Aurya accetta la nuova versione.",
     "what_changed_title": "Cosa è cambiato",
-    "what_changed_body": "Versione 2.10: l'informativa dice in chiaro che, come cliente della piattaforma, ricevi da Aurya le comunicazioni di servizio e gli aggiornamenti (novità e funzioni, cambi di condizioni, partnership legate al servizio), con la possibilità di opporti da ogni email. Nessuna promozione di terzi senza un consenso a parte. Nella voce sul Cerchio, la newsletter, fra le preferenze facoltative compare la fascia d'età. Nessun nuovo sub-responsabile.",
+    "what_changed_body": "Versione 2.11: il banner cookie ha ora due categorie separate, Statistiche (Google Analytics) e Marketing (Meta Pixel e Conversions API, solo per misurare le nostre inserzioni su Facebook e Instagram); niente parte senza il tuo sì e puoi cambiare idea da «Preferenze cookie». Meta Platforms Ireland entra fra i sub-responsabili per questa sola finalità. Restano le novità precedenti: comunicazioni di servizio ai professionisti con possibilità di opporti, e la fascia d'età facoltativa nel Cerchio.",
     "read_privacy": "Leggi l'Informativa sulla Privacy",
     "read_terms": "Leggi i Termini di Servizio",
     "read_sub_processors": "Vedi l'elenco dei sub-responsabili",
@@ -17,9 +17,12 @@
   },
   "cookie_banner": {
     "title": "Cookie e misurazione",
-    "body": "Usiamo cookie tecnici essenziali (autenticazione e lingua) e, solo con il tuo consenso, Google Analytics per capire come viene usato il sito e migliorarlo. Nessun cookie pubblicitario, mai.",
+    "body": "Usiamo cookie tecnici essenziali (autenticazione e lingua) e, solo se accetti, Google Analytics per capire come viene usato il sito e Meta per misurare le nostre inserzioni. Scegli tu, e puoi cambiare idea quando vuoi da «Preferenze cookie».",
     "details_link": "Dettagli nell'Informativa sulla Privacy",
     "accept_button": "Accetta",
+    "stats_button": "Statistiche",
+    "all_button": "Accetta tutto",
+    "preferences_link": "Preferenze cookie",
     "essential_button": "Solo essenziali",
     "close_button": "Chiudi e continua con i soli cookie essenziali"
   },

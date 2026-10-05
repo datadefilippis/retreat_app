@@ -188,6 +188,7 @@ Per l'erogazione del servizio, Aurya si avvale dei seguenti sub-responsabili. La
 | **Sendinblue SAS (Brevo)** | Invio email transazionali (conferme ordine, biglietti, promemoria saldo, OTP recensioni) e newsletter degli Operatori | Indirizzo email destinatario, nome, contenuto dell'email | Francia (UE) | Sub-processore UE; conforme al GDPR — https://www.brevo.com/legal/privacypolicy/ |
 | **Anthropic, PBC** | Traduzione automatica dei contenuti pubblici della vetrina, su richiesta dell'Operatore | Esclusivamente i testi pubblici da tradurre (titoli, descrizioni di ritiri/esperienze/prodotti). Mai dati di Clienti finali, ordini o pagamenti. | Stati Uniti d'America | Clausole Contrattuali Tipo UE (SCC) ai sensi della Decisione (UE) 2021/914 e/o EU-U.S. Data Privacy Framework (DPF) — https://www.anthropic.com/legal |
 | **OpenStreetMap Foundation (Nominatim)** | Geocodifica della localita' indicata dall'Operatore (conversione in coordinate per la ricerca geografica) | Esclusivamente la stringa di localita' (es. "Ostuni, Puglia"); mai nomi, email o altri dati identificativi | UE/Regno Unito | Servizio pubblico; policy https://osmfoundation.org/wiki/Privacy_Policy |
+| **Meta Platforms Ireland Limited** | Misurazione e ottimizzazione delle inserzioni di Aurya (Meta Pixel e Conversions API), **solo con il consenso «Marketing» del banner cookie** (art. 15) | Identificativi dei cookie `_fbp`/`_fbc`, pagina ed evento compiuto; per gli eventi dal server email pseudonimizzata (hash SHA-256), IP e user agent | Irlanda (UE) + USA per processing | SCC + EU-U.S. DPF — https://www.facebook.com/privacy/policy |
 
 L'elenco aggiornato dei sub-responsabili e' richiedibile in qualsiasi momento via email a info@aurya.life.
 
@@ -393,7 +394,12 @@ La comunicazione all'Interessato include almeno: natura della violazione, dati d
 
 ## 15. Cookie e tecnologie simili
 
-Aurya utilizza **Google Analytics 4** (Google Ireland Limited) esclusivamente per statistiche aggregate sull'utilizzo del sito, e **solo previo consenso esplicito** dell'Utente espresso tramite il banner cookie. Il servizio e' integrato con la modalita' Consent Mode: in assenza di consenso non viene impostato alcun cookie di misurazione e non vengono trasmessi identificatori dell'Utente. Il consenso e' revocabile in qualsiasi momento cancellando i dati di navigazione del browser o contattando il Titolare. Base giuridica: consenso (art. 6.1.a GDPR). **Non** sono utilizzati cookie di profilazione pubblicitaria, Mixpanel, Hotjar, Facebook Pixel o altri servizi di tracciamento.
+Aurya utilizza, **solo previo consenso esplicito** dell'Utente espresso tramite il banner cookie e per categoria separata:
+
+- **Statistiche** — **Google Analytics 4** (Google Ireland Limited), esclusivamente per statistiche aggregate sull'utilizzo del sito. Il servizio e' integrato con la modalita' Consent Mode: in assenza di consenso non viene impostato alcun cookie di misurazione e non vengono trasmessi identificatori dell'Utente.
+- **Marketing** — **Meta Pixel e Meta Conversions API** (Meta Platforms Ireland Limited), esclusivamente per misurare e ottimizzare le inserzioni pubblicitarie di Aurya su Facebook e Instagram (quali inserzioni portano iscrizioni al Cerchio o registrazioni di Professionisti). In assenza di consenso lo script di Meta non viene caricato, nessun cookie viene impostato e nessun dato viene trasmesso a Meta. Con il consenso vengono trasmessi: gli identificativi dei cookie `_fbp` e `_fbc`, la pagina visitata e l'evento compiuto (visita, iscrizione, registrazione, richiesta di contatto, acquisto); per gli eventi inviati dal server, l'indirizzo email in forma pseudonimizzata (hash SHA-256), l'indirizzo IP e lo user agent, come previsto dalla Conversions API. Meta agisce come titolare autonomo per i trattamenti successivi secondo la propria informativa (https://www.facebook.com/privacy/policy).
+
+Il consenso e' revocabile in qualsiasi momento dal link «Preferenze cookie» nel pie' di pagina, cancellando i dati di navigazione del browser o contattando il Titolare. Base giuridica: consenso (art. 6.1.a GDPR). **Non** sono utilizzati Mixpanel, Hotjar o altri servizi di tracciamento oltre a quelli qui elencati.
 
 ### 15.1 Tecnologie utilizzate (essenziali, esenti da consenso ai sensi dell'art. 122 Codice Privacy IT e Direttiva ePrivacy)
 
@@ -406,7 +412,7 @@ Tutte queste tecnologie operano esclusivamente lato client (nel browser dell'Ute
 
 ### 15.2 Cookie di terze parti
 
-**Nessun cookie di terze parti** viene impiantato dalle pagine di Aurya senza consenso; l'unica eccezione, subordinata al consenso espresso tramite banner, sono i cookie di misurazione di Google Analytics 4 (art. 15 sopra). I sub-responsabili (Stripe, Brevo) possono impostare propri cookie esclusivamente nei rispettivi flussi (es. modulo di checkout Stripe) e secondo le loro proprie informative privacy.
+**Nessun cookie di terze parti** viene impiantato dalle pagine di Aurya senza consenso; le uniche eccezioni, subordinate al consenso espresso tramite banner per la rispettiva categoria, sono i cookie di misurazione di Google Analytics 4 (categoria «Statistiche») e i cookie di Meta Pixel `_fbp` e `_fbc` (categoria «Marketing», durata massima 90 giorni) descritti all'art. 15. I sub-responsabili (Stripe, Brevo) possono impostare propri cookie esclusivamente nei rispettivi flussi (es. modulo di checkout Stripe) e secondo le loro proprie informative privacy.
 
 ---
 

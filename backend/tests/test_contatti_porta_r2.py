@@ -37,7 +37,7 @@ CLIENTI = (FE / "features" / "customers-mgmt" / "CustomersMgmtPage.js").read_tex
 class TestR5Legale:
     def test_v28_e_hash_allineato(self):
         from core.legal_versions import CURRENT_VERSION_HASH, CURRENT_VERSION_TAG
-        assert CURRENT_VERSION_TAG == "v2.10"    # v2.8 R5 → v2.9 ET4 → v2.10 OP1 (2/10)
+        assert CURRENT_VERSION_TAG == "v2.11"    # v2.8 R5 → v2.9 ET4 → v2.10 OP1 → v2.11 MP1 (5/10)
         priv = (BACKEND / "legal" / "privacy_it.md").read_text("utf-8")
         terms = (BACKEND / "legal" / "terms_it.md").read_text("utf-8")
         atteso = hashlib.sha256((priv + "\n\n--- TERMS BUNDLE ---\n\n" + terms).encode()).hexdigest()[:16]
@@ -137,7 +137,7 @@ class TestRitornoDopoLaConferma:
         router = (BACKEND / "routers" / "platform_accounts.py").read_text(encoding="utf-8")
         svc = (BACKEND / "services" / "platform_account_service.py").read_text(encoding="utf-8")
         assert "return_to: Optional[str] = Field(None, max_length=500)" in router
-        assert "return_to=body.return_to)" in router
+        assert "return_to=body.return_to," in router        # MP0 (5/10): dopo c'e' provenienza=body.provenienza
         invio = svc[svc.index("def _send_verify_email"):][:1400]
         assert "from services.verifica_email import percorso_interno" in invio       # mai un open redirect
         assert '_ritorno = percorso_interno(return_to) if return_to else "/"' in invio

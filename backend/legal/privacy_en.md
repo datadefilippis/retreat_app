@@ -182,6 +182,7 @@ To provide the service, Aurya relies on the following sub-processors. Data shari
 | **Sendinblue SAS (Brevo)** | Sending of transactional emails (order confirmations, tickets, balance reminders, review OTPs) and Operators' newsletters | Recipient email address, name, email content | France (EU) | EU sub-processor; GDPR-compliant — https://www.brevo.com/legal/privacypolicy/ |
 | **Anthropic, PBC** | Automatic translation of public storefront content, at the Operator's request | Exclusively the public texts to be translated (titles, descriptions of retreats/experiences/products). Never End Customer, order or payment data. | United States of America | EU Standard Contractual Clauses (SCCs) pursuant to Decision (EU) 2021/914 and/or EU-U.S. Data Privacy Framework (DPF) — https://www.anthropic.com/legal |
 | **OpenStreetMap Foundation (Nominatim)** | Geocoding of the location indicated by the Operator (conversion into coordinates for geographic search) | Exclusively the location string (e.g. "Ostuni, Puglia"); never names, emails or other identifying data | EU/United Kingdom | Public service; policy https://osmfoundation.org/wiki/Privacy_Policy |
+| **Meta Platforms Ireland Limited** | Measurement and optimisation of Aurya's advertising (Meta Pixel and Conversions API), **only with the "Marketing" consent of the cookie banner** (sect. 15) | `_fbp`/`_fbc` cookie identifiers, page and action performed; for server-side events pseudonymised email (SHA-256 hash), IP and user agent | Ireland (EU) + USA for processing | SCC + EU-U.S. DPF — https://www.facebook.com/privacy/policy |
 
 The up-to-date list of sub-processors can be requested at any time by email to info@aurya.life.
 
@@ -386,7 +387,12 @@ The communication to the Data Subject includes at least: the nature of the breac
 
 ## 15. Cookies and similar technologies
 
-Aurya uses **Google Analytics 4** (Google Ireland Limited) exclusively for aggregate statistics on site usage, and **only upon the User's explicit consent** expressed through the cookie banner. The service is integrated with Consent Mode: without consent no measurement cookie is set and no User identifiers are transmitted. Consent can be revoked at any time by clearing the browser's site data or contacting the Controller. Legal basis: consent (art. 6.1.a GDPR). **No** advertising profiling cookies, Mixpanel, Hotjar, Facebook Pixel or other tracking services are used.
+Aurya uses, **only upon the User's explicit consent** expressed through the cookie banner and per separate category:
+
+- **Statistics** — **Google Analytics 4** (Google Ireland Limited), exclusively for aggregate statistics on site usage. The service is integrated with Consent Mode: without consent no measurement cookie is set and no User identifiers are transmitted.
+- **Marketing** — **Meta Pixel and Meta Conversions API** (Meta Platforms Ireland Limited), exclusively to measure and optimise Aurya's advertising on Facebook and Instagram (which ads lead to Cerchio subscriptions or Professional registrations). Without consent the Meta script is not loaded, no cookie is set and no data is sent to Meta. With consent the following are transmitted: the `_fbp` and `_fbc` cookie identifiers, the page visited and the action performed (visit, subscription, registration, contact request, purchase); for events sent from the server, the email address in pseudonymised form (SHA-256 hash), the IP address and the user agent, as provided by the Conversions API. Meta acts as an independent controller for subsequent processing under its own policy (https://www.facebook.com/privacy/policy).
+
+Consent can be revoked at any time from the "Cookie preferences" link in the footer, by clearing the browser's site data or by contacting the Controller. Legal basis: consent (art. 6.1.a GDPR). **No** Mixpanel, Hotjar or other tracking services are used beyond those listed here.
 
 ### 15.1 Technologies used (essential, exempt from consent pursuant to Art. 122 of the Italian Privacy Code and the ePrivacy Directive)
 
@@ -399,7 +405,7 @@ All these technologies operate exclusively client-side (in the User's browser) a
 
 ### 15.2 Third-party cookies
 
-**No third-party cookies** are set by Aurya's pages without consent; the only exception, subject to the consent expressed through the banner, are the Google Analytics 4 measurement cookies (sect. 15 above). Sub-processors (Stripe, Brevo) may set their own cookies exclusively within their respective flows (e.g. the Stripe checkout module) and in accordance with their own privacy policies.
+**No third-party cookies** are set by Aurya's pages without consent; the only exceptions, subject to the consent expressed through the banner for the respective category, are the Google Analytics 4 measurement cookies ("Statistics" category) and the Meta Pixel cookies `_fbp` and `_fbc` ("Marketing" category, maximum duration 90 days) described in sect. 15. Sub-processors (Stripe, Brevo) may set their own cookies exclusively within their respective flows (e.g. the Stripe checkout module) and in accordance with their own privacy policies.
 
 ---
 
