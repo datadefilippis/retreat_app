@@ -216,9 +216,13 @@ export default function LeadForm({ type = 'traveler', accent = '#376254', contex
       setState('error');
       return;
     }
+    // MP2 — anche la richiesta di contatto (professionista o viaggiatore) e' un
+    // Lead per Meta: stesso event_id nel payload, il server lo rimanda alla CAPI
+    const tracciamentoLead = datiTracciamento('lead');
     try {
       await api.post('/public/leads', {
         email: email.trim(), name: name.trim() || null, type,
+        provenienza: provenienzaCorrente(), tracciamento: tracciamentoLead,
         phone: isOperator ? (phone.trim() || null) : null,
         city: city.trim() || null,
         interests: !isOperator && interests.length ? interests : null,
@@ -235,6 +239,7 @@ export default function LeadForm({ type = 'traveler', accent = '#376254', contex
     // RT4 — lead_context distingue le superfici (newsletter, landing,
     // candidatura) nelle conversioni GA4, con lo stesso evento
     trackEvent('generate_lead', { lead_type: type, lead_context: context || 'landing' });
+    metaLead({ eventID: tracciamentoLead.event_id, superficie: `lead_${type}` });
     setState('done');
   };
 

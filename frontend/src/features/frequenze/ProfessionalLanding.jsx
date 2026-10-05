@@ -22,6 +22,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../../api/client';
+import { provenienzaCorrente } from '../../lib/testiConsenso';
+import { datiTracciamento, metaLead } from '../../lib/meta';   // MP2: la richiesta e' un Lead
 import MarketplaceShell from '../storefront/components/MarketplaceShell';
 import {
   DisplayTitle, Lede, PhotoBand, PhotoOpener, Section,
@@ -89,15 +91,18 @@ export default function ProfessionalLanding() {
     e.preventDefault();
     if (!email.trim() || stato === 'invio') return;
     setStato('invio');
+    const tracciamento = datiTracciamento('lead');   // MP2
     try {
       await api.post('/public/leads', {
         type: 'operator',
+        provenienza: provenienzaCorrente(), tracciamento,
         email: email.trim(),
         name: nome.trim() || null,
         message: racconto.trim()
           || 'Aurya Sound Professional, richiesta di accesso',
         interests: ['sound_professional'],
       });
+      metaLead({ eventID: tracciamento.event_id, superficie: 'sound_professional' });
       setStato('fatto');
     } catch (err) {
       setStato(messaggio(err, 'Non inviato: riprova fra un momento.'));

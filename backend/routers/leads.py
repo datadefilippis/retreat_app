@@ -53,6 +53,11 @@ class LeadPayload(BaseModel):
     capacity: Optional[str] = Field(default=None, max_length=40)       # operatore
     # GDPR: consenso esplicito richiesto (il form lo impone)
     consent: bool = False
+    # MP0/MP3 (5/10/2026) — da dove arriva il contatto (url, referrer, utm,
+    # clic) e il blocco di tracciamento del pixel (event_id solo col consenso
+    # marketing). Facoltativi: il payload di ieri resta valido tale e quale.
+    provenienza: Optional[dict] = None
+    tracciamento: Optional[dict] = None
 
 
 @router.post("/public/leads", status_code=201)
@@ -86,6 +91,17 @@ async def create_lead(request: Request, payload: LeadPayload):
         "consent": bool(payload.consent),
         "updated_at": now,
     }
+    # MP0 — la provenienza con la stessa tassonomia del Cerchio (il
+    # tracciamento viaggia dentro, gia' pulito: senza consenso resta solo il flag)
+    try:
+        from services.provenienza import provenienza_registrazione
+        raw = dict(payload.provenienza or {})
+        if payload.tracciamento is not None:
+            raw["tracciamento"] = payload.tracciamento
+        doc_set["provenienza"] = provenienza_registrazione(
+            f"lead_{lead_type}", raw, (request.headers.get("user-agent") or "")[:300])
+    except Exception:  # noqa: BLE001 — mai rompere il form
+        pass
     try:
         res = await db.prelaunch_leads.update_one(
             {"email": email, "type": lead_type},
@@ -99,6 +115,18 @@ async def create_lead(request: Request, payload: LeadPayload):
         logger.warning("lead save failed: %s", exc)
         # rispondiamo comunque ok: il lead non deve vedere errori
         return {"ok": True}
+
+    # MP3 — lo stesso Lead del pixel alla Conversions API (solo col consenso
+    # marketing, stesso event_id: Meta lo conta una volta). Mai bloccante.
+    try:
+        from services.meta_capi import evento_da_provenienza
+        evento_da_provenienza(
+            "Lead", doc_set.get("provenienza"), email=email, request=request,
+            custom_data={"content_name": f"lead_{lead_type}",
+                         "content_category": "professionisti" if lead_type == "operator" else "viaggiatori"},
+            contesto=f"lead_{lead_type}")
+    except Exception:  # noqa: BLE001
+        pass
 
     # notifica best-effort a info@ (solo per i lead nuovi, niente spam)
     if is_new:

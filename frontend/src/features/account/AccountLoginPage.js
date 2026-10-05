@@ -31,7 +31,8 @@ import MarketplaceShell from '../storefront/components/MarketplaceShell';
 import { salvaProva, emailDellaProva } from '../../lib/cerchio';
 import GiaDentro from '../../components/GiaDentro';
 // E2 (24/9/2026) — testo unico e versionato della casella del Cerchio
-import { testoConsenso, VERSIONE_CORRENTE } from '../../lib/testiConsenso';
+import { testoConsenso, VERSIONE_CORRENTE, provenienzaCorrente } from '../../lib/testiConsenso';
+import { datiTracciamento, metaCompleteRegistration } from '../../lib/meta';   // MP2: account da /accedi
 
 // Guard module-level: il magic token e' ONE-SHOT lato server, ma in dev
 // React StrictMode monta l'effect due volte → due verify concorrenti, la
@@ -409,6 +410,10 @@ export default function AccountLoginPage() {
       }
       return;
     }
+    // MP0/MP2 (5/10/2026) — anche da qui l'account porta la provenienza
+    // (campagna, inserzione, clic) e l'event_id del pixel: stesso blocco di
+    // PortaAurya. Mai bloccante: senza, la registrazione va avanti uguale.
+    const tracciamento = datiTracciamento('reg');
     try {
       await platformApi.post('/platform/auth/signup', {
         name: name.trim() || undefined,
@@ -419,7 +424,9 @@ export default function AccountLoginPage() {
         accepted_terms: !!signupConsent,
         wants_newsletter: !!wantsLetter,
         consenso_versione: VERSIONE_CORRENTE,
+        provenienza: { ...provenienzaCorrente(), tracciamento },
       });
+      metaCompleteRegistration({ eventID: tracciamento.event_id, tipo: 'account' });
       setState('signupSent');
     } catch (err) {
       const status = err?.response?.status;

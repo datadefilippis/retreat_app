@@ -504,3 +504,73 @@ class TestMP4Regia:
         r = asyncio.run(riepilogo(24))
         assert set(r) == {"configurato", "test", "ore", "totale", "accettati", "falliti", "per_nome"}
         assert r["ore"] == 24 and isinstance(r["per_nome"], dict)
+
+
+class TestMPCoperturaPorte:
+    """5/10 sera (founder: «il form di entra-nella-rete e' monitorato? la
+    registrazione? l'iscrizione?») — OGNI porta che conta parla con Meta,
+    browser e server, con lo stesso event_id. Qui si pinnano le porte che il
+    primo giro non copriva: account da /accedi, richieste di contatto
+    /public/leads (ramo operatore del LeadForm e le due landing Sound)."""
+
+    def test_tutte_le_porte_nel_codice(self):
+        acc = (FE / "features" / "account" / "AccountLoginPage.js").read_text(encoding="utf-8")
+        assert "provenienza: { ...provenienzaCorrente(), tracciamento }," in acc
+        assert "metaCompleteRegistration({ eventID: tracciamento.event_id, tipo: 'account' });" in acc
+        assert "await operatorSignup(" in acc                      # il professionista passa da AuthContext.signup (gia' agganciato)
+        inline = (FE / "features" / "prelaunch" / "InlineSignupForm.js").read_text(encoding="utf-8")
+        assert "const { signup } = useAuth();" in inline            # /entra-nella-rete#presentati → AuthContext.signup
+        lead = (FE / "features" / "prelaunch" / "LeadForm.jsx").read_text(encoding="utf-8")
+        assert "provenienza: provenienzaCorrente(), tracciamento: tracciamentoLead," in lead
+        assert "metaLead({ eventID: tracciamentoLead.event_id, superficie: `lead_${type}` });" in lead
+        for nome, interesse in (("ProfessionalLanding.jsx", "sound_professional"), ("CreaStudioLanding.jsx", "sound_crea")):
+            src = (FE / "features" / "frequenze" / nome).read_text(encoding="utf-8")
+            assert "provenienza: provenienzaCorrente(), tracciamento," in src, nome
+            assert f"metaLead({{ eventID: tracciamento.event_id, superficie: '{interesse}' }});" in src, nome
+        # nessun altro POST a /public/leads senza tracciamento
+        for p in FE.rglob("*.js*"):
+            t = p.read_text(encoding="utf-8", errors="ignore")
+            if "'/public/leads'" in t:
+                assert "tracciamento" in t, p
+        leads = (BACKEND / "routers" / "leads.py").read_text(encoding="utf-8")
+        assert "tracciamento: Optional[dict] = None" in leads and 'f"lead_{lead_type}", raw,' in leads
+        assert '"Lead", doc_set.get("provenienza"), email=email, request=request,' in leads
+
+    def test_modello_lead_e_dal_vivo(self):
+        import os as _os
+        import requests
+        from routers.leads import LeadPayload
+        base = {"email": "a@b.it", "type": "operator", "consent": True}
+        assert LeadPayload(**base).tracciamento is None and LeadPayload(**base).provenienza is None   # payload di ieri
+        api = (_os.environ.get("REACT_APP_BACKEND_URL") or "http://localhost:8000") + "/api"
+        try:
+            requests.get(api + "/health", timeout=2)
+        except Exception:
+            pytest.skip("backend locale spento")
+        email = "mp-copertura-lead@example.com"
+        r = requests.post(api + "/public/leads", json={
+            **base, "email": email, "name": "Prova MP", "message": "verifica guardia",
+            "provenienza": {"url": "https://aurya.life/sound/professional?utm_source=facebook&utm_campaign=prova-mp",
+                            "utm": {"source": "facebook", "campaign": "prova-mp", "content": "ad-1"}},
+            "tracciamento": {"marketing": False, "event_id": "lead_0123456789abcdef"},
+        }, timeout=10)
+        if r.status_code == 429:
+            pytest.skip("rate limit")
+        assert r.status_code == 201 and r.json() == {"ok": True}
+        import asyncio
+        async def leggi_e_pulisci():
+            import database as _d
+            from motor.motor_asyncio import AsyncIOMotorClient
+            cli = AsyncIOMotorClient(_d.mongo_url, serverSelectionTimeoutMS=5000)
+            coll = cli[_os.environ["DB_NAME"]].prelaunch_leads
+            try:
+                doc = await coll.find_one({"email": email}, {"_id": 0, "provenienza": 1})
+                await coll.delete_many({"email": email})
+            finally:
+                cli.close()
+            return doc
+        doc = asyncio.run(leggi_e_pulisci())
+        prov = (doc or {}).get("provenienza") or {}
+        assert prov.get("utm", {}).get("campaign") == "prova-mp" and prov.get("utm", {}).get("content") == "ad-1"
+        assert prov.get("porta") == "facebook" and prov.get("canale")      # classificata come il Cerchio
+        assert prov.get("tracciamento") == {"marketing": False}      # senza consenso: niente identificativi
