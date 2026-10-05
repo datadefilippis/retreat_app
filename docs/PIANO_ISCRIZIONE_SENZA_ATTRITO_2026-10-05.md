@@ -126,7 +126,7 @@ Un giro di deploy dopo FL2+FL1+FL0+FL4 (il grosso dell'attrito sparisce in un gi
 | FL0 banner | fatto | 0d99a7f7 + 7c46d685 |
 | FL4 frase unica | fatto | 748af6ae |
 | FL5 verifica account = entra | fatto | 2f0bf411 |
-| FL3 email | **prima/dopo in `docs/EMAIL_COPY_2026-10.md`, in lettura dal founder**; codice dopo | 935bcd73 |
+| FL3 email | **IN PROD** dal 5/10 notte, tag `prod-2026-10-05-email` (solo backend): testo del founder (`docs/EMAIL_COPY_2026-10_FOUNDER.md`) applicato, 3 fix veri + invito team con link. All'avvio il passo nuovo «canali» avrebbe raggiunto 22 operatori già online da tempo: marcato `saltato:fl3-avvio` su 31 organizzazioni, coda a zero; parte solo per le pagine nuove. | 30fcde8a |
 | FL6 | **IN PROD** dal 5/10 sera, tag `prod-2026-10-05-attrito` (backend+frontend). Prova dal browser in prod: banner nuovo → Accetta tutto (pixel acceso) → iscrizione da /cerca-ritiro con pagina scorsa → «Ci sei.» al centro con focus, Lead browser+server accettato; poi da un «nuovo dispositivo» (prova cancellata) il link del benvenuto → /meditazioni aperte, indirizzo pulito, nessun form. Dati di prova cancellati. | — |
 
 Verificato in locale dal browser interno: banner nuovo (primo e secondo livello), «Accetta tutto» salva marketing=sì, iscrizione da /cerca-ritiro con la pagina scorsa di 514 px → il box «Ci sei.» torna al centro dello schermo con il focus (role=status); il dev server compila senza errori (un commento ESLint malformato in esito.js avrebbe rotto il build di produzione: trovato e corretto prima del giro). Suite intera: nessun rosso nuovo rispetto alla base.
