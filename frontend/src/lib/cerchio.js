@@ -37,6 +37,32 @@ export function prova() {
   try { return localStorage.getItem(PROVA_KEY) || null; } catch { return null; }
 }
 
+/**
+ * FL2 (5/10/2026 sera) — la prova arrivata nell'indirizzo (`?prova=<token>`,
+ * dal link verificante delle email: benvenuto, promemoria, «entro nel
+ * Cerchio»). Si salva PRIMA del primo render (index.js) e si toglie
+ * dall'indirizzo (niente token in cronologia o nei referrer). Cosi' il
+ * pulsante «Ascolta le meditazioni» apre davvero, su qualunque dispositivo,
+ * senza rimettere l'email. Ritorna true se ha salvato qualcosa.
+ */
+export function raccogliProvaDaUrl() {
+  if (typeof window === 'undefined') return false;
+  try {
+    const url = new URL(window.location.href);
+    const token = url.searchParams.get('prova');
+    if (!token) return false;
+    url.searchParams.delete('prova');
+    const pulito = url.pathname + (url.search || '') + (url.hash || '');
+    if (window.history && typeof window.history.replaceState === 'function') {
+      window.history.replaceState(window.history.state, '', pulito);
+    }
+    // un JWT ha tre parti: tutto il resto non e' una prova e si ignora
+    if (token.split('.').length !== 3 || token.length > 2048) return false;
+    salvaProva(token);
+    return true;
+  } catch { return false; }
+}
+
 export function scordaProva() {
   try {
     localStorage.removeItem(PROVA_KEY);

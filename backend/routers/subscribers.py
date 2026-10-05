@@ -591,8 +591,25 @@ async def verifica_e_vai(request: Request, token: str, to: Optional[str] = None)
             await segna_verificato(email, "clic", dove)
         except Exception as exc:            # noqa: BLE001 — il clic porta comunque alla pagina
             logger.warning("verifica al clic fallita per %s: %s", _mask_email(email), exc)
+        # FL2 (5/10/2026 sera, founder: «il pulsante delle meditazioni mi
+        # riporta al form») — la prova viaggia col redirect: il browser la
+        # salva prima del primo render (lib/cerchio.raccogliProvaDaUrl) e la
+        # toglie dall'indirizzo. Un clic apre davvero, su qualunque dispositivo.
+        dove = _con_prova(dove, token)
     from services.url_builder import build_public_url
     return RedirectResponse(url=build_public_url(dove), status_code=302)
+
+
+def _con_prova(percorso: str, token: str) -> str:
+    """FL2 — aggiunge `?prova=<token>` a un percorso interno, se non ce l'ha
+    gia' e se non e' la pagina di conferma (che salva la prova da sola)."""
+    if not percorso or not token or percorso.startswith("/newsletter/conferma/") or "prova=" in percorso:
+        return percorso
+    from urllib.parse import quote
+    # l'ancora (#...) resta in coda: un parametro dopo il cancelletto non arriva mai al server
+    base, _, ancora = percorso.partition("#")
+    sep = "&" if "?" in base else "?"
+    return f"{base}{sep}prova={quote(token, safe='')}" + (f"#{ancora}" if ancora else "")
 
 
 @router.get("/public/newsletter/entra/{token}")
@@ -630,7 +647,9 @@ async def entra_con_un_clic(request: Request, token: str,
         await segna_verificato(email, "clic", "entra")
     except Exception as exc:                # noqa: BLE001 — il clic porta comunque alla pagina
         logger.warning("entra con un clic fallito per %s: %s", _mask_email(email), exc)
-    return RedirectResponse(url=build_public_url(dove), status_code=302)
+    # FL2 — anche qui, quando si va dritti a un contenuto (to=...), la prova
+    # viaggia col redirect; la pagina di conferma la salva gia' da sola
+    return RedirectResponse(url=build_public_url(_con_prova(dove, token)), status_code=302)
 
 
 class UnlockPayload(BaseModel):

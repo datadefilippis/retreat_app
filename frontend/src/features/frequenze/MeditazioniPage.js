@@ -67,7 +67,8 @@ export default function MeditazioniPage() {
   const [favorites, setFavorites] = useState([]); // slugs
   const [heartAsk, setHeartAsk] = useState(false);
   const [safety, setSafety] = useState(false);      // SF — lettura su richiesta
-  const [email, setEmail] = useState('');
+  // FL2 — chi e' gia' del Cerchio su questo browser trova l'email pronta (mai vuota se la sappiamo)
+  const [email, setEmail] = useState(() => emailDellaProva() || '');
   const [nome, setNome] = useState('');
   const [consent, setConsent] = useState(false);
   const [busy, setBusy] = useState(false);

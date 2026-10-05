@@ -11,6 +11,7 @@ import "@/observability";
 import "@/index.css";
 import "@/i18n"; // Initialize i18next before App renders
 import { installSmartToast } from "@/lib/smartToastInit";
+import { raccogliProvaDaUrl } from "@/lib/cerchio";
 import App from "@/App";
 
 // v5.8 / Onda 9.X — Install smart toast.error wrapper before any component
@@ -20,6 +21,11 @@ import App from "@/App";
 //   - Coerces dict payloads to string (avoids "[object Object]")
 // Single point of control — no need to refactor 40+ catch blocks individually.
 installSmartToast();
+
+// FL2 (5/10/2026) — se l'indirizzo porta `?prova=` (clic da un'email del
+// Cerchio), la prova si salva ORA, prima che qualunque pagina chieda il
+// catalogo: le meditazioni, la guida, la scheda Sound si aprono al primo render.
+raccogliProvaDaUrl();
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
