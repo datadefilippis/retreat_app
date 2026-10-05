@@ -14,7 +14,7 @@
  */
 import React, { useState } from 'react';
 import { Esito } from '../../../../lib/esito';   // FL1: il risultato si vede dove hai cliccato
-import { iscriviESblocca } from '../../../../lib/cerchio';
+import { iscriviESblocca , testoEsito } from '../../../../lib/cerchio';
 import { testoConsenso } from '../../../../lib/testiConsenso';
 
 function giaSpuntatoAlCheckout() {
@@ -33,7 +33,7 @@ export default function GrazieCerchio({ email: emailProp, source = 'pagina-grazi
   if (nascosto || stato === 'done') {
     return stato === 'done' ? (
       <Esito as="p" className={`text-sm text-gray-700 ${className}`} data-testid="grazie-cerchio-done">
-        Fatto: sei nel Cerchio di Aurya. Controlla l'email, la prima Lettera sta arrivando.
+        {testoEsito()}   {/* FL4: la frase unica (benvenuto o conferma) */}
       </Esito>
     ) : null;
   }

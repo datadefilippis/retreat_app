@@ -103,6 +103,14 @@ export async function sblocca(email) {
 let _ultimaModalita = 'conferma';
 export const ultimaModalita = () => _ultimaModalita;
 
+/* FL4 (5/10/2026 sera) — UNA frase per «sei dentro, cosa succede adesso»,
+   usata da ogni form del Cerchio (LeadForm, InvitoSound, GrazieCerchio).
+   E' vera grazie a FL2: il pulsante dell'email apre davvero, ovunque. */
+export const TESTO_BENVENUTO = 'Sei nel Cerchio: la prima Lettera è in arrivo nella tua casella. Un tocco sul suo pulsante apre le meditazioni, su qualunque telefono.';
+export const TESTO_CONFERMA = 'Ti abbiamo scritto: apri l’email e tocca «Entro nel Cerchio». Da lì si aprono meditazioni e guide.';
+/** La frase giusta per l'ultima iscrizione fatta (benvenuto o conferma). */
+export const testoEsito = () => (_ultimaModalita === 'benvenuto' ? TESTO_BENVENUTO : TESTO_CONFERMA);
+
 /** La riga d'attesa dei cancelli, secondo la modalita' del server. */
 export function testoAttesa(cosa = 'con le meditazioni sbloccate') {
   return _ultimaModalita === 'benvenuto'

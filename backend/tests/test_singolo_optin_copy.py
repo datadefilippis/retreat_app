@@ -26,11 +26,12 @@ class TestCancelli:
         can = (FE / "features" / "frequenze" / "CancelloLettera.jsx").read_text(encoding="utf-8")
         assert "testoAttesa('con la meditazione intera sbloccata')" in can and 'data-testid="cancello-attesa"' in can
         inv = (FE / "features" / "frequenze" / "InvitoSound.jsx").read_text(encoding="utf-8")
-        assert "ultimaModalita() === 'benvenuto'" in inv and "la prima Lettera è in arrivo" in inv
+        assert "testoEsito()" in inv                                                # FL4: la frase e' in lib/cerchio.js
+        assert "la prima Lettera è in arrivo" in (FE / "lib" / "cerchio.js").read_text(encoding="utf-8")
         for f in ("MeditazioniPage.js", "CancelloLettera.jsx", "InvitoSound.jsx"):
             src = (FE / "features" / "frequenze" / f).read_text(encoding="utf-8")
             riga = next(l for l in src.splitlines() if "lib/cerchio" in l and "import" in l)
-            assert ("testoAttesa" in riga) or ("ultimaModalita" in riga), f
+            assert ("testoAttesa" in riga) or ("ultimaModalita" in riga) or ("testoEsito" in riga), f   # FL4
         acc = (FE / "features" / "account" / "AccountPage.js").read_text(encoding="utf-8")
         assert "Manca solo un clic: apri una delle email del Cerchio" in acc
         assert "defaultValue: 'Rimandami l\\u2019email'" in acc

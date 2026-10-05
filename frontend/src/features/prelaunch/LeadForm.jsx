@@ -27,7 +27,7 @@ import platformApi from '../../api/platformClient';
 import { useAuth } from '../../context/AuthContext';
 import { trackEvent } from '../../lib/analytics';
 import { creaAccount } from '../../utils/authLinks';
-import { sblocca } from '../../lib/cerchio';
+import { sblocca , TESTO_BENVENUTO } from '../../lib/cerchio';
 import { VERSIONE_CORRENTE, provenienzaCorrente, testoConsenso } from '../../lib/testiConsenso';
 import { datiTracciamento, metaLead } from '../../lib/meta';   // MP2: Lead a Meta, stesso event_id del server
 
@@ -259,14 +259,14 @@ export default function LeadForm({ type = 'traveler', accent = '#376254', contex
           {giaDentro
             ? t('form.thanksTitleGia', { defaultValue: 'Sei già dei nostri.' })
             : modalita === 'benvenuto' || isOperator
-            ? t('form.thanksTitle', { defaultValue: 'Ci sei. Benvenuto.' })
+            ? t('form.thanksTitle', { defaultValue: 'Ci sei.' })
             : t('form.thanksTitleConferma', { defaultValue: 'Quasi fatto.' })}
         </p>
         <p className="mt-1 text-sm text-muted-foreground">
           {giaDentro
             ? t('form.thanksGia', { defaultValue: 'Questa email è già dei nostri: tutto sbloccato su questo dispositivo — guide, meditazioni, sessioni. Nessuna nuova conferma da fare.' })
             : modalita === 'benvenuto'
-            ? t('form.thanksBenvenuto', { defaultValue: 'Sei dentro: la prima Lettera è in arrivo nella tua casella. Per aprire le meditazioni riservate basta un clic su un link di quell’email.' })
+            ? t('form.thanksBenvenuto', { defaultValue: TESTO_BENVENUTO })   // FL4: la frase unica di lib/cerchio.js
             : (thanksBody
               || (isOperator
                 ? t('form.thanksOp', { defaultValue: 'Grazie per esserti presentato: ti scriviamo personalmente prima del lancio.' })
