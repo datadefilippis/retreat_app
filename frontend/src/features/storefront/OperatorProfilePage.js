@@ -29,6 +29,7 @@ import ContattiOperatore, { haContatti } from './components/ContattiOperatore';
 // RC2 (2/10/2026) — la casella del Cerchio nel modal della recensione usa
 // LO STESSO testo versionato di tutte le altre porte
 import { testoConsenso } from '../../lib/testiConsenso';
+import { datiTracciamento, metaLead } from '../../lib/meta';   // MP2: Lead a Meta se la casella era spuntata
 // DI — le chip discipline vivono nella testata (OperatorIdentityHeader)
 // HOTFIX 10/9/2026 notte — SEO-R usava disciplineLabel nel titolo senza
 // importarla: in produzione ogni profilo /o/{slug} cadeva nell'ErrorBoundary
@@ -137,12 +138,16 @@ function WriteReviewModal({ orgSlug, reviewsOpen = false, onClose, onDone, t, i1
     setBusy(true); setError(null);
     try {
       // RC2 — UN solo invio, come sempre: la casella viaggia dentro
+      // MP2 — il tracciamento solo se la casella e' spuntata (e' un Lead del Cerchio)
+      const tracciamento = cerchio ? datiTracciamento('lead') : null;
       const r = await api.post('/public/reviews/submit', {
         org_slug: orgSlug, email, code, rating, body,
         author_name: name, language: lang, website: '',
         cerchio, consenso_versione: cerchio ? testoConsenso().versione : null,
+        ...(tracciamento ? { tracciamento } : {}),
       });
       setEsitoCerchio(r?.data?.cerchio || null);
+      if (r?.data?.cerchio === 'iscritto' && tracciamento) metaLead({ eventID: tracciamento.event_id, superficie: 'recensione' });
       setStep('done');
       onDone?.();
     } catch (err) {

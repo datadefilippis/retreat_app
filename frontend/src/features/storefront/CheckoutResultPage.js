@@ -6,6 +6,8 @@ import { storefrontAPI } from '../../api/storefront';
 import { useStorefrontLocaleSync } from './hooks/useStorefrontLocaleSync';
 // E4 (24/9/2026) — «Entra nel Cerchio di Aurya» dopo l'acquisto
 import GrazieCerchio from './components/checkout/GrazieCerchio';
+// MP2 (5/10/2026) — Purchase a Meta quando l'ordine e' davvero confermato
+import { metaPurchase } from '../../lib/meta';
 
 /**
  * Checkout result pages for Stripe redirect.
@@ -163,6 +165,16 @@ export function CheckoutSuccessPage() {
 
   const isConfirmed = status?.payment_intent === 'collected';
   const stillPending = status?.payment_intent === 'required';
+
+  // MP2 — UNA volta per ordine, solo a pagamento incassato. L'event_id e'
+  // l'ordine stesso («acq_<id>»): il server manda lo stesso Purchase dal
+  // webhook Stripe e Meta li unisce. No-op senza pixel o senza consenso.
+  const purchaseInviato = useRef(false);
+  useEffect(() => {
+    if (!isConfirmed || !orderId || purchaseInviato.current) return;
+    purchaseInviato.current = true;
+    metaPurchase({ eventID: `acq_${orderId}`, value: status?.total, currency: status?.currency, tipo: 'ordine' });
+  }, [isConfirmed, orderId, status?.total, status?.currency]);
 
   // Visual state machine
   let icon;

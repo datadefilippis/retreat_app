@@ -110,7 +110,7 @@ class TestR2Frontend:
         assert "<MostraEmail slug={slug}" in COMP                          # email al clic resta nel ramo spento
         for tid in ("contatti-aperti", "contatti-porta", "contatti-carico", "contatti-errore"):
             assert f'data-testid="{tid}"' in COMP, tid
-        assert "client.get(`/public/operator/${slug}/contatti`)" in COMP
+        assert "client.get(`/public/operator/${slug}/contatti`, { params })" in COMP   # MP2: ev/fbp/fbc solo col consenso
         assert "if (err?.response?.status === 401) { setStato('porta'); return; }" in COMP
         assert "if (localStorage.getItem('token')) return 'gestionale';" in COMP       # anche la sessione del gestionale
         assert "const client = sessione() === 'gestionale' ? api : platformApi;" in COMP

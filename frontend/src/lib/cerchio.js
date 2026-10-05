@@ -20,6 +20,7 @@
  */
 import api from '../api/client';
 import { VERSIONE_CORRENTE, provenienzaCorrente } from './testiConsenso';
+import { datiTracciamento, metaLead } from './meta';   // MP2: Lead a Meta dai cancelli
 
 export const PROVA_KEY = 'aurya_nl_token';
 
@@ -100,8 +101,9 @@ export async function iscriviESblocca({ email, source, returnTo,
   // US (10/9 notte) — i cancelli ora LO CHIEDONO, col blocco condiviso
   // AvvisamiRitiri: `ritiri` e' il suo payload (wants_experiences, vie,
   // citta', dove, budget), e vince sul vecchio flag nudo.
+  const tracciamento = datiTracciamento('lead');   // MP2: stesso event_id di pixel e server
   const risposta = await api.post('/public/newsletter/subscribe', {
-    email: (email || '').trim(), consent: true, language, source,
+    email: (email || '').trim(), consent: true, language, source, tracciamento,
     ...(typeof wantsExperiences === 'boolean' ? { wants_experiences: wantsExperiences } : {}),
     ...(ritiri && typeof ritiri === 'object' ? ritiri : {}),
     return_to: returnTo || undefined,
@@ -116,6 +118,7 @@ export async function iscriviESblocca({ email, source, returnTo,
     consenso_versione: VERSIONE_CORRENTE,
   });
   _ultimaModalita = risposta?.data?.modalita === 'benvenuto' ? 'benvenuto' : 'conferma';
+  metaLead({ eventID: tracciamento.event_id, superficie: source });
   try {
     await sblocca(email);
     return 'sbloccato';

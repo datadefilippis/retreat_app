@@ -28,6 +28,7 @@ import { trackEvent } from '../../lib/analytics';
 import { creaAccount } from '../../utils/authLinks';
 import { sblocca } from '../../lib/cerchio';
 import { VERSIONE_CORRENTE, provenienzaCorrente, testoConsenso } from '../../lib/testiConsenso';
+import { datiTracciamento, metaLead } from '../../lib/meta';   // MP2: Lead a Meta, stesso event_id del server
 
 // FV5 (10/9/2026 sera) — le vie, il raggio, il budget e la mappa verso
 // il vocabolario del backend vivono in PreferenzeRitiri: UN blocco per
@@ -160,10 +161,14 @@ export default function LeadForm({ type = 'traveler', accent = '#376254', contex
         // BN2 — iscrizione alla lettera: double opt-in lato backend
         // NW2 — il blocco esperienze viaggia solo se l'utente ha
         // acceso il flag: niente dati raccolti «di passaggio»
+        // MP2 — l'identificativo evento nasce qui e viaggia col payload: il
+        // server manda lo stesso Lead alla Conversions API, Meta lo conta una volta
+        const tracciamento = datiTracciamento('lead');
         const risposta = await api.post('/public/newsletter/subscribe', {
           email: email.trim(), name: name.trim() || null,
           language: (i18n.language || 'it').slice(0, 2),
           source: fonte,
+          tracciamento,
           return_to: returnTo,
           topics: interests.length
             ? interests.map((i) => INTEREST_TO_TOPIC[i]).filter(Boolean)
@@ -191,6 +196,7 @@ export default function LeadForm({ type = 'traveler', accent = '#376254', contex
         // conferma; «conferma» = l'email di conferma di sempre.
         setModalita(risposta?.data?.modalita === 'benvenuto' ? 'benvenuto' : 'conferma');
         trackEvent('generate_lead', { lead_type: 'subscriber', lead_context: context || 'landing', porta: porta || '(nessuna)' });
+        metaLead({ eventID: tracciamento.event_id, porta, superficie: context || 'landing' });
         // SB2 (20/8) — gia' confermato? La prova arriva subito e il
         // grazie dice la verita' («sei gia' dei nostri»), invece di
         // rimandare a una conferma gia' fatta.

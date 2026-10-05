@@ -16,6 +16,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import api from '../api/client';
 import { initAnalytics } from '../lib/analytics';
+import { initMeta } from '../lib/meta';   // MP2: Meta Pixel, solo col consenso marketing
 
 const CACHE_KEY = 'aurya_site_config';
 
@@ -61,6 +62,9 @@ export function SiteConfigProvider({ children }) {
         // GA1 — l'analytics parte qui, con l'ID dal backend: consent
         // mode nega tutto finché il banner non riceve un sì.
         initAnalytics(res.data?.ga_measurement_id);
+        // MP2 — stesso schema: ID runtime dal backend; senza ID o senza il
+        // si' al marketing non parte nessuna richiesta verso Meta.
+        initMeta(res.data?.meta_pixel_id);
       })
       .catch(() => { if (mounted) setConfig((c) => ({ ...c, loading: false })); });
     return () => { mounted = false; };

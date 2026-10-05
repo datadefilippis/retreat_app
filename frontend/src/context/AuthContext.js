@@ -151,11 +151,19 @@ export const AuthProvider = ({ children }) => {
     }
     // MP0 (5/10/2026) — da dove arriva il professionista (url, referrer,
     // utm, clic pubblicitari): lo stesso blocco del Cerchio. Mai bloccante.
+    let meta = null;
+    let tracciamento = null;
     try {
       const { provenienzaCorrente } = await import('../lib/testiConsenso');
-      payload.provenienza = provenienzaCorrente();
+      meta = await import('../lib/meta');
+      // MP2 — event_id condiviso col pixel: CompleteRegistration contato una volta
+      tracciamento = meta.datiTracciamento('reg');
+      payload.provenienza = { ...provenienzaCorrente(), tracciamento };
     } catch { /* senza provenienza la registrazione va avanti uguale */ }
     const response = await axios.post(`${apiUrl}/api/auth/signup`, payload);
+    // MP2 — registrazione accettata (202 o token): l'evento parte dopo la
+    // risposta, mai prima; no-op senza pixel o senza consenso
+    try { meta?.metaCompleteRegistration({ eventID: tracciamento?.event_id, tipo: 'operatore' }); } catch { /* mai bloccante */ }
 
     // v6.0: Backend returns 202 with status=verification_required for open signups
     if (response.status === 202 || response.data?.status === 'verification_required') {

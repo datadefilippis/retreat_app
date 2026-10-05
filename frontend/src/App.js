@@ -36,6 +36,7 @@ import ReconsentModal from "./components/legal/ReconsentModal";
 import SpazioRedirect from "./components/SpazioRedirect";
 import CookieConsentBanner from "./components/legal/CookieConsentBanner";
 import { trackPageView } from "./lib/analytics";
+import { metaPageView } from "./lib/meta";   // MP2: PageView di Meta sui cambi rotta, solo col consenso
 const ModulesPage = lazy(() => import("./pages/ModulesPage"));
 
 // Features
@@ -501,6 +502,7 @@ function AnalyticsPageViews() {
   const location = useLocation();
   React.useEffect(() => {
     trackPageView(location.pathname + location.search);
+    metaPageView();   // MP2 — no-op senza pixel o senza consenso marketing
     try {
       const cur = sessionStorage.getItem('aurya:nav:cur');
       if (cur !== location.pathname) {

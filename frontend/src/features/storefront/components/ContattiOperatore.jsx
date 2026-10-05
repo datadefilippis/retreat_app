@@ -23,6 +23,7 @@ import platformApi, { PLATFORM_TOKEN_KEY } from '../../../api/platformClient';
 import api from '../../../api/client';
 import PortaAurya from '../../account/PortaAurya';
 import MostraEmail from './MostraEmail';
+import { datiTracciamento, metaContact } from '../../../lib/meta';   // MP2: Contact a Meta
 
 const extUrl = (u) => (u && !u.startsWith('http') ? `https://${u}` : u);
 /* 26/9 (founder): qualunque sessione aperta basta — cliente (platform_token)
@@ -79,8 +80,13 @@ export default function ContattiOperatore({ slug, data, variante = 'profilo' }) 
     setStato('carico');
     try {
       const client = sessione() === 'gestionale' ? api : platformApi;
-      const r = await client.get(`/public/operator/${slug}/contatti`);
+      // MP2 — col consenso marketing il server riceve lo stesso event_id (e i
+      // cookie _fbp/_fbc) per mandare il Contact alla Conversions API una volta sola
+      const tr = datiTracciamento('contact');
+      const params = tr.marketing ? { ev: tr.event_id, ...(tr.fbp ? { fbp: tr.fbp } : {}), ...(tr.fbc ? { fbc: tr.fbc } : {}) } : {};
+      const r = await client.get(`/public/operator/${slug}/contatti`, { params });
       setValori(r.data || {}); setStato('aperto');
+      if (r.data?.registrato) metaContact({ eventID: tr.event_id, slug });   // solo quando e' una richiesta vera
     } catch (err) {
       if (err?.response?.status === 401) { setStato('porta'); return; }   // sessione scaduta: torna la porta
       setStato('errore');
