@@ -34,10 +34,11 @@ export function mostraEsito(el) {
 /** Il box di successo: stesso markup di prima, in più ref + focus + ruolo. */
 export function Esito({ as: Tag = 'div', children, className = '', ritardo = 60, ...resto }) {
   const ref = useRef(null);
+  // una volta sola, al montaggio: e' l'istante in cui il form diventa «fatto»
   useEffect(() => {
     const t = setTimeout(() => mostraEsito(ref.current), ritardo);
     return () => clearTimeout(t);
-  }, []);   // eslint-disable-line react-hooks/exhaustive-deps — una volta, al montaggio
+  }, [ritardo]);
   return (
     <Tag ref={ref} tabIndex={-1} role="status" className={`outline-none ${className}`.trim()} {...resto}>
       {children}
