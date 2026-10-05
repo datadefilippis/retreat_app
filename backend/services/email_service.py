@@ -165,183 +165,186 @@ EMAIL_TRANSLATIONS = {
         "greeting": "Ciao",
         "greeting_name": "Ciao <strong>{name}</strong>,",
         "or_copy_link": "Oppure copia e incolla questo link nel browser:",
-        "ignore": "Se non hai richiesto tu questa azione, ignora questa email.",
-        "footer_brand": "Aurya — Ritiri ed esperienze olistiche, in un posto solo.",
-        "footer_auto": "Questa email e' stata inviata automaticamente, non rispondere.",
+        "ignore": "Se non l'hai chiesto tu, ignora questa email.",
+        "footer_brand": "Aurya &middot; Ritiri ed esperienze olistiche, in un posto solo",
+        "footer_auto": "Questa email è stata inviata automaticamente, non rispondere.",
         "footer_reply_to": "Per rispondere, scrivi a {email}.",
         # Invite request confirmation
-        "invite_request_confirm_subject": "Candidatura ricevuta — Aurya",
-        "invite_request_confirm_body": "Abbiamo ricevuto la tua richiesta di accesso ad Aurya.",
-        "invite_request_confirm_next": "Ti contatteremo al piu presto per fornirti l'accesso.",
+        "invite_request_confirm_subject": "La tua richiesta è arrivata",
+        "invite_request_confirm_body": "abbiamo ricevuto la tua richiesta di entrare su Aurya.",
+        "invite_request_confirm_next": "La leggiamo noi, Valentina e Davide, e ti scriviamo entro due giorni lavorativi.",
         # Welcome / verify
-        "welcome_subject": "Benvenuto su Aurya — Verifica la tua email",
-        "welcome_subject_no_token": "Benvenuto su Aurya!",
-        "welcome_body": "Benvenuto su Aurya! Il tuo account e' stato creato con successo.",
-        "welcome_verify": "Per completare la registrazione, verifica il tuo indirizzo email:",
-        "welcome_cta": "Verifica Email",
-        "welcome_no_token_body": "Puoi accedere alla piattaforma usando la tua email e password:",
-        "welcome_no_token_cta": "Accedi ad Aurya",
-        "welcome_expiry": "Il link scade tra <strong>24 ore</strong>.",
+        "welcome_subject": "Il tuo spazio su Aurya è aperto",
+        "welcome_subject_no_token": "Il tuo spazio su Aurya è aperto",
+        "welcome_body": "il tuo spazio su Aurya è aperto.",
+        "welcome_verify": "Un clic conferma la tua email e ti porta dentro:",
+        "welcome_cta": "Apro il mio spazio",
+        "welcome_no_token_body": "Entri con la tua email e la password che hai scelto:",
+        "welcome_no_token_cta": "Entro in Aurya",
+        "welcome_expiry": "Il link vale 24 ore.",
         # Verification (resend)
-        "verify_subject": "Verifica il tuo indirizzo email — Aurya",
-        "verify_body": "Clicca il pulsante qui sotto per verificare il tuo indirizzo email:",
-        "verify_cta": "Verifica Email",
-        "verify_expiry": "Il link scade tra <strong>24 ore</strong>.",
+        "verify_subject": "Conferma la tua email su Aurya",
+        "verify_body": "con un clic puoi confermare la tua email e continuare ad accedere al tuo spazio su Aurya.",
+        "verify_cta": "Confermo la mia email",
+        "verify_expiry": "Il link vale 24 ore.",
         # Password reset
-        "reset_subject": "Reimposta la tua password — Aurya",
-        "reset_body": "Hai richiesto il reset della tua password. Clicca il pulsante qui sotto per impostarne una nuova:",
-        "reset_cta": "Reimposta Password",
-        "reset_expiry": "Il link scade tra <strong>1 ora</strong>.",
+        "reset_subject": "Scegli la tua nuova password",
+        "reset_body": "dal pulsante qui sotto puoi scegliere una nuova password per il tuo spazio su Aurya.",
+        "reset_cta": "Scelgo la password",
+        "reset_expiry": "Il link vale un'ora.",
         # Password changed
-        "changed_subject": "Password modificata — Aurya",
-        "changed_body": "La tua password e' stata modificata con successo.",
-        "changed_warning": "Se non sei stato tu a effettuare questa modifica, contattaci immediatamente o usa il link \"Password dimenticata\" per reimpostarla.",
-        "lockout_alert_subject": "Tentativi sospetti sul tuo account Aurya",
-        "lockout_alert_body": "Abbiamo rilevato 5 tentativi falliti di accesso al tuo account. Per sicurezza, abbiamo bloccato temporaneamente l'accesso fino a {unlock_at}.",
-        "lockout_alert_warning": "Se non sei stato tu, ti consigliamo di reimpostare la password immediatamente.",
-        "lockout_alert_cta": "Reimposta password",
-        "lockout_alert_safety_note": "Se sei stato tu a sbagliare, riprova dopo che il blocco scade, oppure reimposta la password se l'hai dimenticata.",
+        "changed_subject": "Password cambiata",
+        "changed_body": "la password del tuo spazio su Aurya è stata cambiata.",
+        "changed_warning": "Se non eri tu, scegli subito una nuova password da «Password dimenticata» e rispondi a questa email: ti aiutiamo a controllare l'accesso.",
+        "lockout_alert_subject": "Accesso fermato per sicurezza",
+        "lockout_alert_body": "ci sono stati cinque tentativi di accesso sbagliati di fila. Per sicurezza, l'accesso resta fermo fino alle {unlock_at}.",
+        "lockout_alert_warning": "Se eri tu, puoi riprovare dopo quell'ora oppure scegliere una nuova password. Se non eri tu, ti consigliamo di scegliere subito una nuova password.",
+        "lockout_alert_cta": "Scelgo una nuova password",
+        "lockout_alert_safety_note": "",
         # Team invite
-        "team_subject": "Sei stato invitato su Aurya — {org_name}",
-        "team_body": "<strong>{inviter}</strong> ti ha invitato a unirti a <strong>{org_name}</strong> su Aurya.",
-        "team_credentials": "Le tue credenziali temporanee:",
-        "team_cta": "Accedi ad Aurya",
-        "team_change_password": "<strong>Ti consigliamo di cambiare la password al primo accesso.</strong>",
+        "team_subject": "{inviter} ti ha aggiunto a {org_name} su Aurya",
+        "team_body": "<strong>{inviter}</strong> ti ha aggiunto allo spazio di <strong>{org_name}</strong> su Aurya.",
+        "team_credentials": "Dal pulsante puoi scegliere la tua password ed entrare.",
+        "team_cta": "Scelgo la password ed entro",
+        "team_change_password": "Il link vale 7 giorni.",
         # Deactivation
-        "deactivation_subject": "Account Aurya disattivato — {org_name}",
-        "deactivation_body": "L'account dell'organizzazione <strong>{org_name}</strong> su Aurya e' stato disattivato.",
-        "deactivation_deletion": "Tutti i dati saranno <strong>eliminati definitivamente il {date}</strong> (30 giorni dalla disattivazione).",
-        "deactivation_reactivate": "Se desideri riattivare l'account, contatta l'amministratore della tua organizzazione prima di tale data.",
-        "deactivation_no_action": "Se non desideri piu' utilizzare il servizio, non e' necessaria alcuna azione.",
+        "deactivation_subject": "Il tuo spazio su Aurya è stato disattivato",
+        "deactivation_body": "lo spazio di <strong>{org_name}</strong> su Aurya è stato disattivato.",
+        "deactivation_deletion": "Conserviamo i dati per 30 giorni, fino al <strong>{date}</strong>. Entro quella data puoi chiedere di riattivarlo rispondendo a questa email.",
+        "deactivation_reactivate": "Dopo quella data, i dati vengono eliminati.",
+        "deactivation_no_action": "Se vuoi riattivare lo spazio, rispondi a questa email.",
         # GDPR-Admin Phase A — Final warning before hard delete (7 days before)
-        "final_delete_warning_subject": "ULTIMO AVVISO — Eliminazione definitiva tra 7 giorni — {org_name}",
-        "final_delete_warning_intro": "Ti scriviamo per ricordarti che l'account <strong>{org_name}</strong> e' stato disattivato {days_ago} giorni fa.",
-        "final_delete_warning_body": "Conformemente alla nostra Privacy Policy (Art. 17 GDPR), tutti i dati associati a questa organizzazione saranno <strong>eliminati definitivamente il {delete_date}</strong> (tra 7 giorni). Questa azione e' irreversibile.",
-        "final_delete_warning_reactivate": "Se vuoi recuperare l'account, devi <strong>riattivarlo entro tale data</strong>. Dopo l'eliminazione non sara' piu' possibile recuperare i dati.",
-        "final_delete_warning_export": "Se desideri scaricare una copia dei tuoi dati prima dell'eliminazione, puoi farlo dalla sezione 'Impostazioni > Dati personali' del tuo account (se ancora attivo) o contattando il supporto.",
-        "final_delete_warning_no_action": "Se desideri procedere con l'eliminazione, non e' necessaria alcuna azione: la cancellazione avverra' automaticamente alla scadenza.",
+        "final_delete_warning_subject": "Tra 7 giorni eliminiamo i dati di {org_name}",
+        "final_delete_warning_intro": "lo spazio di <strong>{org_name}</strong> su Aurya è stato disattivato {days_ago} giorni fa.",
+        "final_delete_warning_body": "Il <strong>{delete_date}</strong> elimineremo i suoi dati.",
+        "final_delete_warning_reactivate": "Se vuoi conservarli, rispondi a questa email entro quella data e possiamo riattivare lo spazio.",
+        "final_delete_warning_export": "Se vuoi invece una copia dei dati, chiedila nella stessa risposta.",
+        "final_delete_warning_no_action": "Se va bene così, non devi fare nulla.",
         # Platform invite
-        "platform_invite_subject": "Sei stato invitato su Aurya",
-        "platform_invite_body": "Sei stato invitato a registrarti su <strong>Aurya</strong>, la piattaforma di gestione finanziaria per PMI.",
-        "platform_invite_cta_label": "Clicca il pulsante qui sotto per creare il tuo account:",
-        "platform_invite_cta": "Registrati su Aurya",
-        "platform_invite_expiry": "Il link scade tra <strong>7 giorni</strong>.",
+        "platform_invite_subject": "Hai un invito per Aurya",
+        "platform_invite_body": "hai un invito per aprire il tuo spazio su <strong>Aurya</strong>, la rete dei professionisti del benessere.",
+        "platform_invite_cta_label": "Dal pulsante puoi aprirlo in circa un minuto.",
+        "platform_invite_cta": "Apro il mio spazio",
+        "platform_invite_expiry": "Il link vale 7 giorni.",
         # Customer account (v9.0)
-        "customer_welcome_subject": "Benvenuto — Il tuo account e' stato creato",
-        "customer_welcome_body": "Il tuo account e' stato creato con successo. Verifica il tuo indirizzo email per iniziare:",
-        "customer_welcome_cta": "Verifica Email",
-        "customer_verify_subject": "Verifica il tuo indirizzo email",
-        "customer_verify_body": "Clicca il pulsante qui sotto per verificare il tuo indirizzo email:",
-        "customer_verify_cta": "Verifica Email",
-        "customer_reset_subject": "Reimposta la tua password",
-        "customer_reset_body": "Hai richiesto il reset della tua password. Clicca il pulsante qui sotto:",
-        "customer_reset_cta": "Reimposta Password",
-        "customer_changed_subject": "Password modificata",
-        "customer_changed_body": "La tua password e' stata modificata con successo.",
+        "customer_welcome_subject": "Il tuo account è pronto: conferma l'email",
+        "customer_welcome_body": "il tuo account è pronto. Un clic conferma la tua email e puoi iniziare.",
+        "customer_welcome_cta": "Confermo la mia email",
+        "customer_verify_subject": "Conferma la tua email",
+        "customer_verify_body": "un clic e la tua email è confermata.",
+        "customer_verify_cta": "Confermo la mia email",
+        "customer_reset_subject": "Scegli la tua nuova password",
+        "customer_reset_body": "dal pulsante qui sotto puoi scegliere una nuova password.",
+        "customer_reset_cta": "Scelgo la password",
+        "customer_changed_subject": "Password cambiata",
+        "customer_changed_body": "la password del tuo account è stata cambiata.",
         # Order transactional emails (v10.1)
-        "order_received_subject": "Richiesta ricevuta — {store_name}",
-        "order_received_body": "La tua richiesta e' stata registrata. Ti contatteremo a breve.",
-        "order_received_ref": "Riferimento ordine: <strong>{order_ref}</strong>",
+        "order_received_subject": "La tua richiesta è arrivata a {store_name}",
+        "order_received_body": "{store_name} ha ricevuto la tua richiesta:",
+        "order_received_ref": "Riferimento: <strong>{order_ref}</strong>",
         "order_received_items": "Articoli: {count}",
         "order_received_total": "Totale: {total}",
-        "order_received_cta": "I miei ordini",
+        "order_received_cta": "Vedo la mia richiesta",
         # P2 (10/9/2026) — caparra con bonifico: le istruzioni partono da sole
-        "order_bank_title": "Per confermare il posto",
-        "order_bank_body": "Il posto si conferma con la caparra di <strong>{amount}</strong>, con un bonifico entro il <strong>{deadline}</strong>.",
+        "order_bank_title": "Per tenere il posto",
+        "order_bank_body": "Per tenere il posto, devi versare la caparra di <strong>{amount}</strong> con un bonifico entro il <strong>{deadline}</strong>.",
         "order_bank_iban": "IBAN: <strong>{iban}</strong>",
         "order_bank_holder": "Intestato a: {holder}",
         "order_bank_reason": "Causale: <strong>{reason}</strong>",
-        "order_bank_note": "Appena il bonifico arriva ti confermiamo il posto. Se cambi idea prima, scrivici e basta.",
+        "order_bank_note": "Appena il pagamento arriva, ti confermiamo il posto. Se cambi idea prima, scrivici e basta.",
         "order_saldo_title": "Caparra ricevuta, grazie",
         "order_saldo_body": "Abbiamo ricevuto la caparra di <strong>{deposit}</strong>. Il saldo di <strong>{balance}</strong> si versa con un bonifico entro il <strong>{deadline}</strong>, sullo stesso IBAN.",
         "order_saldo_prima": "l’inizio del ritiro",
-        "order_bank_body_full": "Il posto si conferma con il pagamento di <strong>{amount}</strong>, con un bonifico entro il <strong>{deadline}</strong>.",
-        "order_agree_body": "{store_name} ha ricevuto la tua richiesta: ti scrive per confermare il posto e concordare il pagamento.",
-        "order_agree_deposit": "Per questo ritiro è prevista una caparra di <strong>{deposit}</strong>.",
+        "order_bank_body_full": "Per tenere il posto, devi versare il totale di <strong>{amount}</strong> con un bonifico entro il <strong>{deadline}</strong>.",
+        "order_agree_body": "{store_name} ti scriverà a breve per confermare il posto e concordare il pagamento.",
+        "order_agree_deposit": "È prevista una caparra di <strong>{deposit}</strong>.",
         "order_merchant_subject": "Nuova richiesta — {customer_name}",
-        "order_merchant_body": "Una nuova richiesta e' arrivata dal catalogo pubblico.",
+        "order_merchant_body": "Una nuova richiesta è arrivata dal catalogo pubblico.",
         "order_merchant_customer": "Cliente: <strong>{customer_name}</strong> ({customer_email})",
         "order_merchant_items": "Articoli: {count}",
         "order_merchant_total": "Totale stimato: {total}",
         "order_merchant_fulfillment": "Consegna: {mode}",
         "order_merchant_cta": "Vai agli ordini",
         "order_merchant_notes": "<strong>Note:</strong> {notes}",
-        "order_merchant_draft_hint": "Questo ordine e' in stato bozza. Confermalo dalla pagina Ordini.",
-        "order_confirmed_subject": "Ordine confermato — {store_name}",
-        "order_confirmed_body": "Il tuo ordine e' stato confermato ed e' in lavorazione.",
+        "order_merchant_draft_hint": "Questo ordine è in stato bozza. Confermalo dalla pagina Ordini.",
+        "order_confirmed_subject": "{store_name} ha confermato il tuo ordine",
+        "order_confirmed_body": "{store_name} ha confermato il tuo ordine.",
         "order_confirmed_ref": "Ordine: <strong>{order_ref}</strong>",
-        "order_confirmed_cta": "Vedi dettaglio ordine",
+        "order_confirmed_cta": "Apri il mio ordine",
         # Fase 2 S2 (retreat) — riepilogo piano pagamenti in email conferma
         "payment_plan_heading": "Il tuo piano di pagamenti",
         "payment_plan_paid_row": "{label}: <strong>{amount}</strong> — pagata &#10003;",
         "payment_plan_pending_row": "{label}: <strong>{amount}</strong> — entro il {due_date}",
-        "payment_plan_reminder_note": "Ti manderemo un promemoria con il link di pagamento prima di ogni scadenza: non devi fare nulla ora.",
+        "payment_plan_reminder_note": "Prima di ogni scadenza ti mandiamo un promemoria con il link per pagare: non devi fare nulla ora.",
         # Fase 2 S3 — promemoria/solleciti saldo e notifica at-risk operatore
-        "pay_reminder_subject_t7": "Promemoria: {amount} in scadenza — {store_name}",
-        "pay_reminder_subject_t0": "Scade oggi: {amount} — {store_name}",
-        "pay_sollecito_subject": "Pagamento in ritardo: {amount} — {store_name}",
-        "pay_reminder_body": "Ti ricordiamo la scadenza per l'ordine <strong>{order_ref}</strong>: {label} di <strong>{amount}</strong> entro il <strong>{due_date}</strong>. Puoi pagare in un click dal bottone qui sotto.",
-        "pay_sollecito_body": "La scadenza per l'ordine <strong>{order_ref}</strong> e' passata: {label} di <strong>{amount}</strong> era dovuta entro il <strong>{due_date}</strong>. Ti chiediamo di regolarizzare il pagamento dal bottone qui sotto.",
-        "pay_now_cta": "Paga ora",
-        "pay_reminder_footer": "Il link genera un pagamento sicuro via Stripe. Se hai gia' pagato con bonifico, ignora questa email: l'organizzatore aggiornera' la tua posizione.",
-        "pay_atrisk_merchant_subject": "Pagamento a rischio: {customer} — {amount}",
-        "pay_atrisk_merchant_body": "Il pagamento <strong>{label}</strong> di <strong>{amount}</strong> per l'ordine <strong>{order_ref}</strong> ({customer}) era dovuto entro il {due_date}. Dopo 3 promemoria automatici non risulta ancora pagato.",
-        "pay_atrisk_merchant_actions": "Cosa puoi fare dalla dashboard incassi del ritiro: segnarlo pagato (se ha pagato con bonifico), condonarlo, prorogare la scadenza o liberare il posto. Nessuna azione automatica verra' presa senza di te.",
+        "pay_reminder_subject_t7": "{amount} per {store_name} entro il {due_date}",
+        "pay_reminder_subject_t0": "Scade oggi: {amount} per {store_name}",
+        "pay_sollecito_subject": "{amount} per {store_name}: la data è passata",
+        "pay_reminder_body": "ti ricordiamo il {label} di <strong>{amount}</strong> per l'ordine <strong>{order_ref}</strong>, da pagare entro il <strong>{due_date}</strong>. Puoi pagarlo qui:",
+        "pay_sollecito_body": "il {label} di <strong>{amount}</strong> per l'ordine <strong>{order_ref}</strong> era previsto entro il <strong>{due_date}</strong>. Puoi pagarlo adesso:",
+        "pay_now_cta": "Pago ora",
+        "pay_reminder_footer": "Se hai già pagato con bonifico, ignora pure questa email: chi organizza lo segnerà appena vedrà il pagamento.",
+        "pay_atrisk_merchant_subject": "{customer}: il {label} di {amount} non è arrivato",
+        "pay_atrisk_merchant_body": "il {label} di <strong>{amount}</strong> per l'ordine <strong>{order_ref}</strong> ({customer}) era previsto entro il {due_date}. Dopo tre promemoria, non risulta ancora pagato.",
+        "pay_atrisk_merchant_actions": "Dalla sezione Incassi puoi: segnarlo come pagato, se hai ricevuto un bonifico; cancellarlo; dare più tempo; liberare il posto. Non facciamo nulla senza di te.",
         # R2a — conferma prenotazione (Onda 16), prima hardcoded it
-        "reservation_confirm_subject": "Prenotazione confermata — {product}",
-        "reservation_confirm_body": "La tua prenotazione e' confermata. Trovi tutti i dettagli qui sotto.",
-        "reservation_keep_note": "Conserva questa email, il link sopra e' privato.",
+        "reservation_confirm_subject": "La tua prenotazione è confermata",
+        "reservation_confirm_body": "la tua prenotazione è confermata:",
+        "reservation_keep_note": "Questo link è tuo: non condividerlo.",
         "reservation_code_label": "Codice",
-        "reservation_view_cta": "Vedi prenotazione",
+        "reservation_view_cta": "Apri la prenotazione",
         # R2a — Passaporto: login OTP/magic link + claim post-acquisto
-        # (l'email piu' vista dai viaggiatori — prima hardcoded it)
-        "passport_login_subject": "Il tuo accesso: un click e sei dentro",
-        "passport_code_intro": "Il tuo codice di accesso (vale {minutes} minuti):",
-        "passport_code_hint": "Digitalo nella pagina da cui l'hai richiesto, oppure usa il link qui sotto.",
-        "passport_link_intro": "Link di accesso: vale {minutes} minuti e funziona una volta sola:",
-        "passport_login_cta": "Accedi al tuo account Aurya",
-        "passport_login_ignore": "Se non hai richiesto tu questo link, ignora questa email: nessuno puo' accedere senza di essa.",
-        "passport_claim_subject": "Le tue prenotazioni, nel tuo account Aurya",
-        "passport_claim_body": "Grazie della tua prenotazione! Con un click accedi al tuo account Aurya: ritrovi prenotazioni, pagamenti e biglietti in un posto solo, anche se prenoti con organizzatori diversi.",
-        "passport_claim_cta": "Accedi al tuo account Aurya",
-        "passport_claim_footer": "Il link vale {minutes} minuti. Una volta dentro puoi impostare una password per accedere quando vuoi.",
+        # (l'email più vista dai viaggiatori — prima hardcoded it)
+        "passport_login_subject": "Il tuo accesso ad Aurya",
+        "passport_code_intro": "ecco il tuo codice di accesso, vale {minutes} minuti:",
+        "passport_code_hint": "Puoi scriverlo nella pagina da cui hai richiesto l'accesso oppure entrare direttamente dal pulsante.",
+        "passport_link_intro": "Il link funziona una volta sola e vale {minutes} minuti.",
+        "passport_login_cta": "Entro in Aurya",
+        "passport_login_ignore": "Se non hai chiesto tu questo accesso, ignora questa email.",
+        "passport_claim_subject": "Le tue prenotazioni, in un posto solo",
+        "passport_claim_body": "grazie per la prenotazione. Nel tuo account Aurya ritrovi prenotazioni, pagamenti e biglietti, anche se hai prenotato con professionisti diversi.",
+        "passport_claim_cta": "Entro nel mio account",
+        "passport_claim_footer": "Il link vale {minutes} minuti. Se è scaduto, da aurya.life/accedi puoi chiedere un nuovo accesso in un attimo. Una volta dentro puoi anche scegliere una password.",
         # AP1b — verifica email signup + reset password (account Aurya)
-        "aurya_verify_subject": "Conferma la tua email per attivare il tuo account Aurya",
-        "aurya_verify_body": "Grazie per aver creato il tuo account Aurya. Conferma la tua email con il pulsante qui sotto: da quel momento potrai accedere con la tua password.",
-        "aurya_verify_cta": "Conferma la tua email",
-        "aurya_verify_footer": "Il link vale {hours} ore. Se non hai creato tu questo account, ignora questa email.",
-        "aurya_reset_subject": "Imposta la tua nuova password",
-        "aurya_reset_body": "Abbiamo ricevuto una richiesta di impostare o cambiare la password del tuo account Aurya. Con il pulsante qui sotto scegli la tua nuova password.",
-        "aurya_reset_cta": "Scegli la nuova password",
-        "aurya_reset_footer": "Il link vale {minutes} minuti. Se non hai fatto tu la richiesta, ignora questa email: la tua password resta invariata.",
+        "aurya_verify_subject": "Un clic e il tuo account Aurya è attivo",
+        "aurya_verify_body": "il tuo account Aurya è quasi pronto. Un clic sul pulsante conferma la tua email e ti fa entrare.",
+        "aurya_verify_cta": "Confermo e entro",
+        "aurya_verify_footer": "Il link vale {hours} ore. Se non eri tu, ignora questa email: l'account non viene attivato.",
+        "aurya_reset_subject": "Scegli la tua nuova password",
+        "aurya_reset_body": "dal pulsante qui sotto puoi scegliere una nuova password per il tuo account Aurya. Il link vale un'ora.",
+        "aurya_reset_cta": "Scelgo la password",
+        "aurya_reset_footer": "Se non hai chiesto tu di cambiare la password, ignora questa email: la password attuale resta quella di prima.",
         # PR2 — OTP recensione operatore
-        "review_otp_subject": "Il tuo codice per lasciare una recensione",
-        "review_otp_body": "Stai per lasciare una recensione. Ecco il tuo codice di verifica:",
-        "review_otp_hint": "Vale {minutes} minuti. Se non hai richiesto tu questo codice, ignora questa email.",
+        "review_otp_subject": "Il codice per la tua recensione a {operator}",
+        "review_otp_body": "ecco il codice per lasciare la tua recensione a <strong>{operator}</strong>:",
+        "review_otp_hint": "Il codice vale {minutes} minuti. Se non hai chiesto tu questo codice, ignora questa email.",
 
         # Fase 4 — follow-up post ritiro
-        "event_email_broadcast_followup_subject": "Grazie per aver partecipato — {event}",
-        "event_email_broadcast_followup_body": "Grazie di cuore per aver fatto parte di <strong>{event}</strong>. Speriamo che l'esperienza ti abbia lasciato qualcosa di buono.",
-        "event_email_broadcast_followup_outro": "Se ti va di restare in contatto e sapere dei prossimi appuntamenti, rispondi pure a questa email: ci fa sempre piacere.",        "order_cancelled_subject": "Ordine annullato — {store_name}",
-        "order_cancelled_body": "Il tuo ordine e' stato annullato.",
-        "order_cancelled_ref": "Riferimento: <strong>{order_ref}</strong>",
-        "order_cancelled_contact": "Per qualsiasi domanda, rispondi a questa email.",
-        "fulfillment_shipped_subject": "Il tuo ordine e' stato spedito — {store_name}",
-        "fulfillment_shipped_body": "Il tuo ordine e' stato spedito.",
-        "fulfillment_ready_subject": "Il tuo ordine e' pronto per il ritiro — {store_name}",
-        "fulfillment_ready_body": "Il tuo ordine e' pronto per il ritiro.",
-        "fulfillment_delivered_subject": "Ordine consegnato — {store_name}",
-        "fulfillment_delivered_body": "Il tuo ordine e' stato consegnato.",
-        "fulfillment_picked_up_subject": "Ordine ritirato — {store_name}",
-        "fulfillment_picked_up_body": "Il tuo ordine e' stato ritirato con successo.",
-        "fulfillment_fulfilled_subject": "Ordine completato — {store_name}",
-        "fulfillment_fulfilled_body": "Il tuo ordine e' stato completato.",
+        "event_email_broadcast_followup_subject": "Grazie per aver partecipato a {event}",
+        "event_email_broadcast_followup_body": "grazie di cuore per aver fatto parte di <strong>{event}</strong>. Speriamo che l'esperienza ti abbia lasciato qualcosa di buono.",
+        "event_email_broadcast_followup_outro": "Se ti va di restare in contatto e sapere dei prossimi appuntamenti, rispondi pure a questa email: ci fa sempre piacere.",        "order_cancelled_subject": "Ordine {order_ref} annullato — {store_name}",
+        "order_cancelled_body": "l'ordine <strong>{order_ref}</strong> è stato annullato.",
+        "order_cancelled_ref": "",
+        "order_cancelled_refund_paid": "Se hai già pagato, il rimborso parte da {store_name}: in genere arriva entro 5-10 giorni lavorativi sullo stesso metodo di pagamento.",
+        "order_cancelled_refund_none": "Non c'era nessun pagamento da restituire.",
+        "pay_atrisk_merchant_cta": "Apro gli incassi",
+        "order_cancelled_contact": "Per qualunque cosa, rispondi a questa email: arriva a {store_name}.",
+        "fulfillment_shipped_subject": "Il tuo ordine è partito — {store_name}",
+        "fulfillment_shipped_body": "è partito. Puoi seguirlo dal link qui sotto.",
+        "fulfillment_ready_subject": "Il tuo ordine è pronto per il ritiro — {store_name}",
+        "fulfillment_ready_body": "il tuo ordine è pronto. Lo trovi negli orari di apertura: porta con te questa email.",
+        "fulfillment_delivered_subject": "Il tuo ordine è arrivato — {store_name}",
+        "fulfillment_delivered_body": "è arrivato. Se qualcosa non va, rispondi a questa email e ti aiutiamo.",
+        "fulfillment_picked_up_subject": "Il tuo ordine è completato — {store_name}",
+        "fulfillment_picked_up_body": "tutto fatto. Grazie e a presto.",
+        "fulfillment_fulfilled_subject": "Il tuo ordine è completato — {store_name}",
+        "fulfillment_fulfilled_body": "tutto fatto. Grazie e a presto.",
         "fulfillment_ref": "Riferimento: <strong>{order_ref}</strong>",
         "fulfillment_mode_shipping": "Spedizione",
         "fulfillment_mode_local_pickup": "Ritiro in sede",
         "fulfillment_mode_manual_arrangement": "Accordo manuale",
-        "fulfillment_tracking_label": "Codice tracking",
-        "fulfillment_tracking_cta": "Traccia il pacco",
+        "fulfillment_tracking_label": "Codice",
+        "fulfillment_tracking_cta": "Dov'è il pacco",
         "fulfillment_destination_label": "Destinazione",
         "fulfillment_pickup_label": "Ritiro presso",
         "fulfillment_shipping_free": "GRATIS",
@@ -376,26 +379,26 @@ EMAIL_TRANSLATIONS = {
         # ticket delivery, broadcast templates. Same shape across all 4
         # locales — keep the keys aligned when editing.
         "event_email_greeting": "Ciao {name},",
-        "event_email_greeting_attendee_fallback": "partecipante",
-        "event_email_ticket_resend_intro": "come richiesto, ecco nuovamente il tuo biglietto per <strong>{event}</strong>.",
-        "event_email_ticket_personal_intro": "Ecco il tuo biglietto personale per <strong>{event}</strong>.",
+        "event_email_greeting_attendee_fallback": "",
+        "event_email_ticket_resend_intro": "ecco di nuovo il tuo biglietto per <strong>{event}</strong>.",
+        "event_email_ticket_personal_intro": "ecco il tuo biglietto per <strong>{event}</strong>.",
         "event_email_ticket_label": "Il tuo biglietto",
         "event_email_ticket_seat_hint": "Biglietto {seat_index} di {seat_count}",
-        "event_email_ticket_open_cta": "Apri biglietto e QR \u2192",
-        "event_email_ticket_qr_hint": "Mostra il QR o dettalo all'ingresso per il check-in. Conserva questa email.",
-        "event_email_ticket_link_privacy_hint": "Apri il link dal tuo telefono all'ingresso. Il link e' privato \u2014 non condividerlo.",
-        "event_email_subject_ticket": "Il tuo biglietto \u2014 {event}",
+        "event_email_ticket_open_cta": "Apro il mio biglietto",
+        "event_email_ticket_qr_hint": "Puoi mostrarlo all'ingresso oppure leggerne il codice direttamente. Conserva questa email.",
+        "event_email_ticket_link_privacy_hint": "Questo link è tuo: non condividerlo.",
+        "event_email_subject_ticket": "Il tuo biglietto per {event}",
         "event_email_fallback_event_name": "Evento",
-        "event_email_broadcast_reminder_subject": "Ci vediamo presto \u2014 {event}",
-        "event_email_broadcast_reminder_body": "Ti aspettiamo al tuo evento!",
-        "event_email_broadcast_reminder_outro": "Ricordati di portare il biglietto (email o QR code). A breve ci vediamo.",
-        "event_email_broadcast_logistics_subject": "Informazioni pratiche \u2014 {event}",
-        "event_email_broadcast_logistics_body": "Qualche info pratica per il tuo evento:",
-        "event_email_broadcast_logistics_outro": "Per domande rispondi a questa email.",
-        "event_email_broadcast_cancellation_subject": "Evento annullato \u2014 {event}",
-        "event_email_broadcast_cancellation_body": "<strong>Ci dispiace informarti che l'evento e' stato annullato.</strong>",
-        "event_email_broadcast_cancellation_outro": "Riceverai presto istruzioni sul rimborso. Scusaci per il disagio.",
-        "event_email_broadcast_custom_subject_fallback": "Aggiornamento \u2014 {event}",
+        "event_email_broadcast_reminder_subject": "Ci vediamo presto a {event}",
+        "event_email_broadcast_reminder_body": "ti aspettiamo a <strong>{event}</strong>.",
+        "event_email_broadcast_reminder_outro": "Ricordati di portare il biglietto (email o QR). A presto.",
+        "event_email_broadcast_logistics_subject": "Qualche informazione pratica su {event}",
+        "event_email_broadcast_logistics_body": "ti aspettiamo a <strong>{event}</strong>. Ecco qualche informazione pratica:",
+        "event_email_broadcast_logistics_outro": "A presto.",
+        "event_email_broadcast_cancellation_subject": "{event} è stato annullato",
+        "event_email_broadcast_cancellation_body": "<strong>{event}</strong> è stato annullato. Ci dispiace.",
+        "event_email_broadcast_cancellation_outro": "Per il rimborso ti scrive chi organizza entro pochi giorni. Se hai domande, rispondi a questa email.",
+        "event_email_broadcast_custom_subject_fallback": "Un aggiornamento su {event}",
         "event_email_broadcast_code_label": "Codice",
         # Order email — 4 embedded sections inside the confirmation email
         # (Onda 5). One renderer per item-type (tickets / bookings /
@@ -406,7 +409,7 @@ EMAIL_TRANSLATIONS = {
         "order_section_tickets_open_cta": "Apri biglietto \u2192",
         "order_section_tickets_seat_hint": "Biglietto {seat_index} di {seat_count}",
         "order_section_tickets_event_fallback": "Evento",
-        "order_section_tickets_privacy_hint": "Clicca \"Apri biglietto\" per vedere il QR all'ingresso. Ogni link e' privato \u2014 conservalo.",
+        "order_section_tickets_privacy_hint": "Questo link è tuo: non condividerlo.",
         "order_section_bookings_heading": "Le tue prenotazioni",
         "order_section_bookings_open_cta": "Apri prenotazione \u2192",
         "order_section_bookings_product_fallback": "Consulenza",
@@ -421,7 +424,7 @@ EMAIL_TRANSLATIONS = {
         "order_section_downloads_file_fallback": "File",
         "order_section_downloads_max_hint": "fino a {max} download",
         "order_section_downloads_expiry_hint": "valido fino al {date}",
-        "order_section_downloads_privacy_hint": "\U0001F512 Il link e' personale. Conservalo \u2014 se lo perdi puoi recuperarlo dal tuo account.",
+        "order_section_downloads_privacy_hint": "Questo link è tuo: non condividerlo. Se lo perdi, lo ritrovi nel tuo account.",
         "month_short_1": "gen",
         "month_short_2": "feb",
         "month_short_3": "mar",
@@ -439,19 +442,19 @@ EMAIL_TRANSLATIONS = {
         # recovers to "live". Recipient is `notification_email` or the
         # first admin of the org. Locale comes from the recipient's
         # User.locale > store.storefront_languages[0] > "it".
-        "store_alert_degraded_subject": "Attenzione: {store_name} ha problemi di configurazione",
-        "store_alert_degraded_intro": "Il tuo store <strong>{store_name}</strong> ha configurazioni critiche che richiedono attenzione.",
-        "store_alert_degraded_outro": "Il tuo storefront e' ancora accessibile, ma alcune funzionalita' potrebbero non funzionare correttamente.",
-        "store_alert_recovery_subject": "{store_name} e' di nuovo operativo",
-        "store_alert_recovery_intro": "Ottimo! Il tuo store <strong>{store_name}</strong> e' di nuovo completamente operativo.",
-        "store_alert_recovery_outro": "Tutte le configurazioni necessarie sono a posto. Il tuo storefront funziona correttamente.",
-        "store_alert_settings_cta": "Vai alle impostazioni",
-        "store_alert_configure_link": "Configura",
-        "store_alert_check_public_slug": "Indirizzo pubblico storefront",
-        "store_alert_check_display_name": "Nome pubblico del business",
-        "store_alert_check_contact_email": "Email di contatto pubblica",
-        "store_alert_check_payment_provider": "Provider di pagamento",
-        "store_alert_check_publishable_offer": "Prodotto pubblicato",
+        "store_alert_degraded_subject": "Alla tua pagina mancano alcune cose",
+        "store_alert_degraded_intro": "la tua pagina <strong>{store_name}</strong> è visibile, ma al momento le mancano alcune informazioni importanti:",
+        "store_alert_degraded_outro": "Puoi sistemarle direttamente dalla pagina.",
+        "store_alert_recovery_subject": "La tua pagina è a posto",
+        "store_alert_recovery_intro": "tutto quello che serviva alla tua pagina <strong>{store_name}</strong> c'è.",
+        "store_alert_recovery_outro": "Buon lavoro.",
+        "store_alert_settings_cta": "Sistemo la pagina",
+        "store_alert_configure_link": "Sistema",
+        "store_alert_check_public_slug": "L'indirizzo pubblico della pagina",
+        "store_alert_check_display_name": "Il nome",
+        "store_alert_check_contact_email": "L'email di contatto",
+        "store_alert_check_payment_provider": "Un modo per incassare",
+        "store_alert_check_publishable_offer": "Un servizio pubblicato",
         # Cashflow alerts (Onda 7) — high-severity batch + weekly digest.
         # Same locale resolution chain as the store-status alerts.
         "cashflow_alert_high_heading_one": "{count} alert critico",
@@ -475,27 +478,27 @@ EMAIL_TRANSLATIONS = {
         # Sent by quota_warning_sweep when an org reaches 80% / 100% of a
         # quota. `metric_label_*` are inlined into the subject + body so the
         # admin sees "AI chat" / "ordini" / "righe import" naturally.
-        "quota_warning_subject": "Stai per raggiungere il limite di {metric}",
-        "quota_warning_intro": "Il tuo store ha utilizzato {used} su {limit} {metric} questo mese — siamo all'80%.",
-        "quota_warning_outro": "Per non interrompere il servizio, valuta un pack aggiuntivo o passa al piano superiore.",
-        "quota_warning_cta_addon": "Acquista pack",
-        "quota_warning_cta_upgrade": "Aggiorna piano",
-        "quota_exceeded_subject": "Limite {metric} raggiunto",
-        "quota_exceeded_intro": "Hai raggiunto il limite di {metric} per questo mese ({used}/{limit}).",
-        "quota_exceeded_outro_blocking": "Le richieste future saranno bloccate fino al rinnovo del periodo o all'attivazione di un pack/piano superiore.",
-        "quota_exceeded_outro_soft": "Il servizio prosegue (le email transazionali non sono mai bloccate). Per coerenza con il tuo piano, valuta un pack o un upgrade.",
-        "quota_metric_chat": "chat AI",
-        "quota_metric_orders_monthly": "ordini ecommerce",
-        "quota_metric_data_rows": "righe dataset",
+        "quota_warning_subject": "Hai usato {used} su {limit} {metric} questo mese",
+        "quota_warning_intro": "questo mese hai usato {used} su {limit} {metric}.",
+        "quota_warning_outro": "Se te ne servono altri, da qui puoi vedere le possibilità disponibili.",
+        "quota_warning_cta_addon": "Vedo le opzioni",
+        "quota_warning_cta_upgrade": "Vedo le opzioni",
+        "quota_exceeded_subject": "Hai usato tutti i {metric} di questo mese",
+        "quota_exceeded_intro": "hai usato tutti i {metric} di questo mese ({used} su {limit}).",
+        "quota_exceeded_outro_blocking": "Per continuare, da qui puoi vedere le possibilità disponibili.",
+        "quota_exceeded_outro_soft": "Il servizio continua (le email importanti partono sempre). Se te ne servono altri, da qui vedi le possibilità disponibili.",
+        "quota_metric_chat": "messaggi con l'assistente",
+        "quota_metric_orders_monthly": "ordini",
+        "quota_metric_data_rows": "righe di dati",
         "quota_metric_products": "prodotti",
-        "quota_metric_stores_max": "store",
-        "quota_metric_digest": "digest AI",
-        "quota_metric_email_alerts": "alert email",
+        "quota_metric_stores_max": "pagine",
+        "quota_metric_digest": "riepiloghi",
+        "quota_metric_email_alerts": "avvisi email",
         "quota_metric_fallback": "utilizzo",
-        "quota_addon_offer_chat": "Pack +50 chat AI a soli €9/mese",
-        "quota_addon_offer_orders_monthly": "Pack +200 ordini a soli €15/mese",
-        "quota_addon_offer_stores_max": "Pack +1 store a soli €19/mese",
-        "quota_addon_offer_fallback": "Aggiorna il piano per estendere il limite",
+        "quota_addon_offer_chat": "",
+        "quota_addon_offer_orders_monthly": "",
+        "quota_addon_offer_stores_max": "",
+        "quota_addon_offer_fallback": "",
         "quota_period_label": "periodo: {period}",
     },
     "en": {
@@ -1681,7 +1684,9 @@ def _wrap_template(content: str, locale: str = "it", *, reply_to: str = None, st
     lang = locale if locale in SUPPORTED_LOCALES else "it"
     # FV6 — il piede dice sempre DOVE si risponde (mai «non rispondere»):
     # la casella passata, o quella di Aurya, che e' anche il Reply-To
-    footer_line = _t("footer_reply_to", lang, email=reply_to or REPLY_TO_DEFAULT)
+    # FL3 (5/10/2026, founder): il piede e' uno e non dice piu' «scrivi a ...»:
+    # dove si risponde lo dice il corpo (e il Reply-To resta la casella Aurya)
+    _ = reply_to or REPLY_TO_DEFAULT
     # Header: store-branded when context available, platform-only otherwise.
     # Logo ufficiale (loto+sole, 13/7/2026) hostato sul dominio: risolve
     # appena il sito è deployato; il testo accanto copre il frattempo e
@@ -1707,9 +1712,7 @@ def _wrap_template(content: str, locale: str = "it", *, reply_to: str = None, st
     <div class="header">{header_html}</div>
     <div class="body">{content}</div>
     <div class="footer">
-      &copy; {_t("footer_brand", lang)}<br>
-      <a href="https://{BRAND_DOMAIN}">{BRAND_DOMAIN}</a><br>
-      {footer_line}
+      {_t("footer_brand", lang)} &middot; <a href="https://{BRAND_DOMAIN}">{BRAND_DOMAIN}</a>
     </div>
   </div>
 </body>
@@ -1781,23 +1784,29 @@ def send_password_changed(to_email: str, user_name: str, locale: str = "it") -> 
     return send_email(to_email, _t("changed_subject", locale), html)
 
 
-def send_team_invite(to_email: str, org_name: str, inviter_name: str, temp_password: str, locale: str = "it") -> bool:
-    """Notify a team member they've been added."""
-    login_url = f"{APP_URL}/login?lang={locale}"
+def send_team_invite(to_email: str, org_name: str, inviter_name: str, temp_password: str = None,
+                     locale: str = "it", reset_token: str = None) -> bool:
+    """Notify a team member they've been added.
+
+    FL3 (5/10/2026, founder) [FIX sicurezza]: niente password in chiaro nel
+    corpo. Con `reset_token` il pulsante porta a «scegli la password»
+    (stesso link del reset); `temp_password` resta accettato per i chiamanti
+    vecchi ma NON viene piu' scritto nell'email."""
+    if reset_token:
+        url = f"{APP_URL}/reset-password?token={reset_token}&lang={locale}"
+    else:
+        url = f"{APP_URL}/forgot-password?lang={locale}"
     html = _wrap_template(f"""
         <p>{_t("greeting", locale)},</p>
         <p>{_t("team_body", locale, inviter=inviter_name, org_name=org_name)}</p>
         <p>{_t("team_credentials", locale)}</p>
-        <p>
-            Email: <span class="code">{to_email}</span><br>
-            Password: <span class="code">{temp_password}</span>
-        </p>
         <p style="text-align: center;">
-            <a href="{login_url}" class="btn">{_t("team_cta", locale)}</a>
+            <a href="{url}" class="btn">{_t("team_cta", locale)}</a>
         </p>
+        {_link_block(url, locale)}
         <p>{_t("team_change_password", locale)}</p>
     """, locale)
-    return send_email(to_email, _t("team_subject", locale, org_name=org_name), html)
+    return send_email(to_email, _t("team_subject", locale, org_name=org_name, inviter=inviter_name), html)
 
 
 def send_deactivation_notice(to_email: str, org_name: str, deletion_date_str: str, locale: str = "it") -> bool:
@@ -1890,6 +1899,7 @@ def send_invite_request_confirmation(to_email: str, name: str, locale: str = "it
         <p>{_t("greeting_name", locale, name=name)}</p>
         <p>{_t("invite_request_confirm_body", locale)}</p>
         <p>{_t("invite_request_confirm_next", locale)}</p>
+        <p>A presto,<br>Valentina e Davide</p>
     """, locale)
     return send_email(to_email, _t("invite_request_confirm_subject", locale), html)
 
@@ -2046,7 +2056,6 @@ def _send_account_lockout_alert_sync(
         <p style="text-align: center;">
             <a href="{forgot_password_url}" class="btn">{_t("lockout_alert_cta", locale)}</a>
         </p>
-        <p style="font-size: 0.85em; color: #666;">{_t("lockout_alert_safety_note", locale)}</p>
     """, locale)
     return send_email(customer_email, _t("lockout_alert_subject", locale), html)
 
@@ -2086,16 +2095,19 @@ def _reservation_block_html(reservation: dict, product_name: str, landing_url: s
     Used both by the dedicated resend endpoint and by order_email_service
     when the order contains rental/slot lines.
     """
+    # FL3 (5/10/2026, founder): date e orari in italiano, mai ISO grezzo
+    from services.order_email_service import _fmt_short_date_localized as _fd
     flavor = reservation.get("reservation_flavor")
     if flavor == "range":
         date_from = reservation.get("date_from", "")
         date_to = reservation.get("date_to", "") or date_from
-        when = f"{date_from} → {date_to}" if date_to and date_to != date_from else date_from
+        when = (f"dal {_fd(date_from, locale)} al {_fd(date_to, locale)}"
+                if date_to and date_to != date_from else _fd(date_from, locale))
     else:
         sd = reservation.get("slot_date", "")
         ss = reservation.get("slot_start_time", "")
         se = reservation.get("slot_end_time", "")
-        when = f"{sd} · {ss}–{se}" if sd else ""
+        when = f"{_fd(sd, locale)}, {ss}-{se}" if sd else ""
 
     extras_rows = ""
     for ex in reservation.get("extras_snapshot") or []:

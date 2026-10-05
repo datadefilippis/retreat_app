@@ -8,7 +8,7 @@ chi non ha ordinato non deve nemmeno ricevere l'email».
 RV1 — la voce «Recensioni» entra nel menu del mondo snello (viveva solo
       nel menu legacy: nel gestionale sembrava non esistere).
 RV2 — il professionista riceve un'email a ogni recensione (verificata:
-      «rispondi»; non verificata: «aspetta la tua approvazione»).
+      «rispondi»; non verificata: «Hai una recensione da leggere»).
 RV3 — la porta si chiude PRIMA del codice: recensioni riservate ai
       clienti + email senza prenotazioni = niente codice, una riga di
       cortesia; e il profilo pubblico lo dice prima di chiedere l'email.
@@ -209,5 +209,5 @@ class TestRv2IlProfessionistaLoSa:
         assert src.index("await recompute_stats(org_id)\n    await _notify_operator_new_review") > 0
         # verificata → rispondi; non verificata → approvazione, con link alla coda
         assert "/reviews?status=pending" in src
-        assert "Nuova recensione da" in src
-        assert "aspetta la tua approvazione" in src
+        assert "Hai ricevuto una nuova recensione" in src
+        assert "Hai una recensione da leggere" in src

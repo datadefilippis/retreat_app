@@ -548,9 +548,13 @@ def _send_verify_email(email: str, token: str, name: Optional[str],
         link += f"&next={quote(_ritorno, safe='/')}"
     greeting = (_t("greeting_name", locale, name=name) if name
                 else _t("greeting", locale) + ",")
+    # FL3: dalla porta dei contatti il clic riporta dove si era
+    corpo = _t("aurya_verify_body", locale)
+    if _ritorno != "/" and locale == "it":
+        corpo = corpo.rstrip(".") + " e ti riporta dove eri."
     content = f"""
     <p>{greeting}</p>
-    <p>{_t("aurya_verify_body", locale)}</p>
+    <p>{corpo}</p>
     <p><a href="{link}" class="btn">{_t("aurya_verify_cta", locale)}</a></p>
     <p style="color:#8a9088;font-size:13px">{_t("aurya_verify_footer", locale,
                                                 hours=VERIFY_TOKEN_TTL_HOURS)}</p>

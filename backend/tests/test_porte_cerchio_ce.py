@@ -153,7 +153,7 @@ class TestE3EmailERotta:
     def test_una_riga_sola_nell_email_recensione(self):
         richiesta = _corpo(REVIEW, "async def request_review_otp(")
         assert 'riga_cerchio_html(email_n, "email-recensione", locale)' in richiesta
-        assert "_send_review_otp_email(email_n, code, org_slug, locale, riga_cerchio)" in richiesta
+        assert "_send_review_otp_email(email_n, code, _nome_org(org), locale, riga_cerchio)" in richiesta
         template = _corpo(REVIEW, "def _send_review_otp_email(")
         assert template.count("{riga_cerchio}") == 1
 

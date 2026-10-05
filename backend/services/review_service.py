@@ -101,7 +101,7 @@ async def request_review_otp(org_slug: str, email: str,
     # chi e' gia' dentro; l'email e' verificata dall'OTP stesso)
     from services.porte_cerchio import riga_cerchio_html
     riga_cerchio = await riga_cerchio_html(email_n, "email-recensione", locale)
-    _send_review_otp_email(email_n, code, org_slug, locale, riga_cerchio)
+    _send_review_otp_email(email_n, code, _nome_org(org), locale, riga_cerchio)   # FL3: il nome, non lo slug
 
 
 def _otp_base(org_slug: str, email: str) -> Dict[str, Any]:
@@ -181,14 +181,13 @@ def _send_review_closed_email(email: str, org: Dict[str, Any],
     nome = _nome_org(org)
     content = f"""
     <p>Ciao,</p>
-    <p>hai chiesto di recensire <b>{nome}</b> su Aurya, ma con questa
-    email non risulta nessuna prenotazione: le recensioni di questo
-    professionista sono riservate a chi ha prenotato con lui.</p>
-    <p>Se hai prenotato con un&rsquo;altra email, riprova con quella:
-    il codice arriva l&igrave;.</p>
+    <p>le recensioni per <b>{nome}</b> sono riservate a chi ha prenotato
+    con questa persona.</p>
+    <p>Non troviamo una prenotazione collegata a questa email.</p>
+    <p>Se hai prenotato con un&rsquo;altra email, riprova usando quella.</p>
     """
     try:
-        send_email(email, f"Recensione per {nome}: serve l’email della prenotazione",
+        send_email(email, "Ci serve l’email con cui hai prenotato",
                    _wrap_template(content, locale), bypass_gate=True)
     except Exception:
         logger.exception("email di cortesia recensione non inviata")
@@ -238,20 +237,22 @@ def _send_reviewer_receipt(email: str, org: Dict[str, Any],
     if review.get("verified"):
         subject = f"La tua recensione per {nome} è pubblica"
         content = f"""
-        <p>Grazie: la tua recensione per <b>{nome}</b> &egrave; gi&agrave;
-        visibile sul suo profilo, con il badge «Cliente verificato».
-        Se il professionista risponde, la risposta comparir&agrave;
-        sotto la tua recensione.</p>
-        {_bottone(link, 'Vedi la tua recensione')}
+        <p>Ciao,</p>
+        <p>grazie: la tua recensione per <b>{nome}</b> &egrave; gi&agrave; pubblica
+        sulla sua pagina, con il segno «Cliente verificato».</p>
+        <p>Se {nome} risponde, la sua risposta comparir&agrave; sotto la tua recensione.</p>
+        {_bottone(link, 'Vedo la mia recensione')}
         """
     else:
-        subject = f"Recensione per {nome} ricevuta: in attesa di approvazione"
+        subject = f"La tua recensione per {nome} è arrivata"
         content = f"""
-        <p>Grazie: la tua recensione per <b>{nome}</b> &egrave; arrivata.
-        Con questa email non risulta una prenotazione, quindi la
-        legger&agrave; prima il professionista: se la approva, comparir&agrave;
-        sul suo profilo senza il badge «Cliente verificato».</p>
-        {_bottone(link, 'Vai al profilo')}
+        <p>Ciao,</p>
+        <p>grazie: la tua recensione per <b>{nome}</b> &egrave; arrivata.</p>
+        <p>Con questa email non troviamo una prenotazione collegata, quindi prima di
+        pubblicarla la legge {nome}.</p>
+        <p>Se la approva, comparir&agrave; sulla sua pagina senza il segno «Cliente verificato».</p>
+        <p>Non ti manderemo altre email su questa recensione.</p>
+        {_bottone(link, 'Vado alla pagina')}
         """
     try:
         send_email(email, subject, _wrap_template(content, locale), bypass_gate=True)
@@ -276,24 +277,23 @@ async def _notify_operator_new_review(org_id: str, review: Dict[str, Any]) -> No
         autore = review.get("author_name") or "Un cliente"
         estratto = (review.get("body") or "")[:240]
         if review.get("verified"):
-            subject = f"Nuova recensione da {autore} ({stelle})"
-            testa = ("Una persona che ha prenotato con te ha lasciato una "
-                     "recensione: &egrave; gi&agrave; pubblica sul tuo profilo. "
-                     "Puoi rispondere dal gestionale.")
+            subject = "Hai ricevuto una nuova recensione"
+            testa = ("hai ricevuto una nuova recensione: &egrave; gi&agrave; pubblica sulla tua "
+                     "pagina. Puoi leggerla e, se vuoi, rispondere dalla tua pagina Recensioni.")
             link = f"{base}/reviews"
         else:
-            subject = f"Una recensione aspetta la tua approvazione ({stelle})"
-            testa = ("Una persona che non risulta fra le tue prenotazioni ha "
-                     "scritto una recensione: resta in attesa finch&eacute; "
-                     "non la approvi o la rifiuti.")
+            subject = "Hai una recensione da leggere"
+            testa = ("c'&egrave; una recensione che aspetta la tua approvazione. Puoi leggerla e "
+                     "decidere tu se pubblicarla. Resta in attesa finch&eacute; non decidi tu: "
+                     "non c'&egrave; fretta.")
             link = f"{base}/reviews?status=pending"
         content = f"""
         <p>Ciao,</p>
         <p>{testa}</p>
         <p style="margin:14px 0 4px"><b>{autore}</b> · {stelle}</p>
         <p style="color:#3b4440;border-left:3px solid #c9b37e;padding-left:12px">{estratto}</p>
-        <p><a href="{link}" style="display:inline-block;background:#2f5e58;color:#fff;
-        padding:10px 18px;border-radius:999px;text-decoration:none">Vai alle recensioni</a></p>
+        {_bottone(link, 'Leggo la recensione')}
+        <p>A presto,<br>Valentina e Davide</p>
         """
         send_email(to, subject, _wrap_template(content, "it"), bypass_gate=True)
     except Exception:
@@ -313,7 +313,7 @@ def _send_review_otp_email(email: str, code: str, org_slug: str,
                                                 minutes=OTP_TTL_MINUTES)}</p>
     {riga_cerchio}
     """
-    send_email(email, _t("review_otp_subject", locale),
+    send_email(email, _t("review_otp_subject", locale, operator=org_slug),
                _wrap_template(content, locale), bypass_gate=True)
 
 
@@ -372,7 +372,7 @@ async def submit_review(*, org_slug: str, email: str, code: str,
             raise ReviewError(
                 "orders_required",
                 "Per ora questo operatore accetta recensioni solo da chi "
-                "ha già prenotato con lui.")
+                "ha già prenotato con questa persona.")
 
     rating = int(rating)
     if not 1 <= rating <= 5:
@@ -515,14 +515,14 @@ async def resolve_flag(review_id: str, action: str, note: Optional[str],
         to = await _operator_recipient(org_id)
         if to:
             if action == "restore":
-                subject = "Segnalazione esaminata: la recensione torna pubblica"
-                testa = ("Abbiamo esaminato la recensione che avevi segnalato e non "
-                         "abbiamo trovato una violazione: torna visibile sul tuo "
-                         "profilo. Puoi sempre risponderle pubblicamente.")
+                subject = "Abbiamo controllato la recensione"
+                testa = ("abbiamo controllato la recensione che avevi segnalato. Per quello che "
+                         "abbiamo verificato, non va contro le regole delle recensioni, quindi resta "
+                         "pubblicata. Se vuoi, puoi rispondere pubblicamente dalla tua pagina Recensioni.")
             else:
-                subject = "Segnalazione accolta: la recensione è stata rimossa"
-                testa = ("Abbiamo esaminato la recensione che avevi segnalato e "
-                         "l'abbiamo rimossa dal tuo profilo.")
+                subject = "Abbiamo tolto la recensione che avevi segnalato"
+                testa = ("abbiamo controllato la recensione che avevi segnalato e l'abbiamo tolta "
+                         "dalla tua pagina.")
             nota = f"<p>Nota di Aurya: {r['resolution']['note']}</p>" if note else ""
             content = f"""
             <p>Ciao,</p><p>{testa}</p>

@@ -37,32 +37,30 @@ def _singolo_optin() -> bool:
 
 
 def _testo_promemoria(saluto: str, url: str, link_block: str):
-    """(oggetto, corpo) secondo l'interruttore. Spento: le parole di
-    sempre, byte per byte."""
+    """(oggetto, corpo) secondo l'interruttore, nelle parole del founder (FL3, 5/10/2026)."""
     if _singolo_optin():
-        return ("Un clic e si aprono le meditazioni riservate", f"""
+        return ("Un tocco e si aprono le meditazioni", f"""
             <p>{saluto}</p>
-            <p>sei nel <strong>Cerchio di Aurya</strong>: la Lettera ti arriva
-            già, senza fare nulla. Un clic qui sotto apre anche i contenuti
-            riservati: le meditazioni, le guide, i ritiri in anteprima.</p>
+            <p>sei già nel <strong>Cerchio di Aurya</strong> e la Lettera ti arriva già.</p>
+            <p>Con un tocco sul pulsante puoi aprire anche le meditazioni, le guide e i ritiri
+            in anteprima. Puoi farlo direttamente dal telefono, senza installare nulla.</p>
             <p style="text-align: center;">
                 <a href="{url}" class="btn">Apro le meditazioni</a>
             </p>
             {link_block}
-            <p>Se non ti interessano, non devi fare nulla: la Lettera
-            continua ad arrivare e da lì ti cancelli con un clic.</p>
+            <p>Se non ti interessano, non devi fare nulla: la Lettera continua ad arrivare.
+            Se vuoi smettere di riceverla, puoi cancellarti con un clic.</p>
         """)
-    return ("Ti manca un clic per entrare nel Cerchio di Aurya", f"""
+    return ("Ti manca un clic per entrare nel Cerchio", f"""
             <p>{saluto}</p>
-            <p>ti manca un clic per entrare nel <strong>Cerchio di Aurya</strong>:
-            le meditazioni riservate, i ritiri e le esperienze in anteprima,
-            la Lettera quando vale la pena.</p>
+            <p>ti manca un clic per entrare nel <strong>Cerchio di Aurya</strong>.</p>
+            <p>Troverai meditazioni riservate, ritiri in anteprima e la Lettera quando abbiamo
+            qualcosa che vale davvero la pena condividere.</p>
             <p style="text-align: center;">
                 <a href="{url}" class="btn">Entro nel Cerchio</a>
             </p>
             {link_block}
-            <p>Se non ti interessa piu', non devi fare nulla: e' l'ultima
-            email che ricevi da noi.</p>
+            <p>Se non ti va, non devi fare nulla: non ti scriviamo più.</p>
         """)
 
 

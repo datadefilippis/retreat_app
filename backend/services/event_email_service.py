@@ -176,7 +176,9 @@ async def resend_ticket_email_by_code(code: str, org_id: str) -> Tuple[bool, str
         qr_src = ""
 
     holder_display = ticket.get("holder_name") or _t("event_email_greeting_attendee_fallback", locale)
-    greeting_line = _t("event_email_greeting", locale, name=_html_escape(holder_display))
+    # FL3: senza nome si dice «Ciao,», mai «Ciao partecipante,»
+    greeting_line = (_t("event_email_greeting", locale, name=_html_escape(holder_display))
+                     if holder_display else _t("greeting", locale) + ",")
     intro_line = _t("event_email_ticket_resend_intro", locale, event=_html_escape(event_name))
     ticket_label = _t("event_email_ticket_label", locale)
     seat_hint = _t("event_email_ticket_seat_hint", locale, seat_index=seat_idx, seat_count=seat_count)
@@ -267,7 +269,8 @@ def _render_template(
     from services.order_email_service import _html_escape
 
     holder_display = holder_name or _t("event_email_greeting_attendee_fallback", locale)
-    greeting = f'<p>{_t("event_email_greeting", locale, name=_html_escape(holder_display))}</p>'
+    greeting = (f'<p>{_t("event_email_greeting", locale, name=_html_escape(holder_display))}</p>'
+                if holder_display else f'<p>{_t("greeting", locale)},</p>')
     code_label = _t("event_email_broadcast_code_label", locale)
     event_box = f"""
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:16px 0;">
@@ -285,7 +288,7 @@ def _render_template(
         subject = _t("event_email_broadcast_reminder_subject", locale, event=event_name)
         body = (
             greeting
-            + f'<p>{_t("event_email_broadcast_reminder_body", locale)}</p>'
+            + f'<p>{_t("event_email_broadcast_reminder_body", locale, event=_html_escape(event_name))}</p>'
             + event_box
             + f'<p>{_t("event_email_broadcast_reminder_outro", locale)}</p>'
             + extra_block
@@ -294,7 +297,7 @@ def _render_template(
         subject = _t("event_email_broadcast_logistics_subject", locale, event=event_name)
         body = (
             greeting
-            + f'<p>{_t("event_email_broadcast_logistics_body", locale)}</p>'
+            + f'<p>{_t("event_email_broadcast_logistics_body", locale, event=_html_escape(event_name))}</p>'
             + event_box
             + f'<p>{_t("event_email_broadcast_logistics_outro", locale)}</p>'
             + extra_block
@@ -303,7 +306,7 @@ def _render_template(
         subject = _t("event_email_broadcast_cancellation_subject", locale, event=event_name)
         body = (
             greeting
-            + f'<p>{_t("event_email_broadcast_cancellation_body", locale)}</p>'
+            + f'<p>{_t("event_email_broadcast_cancellation_body", locale, event=_html_escape(event_name))}</p>'
             + event_box
             + f'<p>{_t("event_email_broadcast_cancellation_outro", locale)}</p>'
             + extra_block

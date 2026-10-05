@@ -551,7 +551,7 @@ class TestP13AuryaPerLeAziendeEChiediLaRegia:
         assert 'TIPI_PRO = ("lettera_eventi", "social", "intervista_reel")' in rs and "vantaggi_pro" in rs
         em = (BACKEND_DIR / "services" / "strutture_email.py").read_text()
         for s in ("Richiesta di regia da", "Richiesta team building da", "Richiesta struttura da",
-                  "La tua richiesta di regia è arrivata", "Aurya per le aziende"):
+                  "La tua richiesta è arrivata", "Abbiamo ricevuto la richiesta di"):   # FL3
             assert s in em, s
 
     def test_la_scheda_del_gestionale_chiede_anche_la_regia(self):
@@ -587,7 +587,7 @@ class TestFv2LeSequenze:
         sys.path.insert(0, str(BACKEND_DIR))
         from services.sequenze import passi_dovuti, PASSI, passo_dovuto
         # PE1 (24/9, founder): via «g2», il promemoria a noi
-        assert [p.nome for p in PASSI["operatore"]] == ["profilo_online", "np5", "np10", "np15", "r14"], \
+        assert [p.nome for p in PASSI["operatore"]] == ["profilo_online", "canali", "np5", "np10", "np15", "r14"], \
             "via g30 (founder 10/9 sera) e via g2 (founder 24/9)"
         assert not any(p.a == "admin" for p in PASSI["operatore"]), "nessuna email a noi nella sequenza operatore"
         assert [p.nome for p in PASSI["cerchio"]] == ["benvenuto_ritiri", "benvenuto_meditazioni", "benvenuto_altro"]
@@ -604,10 +604,11 @@ class TestFv2LeSequenze:
         assert nomi(5, acceso) == ["profilo_online"]
         # PE2: la pagina online parte quando NASCE la pagina, anche senza listino
         assert nomi(1, meta) == ["profilo_online"]
-        assert nomi(5, meta, {"profilo_online": "x"}) == ["np5"]
-        assert nomi(14, acceso, {"profilo_online": "x"}) == ["r14"]
-        assert nomi(14, meta, {"profilo_online": "x"}) == ["np10"], "senza listino niente r14"
-        assert nomi(14, {**acceso, "ritiro": True}, {"profilo_online": "x"}) == []
+        assert nomi(5, meta, {"profilo_online": "x"}) == ["canali", "np5"]   # FL3: i canali il giro dopo la pagina
+        assert nomi(14, acceso, {"profilo_online": "x"}) == ["canali", "r14"]   # FL3: i canali prima, se non ancora mandati
+        assert nomi(14, meta, {"profilo_online": "x"}) == ["canali", "np10"], "senza listino niente r14"
+        assert nomi(14, {**acceso, "ritiro": True}, {"profilo_online": "x"}) == ["canali"]   # FL3: col ritiro resta solo il seguito della pagina
+        assert nomi(14, {**acceso, "ritiro": True}, {"profilo_online": "x", "canali": "x"}) == []
         assert nomi(7, spento, {"g7": "x"}) == [], "le marcature vecchie di RB8 valgono"
         assert passo_dovuto(2) is None and passo_dovuto(30) is None
 
@@ -662,21 +663,21 @@ class TestFv2LeSequenze:
             assert "Valentina" in c
         assert len(oggetti) == 3
         _, c15 = T.op_np15(ctx)
-        assert "ultima email" in c15 and "resta aperto" in c15 and "chiamami" in c15
+        assert "resta aperto" in c15 and "grazie di essere su Aurya" in c15          # FL3: testo del founder
         ctx_on = {**ctx, "stato": {"online": True, "ritiro": False, "slug": "giulia", "iban": False}}
         _, c = T.op_profilo_online(ctx_on)
-        assert "/o/giulia" in c and "Telegram" in c and "IBAN" in c
+        assert "/o/giulia" in c and "Telegram" not in c and "IBAN" not in c   # FL3: una cosa per email (canali a parte)
         _, c_iban = T.op_profilo_online({**ctx_on, "stato": {**ctx_on["stato"], "iban": True}})
         assert "IBAN" not in c_iban
         _, c14 = T.op_r14(ctx_on)
-        assert "senza commissioni" in c14 and "bonifico" in c14 and "/events/new" in c14
+        assert "Non serve nessun sistema di pagamento" in c14 and "/events/new" in c14
         assert not hasattr(T, "op_g2_admin"), "PE1: il promemoria a noi non esiste piu'"
         # PE3: con la pagina ma senza listino, np5/10/15 parlano del LISTINO
         ctx_meta = {**ctx, "stato": {"pagina": True, "listino": False, "n_servizi": 0,
                                      "online": False, "ritiro": False, "slug": "giulia", "iban": False}}
         for fn in (T.op_np5, T.op_np10, T.op_np15):
             o, c = fn(ctx_meta)
-            assert "/listino" in c and c.count('class="btn"') == 1 and "/public-profile" not in c
+            assert c.count('class="btn"') == 1 and ("/listino" in c or fn is T.op_np15)
             assert "non è ancora online" not in c and "Ti manca solo la pagina" not in o
         # PE2: la pagina online dice il listino se manca, i servizi se ci sono
         _, c_senza = T.op_profilo_online(ctx_meta)
@@ -690,10 +691,10 @@ class TestFv2LeSequenze:
         base = {"nome": "Giulia", "email": "g@esempio.it", "token": "tok", "citta": "", "interessi": [],
                 "travel": "", "porta": "altro", "vuole_ritiri": False}
         o, c = T.benvenuto_cerchio_ritiri({**base, "citta": "Bari", "interessi": ["yoga", "suono"], "travel": "near", "vuole_ritiri": True})
-        assert o == "Benvenuto nel Cerchio di Aurya" and "lo yoga e il suono" in c and "vicino a Bari" in c
-        assert "te lo scriviamo" in c and "/meditazioni" in c and "dicci le tue vie" not in c
+        assert o == "Sei nel Cerchio di Aurya" and "lo yoga e il suono" in c and "a Bari (zona)" in c
+        assert "te lo scriviamo" in c and "/meditazioni" in c and "Le mie preferenze" not in c
         _, c_vuoto = T.benvenuto_cerchio_ritiri({**base, "vuole_ritiri": True})
-        assert "dicci le tue vie e dove vivi" in c_vuoto and "/newsletter/preferenze/tok" in c_vuoto
+        assert "dicci cosa ti interessa e dove vivi" in c_vuoto and "/newsletter/preferenze/tok" in c_vuoto
         o_m, c_m = T.benvenuto_cerchio_meditazioni({**base, "porta": "meditazioni"})
         assert "meditazioni" in o_m and "/meditazioni" in c_m and c_m.count('class="btn"') == 1
         assert "ritir" not in c_m.lower(), "dalle meditazioni, senza preferenze: nessuna parola sui ritiri"
@@ -703,7 +704,7 @@ class TestFv2LeSequenze:
             assert "/newsletter/preferenze/tok" in corpo, "ci si cancella da ogni email"
         subs = (BACKEND_DIR / "routers" / "subscribers.py").read_text()
         # PE8 (24/9): la conferma non si chiama piu' «Benvenuto», il benvenuto arriva al clic
-        assert "Un clic per entrare nel Cerchio di Aurya" in subs
+        assert "Un clic e sei nel Cerchio di Aurya" in subs   # FL3
         assert "Benvenuto nel Cerchio: un clic e sei dentro" not in subs
 
     def test_le_risposte_e_i_moduli_arrivano_alla_casella_di_aurya(self):
@@ -721,7 +722,7 @@ class TestFv2LeSequenze:
         assert d["replyTo"] == {"email": "aurya.life@gmail.com"}, "anche senza reply_to esplicito"
         assert es._payload_brevo("a@b.it", "x", "<p>x</p>", reply_to="op@studio.it")["replyTo"] == {"email": "op@studio.it"}
         piede = es._wrap_template("<p>ciao</p>", "it")
-        assert "Per rispondere, scrivi a aurya.life@gmail.com" in piede and "non rispondere" not in piede
+        assert "Ritiri ed esperienze olistiche, in un posto solo" in piede and "non rispondere" not in piede   # FL3: piede unico
         seq = (BACKEND_DIR / "services" / "email_sequenze.py").read_text()
         assert "def risposte_a()" in seq and "reply_to=risposte_a()" in seq
         motore = (BACKEND_DIR / "services" / "sequenze.py").read_text()
@@ -1032,7 +1033,7 @@ class TestFv1IlMuroDellaVerifica:
 
     def test_il_giorno_zero_e_scritto(self):
         seq = (BACKEND_DIR / "services" / "email_sequenze.py").read_text()
-        assert "def benvenuto_operatore(" in seq and "Entra nel tuo spazio" in seq
+        assert "def benvenuto_operatore(" in seq and "Apro il mio spazio" in seq
         # FV5 (10/9 sera): le risposte vanno al Reply-To (REPLY_TO_EMAIL o ADMIN_EMAIL)
         assert "reply_to=risposte_a()" in seq and "Telegram" in seq
         for frase in ("Cordiali saluti", "affrettati", "ultimi posti"):

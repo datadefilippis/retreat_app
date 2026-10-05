@@ -90,7 +90,7 @@ class TestC1Header:
         monkeypatch.setattr(es, "send_email", lambda *a, **k: chiamate.append((a, k)) or True)
         assert R._send_reminder_email("g@esempio.it", "Giulia", "TOK") is True
         a, k = chiamate[-1]
-        assert a[1] == "Ti manca un clic per entrare nel Cerchio di Aurya"
+        assert a[1] == "Ti manca un clic per entrare nel Cerchio"
         assert k["unsubscribe_url"].endswith("/newsletter/preferenze/TOK")
         assert "bypass_gate" not in k
 
@@ -243,12 +243,12 @@ class TestC4Interruttore:
         from services import cerchio_reminder as R
         _off(monkeypatch)
         o, c = R._testo_promemoria("Ciao,", "https://u", "")
-        assert o == "Ti manca un clic per entrare nel Cerchio di Aurya"
-        assert "Entro nel Cerchio" in c and "l'ultima\n            email che ricevi da noi" in c
+        assert o == "Ti manca un clic per entrare nel Cerchio"
+        assert "Entro nel Cerchio" in c and "non ti scriviamo più" in c
         _on(monkeypatch)
         o, c = R._testo_promemoria("Ciao,", "https://u", "")
-        assert o == "Un clic e si aprono le meditazioni riservate"
-        assert "la Lettera ti arriva" in c and "riservati" in c and "ultima" not in c
+        assert o == "Un tocco e si aprono le meditazioni"
+        assert "la Lettera ti arriva" in c and "in anteprima" in c and "ultima" not in c   # FL3
         assert 'href="https://u"' in c
         assert "ogni due settimane" not in REM
 

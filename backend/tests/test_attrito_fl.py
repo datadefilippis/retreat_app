@@ -235,3 +235,183 @@ class TestFL5VerificaEntra:
             pytest.skip("backend locale spento")
         r = requests.post(API + "/platform/auth/verify-email", json={"token": "non-esiste"}, timeout=10)
         assert r.status_code == 400 and "access_token" not in r.text
+
+
+class TestFL3Email:
+    """FL3 — le email automatiche nelle parole del founder (docs/EMAIL_COPY_2026-10
+    + la sua versione): una voce, mai declinate, un passo successivo; le parole
+    proibite non rientrano; ogni template si renderizza pieno e vuoto."""
+
+    PROIBITE = ("con successo", "click", "pack ", "upgrade", "regolarizzare", "Benvenuto nel", "Sei stato",
+                "sei stato tu", "iscritto tu", "con lui", "gestione finanziaria", "la tua posizione",
+                "partecipante,", "dettalo", "Conformemente", "storefront", "Ti contatteremo")
+    FILE = ("services/email_sequenze.py", "services/cerchio_reminder.py", "routers/subscribers.py",
+            "services/platform_account_service.py", "services/strutture_email.py", "services/review_service.py",
+            "services/order_email_service.py", "services/payment_email_service.py", "services/event_email_service.py",
+            "services/quota_email_service.py")
+
+    def _it(self):
+        from services.email_service import EMAIL_TRANSLATIONS
+        return EMAIL_TRANSLATIONS["it"]
+
+    def test_parole_proibite(self):
+        import ast as _ast
+        import re as _re
+        for rel in self.FILE:
+            tree = _ast.parse((BACKEND / rel).read_text(encoding="utf-8"))
+            # solo le STRINGHE del codice (quello che finisce nelle email), mai docstring e commenti
+            doc = set()
+            for n in _ast.walk(tree):
+                if isinstance(n, (_ast.Module, _ast.FunctionDef, _ast.AsyncFunctionDef, _ast.ClassDef)) and n.body \
+                        and isinstance(n.body[0], _ast.Expr) and isinstance(getattr(n.body[0], "value", None), _ast.Constant):
+                    doc.add(id(n.body[0].value))
+            corpo = "\n".join(n.value for n in _ast.walk(tree)
+                              if isinstance(n, _ast.Constant) and isinstance(n.value, str) and id(n) not in doc)
+            for p in self.PROIBITE:
+                assert not _re.search(r"(?<![\w_])" + _re.escape(p.strip()) + r"(?![\w_])", corpo), (rel, p)   # parole intere («click», non click_ids)
+        for k, v in self._it().items():
+            for p in self.PROIBITE:
+                assert not _re.search(r"(?<![\w_])" + _re.escape(p.strip()) + r"(?![\w_])", v), (k, p)
+            # accenti veri nei testi italiani (mai e' / piu' / gia' / sara')
+            assert not _re.search(r"\b(e|piu|gia|sara|puo|perche)'", v), (k, v)
+
+    def test_piede_unico(self):
+        from services.email_service import _wrap_template
+        html = _wrap_template("<p>x</p>", "it")
+        assert "Ritiri ed esperienze olistiche, in un posto solo" in html and "aurya.life" in html
+        assert "Per rispondere, scrivi a" not in html and "non rispondere" not in html
+
+    def test_cerchio_e_sequenze_piene_e_vuote(self):
+        import services.email_sequenze as T
+        pieno = {"nome": "Anna", "email": "a@b.it", "token": "tok", "citta": "Bari", "interessi": ["yoga", "suono"],
+                 "travel": "near", "vuole_ritiri": True, "porta": "altro"}
+        vuoto = {"nome": "", "email": "a@b.it", "token": "tok"}
+        o, c = T.benvenuto_cerchio_ritiri(pieno)
+        assert o == "Sei nel Cerchio di Aurya"
+        assert "Sappiamo che ti interessano lo yoga e il suono e i ritiri di Aurya a Bari (zona)." in c
+        assert "interessato" not in c and "Benvenuto" not in c
+        _, c2 = T.benvenuto_cerchio_ritiri(vuoto)
+        assert "Sappiamo che ti interessano gli eventi e i ritiri di Aurya." in c2 and "Le mie preferenze" in c2
+        _, c3 = T.benvenuto_cerchio_ritiri({**pieno, "interessi": [], "travel": "abroad"})
+        assert "gli eventi e i ritiri di Aurya in Italia o all'estero." in c3
+        for fn, sogg in ((T.benvenuto_cerchio_meditazioni, "Sei nel Cerchio: le meditazioni sono aperte"),
+                         (T.benvenuto_cerchio_generico, "Sei nel Cerchio di Aurya")):
+            for ctx in (pieno, vuoto):
+                o, c = fn(ctx)
+                assert o == sogg and "Ciao" in c and "Valentina e Davide" in c and "{" not in c
+        on = {"nome": "Anna", "stato": {"pagina": True, "online": True, "slug": "anna", "n_servizi": 0}}
+        off = {"nome": "", "stato": {}}
+        attesi = {T.op_profilo_online: "La tua pagina è online: ecco il link", T.op_canali: "I canali della rete Aurya",
+                  T.op_np10: "Le tre cose che fermano una pagina", T.op_np15: "Grazie di essere su Aurya",
+                  T.op_r14: "Vuoi pubblicare i tuoi ritiri su Aurya?"}
+        for fn, sogg in attesi.items():
+            o, c = fn(on)
+            assert o == sogg and "{" not in c, fn.__name__
+            assert 'class="btn"' in c or fn is T.op_canali, fn.__name__      # i canali sono link, non un bottone
+        assert T.op_np5(on)[0] == "La tua pagina può ancora raccontare qualcosa di te"
+        assert T.op_np5(off)[0] == "Dieci minuti per completare la tua pagina"
+        for fn in (T.op_np5, T.op_np10, T.op_np15):
+            o, c = fn(off)
+            assert "Ciao," in c and "{" not in c
+        # la pagina online fa UNA cosa: niente canali, niente consulenza
+        _, c = T.op_profilo_online(on)
+        assert "Telegram" not in c and "consulenza" not in c and "listino" in c
+        from services.sequenze import PASSI
+        assert [p.nome for p in PASSI["operatore"]][:2] == ["profilo_online", "canali"]
+        canali = PASSI["operatore"][1]
+        assert canali.dopo == "profilo_online" and canali.giorno == 1 and canali.fine == 21   # il giro dopo la pagina, mai prima, mai a chi e' online da mesi
+
+    def test_promemoria_conferma_accesso(self):
+        from services.cerchio_reminder import _testo_promemoria
+        import services.cerchio_reminder as R
+        orig = R._singolo_optin
+        try:
+            R._singolo_optin = lambda: True
+            o, c = _testo_promemoria("Ciao,", "https://x", "")
+            assert o == "Un tocco e si aprono le meditazioni" and "Apro le meditazioni" in c
+            R._singolo_optin = lambda: False
+            o, c = _testo_promemoria("Ciao,", "https://x", "")
+            assert o == "Ti manca un clic per entrare nel Cerchio" and "non ti scriviamo più" in c
+        finally:
+            R._singolo_optin = orig                                   # mai sporcare i test dopo
+        sub = (BACKEND / "routers" / "subscribers.py").read_text(encoding="utf-8")
+        assert '"Un clic e sei nel Cerchio di Aurya"' in sub and "Riapro il mio accesso" in sub
+        assert "Se non eri tu, ignora questa email: senza il clic non ti scriviamo." in sub
+
+    def test_dizionario_segnaposto(self):
+        from services.email_service import _t
+        it = self._it()
+        import re as _re
+        # ogni segnaposto {x} del testo italiano deve essere accettato dai chiamanti: li proviamo tutti
+        for k, v in it.items():
+            segnaposto = set(_re.findall(r"\{(\w+)\}", v))
+            _t(k, "it", **{s: "x" for s in segnaposto})          # ogni testo si formatta coi suoi segnaposto
+        assert _t("order_cancelled_refund_paid", "en", store_name="X").startswith("Se hai già pagato")   # ripiego it
+        assert it["review_otp_subject"] == "Il codice per la tua recensione a {operator}"
+        assert it["order_confirmed_subject"] == "{store_name} ha confermato il tuo ordine"
+
+    def test_richieste_e_stati(self):
+        import services.strutture_email as S
+        inviate = []
+        class _E:
+            @staticmethod
+            def send_email(to, oggetto, html, **kw): inviate.append((to, oggetto, html))
+            @staticmethod
+            def _wrap_template(c, l, **kw): return c
+        import sys, types
+        import services.email_service as E
+        orig = (E.send_email, E._wrap_template)
+        E.send_email, E._wrap_template = _E.send_email, _E._wrap_template
+        try:
+            richieste = (
+                {"email": "a@b.it", "tipo": "struttura", "zona": "Puglia", "periodo": "giugno", "persone": 12, "notti": 3, "budget_persona": 120.0, "nome": "Anna Bianchi"},
+                {"email": "a@b.it", "tipo": "struttura"},
+                {"email": "a@b.it", "tipo": "regia", "periodo": "giugno", "persone": 12, "formula": "leggera"},
+                {"email": "a@b.it", "tipo": "team_building", "azienda": "Acme", "nome": "Luca", "periodo": "luglio", "persone": 20},
+                {"email": "a@b.it", "tipo": "lettera_eventi"},
+                {"email": "a@b.it", "tipo": "social"},
+            )
+            for r in richieste:
+                S.ricevuta_operatore(r)
+                for st in ("nuova", "in_lavorazione", "proposta", "chiusa"):
+                    S.avvisa_operatore_stato({**r, "stato": st})
+        finally:
+            E.send_email, E._wrap_template = orig
+        assert len(inviate) == len(richieste) * 5
+        testi = "\n".join(o + "\n" + h for _, o, h in inviate)
+        assert "i suoi eventi" not in testi and "i tuoi eventi nella Lettera" in testi
+        assert "è abbiamo" not in testi and "è la proposta" not in testi
+        assert "Ciao Anna," in testi and "Ciao Luca," in testi and "Ciao," in testi
+        assert "a Puglia, giugno, per 12 persone, 3 notti, budget 120 € a persona" in testi
+        assert "Abbiamo ricevuto la richiesta di Acme" in testi and "Vi scriviamo entro due giorni lavorativi" in testi
+        oggetti = {o for _, o, _ in inviate}
+        assert {"Ci stiamo lavorando alla tua richiesta", "Abbiamo una proposta per te", "La tua richiesta è chiusa"} <= oggetti
+        assert all("Aggiornamento sulla tua richiesta" != o for o in oggetti)
+        assert "Se non è quello che ti aspettavi, oppure vuoi riaprirla" in testi
+
+    def test_invito_team_senza_password(self):
+        src = (BACKEND / "services" / "email_service.py").read_text(encoding="utf-8")
+        blocco = src[src.index("def send_team_invite("):src.index("def send_deactivation_notice(")]
+        assert "temp_password" not in blocco.split('"""')[2]   # mai scritta nel corpo
+        assert "reset-password?token=" in blocco
+        org = (BACKEND / "routers" / "organizations.py").read_text(encoding="utf-8")
+        assert "reset_token=_tok" in org and '"reset_token_hash": _hl.sha256(_tok.encode()).hexdigest()' in org
+        assert "send_team_invite(invite_data.email, org_name, inviter_name, temp_password" not in org
+
+    def test_recensioni(self):
+        src = (BACKEND / "services" / "review_service.py").read_text(encoding="utf-8")
+        assert "_send_review_otp_email(email_n, code, _nome_org(org), locale, riga_cerchio)" in src
+        assert "Ci serve l’email con cui hai prenotato" in src and "con questa persona" in src
+        assert '"Hai ricevuto una nuova recensione"' in src and '"Hai una recensione da leggere"' in src
+        assert "non va contro le regole delle recensioni" in src
+        assert "<p>Ciao,</p>\n        <p>grazie: la tua recensione" in src
+
+    def test_ordini_ed_eventi(self):
+        oe = (BACKEND / "services" / "order_email_service.py").read_text(encoding="utf-8")
+        assert '_t("order_received_body", locale, store_name=store_name)' in oe
+        assert '_t("order_confirmed_body", locale, store_name=store_name)' in oe
+        assert '"order_cancelled_refund_paid" if pagato else "order_cancelled_refund_none"' in oe
+        ev = (BACKEND / "services" / "event_email_service.py").read_text(encoding="utf-8")
+        assert ev.count('if holder_display else') == 2                     # «Ciao,» senza nome
+        pay = (BACKEND / "services" / "payment_email_service.py").read_text(encoding="utf-8")
+        assert '_t("pay_atrisk_merchant_cta", locale)' in pay and "/incassi" in pay

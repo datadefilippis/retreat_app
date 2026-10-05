@@ -14,16 +14,18 @@ import os
 
 logger = logging.getLogger(__name__)
 
+# FL3 (5/10/2026, founder) [FIX frase rotta]: un'email per stato, con oggetto
+# suo; «chiusa» non e' piu' un vicolo cieco. Le chiavi restano quelle del registro.
 STATI_TESTO = {
     "nuova": "ricevuta, la stiamo leggendo",
-    "in_lavorazione": "in lavorazione: stiamo cercando fra le strutture che conosciamo",
-    "proposta": "abbiamo una o più proposte per te: ti scriviamo a parte con i dettagli",
+    "in_lavorazione": "cercando fra le strutture che conosciamo",
+    "proposta": "una o più proposte",
     "chiusa": "chiusa",
 }
 STATI_TESTO_SERVIZIO = {
     "nuova": "ricevuta, la stiamo leggendo",
-    "in_lavorazione": "in lavorazione: stiamo preparando la proposta",
-    "proposta": "la proposta è pronta: ti scriviamo a parte con i dettagli",
+    "in_lavorazione": "preparando la proposta",
+    "proposta": "la proposta pronta",
     "chiusa": "chiusa",
 }
 FORMULE = {"leggera": "Regia leggera (290 €)",
@@ -39,9 +41,15 @@ def _tipo(r: dict) -> str:
 
 
 # AB-R2 (14/9/2026): i servizi del Pro (e del patto 2026) passano di qui
-ETICHETTE_PRO = {
+ETICHETTE_PRO = {   # alla piattaforma (terza persona): «chiede i suoi eventi...»
     "lettera_eventi": "i suoi eventi nella Lettera del Cerchio",
     "social": "la pubblicazione dei suoi eventi sui social di Aurya",
+    "intervista_reel": "l'intervista e i reel",
+}
+# FL3 [FIX]: a chi ha chiesto si da' del tu («i tuoi eventi»), non «i suoi»
+ETICHETTE_PRO_TU = {
+    "lettera_eventi": "i tuoi eventi nella Lettera del Cerchio",
+    "social": "la pubblicazione dei tuoi eventi sui social di Aurya",
     "intervista_reel": "l'intervista e i reel",
 }
 
@@ -103,55 +111,101 @@ def avvisa_piattaforma_richiesta(r: dict) -> None:
         logger.exception("richiesta: email alla piattaforma non inviata")
 
 
+def _saluto(r: dict) -> str:
+    nome = (r.get("nome") or "").strip().split(" ")[0]
+    return f"<p>Ciao {nome},</p>" if nome else "<p>Ciao,</p>"
+
+
+def _firma() -> str:
+    return "<p>A presto,<br>Valentina e Davide</p>"
+
+
+def _dettagli(r: dict) -> str:
+    """FL3: i dati della richiesta in una frase, non in un elenco di campi."""
+    pezzi = []
+    if r.get("zona") and _tipo(r) not in ETICHETTE_PRO and _tipo(r) != "team_building":
+        pezzi.append(f"a {r['zona']}")
+    if r.get("periodo"):
+        pezzi.append(str(r["periodo"]))
+    if r.get("persone"):
+        pezzi.append(f"per {r['persone']} persone")
+    if r.get("notti"):
+        pezzi.append(f"{r['notti']} notti")
+    if r.get("budget_persona"):
+        pezzi.append(f"budget {r['budget_persona']:.0f} € a persona")
+    return ", ".join(pezzi)
+
+
 def ricevuta_operatore(r: dict) -> None:
     if not r.get("email"):
         return
     try:
         from services.email_service import _wrap_template, send_email
         tipo = _tipo(r)
+        dett = _dettagli(r)
+        extra = "".join(f"<p><strong>{k}:</strong> {r[c]}</p>" for k, c in
+                        (("Tipo di ritiro", "tipo_ritiro"), ("Esigenze", "esigenze"), ("Messaggio", "messaggio"))
+                        if r.get(c))
         if tipo == "regia":
-            corpo = ("<p>Ciao,</p><p>abbiamo ricevuto la tua richiesta di regia per un ritiro. "
-                     "La leggiamo personalmente e ti scriviamo entro pochi giorni con una "
-                     "proposta chiara: cosa facciamo noi, cosa resta a te, quanto costa.</p>")
-            oggetto = "La tua richiesta di regia è arrivata"
+            formula = FORMULE.get(r.get("formula"), "da capire insieme")
+            corpo = (_saluto(r) + f"<p>abbiamo ricevuto la tua richiesta{(' (' + dett + ')') if dett else ''}.</p>"
+                     "<p>La leggiamo noi e ti scriviamo entro pochi giorni con una proposta chiara: "
+                     f"cosa facciamo noi, cosa resta a te e quanto costa ({formula}).</p>")
+            oggetto = "La tua richiesta è arrivata"
         elif tipo in ETICHETTE_PRO:
-            corpo = (f"<p>Ciao,</p><p>abbiamo ricevuto la tua richiesta: {ETICHETTE_PRO[tipo]}. "
-                     "Ti scriviamo entro pochi giorni per organizzare insieme cosa e quando.</p>")
+            corpo = (_saluto(r) + f"<p>abbiamo ricevuto la tua richiesta per {ETICHETTE_PRO_TU[tipo]}.</p>"
+                     "<p>Ti scriviamo entro pochi giorni per organizzare insieme cosa fare e quando.</p>")
             oggetto = "La tua richiesta è arrivata"
         elif tipo == "team_building":
-            corpo = (f"<p>Ciao {r.get('nome') or ''},</p><p>abbiamo ricevuto la richiesta di "
-                     f"<b>{r.get('azienda') or r.get('organization_nome')}</b> per un'esperienza su misura. "
-                     "Vi scriviamo entro due giorni lavorativi: prima una chiamata per capire cosa "
-                     "volete portare a casa, poi una proposta scritta con programma, chi conduce, "
-                     "dove, e il prezzo pattuito su quello.</p>")
-            oggetto = "La vostra richiesta è arrivata — Aurya per le aziende"
+            azienda = r.get("azienda") or r.get("organization_nome") or "la vostra azienda"
+            corpo = (_saluto(r) + f"<p>abbiamo ricevuto la richiesta di <b>{azienda}</b> per un'esperienza "
+                     f"su misura{(': ' + dett) if dett else ''}.</p>"
+                     "<p>Vi scriviamo entro due giorni lavorativi.</p>"
+                     "<p>Prima ci sarà una chiamata, poi una proposta scritta con programma, chi conduce, "
+                     "dove si svolge l'esperienza e il prezzo.</p>")
+            oggetto = f"Abbiamo ricevuto la richiesta di {azienda}"
         else:
-            corpo = ("<p>Ciao,</p><p>abbiamo ricevuto la tua richiesta di una struttura per un "
-                     "ritiro. La leggiamo personalmente e ti scriviamo entro pochi giorni con le "
-                     "strutture che conosciamo e che rispondono a quello che cerchi.</p>")
+            corpo = (_saluto(r) + f"<p>abbiamo ricevuto la tua richiesta di una struttura per un ritiro"
+                     f"{(' ' + dett) if dett else ''}.</p>"
+                     "<p>La leggiamo noi e ti scriviamo entro pochi giorni con le strutture che "
+                     "conosciamo e che rispondono a quello che cerchi.</p>")
             oggetto = "La tua richiesta di struttura è arrivata"
-        content = (f"{corpo}<ul>{_riassunto(r)}</ul>"
-                   "<p>Se nel frattempo cambia qualcosa (date, persone, budget), rispondi a "
-                   "questa email.</p>")
+        coda = ("" if tipo in ETICHETTE_PRO or tipo == "team_building"
+                else "<p>Se intanto cambia qualcosa, rispondi a questa email.</p>")
+        content = corpo + extra + coda + _firma()
         send_email(r["email"], oggetto, _wrap_template(content, "it"), bypass_gate=True)
     except Exception:   # noqa: BLE001
         logger.exception("richiesta: ricevuta non inviata")
 
 
 def avvisa_operatore_stato(r: dict) -> None:
+    """FL3 [FIX]: un'email per stato, oggetto proprio, mai una frase spezzata."""
     if not r.get("email"):
         return
     try:
         from services.email_service import _wrap_template, send_email
         tipo = _tipo(r)
         stati = STATI_TESTO if tipo == "struttura" else STATI_TESTO_SERVIZIO
-        stato = stati.get(r.get("stato"), r.get("stato"))
-        nome = {"regia": "richiesta di regia",
-                "team_building": "richiesta di team building"}.get(tipo, "richiesta di struttura per un ritiro")
-        dove = r.get("azienda") or r.get("zona")
-        content = (f"<p>Ciao,</p><p>la tua {nome} "
-                   f"({dove}, {r.get('periodo')}, {r.get('persone')} persone) è {stato}.</p>")
-        send_email(r["email"], "Aggiornamento sulla tua richiesta",
-                   _wrap_template(content, "it"), bypass_gate=True)
+        stato = r.get("stato")
+        dove = r.get("azienda") or r.get("zona") or ""
+        chi = ", ".join(p for p in (dove, str(r.get("periodo") or ""), f"{r['persone']} persone" if r.get("persone") else "") if p)
+        if stato == "in_lavorazione":
+            oggetto = f"Ci stiamo lavorando: {chi}" if chi else "Ci stiamo lavorando alla tua richiesta"
+            corpo = (f"<p>la tua richiesta{(' (' + chi + ')') if chi else ''} è in lavorazione.</p>"
+                     f"<p>Stiamo {stati['in_lavorazione']}.</p>"
+                     "<p>Ti scriviamo appena c'è qualcosa di concreto.</p>")
+        elif stato == "proposta":
+            oggetto = "Abbiamo una proposta per te"
+            corpo = (f"<p>per la tua richiesta{(' (' + chi + ')') if chi else ''} abbiamo {stati['proposta']}.</p>"
+                     "<p>Ti scriviamo a parte con tutti i dettagli entro oggi.</p>")
+        elif stato == "chiusa":
+            oggetto = "La tua richiesta è chiusa"
+            corpo = (f"<p>abbiamo chiuso la tua richiesta{(' (' + chi + ')') if chi else ''}.</p>"
+                     "<p>Se non è quello che ti aspettavi, oppure vuoi riaprirla, rispondi a questa "
+                     "email: la legge Valentina.</p>")
+        else:
+            oggetto = "La tua richiesta è arrivata"
+            corpo = f"<p>la tua richiesta{(' (' + chi + ')') if chi else ''} è arrivata e la stiamo leggendo.</p>"
+        send_email(r["email"], oggetto, _wrap_template(_saluto(r) + corpo + _firma(), "it"), bypass_gate=True)
     except Exception:   # noqa: BLE001
         logger.exception("richiesta: aggiornamento non inviato")

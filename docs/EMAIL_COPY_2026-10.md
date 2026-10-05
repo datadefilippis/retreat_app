@@ -1,5 +1,7 @@
 # Le email automatiche di Aurya: prima / dopo (FL3, 5/10/2026)
 
+> **Stato (5/10 notte): il founder ha riletto e riscritto tutte le email; la sua versione è in `EMAIL_COPY_2026-10_FOUNDER.md` ed è quella applicata nel codice (commit FL3). Questo file resta come storia delle proposte.**
+
 Da leggere prima che tocchi il codice. Per ogni email: cosa dice oggi (in breve, verbatim dove conta) e come la propongo. Correggi direttamente qui sotto, anche a penna: il tono deve essere il tuo. Le regole che ho applicato a tutte:
 
 - **Una voce**: prima persona plurale, come scrivono Valentina e Davide nelle sequenze. Via il dizionario e-commerce («con successo», «store», «pack», «upgrade», «regolarizzare»).

@@ -251,17 +251,19 @@ async def notify_quota_warning_email(
         f'<a href="{plans_url}#addons" class="btn">{cta_addon_label}</a>'
         f'</p>' if has_addon else ""
     )
-    upgrade_btn = (
+    # FL3 (5/10/2026, founder): UN pulsante («Vedo le opzioni»)
+    upgrade_btn = "" if has_addon else (
         f'<p style="text-align:center;margin:8px 0;">'
-        f'<a href="{plans_url}" class="btn" style="background:#374151;">{cta_upgrade_label}</a>'
+        f'<a href="{plans_url}" class="btn">{cta_upgrade_label}</a>'
         f'</p>'
     )
 
+    offerta = f'<p style="color:#6b7280;font-style:italic;">{addon_offer}</p>' if addon_offer else ""
     body_html = (
         f'<p>{_t("greeting", locale)},</p>'
         f'<p>{intro}</p>'
         f'<p>{outro}</p>'
-        f'<p style="color:#6b7280;font-style:italic;">{addon_offer}</p>'
+        f'{offerta}'
         f'{addon_btn}'
         f'{upgrade_btn}'
         f'<p style="color:#9ca3af;font-size:12px;margin-top:20px;">'

@@ -1632,7 +1632,17 @@ async def invite_team_member(
         org_name = org_doc.get("name", "") if org_doc else ""
         inviter_doc = await user_repository.find_by_id(current_user['user_id'])
         inviter_name = inviter_doc.get("name", "") if inviter_doc else ""
-        send_team_invite(invite_data.email, org_name, inviter_name, temp_password, locale=current_user.get("locale", "it"))
+        # FL3 (5/10/2026) [FIX sicurezza]: niente password in chiaro nell'email.
+        # Un token di prima password (7 giorni), come il reset: dal link la sceglie.
+        import hashlib as _hl
+        from datetime import timedelta as _td
+        _tok = secrets.token_urlsafe(32)
+        await user_repository.update(user.id, {
+            "reset_token_hash": _hl.sha256(_tok.encode()).hexdigest(),
+            "reset_token_expires": (datetime.now(timezone.utc) + _td(days=7)).isoformat(),
+        })
+        send_team_invite(invite_data.email, org_name, inviter_name, locale=current_user.get("locale", "it"),
+                         reset_token=_tok)
     except Exception:
         pass
 

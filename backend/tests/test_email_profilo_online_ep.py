@@ -27,26 +27,29 @@ def _ctx(iban: bool):
 
 
 class TestCanali:
+    """FL3 (5/10/2026, founder): i canali hanno un'email propria (op_canali), il
+    giro dopo la pagina online. Ogni link scritto per esteso; senza Telegram
+    si chiede il nome, mai un link che non c'e'."""
+
     def test_con_i_link_i_tre_canali_sono_scritti_per_esteso(self, monkeypatch):
         monkeypatch.setenv("TELEGRAM_BACHECA_URL", BACHECA)
         monkeypatch.setenv("TELEGRAM_SUPPORTO_URL", SUPPORTO)
         monkeypatch.delenv("INSTAGRAM_URL", raising=False)
         T = _mod()
-        oggetto, c = T.op_profilo_online(_ctx(iban=False))
-        assert oggetto == "La tua pagina è online: ecco il link"
-        assert "Tre posti, tre usi diversi" in c
+        oggetto, c = T.op_canali(_ctx(iban=False))
+        assert oggetto == "I canali della rete Aurya"
         for url in (BACHECA, SUPPORTO, "https://www.instagram.com/aurya.life"):
             assert f'<a href="{url}">{url}</a>' in c, url          # link visibile, non solo ancorato
-        assert "Bacheca Aurya" in c and "Supporto tecnico e digitale" in c and "Instagram" in c
-        assert "tutto quello che succede nel mondo Aurya" in c
-        assert "rispondi a questa email con il tuo numero" not in c
+        assert "Bacheca Aurya" in c and "Supporto" in c and "Instagram" in c
         assert "nome Telegram" not in c
+        _, pagina = T.op_profilo_online(_ctx(iban=False))        # la pagina online non li ripete
+        assert "Telegram" not in pagina and "t.me/" not in pagina
 
     def test_senza_link_telegram_si_chiede_l_invito_e_non_si_mostra_t_me(self, monkeypatch):
         for v in ("TELEGRAM_BACHECA_URL", "TELEGRAM_SUPPORTO_URL", "TELEGRAM_GRUPPO_URL"):
             monkeypatch.delenv(v, raising=False)
         T = _mod()
-        _, c = T.op_profilo_online(_ctx(iban=False))
+        _, c = T.op_canali(_ctx(iban=False))
         assert "t.me/" not in c
         assert "nome Telegram" in c and "Telegram" in c
         assert "instagram.com/aurya.life" in c            # Instagram resta sempre
@@ -56,34 +59,26 @@ class TestCanali:
         monkeypatch.delenv("TELEGRAM_SUPPORTO_URL", raising=False)
         monkeypatch.setenv("TELEGRAM_GRUPPO_URL", BACHECA)
         T = _mod()
-        _, c = T.op_profilo_online(_ctx(iban=True))
-        assert BACHECA in c and "Bacheca Aurya" in c and "Due posti, due usi diversi" in c
-        assert "Supporto tecnico" not in c
+        _, c = T.op_canali(_ctx(iban=True))
+        assert BACHECA in c and "Bacheca Aurya" in c
+        assert "Supporto" not in c
 
 
 class TestRitiriEConsulenza:
-    def test_la_caparra_solo_a_chi_non_ha_l_iban(self, monkeypatch):
-        monkeypatch.setenv("TELEGRAM_BACHECA_URL", BACHECA)
-        monkeypatch.setenv("TELEGRAM_SUPPORTO_URL", SUPPORTO)
-        T = _mod()
-        _, senza = T.op_profilo_online(_ctx(iban=False))
-        _, con = T.op_profilo_online(_ctx(iban=True))
-        assert "IBAN" in senza and "La caparra" in senza and "Tre cose che fanno la differenza" in senza
-        assert "IBAN" not in con and "La caparra" not in con and "Due cose che fanno la differenza" in con
-        for c in (senza, con):
-            assert "I tempi" in c and "Il programma" in c and "Se pubblichi un ritiro" in c
+    """FL3 (5/10/2026, founder): la pagina online fa UNA cosa (il link e il
+    listino). Niente caparra/IBAN, niente consulenza a pagamento qui: i
+    ritiri hanno la loro email (op_r14)."""
 
-    def test_la_consulenza_e_privata_a_pagamento_e_niente_articoli(self, monkeypatch):
+    def test_la_pagina_online_fa_una_cosa(self, monkeypatch):
         monkeypatch.setenv("TELEGRAM_BACHECA_URL", BACHECA)
         monkeypatch.setenv("TELEGRAM_SUPPORTO_URL", SUPPORTO)
-        monkeypatch.delenv("CONSULENZA_EMAIL", raising=False)
         T = _mod()
-        _, c = T.op_profilo_online(_ctx(iban=True))
-        assert 'href="mailto:info@aurya.life"' in c and "consulenza a pagamento" in c
-        assert "in privato" in c and "Aurya affianca chi organizza un ritiro" in c
-        assert "/blog/" not in c
-        assert c.count('class="btn"') == 1 and "Apri la tua pagina" in c
-        assert "la legge Valentina" in c and "Valentina e Davide" in c
+        for iban in (False, True):
+            _, c = T.op_profilo_online(_ctx(iban=iban))
+            assert "IBAN" not in c and "consulenza" not in c and "mailto:" not in c and "/blog/" not in c
+            assert c.count('class="btn"') == 1 and "Apri la tua pagina" in c
+            assert "la legge Valentina" in c and "Valentina e Davide" in c
+        assert T._blocco_ritiri(False) == "" and T._blocco_ritiri(True) == ""
 
 
 class TestPromemoriaInterno:

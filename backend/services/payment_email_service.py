@@ -118,14 +118,18 @@ async def send_at_risk_to_operator(
         customer = order.get("customer_name") or ""
 
         html = _wrap_template(f"""
+            <p>{_t("greeting", locale)},</p>
             <p>{_t("pay_atrisk_merchant_body", locale, customer=customer,
                    label=row.get("label", ""), amount=amount, due_date=due,
                    order_ref=order_ref)}</p>
             <p>{_t("pay_atrisk_merchant_actions", locale)}</p>
+            <p style="text-align: center;">
+                <a href="{build_public_url('/incassi')}" class="btn">{_t("pay_atrisk_merchant_cta", locale)}</a>
+            </p>
         """, locale, reply_to=order.get("customer_email") or None, store_name=ctx["store_name"])
 
         subject = _t("pay_atrisk_merchant_subject", locale,
-                     customer=customer, amount=amount)
+                     customer=customer, amount=amount, label=row.get("label", ""))
         # PE5 (24/9): l'email parla di un cliente, quindi si risponde al
         # cliente (come «Nuova richiesta», FV7), non alla casella Aurya
         for r in recipients:

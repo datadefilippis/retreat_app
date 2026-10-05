@@ -916,7 +916,7 @@ async def notify_customer_order_received(order: dict, org_id: str) -> None:
 
         html = _wrap_template(f"""
             <p>{_t("greeting", locale)},</p>
-            <p>{_t("order_received_body", locale)}</p>
+            <p>{_t("order_received_body", locale, store_name=store_name)}</p>
             <p>{_t("order_received_ref", locale, order_ref=order_ref)}</p>
             <p>{typecount_line}<br>
                {_t("order_received_total", locale, total=total)}</p>
@@ -1927,7 +1927,7 @@ async def notify_customer_order_confirmed(order: dict, org_id: str) -> None:
 
         html = _wrap_template(f"""
             <p>{_t("greeting", locale)},</p>
-            <p>{_t("order_confirmed_body", locale)}</p>
+            <p>{_t("order_confirmed_body", locale, store_name=store_name)}</p>
             <p>{_t("order_confirmed_ref", locale, order_ref=order_ref)}</p>
             {summary_html}
             {saldo_html}
@@ -1968,14 +1968,22 @@ async def notify_customer_order_cancelled(order: dict, org_id: str) -> None:
         store_name = ctx["store_name"]
         order_ref = order.get("order_number") or order.get("id", "")[:12]
 
+        # FL3 (5/10/2026, founder) [FIX]: dire cosa succede al pagamento.
+        # Pagato (Stripe incassato o caparra/saldo segnati pagati) → il
+        # rimborso parte da chi organizza; altrimenti niente da restituire.
+        pagato = (order.get("payment_intent") == "collected"
+                  or float(order.get("paid_amount") or 0) > 0
+                  or (order.get("payment_state") in ("deposit_paid", "paid", "fully_paid")))
+        rimborso = _t("order_cancelled_refund_paid" if pagato else "order_cancelled_refund_none",
+                      locale, store_name=store_name)
         html = _wrap_template(f"""
             <p>{_t("greeting", locale)},</p>
-            <p>{_t("order_cancelled_body", locale)}</p>
-            <p>{_t("order_cancelled_ref", locale, order_ref=order_ref)}</p>
-            <p>{_t("order_cancelled_contact", locale)}</p>
+            <p>{_t("order_cancelled_body", locale, order_ref=order_ref)}</p>
+            <p>{rimborso}</p>
+            <p>{_t("order_cancelled_contact", locale, store_name=store_name)}</p>
         """, locale, reply_to=ctx["reply_to"], store_name=store_name)
 
-        subject = _t("order_cancelled_subject", locale, store_name=store_name)
+        subject = _t("order_cancelled_subject", locale, store_name=store_name, order_ref=order_ref)
         send_email(email, subject, html, reply_to=ctx["reply_to"], sender_name=ctx["sender_name"])
         logger.info("order_email: cancelled sent to=%s order=%s", email, order_ref)
 

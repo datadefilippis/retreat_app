@@ -70,6 +70,7 @@ class Passo:
     template: Callable[[dict], Optional[Tuple[str, str]]]
     a: str = "utente"                     # "utente" | "admin"
     equivalenti: Tuple[str, ...] = ()     # marcature (vecchie o sorelle) che valgono come questa
+    dopo: Optional[str] = None            # FL3: parte solo se questo passo e' gia' stato mandato
 
     def nella_finestra(self, giorni: int) -> bool:
         if self.giorno is None:
@@ -93,6 +94,11 @@ _BENVENUTI = ("benvenuto_ritiri", "benvenuto_meditazioni", "benvenuto_altro")
 PASSI: Dict[str, Tuple[Passo, ...]] = {
     "operatore": (
         Passo("profilo_online", None, None, "pagina", T.op_profilo_online),
+        # FL3 (5/10/2026, founder): i canali della rete in un'email propria, il
+        # giro dopo la pagina online (il motore manda UN passo per giro)
+        # finestra stretta (giorni 1-21 dalla registrazione): e' un seguito della pagina
+        # appena nata, non un'email a chi e' online da mesi
+        Passo("canali", 1, 21, "pagina", T.op_canali, dopo="profilo_online"),
         Passo("np5", 5, 10, "non_online", T.op_np5, equivalenti=("g7",)),
         Passo("np10", 10, 15, "non_online", T.op_np10, equivalenti=("g7",)),
         Passo("np15", 15, 22, "non_online", T.op_np15),
@@ -119,6 +125,8 @@ def passi_dovuti(pubblico: str, giorni: int, stato: dict, marcature: dict) -> Li
         if not p.nella_finestra(giorni):
             continue
         if marcature.get(p.nome) or any(marcature.get(e) for e in p.equivalenti):
+            continue
+        if p.dopo and not marcature.get(p.dopo):
             continue
         if not CONDIZIONI[p.condizione](stato):
             continue

@@ -93,7 +93,7 @@ class TestCn2DoppioOptIn:
         corpo = src[i:src.index("def _send_access_email")]
         # PE8 (24/9): l'oggetto della conferma NON dice piu' «Benvenuto» (al
         # clic arrivava un secondo «Benvenuto» quasi uguale); la promessa resta
-        assert "Un clic per entrare nel Cerchio di Aurya" in corpo
+        assert "Un clic e sei nel Cerchio di Aurya" in corpo
         assert "meditazioni riservate" in corpo and "anteprima" in corpo and "Lettera" in corpo
         assert "Entro nel Cerchio" in corpo
         assert "lettera di Aurya</strong>" not in corpo

@@ -55,4 +55,4 @@ class TestCompletezza:
 
     def test_le_email_non_dicono_piu_due_righe(self):
         assert "due righe" not in TXT.lower() and "Due righe bastano" not in TXT
-        assert "Non serve essere brevi" in TXT
+        assert "Chi apre la tua pagina vuole conoscerti" in TXT   # FL3 (5/10): le parole del founder

@@ -57,12 +57,12 @@ class TestSequenzaOperatore:
         for fn in (T.op_np5, T.op_np10, T.op_np15):
             o1, c1 = fn(senza)
             o2, c2 = fn(meta)
-            assert o1 != o2, fn.__name__
+            assert o1 != o2 or fn in (T.op_np10, T.op_np15), fn.__name__   # FL3: np10/np15 stesso oggetto nelle due varianti (founder)
             assert "/public-profile" in c1 and "/listino" not in c1
-            assert "/listino" in c2 and "/public-profile" not in c2
-            assert "non è ancora online" not in c2 and "/o/studio" in c2 or fn is not T.op_np5
+            assert ("/listino" in c2 and "/public-profile" not in c2) or fn is T.op_np15   # FL3: np15 = «Apro la mia pagina»
+            assert "non è ancora online" not in c2                       # FL3: con la pagina, mai «non e' online»
         _, c15 = T.op_np15(senza)
-        assert "su questo passo" in c15 and "ti scriviamo il link" in c15
+        assert "resta aperto, gratis" in c15 and "grazie di essere su Aurya" in c15   # FL3 (5/10): testo del founder
 
     def test_il_blocco_listino_della_pagina_online(self):
         from services import email_sequenze as T
