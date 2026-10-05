@@ -169,7 +169,8 @@ class TestD3IscrittiTab:
         assert "COLONNE.slice(0, 12)" in ISCRITTI
         assert "Email ricevute" not in ISCRITTI and "function emailDettaglio" in ISCRITTI
         extra = {c[1] for c in chiavi[12:]}
-        assert extra == {"Temi", "Lingua", "Confermato il", "Porta", "Ultima email", "Tag", "Consenso", "Verificato"}
+        assert extra == {"Temi", "Lingua", "Confermato il", "Porta", "Campagna",   # MP4: la campagna delle sponsorizzate
+                         "Ultima email", "Tag", "Consenso", "Verificato"}
 
     def test_la_scheda_coi_sei_blocchi_e_la_cronologia(self):
         assert 'data-testid="iscritti-scheda"' in ISCRITTI

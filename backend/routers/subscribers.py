@@ -408,8 +408,6 @@ async def iscrivi(payload: SubscribePayload, request: Request, *,
         raise HTTPException(status_code=503,
                             detail="Non riusciamo a salvarti ora, riprova")
 
-    if consenso:
-        await _audit_consenso_subscribe(email, consenso, payload.language)
     # MP3 (5/10/2026) — lo stesso Lead del pixel alla Conversions API, in
     # background: parte SOLO se il blocco `tracciamento` dice marketing=si
     # (consenso nel banner) e porta l'event_id del browser. Mai bloccante.
@@ -421,6 +419,8 @@ async def iscrivi(payload: SubscribePayload, request: Request, *,
             contesto=doc_set.get("source"))
     except Exception:  # noqa: BLE001
         pass
+    if consenso:
+        await _audit_consenso_subscribe(email, consenso, payload.language)
     if gia_verificato:
         return {"ok": True}                  # E3: la conferma (e il benvenuto) arrivano dal chiamante
     # C4/B (24/9): con CERCHIO_SINGOLO_OPTIN acceso la prima email e' il

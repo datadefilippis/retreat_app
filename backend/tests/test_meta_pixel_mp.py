@@ -431,7 +431,6 @@ class TestMP4Regia:
     def test_ripartizione_campagne_dal_vivo(self):
         import asyncio
         from datetime import datetime, timezone
-        from database import db
         from services.provenienza import ripartizione_campagne
         tag = "mp4-prova-campagna"
         docs = [
@@ -441,14 +440,21 @@ class TestMP4Regia:
         ]
 
         async def scena():
-            await db.aurya_subscribers.delete_many({"email": {"$regex": f"^{tag}-"}})
-            await db.aurya_subscribers.insert_many(docs)
+            # un client Mongo tutto suo: il client condiviso di database.py resta
+            # legato al loop del primo test che l'ha usato (nella suite intera)
+            import database as _d
+            from motor.motor_asyncio import AsyncIOMotorClient
+            cli = AsyncIOMotorClient(_d.mongo_url, serverSelectionTimeoutMS=5000)
+            coll = cli[os.environ["DB_NAME"]].aurya_subscribers
+            await coll.delete_many({"email": {"$regex": f"^{tag}-"}})
+            await coll.insert_many(docs)
             try:
-                tutte = await ripartizione_campagne(db.aurya_subscribers, limite=50)
-                senza_conferma = await ripartizione_campagne(db.aurya_subscribers, limite=50, conferma=None)
-                vecchie = await ripartizione_campagne(db.aurya_subscribers, da=datetime(2999, 1, 1, tzinfo=timezone.utc))
+                tutte = await ripartizione_campagne(coll, limite=50)
+                senza_conferma = await ripartizione_campagne(coll, limite=50, conferma=None)
+                vecchie = await ripartizione_campagne(coll, da=datetime(2999, 1, 1, tzinfo=timezone.utc))
             finally:
-                await db.aurya_subscribers.delete_many({"email": {"$regex": f"^{tag}-"}})
+                await coll.delete_many({"email": {"$regex": f"^{tag}-"}})
+                cli.close()
             return tutte, senza_conferma, vecchie
         tutte, senza_conferma, vecchie = asyncio.run(scena())
         voce = next(v for v in tutte if v["campagna"] == tag)

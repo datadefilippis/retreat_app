@@ -132,3 +132,29 @@ Ordine: MP0 → MP1 → MP2 → MP3 → MP4 → MP5, un giro di deploy solo alla
 2. Eventi: Lead, LeadConfermato, CompleteRegistration (operatore e account), Contact, Purchase. Togliere o aggiungere qualcosa?
 3. Informativa v2.11 con Meta tra i sub-responsabili: ok a un nuovo clic di ri-accettazione per gli operatori (oggi 44)?
 4. Via ai lotti MP0-MP5 in sequenza, deploy unico alla fine con prova in test mode prima e dopo.
+
+## 10. Stato (5/10/2026 sera): MP0-MP4 implementati in locale, MP5 in attesa del via
+
+| Lotto | Stato | Commit |
+|---|---|---|
+| MP0 Fondamenta | fatto | 7b9d5dcf |
+| MP1 Consenso e testi (banner a tre scelte, `lib/consenso.js`, informativa v2.11) | fatto | 02c2b118 |
+| MP2 Pixel browser (`lib/meta.js`, eventi con `eventID`) | fatto | 0ab621ee |
+| MP3 Conversions API (`services/meta_capi.py`, agganci, registro `tracciamento_eventi`) | fatto | dbb52693 |
+| MP4 Regia (campagna › inserzione, provenienza operatori, campagne + Meta nel lunedì) | fatto | 01ef9847 |
+| MP5 Prova e accensione | **script pronto** (`deploy/giri/deploy-2026-10-05-meta.sh`), deploy solo su via esplicito | — |
+
+Scostamenti rispetto al piano, tutti voluti:
+- **Purchase lato server è dormiente**: l'aggancio nel webhook Stripe c'è, ma il checkout non scrive ancora `provenienza.tracciamento` sull'ordine (sarebbe un lotto a sé sul flusso d'acquisto). Il Purchase arriva dal browser sulla pagina di grazie, col consenso. Quando il checkout scriverà il tracciamento, il server partirà da solo.
+- **Il semaforo Meta sta nei numeri del lunedì**, non nel Tecnico: una riga («pixel + Conversions API ACCESI · eventi dal server in 24 ore: inviati/accettati/falliti per nome») nella pagina che il founder apre già; il Tecnico resta un aggregatore di tab esistenti.
+- **Il Contact** parte solo alla **prima richiesta del giorno** per persona e operatore (la risposta di `/contatti` porta `registrato`): chi riapre la pagina dieci volte è un lead, non dieci, anche per Meta.
+- **`LeadConfermato`** ha un `event_id` deterministico («conf_» + hash dell'email): una conferma, un evento, anche se il link viene cliccato due volte.
+
+Verità della suite prima del giro: 15 rossi + 1 errore noti (stessa lista della base, dati locali) e nessun rosso nuovo; la guardia `backend/tests/test_meta_pixel_mp.py` copre i cinque lotti (23 test, fra cui una prova vera del modulo browser in node e la ripartizione per campagna dal vivo).
+
+### Dopo il deploy, cosa fa il founder in Meta (10 minuti)
+1. **Gestione eventi → Testa gli eventi**: aprire aurya.life in una finestra anonima, accettare «Accetta tutto» nel banner, iscriversi al Cerchio con un'email di prova: devono comparire `PageView` e `Lead` dal browser e lo stesso `Lead` dal server con **«Deduplicato»**. Se il giro è stato lanciato con `META_TEST_EVENT_CODE`, gli eventi non contano nelle campagne finché non si toglie il codice (giro di solo env: `--force-recreate backend`).
+2. **Gestione eventi → Misurazione eventi aggregati / Configura eventi web**: ordine di priorità `Lead` (1), `CompleteRegistration` (2), `Contact` (3), `Purchase` (4); `LeadConfermato` è un evento personalizzato: va creato come «conversione personalizzata» su `LeadConfermato` se si vuole usarlo come obiettivo.
+3. **Campagna**: obiettivo «Contatti» → evento di conversione `Lead` (o `LeadConfermato` per ottimizzare sui contatti che cliccano davvero, quando ce ne saranno almeno 50 a settimana).
+4. **Parametri URL** in ogni inserzione: `utm_source=facebook&utm_medium=paid&utm_campaign={{campaign.name}}&utm_content={{ad.name}}` (già detto il 5/10): senza, la regia non può distinguere le campagne.
+5. Nell'area admin: **Iscritti → ripartizione «Per campagna»** e tendine campagna › inserzione; **Operatori** con «da facebook · campagna · inserzione» sotto l'email; **Panoramica → I numeri del lunedì**: riga «Campagne degli ultimi 30 giorni» e riga «Meta».
