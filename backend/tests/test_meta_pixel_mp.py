@@ -124,10 +124,14 @@ class TestMP1Consenso:
 
     def test_banner_tre_scelte_mai_consenso_implicito(self):
         b = (FE / "components" / "legal" / "CookieConsentBanner.js").read_text(encoding="utf-8")
-        for t in ("cookie-solo-essenziali", "cookie-statistiche", "cookie-accetta-tutto"):
+        # FL0 (5/10 sera): primo livello = «Accetta tutto» pieno + Personalizza + Continua senza accettare;
+        # secondo livello = due interruttori + Salva la scelta. Il rifiuto resta a un gesto (link + X).
+        for t in ("cookie-accetta-tutto", "cookie-personalizza", "cookie-continua-senza", "cookie-chiudi",
+                  "cookie-toggle-statistiche", "cookie-toggle-marketing", "cookie-salva"):
             assert f'data-testid="{t}"' in b, t
-        assert "scegli(false, false)" in b and "scegli(true, false)" in b and "scegli(true, true)" in b
-        assert "bannerDaMostrare()" in b and "salvaConsenso({ analytics, marketing })" in b
+        assert "scegli(false, false)" in b and "scegli(stats, marketing)" in b and "scegli(true, true)" in b
+        assert "w-full rounded-full bg-[#8a7440]" in b                 # l'unico pulsante pieno del primo livello
+        assert "bannerDaMostrare()" in b and "salvaConsenso({ analytics, marketing: marketingScelto })" in b
         assert "EVENTO_APRI" in b                                     # il pie' di pagina lo riapre
         # la X = solo essenziali: nessun «chiudi = accetto»
         assert b.count("scegli(false, false)") >= 2
@@ -136,7 +140,8 @@ class TestMP1Consenso:
         import json
         for lang in ("it", "en", "de", "fr"):
             cb = json.loads((FE / "locales" / lang / "legal.json").read_text(encoding="utf-8"))["cookie_banner"]
-            for k in ("stats_button", "all_button", "preferences_link", "essential_button", "body"):
+            for k in ("all_button", "preferences_link", "close_button", "body", "personalize_button",
+                      "continue_without_button", "save_button", "stats_label", "marketing_label"):
                 assert cb.get(k), (lang, k)
             assert "Meta" in cb["body"]
             assert "mai" not in cb["body"].lower().split("pubblicitari")[-1][:12] if lang == "it" else True

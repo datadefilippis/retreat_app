@@ -16,15 +16,22 @@
     "error_generic": "We could not save your acceptance. Please try again in a moment."
   },
   "cookie_banner": {
-    "title": "Cookies and measurement",
-    "body": "We use essential technical cookies (authentication and language) and, only if you accept, Google Analytics to understand how the site is used and Meta to measure our ads. You choose, and you can change your mind any time from “Cookie preferences”.",
+    "title": "A yes helps people find Aurya",
+    "body": "Technical cookies are always on (sign-in and language). Statistics and ad measurement (Google Analytics and Meta) run only if you accept: they tell us what helps and where not to waste. Change your mind any time from “Cookie preferences”.",
     "details_link": "Details in the Privacy Policy",
     "accept_button": "Accept",
     "stats_button": "Statistics",
     "all_button": "Accept all",
     "preferences_link": "Cookie preferences",
     "essential_button": "Essential only",
-    "close_button": "Close and continue with essential cookies only"
+    "close_button": "Close and continue with essential cookies only",
+    "personalize_button": "Customise",
+    "continue_without_button": "Continue without accepting",
+    "save_button": "Save my choice",
+    "stats_label": "Statistics",
+    "stats_desc": "understand which pages really help (Google Analytics)",
+    "marketing_label": "Ad measurement",
+    "marketing_desc": "know which ads bring real people (Meta). No profile is sold to anyone."
   },
   "customer_reconsent": {
     "title": "Store terms updated",

@@ -16,15 +16,22 @@
     "error_generic": "Ihre Zustimmung konnte nicht gespeichert werden. Bitte versuchen Sie es in einem Moment erneut."
   },
   "cookie_banner": {
-    "title": "Cookies und Messung",
-    "body": "Wir verwenden essenzielle technische Cookies (Anmeldung und Sprache) und, nur wenn du zustimmst, Google Analytics, um die Nutzung der Website zu verstehen, und Meta, um unsere Anzeigen zu messen. Du entscheidest und kannst es jederzeit unter „Cookie-Einstellungen“ ändern.",
+    "title": "Ein Ja hilft, Aurya zu finden",
+    "body": "Technische Cookies sind immer aktiv (Anmeldung und Sprache). Statistiken und Anzeigenmessung (Google Analytics und Meta) laufen nur, wenn du zustimmst: sie zeigen uns, was hilft und wo wir nichts verschwenden. Du kannst es jederzeit unter „Cookie-Einstellungen“ ändern.",
     "details_link": "Details in der Datenschutzerklärung",
     "accept_button": "Akzeptieren",
     "stats_button": "Statistiken",
     "all_button": "Alle akzeptieren",
     "preferences_link": "Cookie-Einstellungen",
     "essential_button": "Nur essenzielle",
-    "close_button": "Schließen und nur mit essenziellen Cookies fortfahren"
+    "close_button": "Schließen und nur mit essenziellen Cookies fortfahren",
+    "personalize_button": "Anpassen",
+    "continue_without_button": "Ohne Zustimmung fortfahren",
+    "save_button": "Auswahl speichern",
+    "stats_label": "Statistiken",
+    "stats_desc": "verstehen, welche Seiten wirklich helfen (Google Analytics)",
+    "marketing_label": "Anzeigenmessung",
+    "marketing_desc": "wissen, welche Anzeigen echte Menschen bringen (Meta). Kein Profil wird an irgendwen verkauft."
   },
   "customer_reconsent": {
     "title": "Shop-Bedingungen aktualisiert",

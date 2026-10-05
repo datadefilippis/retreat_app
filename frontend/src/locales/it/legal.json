@@ -16,15 +16,22 @@
     "error_generic": "Non è stato possibile salvare l'accettazione. Riprova fra qualche secondo."
   },
   "cookie_banner": {
-    "title": "Cookie e misurazione",
-    "body": "Usiamo cookie tecnici essenziali (autenticazione e lingua) e, solo se accetti, Google Analytics per capire come viene usato il sito e Meta per misurare le nostre inserzioni. Scegli tu, e puoi cambiare idea quando vuoi da «Preferenze cookie».",
+    "title": "Un sì ci aiuta a far trovare Aurya",
+    "body": "I cookie tecnici servono sempre (accesso e lingua). Le statistiche e la misurazione delle inserzioni (Google Analytics e Meta) partono solo se accetti: ci dicono cosa serve e dove non sprecare. Cambi idea quando vuoi da «Preferenze cookie».",
     "details_link": "Dettagli nell'Informativa sulla Privacy",
     "accept_button": "Accetta",
     "stats_button": "Statistiche",
     "all_button": "Accetta tutto",
     "preferences_link": "Preferenze cookie",
     "essential_button": "Solo essenziali",
-    "close_button": "Chiudi e continua con i soli cookie essenziali"
+    "close_button": "Chiudi e continua con i soli cookie essenziali",
+    "personalize_button": "Personalizza",
+    "continue_without_button": "Continua senza accettare",
+    "save_button": "Salva la scelta",
+    "stats_label": "Statistiche",
+    "stats_desc": "capire quali pagine servono davvero (Google Analytics)",
+    "marketing_label": "Misurazione delle inserzioni",
+    "marketing_desc": "sapere quali inserzioni portano persone vere (Meta). Nessun profilo venduto a nessuno."
   },
   "customer_reconsent": {
     "title": "Aggiornamento condizioni del negozio",

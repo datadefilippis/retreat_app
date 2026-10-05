@@ -16,15 +16,22 @@
     "error_generic": "Impossible d'enregistrer votre acceptation. Veuillez réessayer dans un instant."
   },
   "cookie_banner": {
-    "title": "Cookies et mesure",
-    "body": "Nous utilisons des cookies techniques essentiels (authentification et langue) et, uniquement si tu acceptes, Google Analytics pour comprendre comment le site est utilisé et Meta pour mesurer nos publicités. C'est toi qui choisis, et tu peux changer d'avis à tout moment depuis « Préférences cookies ».",
+    "title": "Un oui aide à faire trouver Aurya",
+    "body": "Les cookies techniques sont toujours actifs (connexion et langue). Les statistiques et la mesure des publicités (Google Analytics et Meta) ne démarrent que si tu acceptes : elles nous disent ce qui sert et où ne pas gaspiller. Tu changes d'avis quand tu veux depuis « Préférences cookies ».",
     "details_link": "Détails dans la Politique de confidentialité",
     "accept_button": "Accepter",
     "stats_button": "Statistiques",
     "all_button": "Tout accepter",
     "preferences_link": "Préférences cookies",
     "essential_button": "Essentiels uniquement",
-    "close_button": "Fermer et continuer avec les seuls cookies essentiels"
+    "close_button": "Fermer et continuer avec les seuls cookies essentiels",
+    "personalize_button": "Personnaliser",
+    "continue_without_button": "Continuer sans accepter",
+    "save_button": "Enregistrer mon choix",
+    "stats_label": "Statistiques",
+    "stats_desc": "comprendre quelles pages servent vraiment (Google Analytics)",
+    "marketing_label": "Mesure des publicités",
+    "marketing_desc": "savoir quelles publicités amènent de vraies personnes (Meta). Aucun profil vendu à personne."
   },
   "customer_reconsent": {
     "title": "Conditions du magasin mises à jour",
