@@ -52,8 +52,8 @@ def test_retreat_free_plan_enables_four_modules():
     mp = plan["module_plans"]
     enabled = {k for k, v in mp.items() if not str(v).endswith("_disabled")}
     disabled = {k for k, v in mp.items() if str(v).endswith("_disabled")}
-    # P0 (6/10/2026): anche «prodotti» (fisici e digitali dal profilo)
-    assert enabled == {"commerce", "product_catalog", "customers_light", "cashflow_monitor", "prodotti"}
+    # P0 (6/10/2026): anche «prodotti» (fisici e digitali dal profilo); AC0: «accademia» (corsi online)
+    assert enabled == {"commerce", "product_catalog", "customers_light", "cashflow_monitor", "prodotti", "accademia"}
     assert disabled == {"ai_assistant"}
 
 
@@ -70,6 +70,7 @@ class TestModuleOwnershipMd2:
             "sales_stats": "product_catalog",
             "cross_sell": "customers_light",
             "prodotti": "prodotti",   # P0 (6/10/2026)
+            "accademia": "accademia",   # AC0 (6/10/2026)
             # VT4 — lo specchietto Visibilita' vive nel modulo commerce
             "visibility": "commerce",
             # RS4 — la vista Clienti dichiara il suo modulo

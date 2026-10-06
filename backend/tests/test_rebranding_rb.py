@@ -328,7 +328,8 @@ class TestP1LeParoleSuiSoldi:
             assert vecchio not in src, f"tornato: {vecchio}"
         assert " 5%" not in src and "5% " not in src.replace("15% ", "") and "sugli incassi online" not in src.split("E Stripe?")[0].replace("senza commissioni", "")
         from services.seed_commercial_plans import FEE_PRODOTTI_GRATIS, FEE_PRODOTTI_ABBONATO
-        assert FEE_PRODOTTI_GRATIS == {"physical": 15.0, "digital": 15.0} and FEE_PRODOTTI_ABBONATO == {"physical": 0.0, "digital": 0.0}
+        # AC0 (6/10/2026): + course, stessa regola; /costi resta a due numeri (15 Gratis, 0 Pro)
+        assert FEE_PRODOTTI_GRATIS == {"physical": 15.0, "digital": 15.0, "course": 15.0} and FEE_PRODOTTI_ABBONATO == {"physical": 0.0, "digital": 0.0, "course": 0.0}
 
     def test_la_fee_e_zero_nel_seed_e_la_migrazione_esiste(self):
         from services.seed_commercial_plans import RETREAT_COMMERCIAL_PLANS

@@ -116,14 +116,13 @@ def _build_enrollment_doc(
     if not (product_id and course_doc.get("id")):
         return None
 
+    # AC0 (6/10/2026): la chiave e' l'account Aurya; il cliente legacy resta
+    # accettato per gli ordini storici. Senza nessuno dei due non si emette.
+    platform_account_id = order.get("platform_account_id")
     customer_account_id = order.get("customer_account_id")
-    if not customer_account_id:
-        # Defensive: the public router blocks this upstream. If somehow
-        # a course order reaches confirm without customer_account_id
-        # (e.g. admin-created order), we decline to emit rather than
-        # producing a broken enrollment.
+    if not (platform_account_id or customer_account_id):
         logger.warning(
-            "issued_course_access_service: order %s line %d missing customer_account_id; skipping",
+            "issued_course_access_service: order %s line %d senza account (platform/customer); skipping",
             order.get("id"), line_index,
         )
         return None
@@ -136,8 +135,10 @@ def _build_enrollment_doc(
         order_line_index=line_index,
         course_id=course_doc["id"],
         course_title_snapshot=course_doc.get("title", "") or line.get("product_name", ""),
+        platform_account_id=platform_account_id,
         customer_account_id=customer_account_id,
         customer_id=order.get("customer_id"),
+        source="order",
         access_token=_generate_access_token(),
         enrolled_at=now,
         expires_at=expires_at,

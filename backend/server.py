@@ -35,6 +35,7 @@ from modules.customer_insights import router as customer_insights_router
 from modules.product_catalog.router import router as product_catalog_router
 import importlib as _il; _il.import_module("modules.commerce")  # gate module, registers on import
 _il.import_module("modules.prodotti")   # P0 (6/10/2026): il modulo Prodotti si registra all'import
+_il.import_module("modules.accademia")  # AC0 (6/10/2026): il modulo Accademia si registra all'import
 
 # ── Phase-3 new routers ───────────────────────────────────────────────────────
 from routers import customers, suppliers, products, purchase_records, fixed_costs, column_mappings
@@ -205,8 +206,9 @@ async def lifespan(app: FastAPI):
         from services.seed_pricing import migrate_zero_commissioni_v1, migrate_catalogo_2027_v1
         await migrate_zero_commissioni_v1()
         await migrate_catalogo_2027_v1()   # P4: il catalogo del 2027, vendita dal 1/1/2027
-        from services.seed_pricing import migrate_prodotti_p0_v1
+        from services.seed_pricing import migrate_prodotti_p0_v1, migrate_accademia_a0_v1
         await migrate_prodotti_p0_v1()     # P0 (6/10/2026): modulo prodotti + fee per riga alle org esistenti
+        await migrate_accademia_a0_v1()    # AC0 (6/10/2026): modulo accademia + fee `course` alle org esistenti
         from services.seed_pricing import migrate_stripe_prezzi_2027_v1
         await migrate_stripe_prezzi_2027_v1()   # P4-bis: Pro solo annuale + price id live
         from services.migrazioni_cerchio import migrate_cerchio_alert_esplicito_v1

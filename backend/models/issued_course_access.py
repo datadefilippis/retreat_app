@@ -74,11 +74,22 @@ class IssuedCourseAccessBase(BaseModel):
     course_id: str
     course_title_snapshot: str = Field(max_length=255)
 
-    # Customer identity. customer_account_id is MANDATORY (unlike other
-    # Issued* artifacts that can be guest-emitted): courses require a
-    # logged-in customer end-to-end.
-    customer_account_id: str
+    # Identita' dello studente. AC0 (6/10/2026): la chiave e' l'ACCOUNT AURYA
+    # (platform_account_id), come per i prodotti; customer_account_id (il
+    # cliente legacy per negozio) resta facoltativo per lo storico. Almeno
+    # una delle due: lo impone il servizio di emissione.
+    platform_account_id: Optional[str] = None
+    customer_account_id: Optional[str] = None
     customer_id: Optional[str] = None  # bridge to legacy Customer record if linked
+
+    # AC0 — da dove nasce l'iscrizione: `order` (acquisto singolo, oggi),
+    # `subscription` (abbonamento ai contenuti, lotto AC5) o `gift`. L'abbonamento
+    # e' un modo di EMETTERE l'iscrizione, non un'altra iscrizione.
+    source: str = Field(default="order", max_length=20)
+
+    # AC0 — il percorso e' FINITO: scritto una volta quando tutte le lezioni
+    # risultano completate (il progresso per lezione resta in `progress`).
+    completed_at: Optional[datetime] = None
 
     # Customer-visible enrollment fingerprint. URL-safe 32 chars.
     # Generated via secrets.token_urlsafe(24) at issuance.

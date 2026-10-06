@@ -34,7 +34,7 @@ from typing import Dict, Iterable, Optional, Tuple
 logger = logging.getLogger(__name__)
 
 # i soli tipi che possono avere una commissione (le chiavi della mappa)
-TIPI_CON_FEE = ("physical", "digital")
+TIPI_CON_FEE = ("physical", "digital", "course")   # AC0 (6/10/2026): + corsi online
 
 
 def _pct(v) -> Decimal:

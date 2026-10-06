@@ -183,3 +183,17 @@ Ogni lotto: suite al baseline, prova in locale dal browser, deploy separato in *
 5. **Anteprime gratuite** riproducibili dalla pagina senza acquisto: sì?
 6. **Legacy**: dismetto `/account/courses/*`, `/courses/*`, `/co/` con rimandi (zero dati in prod): confermi?
 7. **Ordine**: parto con AC0 + AC1 in locale subito, in anteprima in prod come i Prodotti.
+
+## 12. Stato
+
+**Decisioni del founder (6/10 notte):** 1 account Bunny lo apre lui quando glielo chiedo; 2 commissione 15% Gratis / 0% Pro per ora (potrebbe rendere i corsi solo per abbonati: da valutare); 3 Termini v2.13 allo sblocco; 4 lezioni v1 video+testo+allegati, audio come allegato; 5 anteprime gratuite sì; 6 legacy dismesso; 7 si parte dalle fondamenta.
+
+**AC0 Fondamenta IMPLEMENTATO in locale (6/10 notte).** Niente si vende: le rotte arrivano con AC1/AC2.
+- modulo `accademia` registrato (`modules/accademia`), `MODULE_OWNERSHIP["accademia"]`, interruttore `accademia_spento` (`KNOWN_FLAGS`), patto DPA esteso al tipo `course`;
+- tier `accademia_retreat_free` (2 corsi, 30 lezioni, 2 GB video) e `accademia_retreat_pro` (30, 500, 50 GB) nei piani `retreat_*`; fee `course` nella mappa per riga (`TIPI_CON_FEE`) e nei piani (Gratis 15, abbonati 0); migrazione d'avvio `migrate_accademia_a0_v1` (modulo + tier + SOLO la chiave `course` nella mappa dell'org, le altre intatte; in locale 11 org, 8 a 15);
+- iscrizioni sull'account Aurya: `IssuedCourseAccess` + `platform_account_id` (indice con `revoked_at`), `source` (`order` oggi, `subscription`/`gift` domani), `completed_at` di corso; `customer_account_id` facoltativo (storico); l'emissione legge `order.platform_account_id` (legacy accettato); la guardia all'ordine chiede l'account Aurya con il messaggio dei prodotti;
+- Strumenti: scheda «Accademia · In arrivo» oscurata, senza pulsanti, con l'anteprima in quattro righe; `features/accademia/stato.js` (`ACCADEMIA_UI_PRONTA=false`, pilota admin@demo.com) pronto per i cancelli di AC1;
+- guardie: `tests/test_accademia_ac0.py` (registro, tier, fee con una riga corso in un ordine misto, modello e emissione, guardia, scheda); pin storici aggiornati (ownership, moduli del Gratis, mappa fee).
+
+**Prossimo: AC1 L'operatore** — serve la chiave di account Bunny (il founder apre l'account quando glielo chiedo: lo chiedo all'inizio di AC1, serve per la libreria e l'upload).
+

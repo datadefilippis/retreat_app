@@ -369,6 +369,8 @@ _TIERS_BASE = {
     "customers_light": "customers_light_free",
     # P0 (6/10/2026) — il modulo Prodotti (fisici e digitali dal profilo)
     "prodotti": "prodotti_retreat_free",
+    # AC0 (6/10/2026) — il modulo Accademia (corsi online)
+    "accademia": "accademia_retreat_free",
 }
 _TIERS_PRO = {
     "cashflow_monitor": "cashflow_monitor_retreat",
@@ -377,14 +379,17 @@ _TIERS_PRO = {
     "commerce": "commerce_retreat_pro",
     "customers_light": "customers_light_pro",
     "prodotti": "prodotti_retreat_pro",
+    "accademia": "accademia_retreat_pro",
 }
 
 # P0 (6/10/2026, decisione founder): sui PRODOTTI venduti dal profilo la
 # piattaforma trattiene il 15% nel Gratis e zero in ogni abbonamento;
 # ritiri e servizi restano a zero per sempre (nessuna chiave). Il seed la
 # riscrive a ogni avvio (campo strutturale, non admin-protetto).
-FEE_PRODOTTI_GRATIS = {"physical": 15.0, "digital": 15.0}
-FEE_PRODOTTI_ABBONATO = {"physical": 0.0, "digital": 0.0}
+# AC0 (6/10/2026, decisione founder): i CORSI online come i prodotti,
+# 15% nel Gratis e zero negli abbonamenti (da rivedere: forse solo nel Pro).
+FEE_PRODOTTI_GRATIS = {"physical": 15.0, "digital": 15.0, "course": 15.0}
+FEE_PRODOTTI_ABBONATO = {"physical": 0.0, "digital": 0.0, "course": 0.0}
 
 RETREAT_COMMERCIAL_PLANS: List[dict] = [
     {

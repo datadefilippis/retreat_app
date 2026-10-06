@@ -1302,6 +1302,10 @@ async def create_indexes():
     await issued_course_accesses_collection.create_index(
         [("organization_id", 1), ("course_id", 1), ("created_at", -1)]
     )
+    # AC0 (6/10/2026) — «I miei corsi» dell'account Aurya
+    await issued_course_accesses_collection.create_index(
+        [("platform_account_id", 1), ("revoked_at", 1)]
+    )
 
     # ── Payment Connections ──────────────────────────────────────────────────
     await payment_connections_collection.create_index(

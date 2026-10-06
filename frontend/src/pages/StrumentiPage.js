@@ -38,18 +38,25 @@ export default function StrumentiPage() {
 
   // P0 — il modulo Prodotti nel registro + lo stato degli incassi
   const [moduloProdotti, setModuloProdotti] = useState(null);   // null = non caricato
+  const [moduloAccademia, setModuloAccademia] = useState(null);   // AC0 — il modulo Accademia nel registro
   const [incassi, setIncassi] = useState(null);
   useEffect(() => {
     let vivo = true;
     modulesAPI.listActive()
-      .then(res => { if (vivo) setModuloProdotti((res.data || []).find(m => m.module_key === 'prodotti') || false); })
-      .catch(() => { if (vivo) setModuloProdotti(false); });
+      .then(res => {
+        if (!vivo) return;
+        const attivi = res.data || [];
+        setModuloProdotti(attivi.find(m => m.module_key === 'prodotti') || false);
+        setModuloAccademia(attivi.find(m => m.module_key === 'accademia') || false);   // AC0
+      })
+      .catch(() => { if (vivo) { setModuloProdotti(false); setModuloAccademia(false); } });
     paymentConnectionsAPI.getStatus()
       .then(res => { if (vivo) setIncassi(res.data || null); })
       .catch(() => {});
     return () => { vivo = false; };
   }, []);
   const prodottiNelPiano = !!(moduloProdotti && moduloProdotti.is_active);
+  const accademiaNelPiano = !!(moduloAccademia && moduloAccademia.is_active);
   const prodottiAttivi = prodottiNelPiano && prodottiAperti(user);   // anteprima: aperto solo ai piloti
   const incassiPronti = !!incassi?.checkout_available;
 
@@ -110,6 +117,29 @@ export default function StrumentiPage() {
       azioni: prodottiAttivi
         ? [{ label: 'I miei prodotti', to: '/prodotti', primary: true, testid: 'strumenti-apri-prodotti' }]
         : [],
+    },
+    {
+      // AC0 (6/10/2026) — l'Accademia in ANTEPRIMA: le pagine arrivano con AC1
+      key: 'accademia',
+      nome: 'Accademia',
+      copertina: '/media/hero-destination.webp',
+      focus: '50% 45%',
+      attivo: false,
+      inArrivo: true,
+      claim: 'I tuoi percorsi, seguiti da chiunque, ovunque.',
+      descrizione: [
+        'Crea un corso online con moduli e lezioni video: lo carichi dal browser, Aurya si occupa del resto. '
+        + 'Chi lo compra lo segue nel suo account, lezione dopo lezione, con i progressi salvati.',
+        'Il corso vive sul tuo profilo con una pagina da condividere; ordini e incassi restano nel tuo gestionale.',
+      ],
+      dettaglio: accademiaNelPiano ? 'In arrivo: è già previsto nel tuo piano.' : 'In arrivo.',
+      anteprima: [
+        ['Lezioni video', 'carichi il file, si codifica da solo, la durata si legge da sola.'],
+        ['Moduli e progressi', 'chi studia riprende da dove era e vede il percorso completarsi.'],
+        ['Vendita dal profilo', 'una pagina per corso, acquisto con l\'account Aurya, Stripe sul tuo conto.'],
+        ['Anteprime gratuite', 'una lezione aperta a tutti, per far capire di cosa si tratta.'],
+      ],
+      azioni: [],
     },
   ];
 

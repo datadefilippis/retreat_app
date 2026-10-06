@@ -174,15 +174,15 @@ async def submit_order_from_storefront(
                            "entra con la tua email e il codice che ti mandiamo.",
             },
         )
-    if has_course_item and not customer_account_id:
+    # AC0 (6/10/2026): un corso si compra con l'ACCOUNT AURYA (come i prodotti);
+    # il cliente legacy per negozio resta accettato solo per il flusso storico.
+    if has_course_item and not (platform_account_id or customer_account_id):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail={
                 "error": "course_requires_account",
-                "message": (
-                    "L'ordine contiene un corso video: accedi o crea un "
-                    "account per completare l'acquisto."
-                ),
+                "message": "Per comprare un corso serve il tuo account Aurya: "
+                           "entra con la tua email e il codice che ti mandiamo.",
             },
         )
 

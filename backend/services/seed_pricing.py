@@ -545,6 +545,33 @@ PRODOTTI_PLANS: List[dict] = [
 ]
 
 
+# ── AC0 (6/10/2026) — modulo ACCADEMIA (corsi online con moduli e lezioni) ─
+# Due tier: Gratis e Pro. `corsi_max` = corsi a catalogo, `lezioni_max` =
+# lezioni per corso, `video_gb` = GB di video caricati per org (contati
+# alla creazione del video su Bunny, corretti dal webhook). La fee vive
+# sul piano commerciale (transaction_fee_by_type.course).
+ACCADEMIA_PLANS: List[dict] = [
+    {
+        "module_key": "accademia",
+        "slug": "accademia_retreat_free",
+        "name": "Accademia Gratis",
+        "price_monthly": 0.0,
+        "currency": "EUR",
+        "limits": {"vendita": -1, "corsi_max": 2, "lezioni_max": 30, "video_gb": 2},
+        "sort_order": 12,
+    },
+    {
+        "module_key": "accademia",
+        "slug": "accademia_retreat_pro",
+        "name": "Accademia Pro",
+        "price_monthly": 0.0,
+        "currency": "EUR",
+        "limits": {"vendita": -1, "corsi_max": 30, "lezioni_max": 500, "video_gb": 50},
+        "sort_order": 13,
+    },
+]
+
+
 # ── Target limits for migration ────────────────────────────────────────────
 # Maps slug -> (module_key, target_limits). Used by migrate_pricing_plans()
 # to update existing plans in DB to match current seed definitions.
@@ -567,6 +594,7 @@ async def seed_pricing_plans_if_empty() -> None:
     await _seed_module_plans("commerce", COMMERCE_PLANS)
     await _seed_module_plans("customers_light", CUSTOMERS_LIGHT_PLANS)
     await _seed_module_plans("prodotti", PRODOTTI_PLANS)
+    await _seed_module_plans("accademia", ACCADEMIA_PLANS)   # AC0 (6/10/2026)
     # Wave 7A (2026-05): commerce_signals removed from platform.
 
 
@@ -1311,6 +1339,72 @@ async def migrate_prodotti_p0_v1() -> None:
         "orgs": toccate,
     })
     logger.info("migrate_prodotti_p0_v1: done (%d org)", toccate)
+
+
+async def migrate_accademia_a0_v1() -> None:
+    """AC0 (6/10/2026) — il modulo «accademia» e la fee `course` arrivano
+    anche alle org GIA' esistenti (stesso stampo di migrate_prodotti_p0_v1):
+      - organization_modules.accademia attivo;
+      - un ModuleSubscription attivo al tier del piano, se manca;
+      - application_fee_by_type.course copiata dal piano (15% Gratis, 0
+        abbonati), SENZA toccare le altre chiavi della mappa.
+    Flag-gated, idempotente, best-effort per org."""
+    from database import db, organizations_collection, organization_modules_collection
+    from models.common import generate_id, utc_now
+    from models.subscription import ModuleSubscription
+    from services.fee_per_riga import mappa_pulita
+    migrations = db["migrations"]
+    if await migrations.find_one({"_id": "accademia_a0_v1"}):
+        return
+    logger.info("migrate_accademia_a0_v1: applying...")
+    piani = {p["slug"]: p async for p in db["commercial_plans"].find({"slug": {"$regex": "^retreat_"}}, {"_id": 0})}
+    tier_ids = {}
+    for slug in ("accademia_retreat_free", "accademia_retreat_pro"):
+        pp = await subscription_repository.get_pricing_plan_by_slug(module_key="accademia", slug=slug)
+        if pp:
+            tier_ids[slug] = pp["id"]
+    toccate = 0
+    now_iso = utc_now().isoformat()
+    async for org in organizations_collection.find(
+            {"commercial_plan_slug": {"$regex": "^retreat_"}},
+            {"_id": 0, "id": 1, "commercial_plan_slug": 1, "application_fee_by_type": 1}):
+        piano = piani.get(org.get("commercial_plan_slug"))
+        if not piano:
+            continue
+        try:
+            tier_slug = (piano.get("module_plans") or {}).get("accademia")
+            if tier_slug and tier_slug in tier_ids:
+                await organization_modules_collection.update_one(
+                    {"organization_id": org["id"], "module_key": "accademia"},
+                    {"$set": {"is_active": True},
+                     "$setOnInsert": {"id": generate_id(), "activated_at": now_iso}},
+                    upsert=True)
+                if not await subscription_repository.get_active_subscription(org["id"], "accademia"):
+                    sub = ModuleSubscription(
+                        organization_id=org["id"], module_key="accademia",
+                        pricing_plan_id=tier_ids[tier_slug], assigned_by="migrate_accademia_a0_v1",
+                        notes=f"AC0: tier dal piano '{piano['slug']}'",
+                        commercial_plan_slug=piano["slug"])
+                    doc = sub.model_dump()
+                    for f in ("started_at", "expires_at", "cancelled_at", "created_at", "updated_at"):
+                        if isinstance(doc.get(f), datetime):
+                            doc[f] = doc[f].isoformat()
+                    await subscription_repository.create_subscription(doc)
+            mappa_piano = mappa_pulita(piano.get("transaction_fee_by_type"))
+            attuale = org.get("application_fee_by_type")
+            if "course" in mappa_piano and (not isinstance(attuale, dict) or "course" not in attuale):
+                await organizations_collection.update_one(
+                    {"id": org["id"]},
+                    {"$set": {"application_fee_by_type.course": mappa_piano["course"]}})
+            toccate += 1
+        except Exception as exc:  # noqa: BLE001 — un'org rotta non ferma le altre
+            logger.error("migrate_accademia_a0_v1: org %s saltata: %s", org["id"], exc)
+    await migrations.insert_one({
+        "_id": "accademia_a0_v1",
+        "applied_at": __import__("datetime").datetime.now(__import__("datetime").timezone.utc),
+        "orgs": toccate,
+    })
+    logger.info("migrate_accademia_a0_v1: done (%d org)", toccate)
 
 
 async def migrate_zero_commissioni_v1() -> None:

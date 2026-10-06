@@ -162,9 +162,12 @@ FLAG_AI_SITE_BUILDER = "ai_site_builder_enabled"
 # All known flag names — usato da admin endpoint per validation
 # P0 (6/10/2026) — interruttore di emergenza del modulo Prodotti (regia)
 FLAG_PRODOTTI_SPENTO = "prodotti_spento"
+# AC0 (6/10/2026) — interruttore di emergenza del modulo Accademia (regia)
+FLAG_ACCADEMIA_SPENTO = "accademia_spento"
 
 KNOWN_FLAGS = {
     FLAG_PRODOTTI_SPENTO,
+    FLAG_ACCADEMIA_SPENTO,
     FLAG_PERSISTENT_CART,
     FLAG_EMBED_WIDGET,
     FLAG_CUSTOM_DOMAIN,

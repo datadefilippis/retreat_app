@@ -764,12 +764,14 @@ MODULE_OWNERSHIP = {
     "customer_insights": "customers_light",
     # P0 (6/10/2026) — il modulo Prodotti (fisici e digitali dal profilo)
     "prodotti": "prodotti",
+    "accademia": "accademia",   # AC0 (6/10/2026): corsi online
 }
 
 # P0 — interruttore di emergenza per modulo: il flag per-org spegne il
 # modulo anche se il piano lo include (regia, senza deploy, con audit).
 KILL_SWITCH_FLAGS = {
     "prodotti": "prodotti_spento",
+    "accademia": "accademia_spento",   # AC0
 }
 
 

@@ -51,7 +51,7 @@ logger = logging.getLogger(__name__)
 # fuori scope PV7 (congelati dietro flag per-org, vedi TW3).
 # P0 (6/10/2026): anche i PRODOTTI del profilo (fisici e digitali) si
 # vendono solo dopo il patto.
-SELLABLE_ITEM_TYPES = ("service", "event_ticket", "physical", "digital")
+SELLABLE_ITEM_TYPES = ("service", "event_ticket", "physical", "digital", "course")   # AC0: + corsi
 
 DPA_REQUIRED_DETAIL = {
     "code": "DPA_REQUIRED",

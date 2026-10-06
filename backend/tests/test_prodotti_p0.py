@@ -194,15 +194,16 @@ class TestPF6Piani:
     def test_mappa_nei_piani(self):
         from services.seed_commercial_plans import RETREAT_COMMERCIAL_PLANS
         per_slug = {p["slug"]: p for p in RETREAT_COMMERCIAL_PLANS}
-        assert per_slug["retreat_free"]["transaction_fee_by_type"] == {"physical": 15.0, "digital": 15.0}
+        # AC0 (6/10/2026): + course, stessa regola (15 Gratis, 0 abbonati)
+        assert per_slug["retreat_free"]["transaction_fee_by_type"] == {"physical": 15.0, "digital": 15.0, "course": 15.0}
         for slug in ("retreat_club", "retreat_pro", "retreat_founding", "retreat_partner"):
-            assert per_slug[slug]["transaction_fee_by_type"] == {"physical": 0.0, "digital": 0.0}, slug
+            assert per_slug[slug]["transaction_fee_by_type"] == {"physical": 0.0, "digital": 0.0, "course": 0.0}, slug
             assert per_slug[slug]["transaction_fee_percent"] == 0.0
         assert per_slug["retreat_free"]["transaction_fee_percent"] == 0.0, "ritiri e servizi: zero, sempre"
         assert per_slug["retreat_free"]["module_plans"]["prodotti"] == "prodotti_retreat_free"
         assert per_slug["retreat_pro"]["module_plans"]["prodotti"] == "prodotti_retreat_pro"
         from models.commercial_plan import CommercialPlan
-        assert CommercialPlan(**per_slug["retreat_free"]).transaction_fee_by_type == {"physical": 15.0, "digital": 15.0}
+        assert CommercialPlan(**per_slug["retreat_free"]).transaction_fee_by_type == {"physical": 15.0, "digital": 15.0, "course": 15.0}
 
     def test_tier_del_modulo(self):
         from services.seed_pricing import PRODOTTI_PLANS
@@ -257,7 +258,7 @@ class TestPF7Modulo:
 
     def test_patto_sui_prodotti(self):
         from services.dpa_guard import SELLABLE_ITEM_TYPES
-        assert set(SELLABLE_ITEM_TYPES) == {"service", "event_ticket", "physical", "digital"}
+        assert set(SELLABLE_ITEM_TYPES) == {"service", "event_ticket", "physical", "digital", "course"}   # AC0: + corsi
 
 
 # ── PF8 ─────────────────────────────────────────────────────────────────
