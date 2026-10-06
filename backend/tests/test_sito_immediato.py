@@ -134,8 +134,10 @@ class TestSr1Directory:
         med = (FE / "features" / "frequenze" / "MeditazioniPage.js").read_text()
         assert 'data-testid="med-assaggio"' in med and 'href="/sound"' in med
         nl = (FE / "features" / "prelaunch" / "NewsletterLandingPage.js").read_text()
-        i = nl.index("Ascolta un assaggio")
-        assert "to: '/sound'" in nl[i - 600:i], "l'assaggio senza iscrizione vive su Aurya Sound"
+        # seconda via (6/10/2026): la sezione «Prima di entrare, puoi
+        # ascoltare» porta su Aurya Sound (l'assaggio senza iscrizione)
+        i = nl.index('data-testid="nl-assaggio"')
+        assert 'to="/sound"' in nl[i - 200:i + 50], "l'assaggio senza iscrizione vive su Aurya Sound"
         landing = (FE / "features" / "prelaunch" / "OperatorLandingPage.js").read_text()
         # founder 14/9: via la sezione Studio dalla landing (toglieva il focus);
         # Aurya Sound e' il link nella riga di Studio della scheda Pro
@@ -145,7 +147,7 @@ class TestSr1Directory:
         # 14/9: la fascia «rete» e' uscita (CP); la parte pubblica aperta
         # vive nella scheda «Fatti trovare» e nella FAQ
         assert "può essere trovato" in it["opPro"]["v2b"] and "può essere trovato" in it["opPro"]["faq2a3"]
-        assert it["nl"]["a1c"] == "Vai su Aurya Sound"
+        assert it["nl"]["a1c"] == "Ascolta Aurya Sound"
         assert "non a scadenza" not in it["nl"]["r3b"]
 
     def test_nessun_link_interno_dice_ancora_la_rete_come_destinazione(self):

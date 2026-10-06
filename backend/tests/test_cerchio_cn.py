@@ -39,7 +39,8 @@ class TestCn1Landing:
         assert it["cta"] == "Entra nel Cerchio"
         for k in ("r1t", "r2t", "r3t"):
             assert it[k]
-        assert "riservate" in it["r1t"] and "anteprima" in it["r2t"] and "Lettera" in it["r3t"]
+        # seconda via (6/10/2026, testo del founder): meditazione, Lettera, ritiri
+        assert "meditazione" in it["r1t"] and "Lettera" in it["r2t"] and "ritiri" in it["r3t"]
         # niente conteggi, niente «in arrivo», niente cadenza dichiarata
         # (founder 3/9: «meno dettagli inutili»; «ogni due settimane mi
         # vincolo»), niente anti-promesse in apertura
@@ -48,11 +49,13 @@ class TestCn1Landing:
                         "notifiche", "rumore", "nessun automatismo"):
             assert vietato not in testo, f"in landing non si dice «{vietato}»"
 
-    def test_preferenza_ritiri_accesa_con_la_citta(self):
+    def test_preferenza_ritiri_facoltativa_con_tutti_i_campi(self):
         src = (PRE / "NewsletterLandingPage.js").read_text()
-        # founder 3/9 sera: nome e interessi restano nel form della
-        # landing (niente variante leggera qui; la home la usa)
-        assert "experiencesOptIn" in src and "experiencesDefault" in src
+        # seconda via (founder 6/10/2026): nome ed email bastano; la
+        # preferenza ritiri e' una casella FACOLTATIVA e SPENTA che apre gli
+        # stessi campi di /cerca-ritiro, vie comprese (prima partiva accesa)
+        assert "experiencesOptIn" in src and "experiencesDefault" not in src
+        assert "vieAperte" in src and "experiencesLabel" in src
         assert "experiencesLight" not in src, "la landing mostra citta', raggio e interessi"
         i = src.index("<LeadForm")
         assert "showName\n" in src[i:i + 400] or "showName " in src[i:i + 400], "il nome resta nel form"

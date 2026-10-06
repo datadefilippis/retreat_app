@@ -214,3 +214,10 @@ Vicoli ciechi trovati e chiusi:
    consigliato: è una preferenza, il consenso resta esplicito).
 4. **Il promemoria a 48 h** ai non confermati (sì, consigliato: una
    sola email, mai più di una).
+
+## Seconda via (6/10/2026) — /newsletter accanto a /cerca-ritiro
+
+Decisione del founder: `/newsletter` è la **seconda porta** del Cerchio. Si entra con **nome ed email**; tutto quello che riguarda i ritiri è **facoltativo** dietro una casella spenta («Vorrei ricevere anche ritiri ed esperienze in linea con i miei interessi»), che aperta mostra **esattamente** i campi di `/cerca-ritiro` (dove vivi, dove ti immagini il ritiro, quanto investire, la tua età, le 14 vie già aperte): è lo stesso blocco (`PreferenzeRitiri` dentro `AvvisamiRitiri`), con due prop nuove e retrocompatibili (`label`/`hint` e `vieAperte`, passate da `LeadForm` come `experiencesLabel`/`experiencesHint`/`vieAperte`). Prima la preferenza partiva accesa (CN1).
+
+Landing rigenerata col testo del founder, riga per riga: apertura (due frasi), «Cosa troverai nel Cerchio» (meditazione · Lettera · ritiri), «Prima di entrare, puoi ascoltare» (→ `/sound`), «E puoi conoscere le persone» (→ `/operatori`), «Ci vediamo nel Cerchio» col bottone che riporta al form (unico, nel primo schermo: regola CP intatta). Le chiavi i18n `nl.*` (it) vincono sui default: aggiornate; `seo_shell` descrizione allineata (title invariato). Meccanica intatta: `subscribe`, doppio opt-in, consenso versionato, `wants_experiences` solo se la casella è accesa.
+

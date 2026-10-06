@@ -83,7 +83,11 @@ export default function LeadForm({ type = 'traveler', accent = '#376254', contex
                                    // senza il flag: chi chiede un ritiro vuole essere avvisato
                                    wantsExperiencesAlways = false,
                                    // RB12 — il tema dell'articolo preseleziona il chip
-                                   initialInterests = [] }) {
+                                   initialInterests = [],
+                                   // seconda via (6/10/2026): /newsletter dice la casella con
+                                   // parole sue e apre subito le 14 vie come /cerca-ritiro
+                                   experiencesLabel = null, experiencesHint = null,
+                                   vieAperte = false }) {
   const { t, i18n } = useTranslation('prelaunch');
   // RB13 (10/9/2026, onda 3) — la PORTA da cui si e' arrivati (home,
   // magazine, esperienze) viaggia nell'URL e finisce nella fonte
@@ -426,6 +430,7 @@ export default function LeadForm({ type = 'traveler', accent = '#376254', contex
                         interests={interests} onToggleInterest={toggleInterest}
                         city={city} setCity={setCity} travel={travel} setTravel={setTravel}
                         budget={budget} setBudget={setBudget} eta={eta} setEta={setEta}
+                        label={experiencesLabel} hint={experiencesHint} vieAperte={vieAperte}
                         accent={accent} inputCls={inputCls} selectCls={selectCls} ringStyle={ringStyle} />
       )}
 

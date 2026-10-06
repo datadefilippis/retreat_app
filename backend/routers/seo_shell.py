@@ -522,9 +522,10 @@ _BRAND_PAGES = {
         # SEO-R (10/9/2026): entro i ~60 caratteri che Google mostra
         "title": "Il Cerchio di Aurya | Meditazioni gratuite e ritiri in anteprima",
         # SEO-A (14/9): 177 caratteri → sotto i 160
-        "description": ("Entra nel Cerchio di Aurya: meditazioni riservate "
-                        "gratuite, ritiri ed esperienze olistiche in anteprima "
-                        "nella tua zona, la Lettera ogni due settimane."),
+        # seconda via (6/10/2026): le stesse parole della landing rigenerata
+        "description": ("Entra nel Cerchio di Aurya: meditazioni da ascoltare, "
+                        "storie di persone, pratiche da provare e, se vuoi, ritiri "
+                        "ed esperienze in linea con i tuoi interessi."),
         "image": "/media/hero-destination.webp",
     },
     # OF3 — tre bugie in due righe: la pagina non si chiama piu' cosi'

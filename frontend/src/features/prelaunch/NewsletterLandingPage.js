@@ -1,51 +1,33 @@
 /**
- * NewsletterLandingPage — /newsletter: «Il Cerchio di Aurya» (CN1).
+ * NewsletterLandingPage — /newsletter: «Il Cerchio di Aurya».
  *
- * STORIA. Nata come «La Lettera di Aurya» (LT1, copy del founder:
- * «Una lettera, ogni tanto», il form come sezione 4 di 5). Misurata
- * il 3/9/2026: 256 parole, il form a 5.900 px (quarto schermo),
- * apertura fatta di anti-promesse («viviamo in un mondo pieno di
- * notifiche»), nessun vantaggio concreto in pagina. In produzione 9
- * iscritti, 3 confermati, 1 solo dalla landing; chi si iscriveva per
- * sbloccare una meditazione confermava (2 su 2). Il founder: «deve
- * convertire meglio... era più coinvolgente quando dicevamo che
- * ricevevano info sui prossimi ritiri... ragionare come marketing
- * manager senza perdere umanità».
+ * STORIA. Nata come «La Lettera di Aurya» (LT1), rifatta come
+ * APPARTENENZA (CN1, 3/9/2026: form nel primo schermo, promesse
+ * concrete, assaggi veri; docs/NEWSLETTER_CONVERSIONE_PIANO_2026-09.md),
+ * potata con CP (10/9: un solo form, la chiusura e' un bottone).
  *
- * LA STRATEGIA (docs/NEWSLETTER_CONVERSIONE_PIANO_2026-09.md): da
- * newsletter ad APPARTENENZA. Il nome è «Il Cerchio di Aurya» (nel
- * codice la prova dell'iscrizione si chiamava già cerchio). La
- * Lettera resta: è una delle cose che ricevi, non più il titolo.
- * La pila di valore è solo di cose vere, nell'ordine in cui
- * convertono: meditazioni riservate (sbloccate dall'email confermata),
- * ritiri ed esperienze in anteprima (la preferenza esiste già: qui
- * parte ACCESA, con la città), la Lettera quando vale la pena. Il
- * salvataggio del Lab richiede l'account: si promette solo come
- * «passo dopo» (il ponte vive nella pagina di conferma).
+ * LA SECONDA VIA (founder, 6/10/2026): /newsletter e' la seconda porta
+ * del Cerchio accanto a /cerca-ritiro. Qui si entra con NOME ed EMAIL e
+ * basta; tutto quello che riguarda i ritiri e' FACOLTATIVO e si apre
+ * con una casella («Vorrei ricevere anche ritiri ed esperienze in linea
+ * con i miei interessi»). Aperta, la casella mostra ESATTAMENTE i campi
+ * di /cerca-ritiro — dove vivi, dove ti immagini il ritiro, quanto
+ * investire, la tua eta', le quattordici vie gia' aperte — perche' il
+ * blocco e' lo stesso (PreferenzeRitiri dentro AvvisamiRitiri, FV5/US).
+ * Prima la preferenza partiva ACCESA (CN1): ora parte SPENTA, perche'
+ * chi vuole un ritiro ha la sua porta e chi vuole solo il Cerchio non
+ * deve scavalcare cinque campi.
  *
- * LE TRE REGOLE DI CONVERSIONE:
- *   1. il form sta nel PRIMO SCHERMO (hero a due colonne su desktop,
- *      form subito sotto il titolo su mobile); CP (10/9 notte): NON si
- *      ripete piu' in fondo, la chiusura e' un bottone che ci riporta,
- *      e l'elenco dei benefici nell'hero e' uscito (la frase di
- *      apertura li dice gia', le tre schede li spiegano);
- *   2. una promessa concreta per riga, senza conteggi ne' date
- *      (founder: «meno dettagli inutili»);
- *   3. si dice cosa ricevi, mai cosa non faremo.
+ * Il testo e' quello del founder (6/10), riga per riga: apertura, tre
+ * cose che trovi, «prima di entrare puoi ascoltare», «puoi conoscere le
+ * persone», chiusura «Ci vediamo nel Cerchio».
  *
  * LA MECCANICA NON SI TOCCA: LeadForm con `subscribe`, POST
  * /public/newsletter/subscribe, doppio opt-in, consenso obbligatorio
- * col suo testo. Cambiano i campi mostrati (email + città + preferenza
- * ritiri accesa) e le parole. Rotta, endpoint e chiavi i18n restano
- * «newsletter»/«nl»: sono nomi tecnici, non un vestito.
- *
- * FOTO: hero-destination (già il volto della Lettera in home: chi
- * clicca ritrova la stessa immagine) nell'apertura; i fondatori nella
- * firma. Contrasti: crema pieno sui veli calcolati di PhotoOpener
- * (misure LT1 in git), foreground su sabbia/bianco > 12.
+ * col suo testo versionato (lib/testiConsenso.js). Rotta, endpoint e
+ * chiavi i18n restano «newsletter»/«nl»: nomi tecnici, non un vestito.
  */
 import React from 'react';
-import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Headphones, CalendarHeart, Mail } from 'lucide-react';
 import MarketplaceShell from '../storefront/components/MarketplaceShell';
@@ -60,27 +42,22 @@ const OPENER_PHOTO = '/media/hero-destination.webp';
 const SAGE = '#2f5749';
 
 /** la scheda del form: bianco pieno, l'unico della pagina, così l'occhio ci finisce dentro */
-function SchedaForm({ t, id, context, titolo }) {
+function SchedaForm({ t, id, context }) {
   return (
     <div id={id}
          className="rounded-[1.75rem] bg-white p-5 ring-1 ring-[#1e2f28]/[0.07] shadow-[0_1px_2px_rgba(30,47,40,0.04),0_18px_40px_-24px_rgba(30,47,40,0.28)] sm:p-7"
          data-testid={`nl-form-${context}`}>
-      {titolo && (
-        <p className="mb-4 font-display text-xl leading-tight text-foreground sm:text-2xl">
-          {titolo}
-        </p>
-      )}
-      {/* founder 3/9 sera: nome e interessi restano nel form (il nome
-          e' il saluto delle email, gli interessi rendono vera
-          l'anteprima «nella tua zona, sui tuoi temi»): niente variante
-          leggera qui, solo la preferenza accesa */}
+      {/* founder 6/10: nome ed email, poi la casella FACOLTATIVA dei ritiri
+          (spenta) che apre gli stessi campi di /cerca-ritiro, vie comprese */}
       <LeadForm
         type="traveler"
         subscribe
         compact
         showName
         experiencesOptIn
-        experiencesDefault
+        vieAperte
+        experiencesLabel={t('nl.expFlag', { defaultValue: 'Vorrei ricevere anche ritiri ed esperienze in linea con i miei interessi' })}
+        experiencesHint={t('nl.expHint', { defaultValue: 'Se vuoi, raccontaci qualcosa in più su di te. Ci aiuterà a farti arrivare solo proposte che possono davvero interessarti.' })}
         accent={SAGE}
         context="newsletter"
         ctaLabel={t('nl.cta', { defaultValue: 'Entra nel Cerchio' })}
@@ -89,10 +66,9 @@ function SchedaForm({ t, id, context, titolo }) {
         consentText={testoConsenso().testo}
         thanksBody={t('nl.thanksDoi', { defaultValue: 'Quasi dentro: apri la tua casella e clicca «Entro nel Cerchio» nell’email che ti abbiamo appena mandato.' })}
       />
-      {/* Lotto D: la riga di fiducia non promette piu' un passo di conferma
-          (vera con o senza doppio opt-in) */}
+      {/* la riga di fiducia: vera con o senza doppio opt-in */}
       <p className="mt-4 text-xs leading-relaxed text-foreground/60">
-        {t('nl.trust', { defaultValue: 'Gratis, e ti cancelli con un clic.' })}
+        {t('nl.trust', { defaultValue: 'Puoi cambiare idea in qualsiasi momento. Gratis, e ti cancelli con un clic.' })}
       </p>
     </div>
   );
@@ -103,7 +79,7 @@ export default function NewsletterLandingPage() {
 
   useSeoMeta({
     title: t('nl.seoTitle', { defaultValue: 'Il Cerchio di Aurya | Meditazioni gratuite e ritiri in anteprima' }),
-    description: t('nl.seoDesc', { defaultValue: 'Entra nel Cerchio di Aurya: meditazioni riservate gratuite, ritiri ed esperienze olistiche in anteprima nella tua zona e la Lettera, quando vale la pena. Ti cancelli con un clic.' }),
+    description: t('nl.seoDesc', { defaultValue: 'Entra nel Cerchio di Aurya: meditazioni da ascoltare, storie di persone, pratiche da provare e, se vuoi, ritiri ed esperienze in linea con i tuoi interessi.' }),
     canonicalPath: '/newsletter',
   });
 
@@ -115,44 +91,22 @@ export default function NewsletterLandingPage() {
     document.getElementById('iscriviti')?.scrollIntoView({ behavior: riduci ? 'auto' : 'smooth', block: 'start' });
   };
 
-  const ricevi = [
+  /* founder 6/10: le tre cose che trovi, nel suo ordine */
+  const trovi = [
     {
       Icon: Headphones,
-      title: t('nl.r1t', { defaultValue: 'Meditazioni riservate' }),
-      body: t('nl.r1b', { defaultValue: 'Sessioni complete di Aurya Sound che fuori dal Cerchio si possono solo assaggiare. Gratis, appena confermi.' }),
-    },
-    {
-      Icon: CalendarHeart,
-      title: t('nl.r2t', { defaultValue: 'Ritiri ed esperienze in anteprima' }),
-      body: t('nl.r2b', { defaultValue: 'Ti avvisiamo prima degli altri quando un professionista della rete propone un ritiro o un’esperienza nella tua zona.' }),
+      title: t('nl.r1t', { defaultValue: 'Una meditazione da ascoltare' }),
+      body: t('nl.r1b', { defaultValue: 'Pratiche complete di Aurya Sound da portare con te, da ascoltare quando senti di averne bisogno.' }),
     },
     {
       Icon: Mail,
-      // founder 3/9 sera: nessuna cadenza dichiarata (una frequenza
-      // promessa e' un vincolo, non un valore): arriva quando vale la pena
-      title: t('nl.r3t', { defaultValue: 'La Lettera' }),
-      body: t('nl.r3b', { defaultValue: 'Una pratica raccontata bene e una persona della rete da conoscere.' }),
-    },
-  ];
-
-  /* founder 3/9 sera: via le righe che «sembrano quasi fake» (chi
-     scrive, nessun automatismo...). Al loro posto una cosa che si puo'
-     FARE prima di entrare: due assaggi veri, che sono la prova migliore. */
-  const assaggi = [
-    {
-      // founder 3/9 sera: l'assaggio deve essere DAVVERO senza
-      // iscrizione — vive su Aurya Sound (l'anteprima da 90 secondi),
-      // non su /meditazioni che chiede subito di entrare
-      to: '/sound',
-      title: t('nl.a1t', { defaultValue: 'Ascolta un assaggio' }),
-      body: t('nl.a1b', { defaultValue: 'Su Aurya Sound ascolti novanta secondi di una meditazione riservata, senza iscriverti. Se ti fa bene, il resto è dentro.' }),
-      cta: t('nl.a1c', { defaultValue: 'Vai su Aurya Sound' }),
+      title: t('nl.r2t', { defaultValue: 'La Lettera di Aurya' }),
+      body: t('nl.r2b', { defaultValue: 'Una volta ogni tanto, quando abbiamo qualcosa da condividere. Una pratica, una storia, una persona della rete, un luogo che ci ha colpito. Qualcosa che pensiamo possa valere qualche minuto del tuo tempo.' }),
     },
     {
-      to: '/operatori',
-      title: t('nl.a2t', { defaultValue: 'Guarda chi c’è nella rete' }),
-      body: t('nl.a2b', { defaultValue: 'I professionisti che raccontiamo, con i loro servizi e i loro ritiri: sono loro che ti avviseremo per primi.' }),
-      cta: t('nl.a2c', { defaultValue: 'Scopri i professionisti' }),
+      Icon: CalendarHeart,
+      title: t('nl.r3t', { defaultValue: 'I ritiri che potresti amare' }),
+      body: t('nl.r3b', { defaultValue: 'Se scegli di raccontarci cosa cerchi, possiamo farti conoscere anche ritiri ed esperienze in linea con i tuoi interessi, nella zona che preferisci.' }),
     },
   ];
 
@@ -160,7 +114,7 @@ export default function NewsletterLandingPage() {
     <MarketplaceShell noSearch>
       <div className="bg-background">
 
-        {/* ── 1. APERTURA CON IL FORM — la regola numero uno ──────────
+        {/* ── 1. APERTURA CON IL FORM ─────────────────────────────────
             Titolo e promessa a sinistra, il form a destra (desktop);
             su mobile il form segue il titolo entro il primo schermo. */}
         <PhotoOpener
@@ -180,11 +134,11 @@ export default function NewsletterLandingPage() {
                 {t('nl.title', { defaultValue: 'Entra nel Cerchio di Aurya.' })}
               </DisplayTitle>
               <p className="mt-6 max-w-[46ch] text-balance text-lg leading-relaxed text-hero-shadow opacity-95 sm:text-xl">
-                {t('nl.lead', { defaultValue: 'Meditazioni riservate, ritiri ed esperienze in anteprima e una lettera quando vale la pena. Gratis.' })}
+                {t('nl.lead', { defaultValue: 'Un modo semplice per restare vicino a quello che ti fa stare bene.' })}
               </p>
-              {/* CP (10/9 notte): qui c'era l'elenco delle tre cose che
-                  ricevi, cioe' la frase qui sopra ripetuta a capo: le tre
-                  schede sotto le spiegano una volta sola. */}
+              <p className="mt-4 max-w-[52ch] text-pretty text-base leading-relaxed text-hero-shadow opacity-90 sm:text-lg">
+                {t('nl.lead2', { defaultValue: 'Riceverai meditazioni da ascoltare, storie di persone da conoscere, pratiche da provare e, quando ci sarà qualcosa che potrebbe interessarti, ritiri ed esperienze da scoprire.' })}
+              </p>
             </div>
             <div className="lg:col-span-6 lg:pt-2">
               <SchedaForm t={t} id="iscriviti" context="hero" />
@@ -192,14 +146,14 @@ export default function NewsletterLandingPage() {
           </div>
         </PhotoOpener>
 
-        {/* ── 2. COSA RICEVI — tre promesse vere, senza conteggi ────── */}
+        {/* ── 2. COSA TROVERAI NEL CERCHIO — tre cose vere ──────────── */}
         <Section tone="cream" rhythm="screen" width="max-w-5xl" labelledBy="nl-find-title">
           <div data-testid="nl-find">
             <DisplayTitle as="h2" id="nl-find-title" size="section" measure="title">
-              {t('nl.findTitle', { defaultValue: 'Cosa ricevi, da subito.' })}
+              {t('nl.findTitle', { defaultValue: 'Cosa troverai nel Cerchio' })}
             </DisplayTitle>
             <div className="mt-10 grid gap-6 sm:gap-7 lg:grid-cols-3">
-              {ricevi.map(({ Icon, title, body }) => (
+              {trovi.map(({ Icon, title, body }) => (
                 <article key={title}
                          className="flex h-full flex-col rounded-[1.75rem] bg-white p-7 ring-1 ring-[#1e2f28]/[0.07] shadow-[0_1px_2px_rgba(30,47,40,0.04),0_18px_40px_-24px_rgba(30,47,40,0.28)] sm:p-8">
                   <span className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-[#2f5749]/10 text-[#2f5749]">
@@ -217,42 +171,55 @@ export default function NewsletterLandingPage() {
           </div>
         </Section>
 
-        {/* ── 3. PROVA PRIMA DI ENTRARE — due assaggi veri ─────────── */}
-        <Section tone="sand" rhythm="screen" width="max-w-5xl" labelledBy="nl-who-title">
+        {/* ── 3. PRIMA DI ENTRARE, PUOI ASCOLTARE ──────────────────────
+            l'assaggio senza iscrizione vive su Aurya Sound (novanta
+            secondi): non su /meditazioni, che chiede subito di entrare */}
+        <Section tone="sand" rhythm="screen" width="max-w-3xl" labelledBy="nl-who-title">
           <div data-testid="nl-who">
             <DisplayTitle as="h2" id="nl-who-title" size="section" measure="title">
-              {t('nl.whoTitle', { defaultValue: 'Prova prima di entrare.' })}
+              {t('nl.whoTitle', { defaultValue: 'Prima di entrare, puoi ascoltare.' })}
             </DisplayTitle>
-            <div className="mt-10 grid gap-6 sm:gap-7 lg:grid-cols-2">
-              {assaggi.map((a) => (
-                <Link key={a.to} to={a.to}
-                      className="group flex h-full flex-col rounded-[1.75rem] bg-white p-7 ring-1 ring-[#1e2f28]/[0.07] shadow-[0_1px_2px_rgba(30,47,40,0.04),0_18px_40px_-24px_rgba(30,47,40,0.28)] transition-shadow hover:shadow-[0_1px_2px_rgba(30,47,40,0.06),0_24px_48px_-24px_rgba(30,47,40,0.35)] sm:p-8">
-                  <h3 className="font-display text-[1.4rem] leading-tight text-foreground sm:text-2xl">
-                    {a.title}
-                  </h3>
-                  <p className="mt-3 max-w-[46ch] text-pretty text-[0.975rem] leading-relaxed text-foreground/75 sm:text-base">
-                    {a.body}
-                  </p>
-                  <span className="mt-6 inline-flex items-center gap-1.5 text-sm font-semibold text-[#2f5749] group-hover:underline">
-                    {a.cta} →
-                  </span>
-                </Link>
-              ))}
+            <Lede size="lead" className="mt-6">
+              {t('nl.a1b', { defaultValue: 'Su Aurya Sound puoi ascoltare un assaggio di una delle meditazioni riservate al Cerchio.' })}
+            </Lede>
+            <p className="mt-3 text-pretty text-base leading-relaxed text-foreground/75 sm:text-lg">
+              {t('nl.a1b2', { defaultValue: 'Novanta secondi, senza registrarti.' })}
+            </p>
+            <div className="mt-8">
+              <EditorialCta to="/sound" variant="solid" data-testid="nl-assaggio">
+                {t('nl.a1c', { defaultValue: 'Ascolta Aurya Sound' })}
+              </EditorialCta>
             </div>
           </div>
         </Section>
 
-        {/* ── 4. LA CHIUSURA — un bottone, non un secondo form ────────
-            CP (10/9/2026 notte, founder: «tagliamo ma mantenendo fili
-            logici e storytelling»): il form e' UNO, nel primo schermo;
+        {/* ── 4. E PUOI CONOSCERE LE PERSONE ───────────────────────── */}
+        <Section tone="cream" rhythm="screen" width="max-w-3xl" labelledBy="nl-rete-title">
+          <div data-testid="nl-rete">
+            <DisplayTitle as="h2" id="nl-rete-title" size="section" measure="title">
+              {t('nl.a2t', { defaultValue: 'E puoi conoscere le persone che fanno parte di Aurya.' })}
+            </DisplayTitle>
+            <Lede size="lead" className="mt-6">
+              {t('nl.a2b', { defaultValue: 'Operatori, insegnanti e professionisti che hanno scelto di condividere con noi il loro modo di lavorare, le loro pratiche e le loro esperienze.' })}
+            </Lede>
+            <div className="mt-8">
+              <EditorialCta to="/operatori" variant="quiet" data-testid="nl-rete-cta">
+                {t('nl.a2c', { defaultValue: 'Scopri la rete' })}
+              </EditorialCta>
+            </div>
+          </div>
+        </Section>
+
+        {/* ── 5. LA CHIUSURA — un bottone, non un secondo form ────────
+            CP (10/9/2026 notte): il form e' UNO, nel primo schermo;
             chi ha letto fino in fondo ci torna con un clic. */}
         <Section tone="sage" rhythm="screen" width="max-w-2xl" labelledBy="nl-end-title">
           <div data-testid="nl-end">
             <DisplayTitle as="h2" id="nl-end-title" size="section" measure="title">
-              {t('nl.endTitle', { defaultValue: 'Entra nel Cerchio.' })}
+              {t('nl.endTitle', { defaultValue: 'Ci vediamo nel Cerchio.' })}
             </DisplayTitle>
             <Lede size="lead" tone="inherit" className="mt-6">
-              {t('nl.end1', { defaultValue: 'Scriviamo solo quando vale il tuo tempo. Ti cancelli con un clic.' })}
+              {t('nl.end1', { defaultValue: 'Un posto dove trovare, ogni tanto, qualcosa che vale la pena fermarsi ad ascoltare.' })}
             </Lede>
             <div className="mt-8">
               <EditorialCta href="#iscriviti" onClick={scrollToForm} variant="solid" tone="dark" data-testid="nl-end-cta">

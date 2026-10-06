@@ -53,6 +53,10 @@ export default function AvvisamiRitiri({
   accent = '#376254', scuro = false,
   inputCls = INPUT_CHIARO, selectCls = null, ringStyle = {},
   testid = 'avvisami-ritiri',
+  // seconda via (6/10/2026, /newsletter): la superficie puo' dire la casella
+  // con parole sue e aprire subito le 14 vie, come in /cerca-ritiro. Se non
+  // passa nulla, il blocco resta identico a prima ovunque.
+  label = null, hint = null, vieAperte = false,
 }) {
   const { t } = useTranslation('prelaunch');
   const sel = selectCls || ((v) => `${inputCls} ${v ? 'text-gray-900' : 'text-gray-400'}`);
@@ -73,9 +77,9 @@ export default function AvvisamiRitiri({
                className="mt-0.5 h-5 w-5 shrink-0" style={{ accentColor: accent }}
                data-testid={`${testid}-flag`} />
         <span>
-          {t('form.expFlag', { defaultValue: 'Avvisami anche quando Aurya propone esperienze e ritiri' })}
+          {label || t('form.expFlag', { defaultValue: 'Avvisami anche quando Aurya propone esperienze e ritiri' })}
           <span className="block text-xs opacity-75">
-            {t('form.expFlagHint', { defaultValue: 'Facoltativo: ci aiuti a proporti solo cose adatte a te.' })}
+            {hint || t('form.expFlagHint', { defaultValue: 'Facoltativo: ci aiuti a proporti solo cose adatte a te.' })}
           </span>
         </span>
       </label>
@@ -84,6 +88,7 @@ export default function AvvisamiRitiri({
           <PreferenzeRitiri accent={accent} interests={interests} onToggleInterest={onToggleInterest}
                             city={city} setCity={setCity} travel={travel} setTravel={setTravel}
                             budget={budget} setBudget={setBudget} eta={eta} setEta={setEta} scuro={scuro}
+                            vieAperte={vieAperte}
                             inputCls={inputCls} selectCls={sel} ringStyle={stile} />
         </div>
       )}
