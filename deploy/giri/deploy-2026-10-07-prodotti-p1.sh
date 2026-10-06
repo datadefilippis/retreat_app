@@ -16,6 +16,16 @@
 #      pagina di successo (+ lucchetto e riconciliazione idempotente), email
 #      «Nuovo ordine pagato» con i contatti, email cliente per tipo, hint
 #      «Il tuo file e' pronto», contatti nella lista Ordini.
+#  DP   design del modulo + LA PAGINA DEL PRODOTTO /prodotto/{org}/{slug}
+#      (endpoint pubblico dal public_slug, meta per i bot, rotta nel registro,
+#      sitemap), profilo con «Scopri di più» + «Compra», kit del gestionale.
+#  GL   galleria di foto per prodotto (API /prodotti/{id}/foto), landing che
+#      sfoglia, card del profilo della misura dei ritiri.
+#  ANTEPRIMA: in prod i Prodotti restano «In arrivo» (stato.js
+#      PRODOTTI_UI_PRONTA=false): scheda oscurata in Strumenti, /prodotti
+#      chiuso; aperti solo al pilota admin@demo.com. Sblocco = un giro frontend.
+#  NEWSLETTER seconda via: nome+email, ritiri facoltativi (stessi campi di
+#      /cerca-ritiro), landing col testo del founder.
 #  TESTI + LEGALE v2.12: /costi, landing, piani, Termini ×4 (commissione
 #      SOLO sui prodotti, nella misura pubblicata su /costi: i numeri vivono
 #      solo li'). Il bump innesca il re-consent degli operatori (un clic).
@@ -46,6 +56,9 @@ async def m():
     p = await organization_modules_collection.count_documents({'module_key': 'prodotti'})
     print('   org retreat_*:', n, '| fee % > 0:', f, '| righe modulo prodotti:', p, '| legale in prod:', CURRENT_VERSION_TAG)
 asyncio.run(m())\"" 2>/dev/null | grep -v bcrypt
+
+echo "== [0c] backup delle collezioni che il giro tocca (migrazione + re-consent legale)"
+$SSH 'cd /opt/aurya && mkdir -p backups && DB=$(grep -E "^DB_NAME=" .env.production | cut -d= -f2) && [ -n "$DB" ] && for C in organizations users organization_modules module_subscriptions commercial_plans; do docker exec ms-mongodb sh -c "mongodump --username=\$MONGO_INITDB_ROOT_USERNAME --password=\$MONGO_INITDB_ROOT_PASSWORD --authenticationDatabase=admin --db='"'"'$DB'"'"' --collection=$C --archive" > backups/predeploy-'"$GIRO"'-$C.archive; done && ls -la backups/predeploy-'"$GIRO"'* | awk "{print \"   \" \$5, \$9}"'
 
 echo "== [1] rsync"
 rsync -avz --delete \
@@ -113,6 +126,10 @@ $SSH 'docker volume ls | grep private-uploads; docker exec $(docker ps -qf name=
 for u in / /costi /esperienze /api/health /api/legal/terms; do printf "   %s → %s\n" "$u" "$(curl -s -o /dev/null -w '%{http_code}' https://aurya.life$u)"; done
 printf "   /api/prodotti senza login → %s (atteso 401/403)\n" "$(curl -s -o /dev/null -w '%{http_code}' https://aurya.life/api/prodotti)"
 printf "   /api/platform/me/file senza login → %s\n" "$(curl -s -o /dev/null -w '%{http_code}' https://aurya.life/api/platform/me/file)"
+printf "   /prodotto/x/y (shell, slug ignoto) → %s (atteso 200 shell o 404)\n" "$(curl -s -o /dev/null -w '%{http_code}' https://aurya.life/prodotto/x/y)"
+printf "   /api/public/prodotto/x/y → %s (atteso 404)\n" "$(curl -s -o /dev/null -w '%{http_code}' https://aurya.life/api/public/prodotto/x/y)"
+printf "   /newsletter → %s\n" "$(curl -s -o /dev/null -w '%{http_code}' https://aurya.life/newsletter)"
+curl -s https://aurya.life/newsletter | grep -o "Vorrei ricevere anche ritiri" | head -1 | sed 's/^/   seconda via: /'
 curl -s 'https://aurya.life/api/legal/terms?locale=it' | grep -o "esclusivamente ai Prodotti" | head -1 | sed 's/^/   termini in prod: /'
 curl -s https://aurya.life/costi | grep -o "senza commissioni su ritiri e servizi" | head -1 | sed 's/^/   \/costi (shell): /'
 echo "== FATTO. Ora: git tag prod-$GIRO. Poi dal browser: /costi, Strumenti → Prodotti, il wizard digitale, il profilo con «Compra»."
