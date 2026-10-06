@@ -53,7 +53,8 @@ class TestIx1LePorteChiuse:
     """Le radici senza slug fanno 404, i doppioni fanno 301."""
 
     def test_il_registro_dichiara_le_radici_e_i_rimandi(self):
-        assert set(REGISTRO["solo_con_slug"]) == {"co", "dg", "e", "frequenze", "l", "o", "p", "ph", "r", "s"}
+        # DP (6/10/2026): /prodotto/{org}/{slug}, la pagina dei prodotti del profilo
+        assert set(REGISTRO["solo_con_slug"]) == {"co", "dg", "e", "frequenze", "l", "o", "p", "ph", "r", "s", "prodotto"}
         # RB7 (10/9/2026): /come-funziona (guscio vuoto in fase rete) e' un 301 come /ritiri
         # RE (10/9/2026 sera): /ritiri ed /esplora-ritiri rimandano al calendario /esperienze
         # SEO-A (14/9/2026 sera): /magazine rispondeva 200 noindex «Aurya» → 301 /blog
@@ -73,7 +74,7 @@ class TestIx1LePorteChiuse:
         assert "location ~ ^/ritiri/?$ { return 301 /esperienze; }" in blocco   # RE (10/9)
         assert "location ~ ^/esplora\\-ritiri(/.*)?$ { return 301 /esperienze; }" in blocco
         assert "location ~ ^/esplora\\-operatori(/.*)?$ { return 301 /operatori; }" in blocco
-        radici = "location ~ ^/(co|dg|e|frequenze|l|o|p|ph|r|s)/?$ {"
+        radici = "location ~ ^/(co|dg|e|frequenze|l|o|p|ph|prodotto|r|s)/?$ {"   # DP: + prodotto
         assert radici in blocco
         # PRIMA della location del renderer: fra le regex vince la prima
         assert blocco.index(radici) < blocco.index("Le pagine che hanno (o devono avere) meta server-side")

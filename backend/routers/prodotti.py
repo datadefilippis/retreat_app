@@ -78,11 +78,16 @@ async def _prerequisiti(org_id: str) -> Dict[str, Any]:
     stripe_pronto = bool((readiness or {}).get("checkout_available"))
     patto = bool(await get_dpa_ack(org_id))
     pagina = bool(await org_has_public_home(org_id))
+    # DP (6/10 sera): lo slug del profilo serve al gestionale per il link
+    # della pagina del prodotto (/prodotto/{public_slug}/{slug})
+    from database import organizations_collection
+    org = await organizations_collection.find_one({"id": org_id}, {"_id": 0, "public_slug": 1})
     return {
         "stripe_pronto": stripe_pronto,
         "patto": patto,
         "pagina_pubblica": pagina,
         "stripe_motivo": (readiness or {}).get("reason_message") if not stripe_pronto else None,
+        "public_slug": (org or {}).get("public_slug"),
     }
 
 
@@ -152,6 +157,7 @@ def _riga(prod: dict, venduti: Dict[str, int], pre: Dict[str, Any]) -> dict:
         "venduti_30gg": venduti.get(prod["id"], 0),
         "created_at": prod.get("created_at"),
         "updated_at": prod.get("updated_at"),
+        "public_slug": pre.get("public_slug"),
         "ragioni_pubblicazione": _ragioni_pubblicazione(prod, pre),
     }
 
@@ -268,6 +274,7 @@ async def lista_prodotti(current_user: dict = Depends(get_verified_user), _=Depe
         "prodotti": [_riga(r, venduti, pre) for r in rows],
         "total": len(rows),
         "prerequisiti": pre,
+        "public_slug": pre.get("public_slug"),
         "limiti": {"products_max": limiti.get("products_max"), "max_file_mb": limiti.get("max_file_mb")},
         # P2 — in chiaro: la commissione del piano e come arrivano i fisici
         "commissione": await _commissione(org_id),

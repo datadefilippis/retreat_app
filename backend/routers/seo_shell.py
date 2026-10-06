@@ -1990,6 +1990,61 @@ async def _meta_product(kind: str, org_slug: str, product_slug: str) -> Optional
     }
 
 
+async def _meta_prodotto(org_slug: str, product_slug: str) -> Optional[dict]:
+    """DP (6/10/2026) — la pagina di un prodotto fisico o digitale venduto
+    dal profilo: /prodotto/{org}/{slug}. L'operatore si risolve dal
+    public_slug (come il profilo), il prodotto deve essere pubblicato."""
+    from database import products_collection, organizations_collection
+    from services import seo_schema as sx
+    base = _base_url()
+    org = await organizations_collection.find_one(
+        {"public_slug": org_slug, "is_active": {"$ne": False}, "deactivated_at": None,
+         "is_sample": {"$ne": True}},
+        {"_id": 0, "id": 1, "name": 1, "store_settings.display_name": 1, "public_profile.cover_url": 1,
+         "public_profile.portrait_url": 1},
+    )
+    if not org:
+        return None
+    prod = await products_collection.find_one(
+        {"organization_id": org["id"], "slug": product_slug, "is_published": True, "is_active": True,
+         "item_type": {"$in": ["digital", "physical"]}},
+        {"_id": 0, "name": 1, "description": 1, "image_url": 1, "unit_price": 1, "item_type": 1,
+         "metadata.long_description": 1},
+    )
+    if not prod:
+        return None
+    org_name = (org.get("store_settings") or {}).get("display_name") or org.get("name") or ""
+    canonical = f"{base}/prodotto/{org_slug}/{product_slug}"
+    pp = org.get("public_profile") or {}
+    image = _abs_image(prod.get("image_url") or pp.get("cover_url") or pp.get("portrait_url"))
+    desc = (prod.get("description") or ((prod.get("metadata") or {}).get("long_description") or ""))[:300]
+    if len(desc) < 60:
+        pezzi = [f"{prod['name']}, di {org_name}." if org_name else f"{prod['name']}."]
+        if prod.get("unit_price") is not None:
+            try:
+                pezzi.append(f"{int(float(prod['unit_price']))} €, si compra su Aurya con il tuo account.")
+            except (TypeError, ValueError):
+                pass
+        desc = (desc + " " if desc else "") + " ".join(pezzi)
+    jsonld = {"@context": "https://schema.org", "@type": "Product", "name": prod["name"],
+              "description": desc, "image": [image], "url": canonical,
+              "brand": {"@type": "Organization", "name": org_name} if org_name else None}
+    jsonld = {k: v for k, v in jsonld.items() if v is not None}
+    if prod.get("unit_price") is not None:
+        jsonld["offers"] = {"@type": "Offer", "price": prod["unit_price"], "priceCurrency": "EUR",
+                            "availability": "https://schema.org/InStock", "url": canonical}
+    crumbs = sx.breadcrumb([("Aurya", f"{base}/"), (org_name or "Operatore", f"{base}/o/{org_slug}"),
+                            (prod["name"], canonical)])
+    return {
+        "title": f"{prod['name']} · {org_name} | Aurya" if org_name else f"{prod['name']} | Aurya",
+        "description": desc,
+        "canonical": canonical,
+        "image": image,
+        "jsonld": [jsonld, crumbs] if crumbs else jsonld,
+        "hreflang": None,
+    }
+
+
 async def _meta_destination(place_slug: Optional[str] = None) -> dict:
     from services import seo_schema as sx, seo_listing as sl
     base = _base_url()
@@ -2718,6 +2773,8 @@ async def resolve_meta(path: str) -> Optional[dict]:
         return await _meta_event(parts[1], parts[2])
     if head in _PRODUCT_KINDS and len(parts) >= 3:
         return await _meta_product(head, parts[1], parts[2])
+    if head == "prodotto" and len(parts) >= 3:      # DP (6/10/2026): la pagina del prodotto
+        return await _meta_prodotto(parts[1], parts[2])
     if head == "operatori":
         # SEO-B (14/9 sera): /operatori/{disciplina|regione}[/{regione}]
         if len(parts) > 3:

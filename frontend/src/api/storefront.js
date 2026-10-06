@@ -61,6 +61,10 @@ export const storefrontAPI = {
     customerApi.get(`/api/public/events/${orgSlug}/${slug}`,
       lang && lang !== 'it' ? { params: { lang } } : undefined),
 
+  // DP (6/10/2026): la pagina di un prodotto fisico o digitale del profilo
+  getProdottoLanding: (orgSlug, slug) =>
+    customerApi.get(`/api/public/prodotto/${orgSlug}/${slug}`),
+
   // Onda 13: full landing page payload for a generic product (primarily services).
   getProductLanding: (orgSlug, productSlug, lang) =>
     customerApi.get(`/api/public/products/${orgSlug}/${productSlug}`,

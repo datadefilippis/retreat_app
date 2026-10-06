@@ -136,6 +136,7 @@ const AccountPage = lazy(() => import("./features/account/AccountPage"));   // S
 const BookingLandingPage = lazy(() => import("./features/storefront/BookingLandingPage"));   // SEO-E: fuori dal bundle iniziale
 const ReservationConfirmationPage = lazy(() => import("./features/storefront/ReservationConfirmationPage"));   // SEO-E: fuori dal bundle iniziale
 const ProductLandingPage = lazy(() => import("./features/storefront/ProductLandingPage"));   // SEO-E: fuori dal bundle iniziale
+const ProdottoLandingPage = lazy(() => import("./features/storefront/ProdottoLandingPage"));   // DP (6/10): la pagina del prodotto
 const ReservationLandingPage = lazy(() => import("./features/storefront/ReservationLandingPage"));   // SEO-E: fuori dal bundle iniziale
 const PhysicalLandingPage = lazy(() => import("./features/storefront/PhysicalLandingPage"));   // SEO-E: fuori dal bundle iniziale
 const DigitalLandingPage = lazy(() => import("./features/storefront/DigitalLandingPage"));   // SEO-E: fuori dal bundle iniziale
@@ -717,6 +718,11 @@ function AppRoutes() {
           Same StorefrontHeader → inline switcher only. */}
       <Route path="/p/:org_slug/:product_slug" element={
         <PublicStorefrontShell showFloatingSwitcher={false}><ProductLandingPage /></PublicStorefrontShell>
+      } />
+      {/* DP (6/10/2026): la pagina di un prodotto fisico o digitale del profilo,
+          da condividere come la landing di un evento; si compra in pagina */}
+      <Route path="/prodotto/:org_slug/:slug" element={
+        <PublicStorefrontShell showFloatingSwitcher={false}><ProdottoLandingPage /></PublicStorefrontShell>
       } />
       {/* F1 Onda 8: public ticket landing — QR + event details for one holder */}
       <Route path="/t/:token" element={<TicketLandingPage />} />

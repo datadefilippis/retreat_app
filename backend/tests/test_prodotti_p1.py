@@ -279,3 +279,83 @@ class TestConsolidamento:
     def test_ordini_mostrano_i_contatti(self):
         p = (FRONTEND / "features" / "orders" / "OrdersPage.js").read_text()
         assert 'data-testid="ordine-contatti"' in p and "o.customer_email" in p and "o.contact_phone" in p
+
+
+# ── DP (6/10/2026 sera) — design del modulo + la pagina del prodotto ──
+
+class TestDesignDP:
+    def test_landing_pubblica_dal_public_slug(self):
+        src = (BACKEND / "routers" / "public.py").read_text()
+        assert '@router.get("/prodotto/{org_slug}/{slug}", response_model=PublicProdottoLanding)' in src
+        corpo = src[src.index('async def get_prodotto_landing'):src.index('async def _operator_prodotti')]
+        # risolve dal public_slug come il profilo, MAI dallo store legacy; campioni fuori
+        assert '"public_slug": org_slug' in corpo and 'org.get("is_sample")' in corpo
+        assert "stores_collection" not in corpo
+        assert "org_has_public_home" in corpo
+        # la stessa lista del profilo: se non e' sul profilo, non ha una pagina
+        assert "righe = await _operator_prodotti(org[\"id\"])" in corpo
+        assert '"altri"' in src[src.index('class PublicProdottoLanding'):src.index('async def get_prodotto_landing')] or "altri=[" in corpo
+
+    def test_rotta_registrata_e_meta_per_i_bot(self):
+        import json
+        reg = json.loads((BACKEND / "config" / "rotte.json").read_text())
+        assert "prodotto" in reg["pubblica"] and "prodotto" in reg["solo_con_slug"]
+        shell = (BACKEND / "routers" / "seo_shell.py").read_text()
+        assert 'if head == "prodotto" and len(parts) >= 3:' in shell and "async def _meta_prodotto" in shell
+        corpo = shell[shell.index("async def _meta_prodotto"):shell.index("async def _meta_destination")]
+        assert '"@type": "Product"' in corpo and 'f"{base}/prodotto/{org_slug}/{product_slug}"' in corpo
+        seo = (BACKEND / "routers" / "seo.py").read_text()
+        assert '"physical": "prodotto", "digital": "prodotto"' in seo
+        nginx = (BACKEND.parent / "deploy" / "nginx" / "nginx.conf").read_text()
+        assert "prodotto" in nginx
+        app = (FRONTEND / "App.js").read_text()
+        assert 'path="/prodotto/:org_slug/:slug"' in app and "ProdottoLandingPage" in app
+        api = (FRONTEND / "api" / "storefront.js").read_text()
+        assert "getProdottoLanding" in api and "/api/public/prodotto/${orgSlug}/${slug}" in api
+
+    def test_la_pagina_del_prodotto(self):
+        l = (FRONTEND / "features" / "storefront" / "ProdottoLandingPage.js").read_text()
+        for t in ("prodotto-landing", "prodotto-landing-compra", "prodotto-landing-condividi", "prodotto-landing-come",
+                  "prodotto-landing-acquisto", "prodotto-landing-racconto", "prodotto-landing-altri", "prodotto-landing-barra",
+                  "prodotto-landing-404"):
+            assert f'data-testid="{t}"' in l, t
+        assert "InlineProdottoCheckout" in l and "useSeoMeta" in l
+        # niente etichetta di tipo in pagina (founder): il tipo decide solo cosa si spiega
+        assert "'Digitale'" not in l and "'Fisico'" not in l
+        assert "navigator.share" in l
+
+    def test_profilo_compra_e_scopri_di_piu_senza_etichetta(self):
+        p = (FRONTEND / "features" / "storefront" / "OperatorProfilePage.js").read_text()
+        sez = p[p.index('data-testid="profile-prodotti"'):p.index("<Gallery")]
+        assert 'data-testid="prodotto-cta"' in sez and 'data-testid="prodotto-info"' in sez
+        assert "Scopri di più" in sez and "'Compra'" in sez
+        assert "`/prodotto/${org_slug}/${pr.slug" in sez
+        assert "{pr.tipo}" not in sez, "l'etichetta Digitale/Fisico e' uscita dal profilo"
+        assert 'data-testid="prodotto-inline"' in sez and 'data-testid="prodotto-card"' in sez
+
+    def test_il_kit_del_gestionale(self):
+        ui = (FRONTEND / "features" / "prodotti" / "ui.js").read_text()
+        for n in ("export function Campo", "export function Scheda", "export function Bottone", "export function Ragioni",
+                  "export function AnteprimaProdotto", "export function LinkPagina", "export function SceltaImmagine",
+                  "export function classePasso", "export function urlPagina"):
+            assert n in ui, n
+        assert "/prodotto/${orgSlug}/${slug}" in ui
+        # l'anteprima non ha l'etichetta di tipo
+        ant = ui[ui.index("export function AnteprimaProdotto"):ui.index("export function urlPagina")]
+        assert "Digitale" not in ant and "Fisico" not in ant
+        for f in ("ProdottiPage.js", "ProdottoPage.js", "ProdottoDigitaleWizard.js", "ProdottoFisicoWizard.js"):
+            src = (FRONTEND / "features" / "prodotti" / f).read_text()
+            assert "from './ui'" in src, f
+            assert "p-4 md:p-8" in src, f
+        pag = (FRONTEND / "features" / "prodotti" / "ProdottoPage.js").read_text()
+        assert 'data-testid="prodotto-racconto"' in pag and "LinkPagina" in pag and "long_description" in pag
+        assert 'data-testid="dg-racconto"' in (FRONTEND / "features" / "prodotti" / "ProdottoDigitaleWizard.js").read_text()
+        assert 'data-testid="pf-racconto"' in (FRONTEND / "features" / "prodotti" / "ProdottoFisicoWizard.js").read_text()
+        lista = (FRONTEND / "features" / "prodotti" / "ProdottiPage.js").read_text()
+        assert "copiaLink" in lista and "{p.tipo_etichetta}" not in lista
+
+    def test_public_slug_nel_gestionale(self):
+        src = (BACKEND / "routers" / "prodotti.py").read_text()
+        assert '"public_slug": (org or {}).get("public_slug")' in src
+        assert '"public_slug": pre.get("public_slug")' in src
+

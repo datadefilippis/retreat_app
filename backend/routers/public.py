@@ -4619,6 +4619,73 @@ async def public_operators_index(
             "date_filter_ready": date_filter_ready}
 
 
+class PublicProdottoLanding(BaseModel):
+    """DP (6/10/2026 sera) — la PAGINA di un prodotto (fisico o digitale):
+    /prodotto/{org_slug}/{slug}. Si condivide come la landing di un evento,
+    racconta il prodotto (descrizione, racconto lungo, come arriva) e si
+    compra da li' con lo stesso checkout in pagina del profilo. Risolve
+    l'operatore dal public_slug (il profilo), NON dallo store legacy."""
+    org: Dict[str, Any]
+    prodotto: Dict[str, Any]
+    consegna: Optional[Dict[str, Any]] = None
+    altri: List[Dict[str, Any]] = []
+    currency: str = "EUR"
+
+
+@router.get("/prodotto/{org_slug}/{slug}", response_model=PublicProdottoLanding)
+async def get_prodotto_landing(org_slug: str, slug: str):
+    from database import organizations_collection, products_collection
+    org = await organizations_collection.find_one(
+        {"public_slug": org_slug, "is_active": {"$ne": False}, "deactivated_at": None},
+        {"_id": 0, "id": 1, "name": 1, "public_slug": 1, "public_profile": 1,
+         "store_settings.display_name": 1, "reviews_stats": 1, "is_sample": 1},
+    )
+    if not org or org.get("is_sample"):
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Pagina non trovata")
+    from services.store_guard import org_has_public_home
+    if not await org_has_public_home(org["id"]):
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Pagina non trovata")
+    # la stessa lista del profilo: se non e' sul profilo, non ha una pagina
+    righe = await _operator_prodotti(org["id"])
+    riga = next((r for r in righe if r.get("slug") == slug), None)
+    if not riga:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Prodotto non trovato")
+    prod = await products_collection.find_one(
+        {"id": riga["product_id"]},
+        {"_id": 0, "metadata.long_description": 1, "metadata.max_downloads_per_delivery": 1,
+         "metadata.access_expiry_days": 1, "stock_quantity": 1, "currency": 1},
+    ) or {}
+    meta = prod.get("metadata") or {}
+    pp = org.get("public_profile") or {}
+    consegna = None
+    if riga.get("item_type") == "physical":
+        from routers.prodotti import _consegna
+        c = await _consegna(org["id"])
+        consegna = {k: c.get(k) for k in ("ritiro", "spedizione", "costo_spedizione", "soglia_gratis")}
+    return PublicProdottoLanding(
+        org={
+            "slug": org_slug,
+            "name": (org.get("store_settings") or {}).get("display_name") or org.get("name") or "",
+            "portrait_url": pp.get("portrait_url"),
+            "city": pp.get("city"), "region": pp.get("region"),
+            "verified": bool(pp.get("interview_published") and pp.get("interview_verified_at")),
+            "reviews_stats": org.get("reviews_stats"),
+        },
+        prodotto={
+            **{k: riga.get(k) for k in ("product_id", "slug", "name", "description", "price",
+                                        "image_url", "item_type", "file_ext", "file_size_bytes")},
+            "long_description": meta.get("long_description"),
+            "max_downloads": meta.get("max_downloads_per_delivery") or None,
+            "access_expiry_days": meta.get("access_expiry_days") or None,
+            "stock_quantity": prod.get("stock_quantity"),
+        },
+        consegna=consegna,
+        altri=[{k: r.get(k) for k in ("product_id", "slug", "name", "price", "image_url")}
+               for r in righe if r.get("slug") != slug][:4],
+        currency=prod.get("currency") or "EUR",
+    )
+
+
 async def _operator_prodotti(org_id: str) -> list:
     """P1 (6/10/2026) — i PRODOTTI pubblicati di un'org (fisici e digitali)
     per la sezione «Prodotti» del profilo: card con tipo, prezzo, foto;

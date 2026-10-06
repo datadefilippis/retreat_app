@@ -294,7 +294,9 @@ async def build_retreats() -> str:
     return _wrap(urls, "retreats")
 
 
-_PRODUCT_PREFIX = {"service": "p", "physical": "ph", "digital": "dg",
+# DP (6/10/2026): fisici e digitali hanno la pagina nuova /prodotto/ (le
+# landing legacy /ph e /dg restano raggiungibili ma non in sitemap)
+_PRODUCT_PREFIX = {"service": "p", "physical": "prodotto", "digital": "prodotto",
                    "course": "co", "rental": "r"}
 
 
