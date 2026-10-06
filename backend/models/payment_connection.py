@@ -75,6 +75,11 @@ class PaymentConnection(PaymentConnectionBase):
     payouts_enabled: bool = False
     details_submitted: bool = False
     requirements_currently_due: List[str] = []
+    # Lotto S (6/10/2026) — il paese dell'account Stripe (immutabile su
+    # Stripe) e la sua valuta: scelti alla creazione, confermati da
+    # complete/webhook. None sulle righe nate prima del campo.
+    country: Optional[str] = None
+    default_currency: Optional[str] = None
     metadata: Dict[str, Any] = {}
     created_at: datetime = Field(default_factory=utc_now)
     updated_at: datetime = Field(default_factory=utc_now)

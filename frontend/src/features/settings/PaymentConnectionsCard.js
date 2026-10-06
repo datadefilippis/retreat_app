@@ -35,6 +35,11 @@ const STATUS_CONFIG = {
   disconnected: { key: 'conn_status_disconnected', color: 'bg-gray-100 text-gray-500', icon: AlertCircle },
 };
 
+// Lotto S (6/10/2026) — il paese dell'account Stripe. La piattaforma e'
+// svizzera: senza una scelta esplicita ogni account nasceva in Svizzera e
+// a un operatore italiano Stripe chiedeva IBAN e indirizzo svizzeri.
+const PAESI_RISERVA = { IT: 'Italia', CH: 'Svizzera', DE: 'Germania', FR: 'Francia', AT: 'Austria', ES: 'Spagna' };
+
 const RUNTIME_CONFIG = {
   unavailable: { key: 'runtime_unavailable', color: 'bg-gray-100 text-gray-500' },
   needs_auth: { key: 'runtime_needs_auth', color: 'bg-amber-100 text-amber-700' },
@@ -58,6 +63,22 @@ export default function PaymentConnectionsCard({ isAdmin }) {
   // routers/payment_connections.py is the actual security boundary.
   const { hasPlan, loading: billingLoading } = useBilling();
   const canConnectStripe = hasPlan('core');
+
+  // Lotto S — paesi ammessi e paese suggerito dall'org (Italia di default)
+  const [paesi, setPaesi] = useState(PAESI_RISERVA);
+  const [paese, setPaese] = useState('IT');
+  const [paeseNuovo, setPaeseNuovo] = useState('IT');
+  useEffect(() => {
+    let vivo = true;
+    paymentConnectionsAPI.expressPaesi()
+      .then(res => {
+        if (!vivo) return;
+        if (res.data?.paesi) setPaesi(res.data.paesi);
+        if (res.data?.suggerito) { setPaese(res.data.suggerito); setPaeseNuovo(res.data.suggerito); }
+      })
+      .catch(() => {});
+    return () => { vivo = false; };
+  }, []);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -132,7 +153,7 @@ export default function PaymentConnectionsCard({ isAdmin }) {
   const handleConnectStripe = async () => {
     setConnecting(true);
     try {
-      const res = await paymentConnectionsAPI.expressStart();
+      const res = await paymentConnectionsAPI.expressStart({ country: paese });
       const url = res.data?.url;
       if (res.data?.status === 'ready') {
         toast.success(t('payments.toast_connected'));
@@ -157,6 +178,25 @@ export default function PaymentConnectionsCard({ isAdmin }) {
     setConnecting(true);
     try {
       const res = await paymentConnectionsAPI.expressRefresh();
+      const url = res.data?.url;
+      if (url) {
+        window.location.href = url;
+      } else {
+        toast.error(t('payments.toast_url_error'));
+        setConnecting(false);
+      }
+    } catch (err) {
+      toast.error(err?.response?.data?.detail || t('payments.toast_generic_error'));
+      setConnecting(false);
+    }
+  };
+
+  // Lotto S — «Ricomincia col paese giusto»: butta l'account mai completato
+  // e ne apre uno nuovo col paese scelto (il backend rifiuta se operativo).
+  const handleRicomincia = async () => {
+    setConnecting(true);
+    try {
+      const res = await paymentConnectionsAPI.expressRicomincia({ country: paeseNuovo });
       const url = res.data?.url;
       if (url) {
         window.location.href = url;
@@ -227,7 +267,10 @@ export default function PaymentConnectionsCard({ isAdmin }) {
     );
   }
 
-  const hasStripe = connections.some(c => c.provider === 'stripe');
+  // Lotto S: le righe archiviate (account rifatti) non si mostrano
+  const visibili = connections.filter(c => !c.archived);
+  const hasStripe = visibili.some(c => c.provider === 'stripe');
+  const nomePaese = (code) => (code ? (paesi[code] || PAESI_RISERVA[code] || code) : '');
 
   return (
     <Card>
@@ -250,7 +293,7 @@ export default function PaymentConnectionsCard({ isAdmin }) {
       </CardHeader>
       <CardContent className="space-y-4">
         {/* Connection list */}
-        {connections.length === 0 && (
+        {visibili.length === 0 && (
           <div className="text-center py-4">
             <p className="text-sm text-muted-foreground">
               {t('payments.empty_title')}
@@ -261,7 +304,7 @@ export default function PaymentConnectionsCard({ isAdmin }) {
           </div>
         )}
 
-        {connections.map(conn => {
+        {visibili.map(conn => {
           const prov = PROVIDER_CONFIG[conn.provider] || PROVIDER_CONFIG.stripe;
           const st = STATUS_CONFIG[conn.status] || STATUS_CONFIG.pending;
           const rt = RUNTIME_CONFIG[conn.runtime_status] || RUNTIME_CONFIG.unavailable;
@@ -289,6 +332,17 @@ export default function PaymentConnectionsCard({ isAdmin }) {
                   <span className="ml-1.5 font-mono text-[11px]">({conn.external_account_id.slice(0, 16)}...)</span>
                 )}
               </p>
+              {/* Lotto S — il paese dell'account, perche' si capisca cosa chiede Stripe */}
+              {conn.connect_type === 'express' && conn.country && (
+                <p className="text-xs text-muted-foreground" data-testid="pc-paese">
+                  {t('payments.account_country', { defaultValue: 'Account Stripe registrato in {{paese}}', paese: nomePaese(conn.country) })}
+                  {conn.country === 'CH' && conn.runtime_status !== 'ready' && (
+                    <span className="block text-amber-700 mt-0.5">
+                      {t('payments.account_country_ch_hint', { defaultValue: 'Se non sei in Svizzera, Stripe ti chiederà indirizzo e IBAN svizzeri: ricomincia qui sotto col paese giusto.' })}
+                    </span>
+                  )}
+                </p>
+              )}
               {conn.runtime_status === 'error' && conn.runtime_error && (
                 <p className="text-xs text-red-600">{conn.runtime_error}</p>
               )}
@@ -310,6 +364,30 @@ export default function PaymentConnectionsCard({ isAdmin }) {
                   {connecting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <ExternalLink className="h-3.5 w-3.5" />}
                   {t('payments.continue_express_onboarding', { defaultValue: 'Continua onboarding Stripe' })}
                 </Button>
+              )}
+              {/* Lotto S — ricomincia col paese giusto: SOLO su account mai completati
+                  (niente dati inviati, niente addebiti): il backend fa da guardia. */}
+              {isAdmin && conn.connect_type === 'express' && conn.runtime_status !== 'ready'
+               && !conn.details_submitted && !conn.charges_enabled && (
+                <div className="rounded-md border border-dashed border-gray-300 p-2.5 space-y-1.5" data-testid="pc-ricomincia">
+                  <p className="text-[11px] text-muted-foreground">
+                    {t('payments.ricomincia_body', { defaultValue: 'Paese sbagliato? Finché non hai inviato nulla a Stripe puoi rifare l’account da zero.' })}
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <select
+                      value={paeseNuovo}
+                      onChange={e => setPaeseNuovo(e.target.value)}
+                      aria-label={t('payments.country_label', { defaultValue: 'Paese dell’attività' })}
+                      data-testid="pc-ricomincia-paese"
+                      className="flex-1 rounded-md border border-gray-300 bg-white px-2 py-1.5 text-xs"
+                    >
+                      {Object.entries(paesi).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+                    </select>
+                    <Button variant="outline" size="sm" onClick={handleRicomincia} disabled={connecting} className="text-xs">
+                      {t('payments.ricomincia_btn', { defaultValue: 'Ricomincia col paese giusto' })}
+                    </Button>
+                  </div>
+                </div>
               )}
               {/* Express: open merchant's own Stripe dashboard (only when ready) */}
               {isAdmin && conn.connect_type === 'express' &&
@@ -334,6 +412,25 @@ export default function PaymentConnectionsCard({ isAdmin }) {
             Core / Pro / Enterprise see the normal active button. */}
         {isAdmin && !hasStripe && (
           <div className="space-y-2">
+            {/* Lotto S — il paese si sceglie PRIMA: su Stripe non si cambia piu' */}
+            {canConnectStripe && (
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1">
+                  {t('payments.country_label', { defaultValue: 'Paese dell’attività' })}
+                </label>
+                <select
+                  value={paese}
+                  onChange={e => setPaese(e.target.value)}
+                  data-testid="pc-paese-select"
+                  className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm"
+                >
+                  {Object.entries(paesi).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+                </select>
+                <p className="text-[11px] text-muted-foreground mt-1">
+                  {t('payments.country_hint', { defaultValue: 'Il paese dove hai la partita IVA o la residenza: Stripe ti chiederà i documenti e l’IBAN di quel paese e dopo non si cambia.' })}
+                </p>
+              </div>
+            )}
             <Button
               size="sm"
               onClick={canConnectStripe ? handleConnectStripe : undefined}

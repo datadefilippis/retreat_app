@@ -39,6 +39,12 @@ class ConnectionCreate(BaseModel):
     is_default: bool = True
 
 
+class ExpressStartBody(BaseModel):
+    """Lotto S: il paese scelto nel riquadro «Collega gli incassi»
+    (facoltativo: senza, si suggerisce dall'org; Italia di default)."""
+    country: Optional[str] = None
+
+
 class ConnectionUpdate(BaseModel):
     display_name: Optional[str] = None
     external_account_id: Optional[str] = None
@@ -95,7 +101,8 @@ async def get_payment_status(current_user: dict = Depends(get_verified_user)):
 # ── Stripe Connect Express (Account Links) ────────────────────────────────
 
 @router.post("/stripe/express/start")
-async def start_stripe_express(current_user: dict = Depends(require_admin)):
+async def start_stripe_express(body: Optional[ExpressStartBody] = None,
+                               current_user: dict = Depends(require_admin)):
     """Start (or resume) Express onboarding for this organization.
 
     Creates a fresh Express connected account if none exists, then returns
@@ -124,7 +131,14 @@ async def start_stripe_express(current_user: dict = Depends(require_admin)):
 
     email = current_user.get("email")
 
-    result = await start_express_onboarding(org_id, email=email)
+    # Lotto S: paese scelto (IT default); un paese fuori lista e' un 400 chiaro
+    from services.stripe_connect_express import paese_valido, NOMI_PAESI
+    country = (body.country if body else None)
+    if country and not paese_valido(country):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail="Paese non ammesso. Scegli fra: " + ", ".join(NOMI_PAESI.values()) + ".")
+
+    result = await start_express_onboarding(org_id, email=email, country=country)
 
     if result.get("status") == "error":
         raise HTTPException(
@@ -137,6 +151,42 @@ async def start_stripe_express(current_user: dict = Depends(require_admin)):
         org_id, result.get("account_id"), result.get("status"),
     )
     return result
+
+
+@router.post("/stripe/express/ricomincia")
+async def ricomincia_stripe_express(body: ExpressStartBody,
+                                    current_user: dict = Depends(require_admin)):
+    """Lotto S (6/10/2026) — «Ricomincia col paese giusto»: butta l'account
+    Express MAI completato (nato svizzero per il bug della piattaforma) e
+    ne apre uno nuovo col paese scelto. 400 se l'account e' operativo o il
+    paese non e' ammesso. Stesso cancello di piano di /start."""
+    from services.stripe_connect_express import ricomincia_express, is_express_configured
+
+    org_id = current_user["organization_id"]
+    await check_module_access(org_id, "commerce", "checkout_stripe")
+    if not is_express_configured():
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                            detail="Stripe Connect non è configurato nel sistema")
+
+    result = await ricomincia_express(org_id, country=body.country or "",
+                                      email=current_user.get("email"),
+                                      actor_user_id=current_user.get("id"))
+    if result.get("status") == "error":
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail=result.get("error", "Impossibile ricominciare"))
+    logger.info("payment_connections: Express ricominciato per org=%s account=%s paese=%s",
+                org_id, result.get("account_id"), result.get("country"))
+    return result
+
+
+@router.get("/stripe/express/paesi")
+async def paesi_stripe_express(current_user: dict = Depends(get_verified_user)):
+    """Lotto S: i paesi ammessi per l'account e quello suggerito per l'org."""
+    from services.stripe_connect_express import NOMI_PAESI, paese_suggerito
+    from database import organizations_collection
+    org = await organizations_collection.find_one(
+        {"id": current_user["organization_id"]}, {"_id": 0, "currency": 1, "public_profile": 1})
+    return {"paesi": NOMI_PAESI, "suggerito": paese_suggerito(org)}
 
 
 @router.post("/stripe/express/refresh")

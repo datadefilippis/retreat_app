@@ -64,9 +64,12 @@ async def test_create_express_account_requests_twint_capability():
     fake_stripe = MagicMock()
     fake_stripe.Account.create = MagicMock(return_value=fake_account)
 
+    # Lotto S (6/10/2026): TWINT si chiede SOLO per country=CH (Stripe lo
+    # rifiuta altrove e la piattaforma e' svizzera: senza paese esplicito
+    # ogni account nasceva CH). Per un account CH la regola resta intatta.
     with patch.object(stripe_connect_express, "_get_stripe", return_value=fake_stripe):
         account_id = await stripe_connect_express._create_express_account(
-            org_id="org_xyz", email="merchant@example.test",
+            org_id="org_xyz", email="merchant@example.test", country="CH",
         )
 
     assert account_id == "acct_test_123"
@@ -83,6 +86,7 @@ async def test_create_express_account_requests_twint_capability():
     )
     # Also: type=express, metadata propagated, email passed through.
     assert kwargs["type"] == "express"
+    assert kwargs["country"] == "CH" and kwargs["default_currency"] == "chf"
     assert kwargs["metadata"] == {"afianco_org_id": "org_xyz"}
     assert kwargs["email"] == "merchant@example.test"
 

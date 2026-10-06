@@ -78,6 +78,24 @@ def _account_capability_snapshot(account) -> dict:
     }
 
 
+def _paese_e_valuta(account) -> dict:
+    """Lotto S: {country, default_currency} letti da un Account Stripe
+    (oggetto o dict del webhook); vuoto se mancano, cosi' un $set non
+    cancella mai un valore gia' salvato."""
+    def _leggi(k):
+        if isinstance(account, dict):
+            return account.get(k)
+        return getattr(account, k, None) or (account.get(k) if hasattr(account, "get") else None)
+    out = {}
+    c = _leggi("country")
+    if c:
+        out["country"] = str(c).upper()
+    v = _leggi("default_currency")
+    if v:
+        out["default_currency"] = str(v).lower()
+    return out
+
+
 def _runtime_status_from_capabilities(caps: dict) -> str:
     """Map a capability snapshot to a PaymentConnection runtime_status.
 
@@ -98,39 +116,79 @@ def _runtime_status_from_capabilities(caps: dict) -> str:
 
 # ── Express account creation ──────────────────────────────────────────────
 
-async def _create_express_account(org_id: str, email: Optional[str]) -> str:
+# Lotto S (6/10/2026) — IL PAESE DELL'ACCOUNT. La piattaforma Stripe di
+# Aurya e' svizzera (country=CH, chf): fino a oggi Account.create non
+# passava `country`, quindi OGNI Express nasceva svizzero e agli operatori
+# italiani Stripe chiedeva indirizzo e IBAN svizzeri (3 account in prod,
+# nessuno completato: zero incassi online su 45 organizzazioni). Il paese
+# di un account Stripe non si cambia dopo la creazione, quindi si sceglie
+# PRIMA (Italia preselezionata) e, per chi e' nato svizzero senza volerlo,
+# c'e' `ricomincia_express` qui sotto. Paese → valuta dell'account.
+PAESI_STRIPE = {
+    "IT": "eur", "CH": "chf", "DE": "eur", "FR": "eur", "AT": "eur", "ES": "eur",
+}
+PAESE_DEFAULT = "IT"
+NOMI_PAESI = {"IT": "Italia", "CH": "Svizzera", "DE": "Germania", "FR": "Francia",
+              "AT": "Austria", "ES": "Spagna"}
+
+
+def paese_valido(country: Optional[str]) -> Optional[str]:
+    """Il codice paese in maiuscolo se e' fra quelli ammessi, altrimenti None."""
+    c = (country or "").strip().upper()
+    return c if c in PAESI_STRIPE else None
+
+
+def paese_suggerito(org: Optional[dict]) -> str:
+    """Il paese da preselezionare per un'org: Svizzera se la valuta e' CHF
+    o la sede principale e' in Svizzera, altrimenti Italia. E' un
+    suggerimento: l'operatore sceglie nel riquadro «Collega gli incassi»."""
+    org = org or {}
+    if (org.get("currency") or "").upper() == "CHF":
+        return "CH"
+    try:
+        from services.sedi import sedi_da_profilo
+        sedi = sedi_da_profilo(org.get("public_profile"))
+        paese = (sedi[0].get("paese") or "") if sedi else ""
+        if paese.strip().lower() in ("svizzera", "schweiz", "suisse", "switzerland", "ch"):
+            return "CH"
+    except Exception:  # noqa: BLE001 — un suggerimento non deve mai fermare l'onboarding
+        pass
+    return PAESE_DEFAULT
+
+
+async def _create_express_account(org_id: str, email: Optional[str],
+                                  country: str = PAESE_DEFAULT) -> str:
     """Create a new Express connected account under the platform.
 
     Returns the newly created Stripe account ID (acct_...).
 
-    CH compliance v1 — Sub-stream 2.x: we always request ``twint_payments``
-    alongside ``card_payments``/``transfers``. Stripe gates TWINT to accounts
-    with ``country=CH``: for Swiss merchants the capability transitions to
-    ``active`` automatically once onboarding completes; for non-CH merchants
-    Stripe ignores the request silently (the capability stays unrequested
-    in the account's capability dict, never raises). This keeps the call
-    safe for *every* merchant while making sure the next CH merchant does
-    NOT silently ship without TWINT — which would be the case if the
-    capability was missing here, since it cannot be added retroactively
-    by the merchant from the Express Dashboard (Connect Express has no
-    payment-methods toggle UI; capabilities are platform-controlled).
+    Lotto S (6/10/2026): `country` e `default_currency` passano SEMPRE
+    (prima no: ogni account ereditava CH dalla piattaforma). TWINT si
+    chiede solo per CH: Stripe lo rifiuta sugli altri paesi e la
+    capability non ha senso fuori dalla Svizzera. Per CH resta la regola
+    di Sub-stream 2.x: chiesta alla creazione, perche' Connect Express
+    non ha un interruttore lato operatore e non si aggiunge dopo.
 
     See ``ensure_twint_capability_for_org`` below for the post-onboarding
     path used when an org switches currency to CHF after the Stripe
     account already exists.
     """
     stripe = _get_stripe()
+    country = paese_valido(country) or PAESE_DEFAULT
+    capabilities = {
+        "card_payments": {"requested": True},
+        "transfers": {"requested": True},
+    }
+    if country == "CH":
+        capabilities["twint_payments"] = {"requested": True}
     kwargs = {
         "type": "express",
+        "country": country,
+        "default_currency": PAESI_STRIPE[country],
         "metadata": {
             "afianco_org_id": org_id,
         },
-        "capabilities": {
-            "card_payments": {"requested": True},
-            "transfers": {"requested": True},
-            # CH-only — Stripe ignores silently for non-CH accounts.
-            "twint_payments": {"requested": True},
-        },
+        "capabilities": capabilities,
     }
     if email:
         kwargs["email"] = email
@@ -140,7 +198,8 @@ async def _create_express_account(org_id: str, email: Optional[str]) -> str:
     if not account_id:
         raise RuntimeError("Stripe Account.create returned no id")
 
-    logger.info("stripe_connect_express: created Express account %s for org=%s", account_id, org_id)
+    logger.info("stripe_connect_express: created Express account %s for org=%s country=%s",
+                account_id, org_id, country)
     return account_id
 
 
@@ -170,8 +229,14 @@ async def _create_account_link(account_id: str, org_id: str) -> str:
 
 # ── Public entry points (used by the router) ─────────────────────────────
 
-async def start_express_onboarding(org_id: str, email: Optional[str] = None) -> dict:
+async def start_express_onboarding(org_id: str, email: Optional[str] = None,
+                                   country: Optional[str] = None) -> dict:
     """Start or resume Express onboarding for an org.
+
+    Lotto S: `country` e' il paese scelto nel riquadro (IT default); se
+    manca si suggerisce dall'org (paese_suggerito). Conta SOLO alla
+    creazione: un account esistente ha gia' il suo paese (immutabile) e
+    si riprende com'e'; per cambiarlo c'e' ricomincia_express.
 
     Idempotent:
       - If no connection exists → creates Express account + link
@@ -188,7 +253,7 @@ async def start_express_onboarding(org_id: str, email: Optional[str] = None) -> 
     from models.common import utc_now
 
     existing = await payment_connections_collection.find_one(
-        {"organization_id": org_id, "provider": "stripe"},
+        {"organization_id": org_id, "provider": "stripe", "archived": {"$ne": True}},
         {"_id": 0},
     )
 
@@ -207,8 +272,15 @@ async def start_express_onboarding(org_id: str, email: Optional[str] = None) -> 
 
     # Reuse the existing Express account if we have one; create otherwise.
     account_id = existing.get("external_account_id") if existing else None
+    paese_nuovo: Optional[str] = None
     if not account_id:
-        account_id = await _create_express_account(org_id, email)
+        paese_nuovo = paese_valido(country)
+        if not paese_nuovo:
+            from database import organizations_collection
+            org = await organizations_collection.find_one(
+                {"id": org_id}, {"_id": 0, "currency": 1, "public_profile": 1})
+            paese_nuovo = paese_suggerito(org)
+        account_id = await _create_express_account(org_id, email, country=paese_nuovo)
 
     # Upsert the connection document in a pending state.
     now = utc_now()
@@ -223,6 +295,9 @@ async def start_express_onboarding(org_id: str, email: Optional[str] = None) -> 
                 "runtime_error": None,
                 "last_runtime_check_at": now,
                 "updated_at": now,
+                # Lotto S: il paese si scrive solo se l'account e' nuovo
+                **({"country": paese_nuovo, "default_currency": PAESI_STRIPE[paese_nuovo]}
+                   if paese_nuovo else {}),
             }},
         )
     else:
@@ -237,6 +312,9 @@ async def start_express_onboarding(org_id: str, email: Optional[str] = None) -> 
             "status": "pending",
             "runtime_status": "needs_auth",
             "connect_type": "express",
+            # Lotto S (6/10/2026): il paese dell'account, per la card e la regia
+            "country": paese_nuovo,
+            "default_currency": PAESI_STRIPE.get(paese_nuovo) if paese_nuovo else None,
             "charges_enabled": False,
             "payouts_enabled": False,
             "details_submitted": False,
@@ -265,12 +343,100 @@ async def start_express_onboarding(org_id: str, email: Optional[str] = None) -> 
             to_connect_type="express",
             from_connect_type=(existing.get("connect_type") if existing else None),
             external_account_id=account_id,
-            metadata={"status": "onboarding"},
+            metadata={"status": "onboarding", **({"country": paese_nuovo} if paese_nuovo else {})},
         )
     except Exception:
         pass  # history is best-effort by contract
 
-    return {"status": "onboarding", "url": url, "account_id": account_id}
+    return {"status": "onboarding", "url": url, "account_id": account_id,
+            "country": paese_nuovo or (existing or {}).get("country")}
+
+
+def si_puo_ricominciare(conn: Optional[dict]) -> bool:
+    """Un account si puo' buttare e rifare SOLO se non ha mai lavorato:
+    niente dati inviati a Stripe, niente addebiti abilitati, non pronto.
+    Un account operativo ha storia (saldo, pagamenti): non si tocca."""
+    if not conn or conn.get("connect_type") != "express" or not conn.get("external_account_id"):
+        return False
+    return (not conn.get("details_submitted") and not conn.get("charges_enabled")
+            and conn.get("runtime_status") != "ready" and conn.get("status") != "active")
+
+
+async def ricomincia_express(org_id: str, country: str, email: Optional[str] = None,
+                             actor_user_id: Optional[str] = None) -> dict:
+    """Lotto S — «Ricomincia col paese giusto»: elimina su Stripe l'account
+    Express mai completato (nato svizzero per il bug della piattaforma),
+    archivia la riga locale con traccia, e avvia un onboarding nuovo col
+    paese scelto. Rifiuta (status=error) se l'account e' operativo o il
+    paese non e' ammesso. Idempotente sul lato Stripe: se l'account non
+    esiste piu' (gia' eliminato), si va avanti lo stesso.
+
+    Returns: {status: "onboarding", url, account_id, country} | {status: "error", error}
+    """
+    if not is_express_configured():
+        return {"status": "error", "error": "Stripe non configurato nel sistema"}
+    paese = paese_valido(country)
+    if not paese:
+        return {"status": "error", "error": "Paese non ammesso. Scegli fra: "
+                + ", ".join(NOMI_PAESI.values()) + "."}
+
+    from database import payment_connections_collection
+    from models.common import utc_now
+
+    conn = await payment_connections_collection.find_one(
+        {"organization_id": org_id, "provider": "stripe", "connect_type": "express",
+         "archived": {"$ne": True}},
+        {"_id": 0},
+    )
+    if not conn:
+        return {"status": "error", "error": "Nessun account Stripe da rifare: collega gli incassi."}
+    if not si_puo_ricominciare(conn):
+        return {"status": "error",
+                "error": "Questo account Stripe e' gia' operativo: il paese non si puo' cambiare. "
+                         "Scrivici a aurya.life@gmail.com e vediamo insieme."}
+
+    vecchio = conn["external_account_id"]
+    stripe = _get_stripe()
+    try:
+        await asyncio.to_thread(stripe.Account.delete, vecchio)
+        eliminato = True
+    except Exception as exc:  # noqa: BLE001
+        msg = str(exc)
+        # gia' sparito su Stripe: l'obiettivo e' comunque raggiunto
+        if "No such account" in msg or "resource_missing" in msg:
+            eliminato = False
+        else:
+            logger.error("stripe_connect_express: ricomincia, Account.delete failed account=%s org=%s: %s",
+                         vecchio, org_id, exc)
+            return {"status": "error", "error": "Stripe non ha permesso di eliminare il vecchio account. Riprova fra poco."}
+
+    now = utc_now()
+    await payment_connections_collection.update_one(
+        {"id": conn["id"], "organization_id": org_id},
+        {"$set": {"archived": True, "archived_at": now, "status": "disconnected",
+                  "runtime_status": "unavailable", "is_default": False, "updated_at": now,
+                  "metadata": {**(conn.get("metadata") or {}),
+                               "ricomincia": {"motivo": "paese", "da": conn.get("country"),
+                                              "a": paese, "account_eliminato": eliminato,
+                                              "quando": now.isoformat()}}}},
+    )
+    try:
+        from services.payment_connection_history import record_transition
+        await record_transition(
+            org_id=org_id, event=EVENT_RICOMINCIATO, to_connect_type="express",
+            from_connect_type="express", actor_user_id=actor_user_id,
+            external_account_id=vecchio,
+            metadata={"da": conn.get("country"), "a": paese, "account_eliminato": eliminato},
+        )
+    except Exception:
+        pass  # history is best-effort
+
+    logger.info("stripe_connect_express: ricomincia org=%s vecchio=%s (eliminato=%s) paese=%s",
+                org_id, vecchio, eliminato, paese)
+    return await start_express_onboarding(org_id, email=email, country=paese)
+
+
+EVENT_RICOMINCIATO = "restarted_with_country"
 
 
 async def ensure_twint_capability_for_org(org_id: str) -> dict:
@@ -421,7 +587,8 @@ async def refresh_express_link(org_id: str) -> dict:
     from database import payment_connections_collection
 
     conn = await payment_connections_collection.find_one(
-        {"organization_id": org_id, "provider": "stripe", "connect_type": "express"},
+        {"organization_id": org_id, "provider": "stripe", "connect_type": "express",
+         "archived": {"$ne": True}},
         {"_id": 0},
     )
     if not conn or not conn.get("external_account_id"):
@@ -502,7 +669,8 @@ async def complete_express_onboarding(org_id: str) -> dict:
     from models.common import utc_now
 
     conn = await payment_connections_collection.find_one(
-        {"organization_id": org_id, "provider": "stripe", "connect_type": "express"},
+        {"organization_id": org_id, "provider": "stripe", "connect_type": "express",
+         "archived": {"$ne": True}},
         {"_id": 0},
     )
     if not conn or not conn.get("external_account_id"):
@@ -550,6 +718,8 @@ async def complete_express_onboarding(org_id: str) -> dict:
         "runtime_status": runtime_status,
         "last_runtime_check_at": now,
         "updated_at": now,
+        # Lotto S: il paese vero dell'account, da Stripe (anche per le righe nate prima)
+        **_paese_e_valuta(account),
     }
     # Flip high-level status and connected_at only when the account goes live.
     if runtime_status == "ready":
@@ -673,6 +843,7 @@ async def handle_account_updated(event) -> dict:
         "runtime_status": runtime_status,
         "last_runtime_check_at": now,
         "updated_at": now,
+        **_paese_e_valuta(account),   # Lotto S
     }
     if runtime_status == "ready":
         update["status"] = "active"

@@ -143,8 +143,17 @@ Vincolo dichiarato: gli eventi sono live e funzionano; ogni tocco agli eventi è
 
 ## 11. Stato (6/10/2026 sera)
 
-**P4 «formato» IMPLEMENTATO in locale** (giro `deploy/giri/deploy-2026-10-06-formato.sh`, in attesa del via per la prod):
+**P4 «formato» IN PROD** (6/10 sera, `prod-2026-10-06-formato`, mappatura scritta: 2 formazione, 1 ritiro, 7 evento):
 - backend: `FORMATI_ESPERIENZA` in `models/retreat_taxonomy.py` (+ `errore_formato`, `formato_suggerito`), `EventTicketMetadata.formato` facoltativo, 422 nel wizard e nel PATCH prodotto se fuori lista, `formati_esperienza` in `/products/taxonomies`, il duplica porta il formato, `/public/retreats` con `?formato=`, `formato` sulle card e conteggi `formati` (stessa regola RE-ter: mai un'opzione vuota), `formato` nel prodotto della landing pubblica; `scripts/formato_esperienze.py` (`--lista`, `--imposta pref=formato`, `--scrivi`) per la mappatura della regia;
 - frontend: tre carte «Che cos'è?» nel primo passo del wizard eventi (suggerita dalle date finché non si tocca, `?formato=` dall'URL per la futura terza carta dei prodotti), selettore nel pannello evento (parte da «Non indicato» sulle righe vecchie), filtro «Tipo» ed etichetta sulla card in `/esperienze` (`?tipo=`);
 - guardie: `backend/tests/test_formato_fm.py` (15 test: schema, wizard, PATCH, listing, superfici) + le suite storiche eventi/listing/prelaunch verdi;
 - mappatura decisa per le 10 esperienze in prod (nel giro, prova generale poi scrittura): i due corsi (Reiki I livello, Theta Healing DNA Base) → formazione; «Il ritorno alle origini» (tre giorni con alloggio) → ritiro; le altre sette (serate, giornate, i quattro seminari di due giorni in sala de «Il Potere dell'Immaginazione») → evento. Si cambia con un clic dal pannello dell'evento o con lo script.
+
+**Lotto S «Stripe giusto» IMPLEMENTATO in locale** (giro `deploy/giri/deploy-2026-10-06-stripe.sh`, attende il via):
+- `Account.create` passa SEMPRE `country` e `default_currency` (IT→eur, CH→chf, più DE/FR/AT/ES); TWINT chiesto solo per CH; paese scelto nel riquadro (Italia preselezionata, suggerito CH se valuta CHF o sede in Svizzera) e scritto in `payment_connections.country`; complete e webhook `account.updated` salvano il paese vero da Stripe anche sulle righe nate prima;
+- «Ricomincia col paese giusto» (`POST /payment-connections/stripe/express/ricomincia`): solo su account mai completati (`details_submitted=False`, `charges_enabled=False`, non pronto): `Account.delete` su Stripe, riga archiviata con traccia (`metadata.ricomincia` + evento `restarted_with_country` nella history), nuovo account col paese nuovo; rifiutato con 400 sugli account operativi; i tre account svizzeri in prod NON si toccano d'ufficio: lo fa l'operatore dalla card (o la regia su richiesta);
+- card Pagamenti: select del paese prima di «Collega gli incassi con Stripe», riga «Account Stripe registrato in …» con avviso se CH e non pronto, blocco «Ricomincia», righe archiviate nascoste, copia italiana dei badge;
+- guardie: `backend/tests/test_stripe_paese_sp.py` (19 test) + suite Stripe storiche verdi (il test TWINT ora prova il caso CH esplicito);
+- **prova della commissione CH→IT in test mode: non conclusa**. Un account connesso IT sotto la piattaforma CH si crea ed elimina senza errori (verificato dal vivo in test mode), ma per arrivare a `charges_enabled` servono le verifiche asincrone dei dati di prova (indirizzo e data di nascita restano «pending»). Si chiude nel lotto P0 prima di scrivere percentuali diverse da zero; oggi la fee è 0 e il lotto S sblocca comunque gli incassi.
+- fuori dal lotto, rimandato: la colonna «Incassi» nella regia Operatori (nessun endpoint admin legge oggi le connessioni Stripe).
+
