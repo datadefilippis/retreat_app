@@ -273,6 +273,9 @@ class TestPF8Infrastruttura:
         s = (FRONTEND / "pages" / "StrumentiPage.js").read_text()
         assert "modulesAPI.listActive()" in s and "m.module_key === 'prodotti'" in s
         assert "paymentConnectionsAPI.getStatus()" in s
-        assert "key: 'prodotti'" in s and "strumenti-collega-incassi" in s
+        # 6/10 sera (founder): in arrivo NESSUN pulsante («incassi collegati non
+        # significa nulla»), solo l'etichetta in evidenza e l'anteprima
+        assert "key: 'prodotti'" in s and "strumenti-collega-incassi" not in s
+        assert "strumento-${s.key}-anteprima" in s and "In arrivo: è già previsto nel tuo piano." in s
         assert "'In arrivo'" in s
         assert "user?.sound_crea" in s, "lo Studio resta com'era"

@@ -128,9 +128,9 @@ export default function ProdottoDigitaleWizard() {
 
   return (
     <AppLayout>
-      <div className="max-w-2xl space-y-5" data-testid="wizard-digitale">
-        <Link to="/prodotti" className="text-xs text-gray-500 hover:underline">← I tuoi prodotti</Link>
         <Header title="Nuovo prodotto digitale" subtitle="Tre gesti: cos'è, il file, pubblica." />
+      <div className="p-4 md:p-8 animate-fade-in max-w-3xl space-y-5" data-testid="wizard-digitale">
+        <Link to="/prodotti" className="text-xs text-gray-500 hover:underline">← I tuoi prodotti</Link>
 
         <ol className="flex gap-2 text-xs" aria-label="Passi">
           {PASSI.map((p, i) => (

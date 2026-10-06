@@ -157,6 +157,9 @@ class TestPD7Frontend:
         assert "from '../features/prodotti/stato'" in strumenti and "const PRODOTTI_UI_PRONTA" not in strumenti
         assert "strumento-${s.key}-anteprima" in strumenti and "s.inArrivo ? 'opacity-" in strumenti
         assert "<ProdottiGate>" in app and 'Navigate to="/strumenti" replace' in app
+        # il demo e' pilota: continua a testare in locale con l'anteprima chiusa
+        assert "PILOTI_PRODOTTI = ['admin@demo.com']" in stato and "prodottiAperti(user)" in app
+        assert "prodottiAperti(user)" in strumenti and "p-4 md:p-8" in strumenti
         assert app.count("<ProdottiGate>") == 4
         assert "'digital'" in (FRONTEND / "constants" / "itemTypes.js").read_text()
 

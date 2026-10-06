@@ -97,13 +97,13 @@ export default function ProdottoPage() {
 
   return (
     <AppLayout>
-      <div className="max-w-2xl space-y-5" data-testid="prodotto-page">
-        <Link to="/prodotti" className="text-xs text-gray-500 hover:underline">← I tuoi prodotti</Link>
         <Header title={p.name} subtitle={`${p.tipo_etichetta} · ${p.is_published ? 'Online sul profilo' : 'Bozza'}`}>
           {p.is_published
             ? <button type="button" onClick={ritira} disabled={salvando} className="rounded-full border px-4 py-2 text-sm text-gray-700" data-testid="prodotto-ritira">Togli dal profilo</button>
             : <button type="button" onClick={pubblica} disabled={salvando} className="rounded-full px-4 py-2 text-sm font-medium text-white" style={{ background: '#2f5749' }} data-testid="prodotto-pubblica">Pubblica</button>}
         </Header>
+      <div className="p-4 md:p-8 animate-fade-in max-w-3xl space-y-5" data-testid="prodotto-page">
+        <Link to="/prodotti" className="text-xs text-gray-500 hover:underline">← I tuoi prodotti</Link>
 
         {ragioni.length > 0 && (
           <div className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900" data-testid="prodotto-ragioni">

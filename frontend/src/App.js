@@ -67,8 +67,11 @@ const ProdottoPage = lazy(() => import("./features/prodotti/ProdottoPage"));
 const ProdottoFisicoWizard = lazy(() => import("./features/prodotti/ProdottoFisicoWizard"));
 // 6/10 sera (founder): i Prodotti escono in ANTEPRIMA finche' non arriva il
 // via — la scheda in Strumenti si vede, le pagine no (tornano a Strumenti).
-import { PRODOTTI_UI_PRONTA } from "./features/prodotti/stato";
-const ProdottiGate = ({ children }) => (PRODOTTI_UI_PRONTA ? children : <Navigate to="/strumenti" replace />);
+import { prodottiAperti } from "./features/prodotti/stato";
+const ProdottiGate = ({ children }) => {
+  const { user } = useAuth();   // dentro ProtectedRoute: l'utente c'e'
+  return prodottiAperti(user) ? children : <Navigate to="/strumenti" replace />;
+};
 const ReservationWizard = lazy(() => import("./features/reservations/ReservationWizard"));
 const PhysicalWizard = lazy(() => import("./features/physicals/PhysicalWizard"));
 const PhysicalDashboardPage = lazy(() => import("./features/physicals/PhysicalDashboardPage"));

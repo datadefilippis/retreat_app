@@ -117,9 +117,9 @@ export default function ProdottoFisicoWizard() {
 
   return (
     <AppLayout>
-      <div className="max-w-2xl space-y-5" data-testid="wizard-fisico">
-        <Link to="/prodotti" className="text-xs text-gray-500 hover:underline">← I tuoi prodotti</Link>
         <Header title="Nuovo prodotto fisico" subtitle="Tre gesti: cos'è, come arriva, pubblica." />
+      <div className="p-4 md:p-8 animate-fade-in max-w-3xl space-y-5" data-testid="wizard-fisico">
+        <Link to="/prodotti" className="text-xs text-gray-500 hover:underline">← I tuoi prodotti</Link>
         <ol className="flex gap-2 text-xs" aria-label="Passi">
           {PASSI.map((p, i) => (
             <li key={p.key} data-testid={`passo-${p.key}`}

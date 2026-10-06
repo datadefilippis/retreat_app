@@ -66,7 +66,6 @@ export default function ProdottiPage() {
 
   return (
     <AppLayout>
-      <div className="space-y-6" data-testid="prodotti-page">
         <Header
           title="Prodotti"
           subtitle="Quello che vendi dal tuo profilo: guide, audio, libri, kit. Chi compra usa l'account Aurya, tu incassi con Stripe."
@@ -77,6 +76,9 @@ export default function ProdottiPage() {
             <Plus className="h-4 w-4" aria-hidden /> Nuovo prodotto
           </button>
         </Header>
+      {/* 6/10 sera (founder: «margini giusti come nelle altre pagine»): lo
+          stesso contenitore della Dashboard (p-4 md:p-8), l'Header fuori */}
+      <div className="p-4 md:p-8 animate-fade-in max-w-4xl space-y-6" data-testid="prodotti-page">
 
         {errore && (
           <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900" data-testid="prodotti-errore">

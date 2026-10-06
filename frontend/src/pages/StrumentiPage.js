@@ -19,7 +19,7 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ExternalLink, Sparkles } from 'lucide-react';
 import { AppLayout, Header } from '../components/Layout';
-import { PRODOTTI_UI_PRONTA } from '../features/prodotti/stato';
+import { prodottiAperti } from '../features/prodotti/stato';
 import { useAuth } from '../context/AuthContext';
 import { modulesAPI } from '../api/modules';
 import { paymentConnectionsAPI } from '../api/paymentConnections';
@@ -50,7 +50,7 @@ export default function StrumentiPage() {
     return () => { vivo = false; };
   }, []);
   const prodottiNelPiano = !!(moduloProdotti && moduloProdotti.is_active);
-  const prodottiAttivi = prodottiNelPiano && PRODOTTI_UI_PRONTA;
+  const prodottiAttivi = prodottiNelPiano && prodottiAperti(user);   // anteprima: aperto solo ai piloti
   const incassiPronti = !!incassi?.checkout_available;
 
   /* il registro delle carte: aggiungerne una domani = una voce qui */
@@ -88,39 +88,42 @@ export default function StrumentiPage() {
       focus: '50% 40%',
       attivo: prodottiAttivi,
       inArrivo: !prodottiAttivi,
-      claim: 'Vendi dal tuo profilo: libri, kit, guide, audio.',
-      descrizione:
-        'Prodotti fisici e digitali accanto al tuo listino: chi ti segue '
-        + 'compra con l\'account Aurya, tu incassi con Stripe sul tuo conto. '
-        + 'Consegna, download protetti e ordini sono già nel gestionale.',
+      // testo del founder (6/10 sera)
+      claim: 'Porta le tue pratiche anche fuori dalla stanza.',
+      descrizione: [
+        'Vendi dal tuo profilo Aurya ciò che hai creato: libri, guide, meditazioni, audio, percorsi e kit. '
+        + 'Chi ti segue può acquistare direttamente da te, in modo semplice e sicuro.',
+        'I prodotti digitali vengono consegnati subito dopo l\'acquisto, mentre per quelli fisici puoi gestire '
+        + 'ritiro o spedizione. Gli ordini e gli incassi restano collegati al tuo gestionale, così hai tutto in un unico posto.',
+      ],
       dettaglio: prodottiAttivi
         ? (incassiPronti ? 'Incluso nel tuo piano. Incassi collegati.' : 'Incluso nel tuo piano. Prima collega gli incassi.')
-        : (prodottiNelPiano
-          ? (incassiPronti
-            ? 'Sta arrivando: è nel tuo piano e i tuoi incassi sono già collegati.'
-            : 'Sta arrivando: intanto collega gli incassi, è il primo passo per vendere.')
-          : 'Sta arrivando.'),
-      // l'anteprima: cosa potrai fare, detto prima che si apra
+        : 'In arrivo: è già previsto nel tuo piano.',
+      // l'anteprima: cosa potrai fare, detto prima che si apra (testo del founder)
       anteprima: prodottiAttivi ? null : [
-        'Guide, audio e PDF: il file si consegna da solo dopo il pagamento.',
-        'Libri, kit e oggetti: ritiro di persona o spedizione a costo fisso.',
-        'Chi ti segue compra con l\'account Aurya, tu incassi con Stripe sul tuo conto.',
+        ['Digitale', 'guide, PDF, audio e altri contenuti, consegnati automaticamente dopo il pagamento.'],
+        ['Fisico', 'libri, kit e prodotti da ritirare o spedire.'],
+        ['Vendita dal tuo profilo', 'chi ti conosce su Aurya può acquistare direttamente da te.'],
+        ['Gestione semplice', 'ordini, pagamenti e prodotti restano collegati al tuo spazio Aurya.'],
       ],
+      // in arrivo: NESSUN pulsante (founder: «incassi collegati non significa nulla»)
       azioni: prodottiAttivi
         ? [{ label: 'I miei prodotti', to: '/prodotti', primary: true, testid: 'strumenti-apri-prodotti' }]
-        : [{ label: incassiPronti ? 'Incassi collegati' : 'Collega gli incassi', to: '/settings',
-             primary: !incassiPronti, testid: 'strumenti-collega-incassi' }],
+        : [],
     },
   ];
 
   return (
     <AppLayout>
-      <div className="space-y-6" data-testid="strumenti-page">
-        <Header
-          title="Strumenti"
-          subtitle="I moduli che espandono la tua pratica. Ne arriveranno altri, sempre qui."
-        />
-        <div className="grid gap-6 lg:grid-cols-2">
+      <Header
+        title="Strumenti"
+        subtitle="I moduli che espandono la tua pratica. Ne arriveranno altri, sempre qui."
+      />
+      {/* 6/10 sera (founder: «margini giusti come nelle altre pagine»): lo
+          stesso contenitore della Dashboard e di Ordini (p-4 md:p-8), le
+          schede allineate in alto e una larghezza massima da lettura */}
+      <div className="p-4 md:p-8 animate-fade-in space-y-6" data-testid="strumenti-page">
+        <div className="grid max-w-5xl items-start gap-6 lg:grid-cols-2 lg:gap-8">
           {strumenti.map((s) => (
             <div key={s.key} data-testid={`strumento-${s.key}`}
               className={`group overflow-hidden rounded-2xl border bg-white shadow-sm
@@ -137,11 +140,12 @@ export default function StrumentiPage() {
                 <div aria-hidden className="absolute inset-0"
                   style={{ background:
                     'linear-gradient(180deg, rgba(14,27,30,.15) 0%, rgba(14,27,30,.72) 100%)' }} />
-                <span className={`absolute right-4 top-4 rounded-full border px-2.5
-                                  py-0.5 text-[11px] font-medium backdrop-blur-sm ${
+                <span className={`absolute right-4 top-4 rounded-full border backdrop-blur-sm ${
                     s.attivo
-                      ? 'border-emerald-300/60 bg-emerald-950/40 text-emerald-200'
-                      : 'border-amber-300/60 bg-amber-950/40 text-amber-200'}`}
+                      ? 'border-emerald-300/60 bg-emerald-950/40 px-2.5 py-0.5 text-[11px] font-medium text-emerald-200'
+                      : s.inArrivo
+                        ? 'border-amber-200/80 bg-amber-400/95 px-3.5 py-1 text-xs font-semibold uppercase tracking-wide text-amber-950 shadow-sm'
+                        : 'border-amber-300/60 bg-amber-950/40 px-2.5 py-0.5 text-[11px] font-medium text-amber-200'}`}
                   data-testid={`strumento-${s.key}-stato`}>
                   {s.attivo ? 'Attivo' : (s.inArrivo ? 'In arrivo' : 'Da attivare')}
                 </span>
@@ -151,20 +155,25 @@ export default function StrumentiPage() {
                 </div>
               </div>
               <div className="p-5">
-                <p className="text-sm leading-relaxed text-gray-600">
-                  {s.descrizione}
-                </p>
-                <p className="mt-2 text-xs text-gray-400">{s.dettaglio}</p>
+                {(Array.isArray(s.descrizione) ? s.descrizione : [s.descrizione]).map((par) => (
+                  <p key={par} className="text-sm leading-relaxed text-gray-600 [&+&]:mt-2">{par}</p>
+                ))}
+                <p className={`mt-3 text-xs ${s.inArrivo ? 'font-semibold text-amber-800' : 'text-gray-400'}`}
+                   data-testid={`strumento-${s.key}-dettaglio`}>{s.dettaglio}</p>
                 {/* 6/10 sera: l'ANTEPRIMA di uno strumento in arrivo — si capisce
                     cosa arriva, senza un pulsante che promette un clic che non c'e' */}
                 {s.anteprima && (
                   <ul id={`strumento-${s.key}-anteprima`} data-testid={`strumento-${s.key}-anteprima`}
                       className="mt-3 space-y-1 rounded-xl bg-gray-50 px-4 py-3 text-xs leading-relaxed text-gray-500">
-                    {s.anteprima.map((riga) => (
-                      <li key={riga} className="flex gap-2"><span aria-hidden>·</span><span>{riga}</span></li>
+                    {s.anteprima.map(([titolo, testo]) => (
+                      <li key={titolo} className="flex gap-2">
+                        <span aria-hidden>·</span>
+                        <span><span className="font-medium text-gray-700">{titolo}:</span> {testo}</span>
+                      </li>
                     ))}
                   </ul>
                 )}
+                {s.azioni.length > 0 && (
                 <div className="mt-4 flex flex-wrap gap-3">
                   {s.azioni.map((a) => (
                     <Link key={a.label} to={a.to} data-testid={a.testid}
@@ -179,6 +188,7 @@ export default function StrumentiPage() {
                     </Link>
                   ))}
                 </div>
+                )}
               </div>
             </div>
           ))}

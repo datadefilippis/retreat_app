@@ -10,3 +10,14 @@
  * il profilo pubblico mostra solo prodotti pubblicati (oggi nessuno).
  */
 export const PRODOTTI_UI_PRONTA = false;
+
+/** gli account PILOTA vedono i Prodotti aperti anche in anteprima: il
+ *  demo (admin@demo.com) per i test del founder in locale. */
+export const PILOTI_PRODOTTI = ['admin@demo.com'];
+
+export function prodottiAperti(user) {
+  if (PRODOTTI_UI_PRONTA) return true;
+  const email = String(user?.email || '').toLowerCase();
+  return PILOTI_PRODOTTI.includes(email);
+}
+
