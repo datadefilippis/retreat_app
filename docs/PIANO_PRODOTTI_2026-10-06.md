@@ -6,7 +6,7 @@
 
 **Quanto c'è da fare: circa 10 giorni**, di cui 1 di Stripe (che serve comunque), 3 di fondamenta, 5 per i due tipi di prodotto, 1 per dashboard e insight. Il 70% del codice esiste già e va saldato all'Aurya di oggi, non inventato.
 
-**La decisione di architettura che semplifica tutto: la formazione in presenza non è un prodotto, è un evento.** Un corso con una data, un luogo, dei posti e una caparra è esattamente quello che il wizard dei ritiri fa già (date, posti, fasce di prezzo, caparra con bonifico o Stripe, biglietti, check-in). Oggi in prod due dei dieci eventi sono già corsi («Corso I livello Reiki», «Corso Theta Healing»): gli operatori l'hanno capito da soli, manca solo la parola. Quindi: nel selettore di tipologia la terza carta c'è («Formazione in presenza»), ma porta al wizard degli eventi con la categoria «Formazione» già scelta. Niente terzo modello, niente duplicazione di date, posti e caparre. La formazione senza data (lezioni, percorsi individuali, formazione su richiesta) è già il Listino, categoria «Classi e corsi di gruppo».
+**La decisione di architettura che semplifica tutto: la formazione in presenza non è un prodotto, è un'esperienza con una data.** Un corso con data, luogo, posti e caparra è esattamente quello che il wizard degli eventi fa già (date, posti, fasce di prezzo, caparra con bonifico o Stripe, biglietti, check-in). In prod due dei dieci eventi sono già corsi («Corso I livello Reiki», «Corso Theta Healing»): gli operatori l'hanno capito da soli. Quello che manca è **un campo**: oggi l'unico asse è la disciplina (yoga, meditazione, reiki…), e la pagina chiama tutto «ritiro» per convenzione. Non esiste nulla che dica *che cosa* è: un ritiro di tre giorni, un evento di una sera, una formazione. Quindi si aggiunge un secondo asse, **«formato»** (ritiro · evento · formazione), separato dalla disciplina, che resta com'è. Nel selettore di tipologia dei prodotti la terza carta c'è («Formazione in presenza»), ma apre il wizard degli eventi con formato «formazione» già scelto. Niente terzo modello, niente duplicazione di date, posti e caparre. La formazione senza data (lezioni, percorsi individuali, formazione su richiesta) è già il Listino.
 
 **Quindi il modulo Prodotti vende due cose: fisici e digitali.** Entrambi esistono nel codice (modelli, magazzino, spedizione, file protetti con download a token, emissione alla conferma, landing `/ph/` e `/dg/`), congelati dal 28/7 dietro un interruttore che non va riacceso. Si riusano le fondamenta, si riscrivono le superfici in tre gesti, si saldano al profilo e all'account Aurya.
 
@@ -47,13 +47,13 @@ Cosa manca davvero: la voce «formazione» nella tassonomia degli eventi; lo sch
 
 | | Ritiri e servizi | Prodotti fisici | Prodotti digitali |
 |---|---|---|---|
-| Gratis | 0 | **10% + Stripe** | **10% + Stripe** |
-| Pro (19 €/mese) | 0 | **5% + Stripe** | **5% + Stripe** |
+| Gratis | 0 | **15% + Stripe** | **15% + Stripe** |
+| Pro (19 €/mese) | 0 | **0% + Stripe** | **0% + Stripe** |
 | Founding / Partner | 0 | come Pro | come Pro |
 
-Perché non zero col Pro: il founder chiede «abbassare», e i prodotti digitali costano (storage, download, consegna nell'account); il 5% tiene coperto il servizio e lascia al Pro un vantaggio chiaro. I numeri sono una tabella nel piano, cambiarli domani è una riga.
+Decisione del founder (6/10): 15% nel Gratis, zero nel Pro. I numeri sono una tabella nel piano, cambiarli domani è una riga.
 
-Cosa cambia nei testi, **prima** di accendere la fee: `/costi`, la landing professionisti, i piani (`seed_commercial_plans`), i Termini: «Ritiri e servizi senza commissioni, sempre. Sui prodotti che vendi dal tuo profilo tratteniamo il 10% (5% col Pro), più i costi Stripe: coprono consegna, download protetti e l'account del cliente.»
+Cosa cambia nei testi, **prima** di accendere la fee: `/costi`, la landing professionisti, i piani (`seed_commercial_plans`), i Termini: «Ritiri e servizi senza commissioni, sempre. Sui prodotti che vendi dal tuo profilo tratteniamo il 15% (zero col Pro), più i costi Stripe: coprono consegna, download protetti e l'account del cliente.»
 
 **Prova da fare nel lotto S**: la piattaforma Stripe è svizzera, gli operatori italiani. Una sessione con `application_fee` su un account IT in modalità test dice se la commissione tra paesi passa. Se no, le vie sono una piattaforma Stripe italiana (societaria) o «prodotti solo nel Pro». Si verifica prima di scrivere i testi.
 
@@ -80,7 +80,7 @@ Cosa cambia nei testi, **prima** di accendere la fee: `/costi`, la landing profe
 
 ## 6. Dati e punti di innesto (precisi)
 
-**Modello**: nessun campo nuovo su `products`. Sul piano: `transaction_fee_by_type: {physical: 10, digital: 10}` (Pro: 5). Sull'organizzazione resta `application_fee_percent` (0, ritiri) più la mappa propagata dal piano. `IssuedDownload` e gli ordini portano `platform_account_id` (indice).
+**Modello**: nessun campo nuovo su `products`. Sul piano: `transaction_fee_by_type: {physical: 15, digital: 15}` (Pro: 0). Sull'organizzazione resta `application_fee_percent` (0, ritiri) più la mappa propagata dal piano. `IssuedDownload` e gli ordini portano `platform_account_id` (indice).
 
 **Fee per riga, i cinque tocchi**:
 1. `models/commercial_plan.py` + `seed_commercial_plans.py`: la mappa per tipo, con lo scalare che resta per retrocompatibilità.
@@ -94,7 +94,7 @@ Attenzione documentata: il checkout a sola caparra (`payment_checkout_service.py
 
 **API** (sotto `require_module('prodotti')`): `GET/POST /prodotti`, `GET/PUT /prodotti/{id}`, `POST /prodotti/{id}/immagine`, `POST /prodotti/{id}/file` (riusa l'upload digitale), `POST /prodotti/{id}/pubblica` (gate: Stripe pronto + condizioni pubblicate + patto), `GET /prodotti/{id}/vendite` (riusa `sales-stats`). Pubblico: `/public/operator/{slug}` arricchito con `prodotti` pubblicati (stessa cache), landing per tipo già esistenti. Cliente: `GET /platform/me/file` (download con `platform_account_id`).
 
-**Tassonomia**: `RETREAT_CATEGORIES` + `formazione` («Formazione e corsi»: corsi, workshop, certificazioni, percorsi formativi), con etichetta nel filtro di `/esperienze` e nel wizard eventi; registro vivo delle discipline invariato.
+**Formato delle esperienze (campo nuovo, additivo)**: `EventTicketMetadata.formato` in `models/product_metadata.py` (oggi vuoto per scelta): `ritiro | evento | formazione`, facoltativo, `extra="ignore"` come tutto lo schema: i 10 eventi in prod non cambiano (formato assente = si mostrano come oggi). Il wizard eventi, nel primo passo, chiede «Che cos'è?» con tre carte (suggerita: ritiro se ci sono notti, evento se è un giorno); la disciplina resta la categoria obbligatoria di oggi. Il listing `/public/retreats` espone `formato` nelle card e accetta il filtro `formato`; `/esperienze` guadagna un secondo filtro «Tipo» (Tutti · Ritiri · Eventi · Formazione) e un'etichetta sulla card; `_categorie_con_ritiri` e le pagine categoria/regione non cambiano. Modifica dal pannello dell'evento (il campo vive nel prodotto, stesso PATCH del nome). Guardie: le 15 discipline identiche, un payload senza `formato` è accettato come oggi, un valore fuori lista dà 422, i 10 eventi in prod si aprono e si listano come prima.
 
 **Frontend da allineare**: `constants/itemTypes.js` (aggiungere `digital`, etichette, badge), `features/cashflow/IncassiPage.js` (etichette già pronte), `modules/product_catalog/service.py:542` (contatori), `modules/customer_insights/refresh.py:443` (contatore acquisti prodotti).
 
@@ -116,10 +116,10 @@ Attenzione documentata: il checkout a sola caparra (`payment_checkout_service.py
 | 3 | **P1 Digitali** | wizard in tre gesti; upload con limite per piano; sezione «Prodotti» sul profilo + landing `/dg/`; acquisto con account Aurya; `IssuedDownload` su `platform_account_id`; «I miei file» in `/account`; email FL3; lista e modifica in Strumenti; vendite per prodotto | 3 | P0 |
 | 4 | **P2 Fisici** | wizard in tre gesti; spedizione e magazzino già pronti; landing `/ph/`; coda di evasione in Ordini; varianti dietro «Altro» | 2 | P0 |
 | 5 | **P3 Dashboard e insight** | riga «Prodotti venduti» in dashboard, etichette e costanti allineate, contatori customer insight, `by_type` verificato in Incassi e nella regia | 1 | P1 |
-| 6 | **P4 Formazione** | categoria «Formazione» negli eventi e in `/esperienze`; terza carta nel selettore che apre il wizard eventi; la pagina `/esperienze` filtra per «Formazione» | 0,5 | — (si può fare subito) |
-| | **Totale** | | **10,5** | |
+| 6 | **P4 Formato delle esperienze** | campo `formato` (ritiro · evento · formazione) separato dalla disciplina; tre carte nel primo passo del wizard eventi; filtro «Tipo» ed etichetta su `/esperienze`; modifica dal pannello; terza carta del selettore prodotti che apre il wizard con formato «formazione»; guardie sugli eventi esistenti | 1 | — (si può fare subito) |
+| | **Totale** | | **11** | |
 
-Ogni lotto: guardia propria, suite al baseline, deploy separato con prova dal browser in prod (lezione della CSP), documento e memoria. P4 è il primo giro utile anche oggi: la parola «Formazione» nel menu degli eventi costa mezza giornata e sistema i due corsi già pubblicati.
+Ogni lotto: guardia propria, suite al baseline, deploy separato con prova dal browser in prod (lezione della CSP), documento e memoria. P4 è il primo giro utile anche oggi: un giorno, e i due corsi già pubblicati si dichiarano «formazione» con un clic dal loro pannello.
 
 ## 9. Rischi veri
 
@@ -133,9 +133,10 @@ Ogni lotto: guardia propria, suite al baseline, deploy separato con prova dal br
 | Operatore che vende senza condizioni legali | lucchetto server-side alla pubblicazione |
 | La formazione «vuole» campi che gli eventi non hanno (attestato, prerequisiti) | per ora testo nel programma; quando tre operatori li chiedono, un lotto piccolo sugli eventi, non un tipo nuovo |
 
-## 10. Decisioni per partire
+## 10. Decisioni del founder (6/10/2026)
 
-1. **Formazione in presenza = evento** con categoria «Formazione» (niente terzo tipo di prodotto). Ok?
-2. **Percentuali**: prodotti 10% Gratis, 5% Pro, ritiri e servizi 0. Ok, o altri numeri?
-3. **Account obbligatorio per comprare un prodotto** (anche fisico), per ritrovarlo in `/account`. Ok?
-4. **Ordine**: S → P4 (mezza giornata, subito utile) → P0 → P1 digitali → P2 fisici → P3. Oppure fisici prima dei digitali, se gli operatori che chiedono vendono oggetti.
+1. Formazione in presenza = esperienza con una data (wizard eventi), con il **campo nuovo «formato»** separato dalla disciplina: ritiro · evento · formazione. Nessun terzo tipo di prodotto.
+2. Percentuali: prodotti **15% nel Gratis, 0% nel Pro**, ritiri e servizi 0. Più i costi Stripe.
+3. Account Aurya obbligatorio per comprare un prodotto, anche fisico.
+4. Ordine: S → P4 → P0 → P1 digitali → P2 fisici → P3.
+Vincolo dichiarato: gli eventi sono live e funzionano; ogni tocco agli eventi è additivo e coperto da guardie sui dati esistenti.
