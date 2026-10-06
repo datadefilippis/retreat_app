@@ -27,7 +27,7 @@ import { paymentConnectionsAPI } from '../api/paymentConnections';
 // il wizard non esiste resta «In arrivo», ma dice gia' cosa serve (gli
 // incassi collegati) e lo stato lo legge dal registro dei moduli
 // (/modules/active), non da una costante.
-const PRODOTTI_UI_PRONTA = false;
+const PRODOTTI_UI_PRONTA = true;   // P1: /prodotti esiste
 
 export default function StrumentiPage() {
   const { user } = useAuth();

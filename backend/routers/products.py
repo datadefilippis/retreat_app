@@ -794,6 +794,18 @@ async def upload_digital_file(
     from services import digital_storage
     try:
         snapshot = await digital_storage.save_digital_file(org_id, product_id, file)
+        # P1 (6/10/2026) — il limite del piano (modulo prodotti: 100 MB
+        # Gratis, 500 MB Pro). Si controlla sullo snapshot salvato e, se
+        # troppo grande, il file si butta subito: mai un file oltre quota.
+        try:
+            from services.module_access import get_module_entitlements
+            _ent = await get_module_entitlements(org_id, "prodotti")
+            _max_mb = ((_ent or {}).get("limits") or {}).get("max_file_mb")
+        except Exception:  # noqa: BLE001
+            _max_mb = None
+        if _max_mb and int(snapshot.get("size_bytes") or 0) > int(_max_mb) * 1024 * 1024:
+            digital_storage.delete_digital_file(org_id, product_id)
+            raise ValueError(f"Il tuo piano accetta file fino a {int(_max_mb)} MB: dimensione massima superata.")
     except ValueError as exc:
         # Size limit and sanitization errors — surface as 413/400.
         msg = str(exc)

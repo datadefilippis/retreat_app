@@ -150,7 +150,7 @@ class TestMP1Consenso:
 
     def test_informativa_v211(self):
         from core.legal_versions import CURRENT_VERSION_TAG
-        assert CURRENT_VERSION_TAG == "v2.11"
+        assert CURRENT_VERSION_TAG == "v2.12"  # P1 prodotti 6/10: Termini, commissione solo sui prodotti
         for lang, (meta, cat) in {"it": ("Meta Pixel e Meta Conversions API", "Marketing"),
                                   "en": ("Meta Pixel and Meta Conversions API", "Marketing"),
                                   "de": ("Meta Pixel und Meta Conversions API", "Marketing"),
@@ -160,7 +160,8 @@ class TestMP1Consenso:
             assert "_fbp" in p and "SHA-256" in p, lang
             assert "| **Meta Platforms Ireland Limited** |" in p, lang
         modal = json.loads((FE / "locales" / "it" / "legal.json").read_text(encoding="utf-8"))["reconsent"]["what_changed_body"]
-        assert modal.startswith("Versione 2.11")
+        # P1 prodotti (6/10): l'avviso e' passato alla 2.12 e ricorda le novita' precedenti (cookie a due categorie)
+        assert modal.startswith("Versione 2.12") and "due categorie" in modal
 
 
 class TestMP2Pixel:

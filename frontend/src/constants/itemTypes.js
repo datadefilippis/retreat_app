@@ -5,7 +5,7 @@
  * When a new type is added there, add it here too.
  */
 
-export const ITEM_TYPES = ['physical', 'service', 'rental', 'event_ticket'];
+export const ITEM_TYPES = ['physical', 'service', 'rental', 'event_ticket', 'digital'];   // P1 (6/10/2026): digital
 
 export const PRICE_MODES = ['fixed', 'inquiry'];
 

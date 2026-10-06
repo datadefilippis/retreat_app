@@ -532,7 +532,7 @@ class TestLiAuryaInTesta:
         import hashlib
         from core.legal_versions import (CURRENT_VERSION_TAG,
                                          CURRENT_VERSION_HASH)
-        assert CURRENT_VERSION_TAG == "v2.11"  # MP1 5/10: cookie a due categorie, Meta Pixel
+        assert CURRENT_VERSION_TAG == "v2.12"  # P1 prodotti 6/10: Termini, commissione solo sui prodotti  # MP1 5/10: cookie a due categorie, Meta Pixel
         priv = (self.LEGAL_DIR / "privacy_it.md").read_text("utf-8")
         terms = (self.LEGAL_DIR / "terms_it.md").read_text("utf-8")
         atteso = hashlib.sha256(
@@ -2507,7 +2507,7 @@ class TestAccountApL:
             # sezioni nuove servite (marker per lingua)
             assert "2.3" in get_legal_document("privacy", lang)["content"]
 
-        assert CURRENT_VERSION_TAG == "v2.11"  # MP1 5/10   # TR5: 9.1 nomina le composizioni audio
+        assert CURRENT_VERSION_TAG == "v2.12"  # P1 prodotti 6/10: Termini, commissione solo sui prodotti  # MP1 5/10   # TR5: 9.1 nomina le composizioni audio
         priv = (legal_dir / "privacy_it.md").read_text()
         terms = (legal_dir / "terms_it.md").read_text()
         digest = hashlib.sha256(
@@ -7457,13 +7457,23 @@ class TestFeeTruthNeiTermini:
                 f"terms_{lang}: promette ancora il 2% sul Pro (v2.5)"
 
     def test_perimetro_fee_tutti_i_pagamenti_online(self):
-        vivi = {"it": "tutti i pagamenti online elaborati tramite la Piattaforma",
-                "en": "all online payments processed through the Platform",
-                "de": "alle über die Plattform abgewickelten Online-Zahlungen",
-                "fr": "tous les paiements en ligne traités via la Plateforme"}
-        for lang, frase in vivi.items():
-            assert frase in self._terms(lang), \
-                f"terms_{lang}: manca il perimetro vero della fee (v2.5)"
+        # P1 prodotti (6/10/2026, v2.12): il perimetro VERO della fee e' cambiato
+        # di nuovo. La commissione sta SOLO sui Prodotti venduti dalla pagina
+        # pubblica (15% Gratis, 0% Pro); ritiri, eventi e servizi zero sempre.
+        # La vecchia frase «tutti i pagamenti online» non deve tornare.
+        vivi = {"it": ("esclusivamente ai Prodotti", "15% con il piano Gratis, 0% (nessuna commissione) con il piano Pro"),
+                "en": ("exclusively to Products", "15% on the Free plan, 0% (no fee) on the Pro plan"),
+                "de": ("ausschließlich für Produkte", "15 % im Gratis-Plan, 0 % (keine Gebühr) im Pro-Plan"),
+                "fr": ("exclusivement aux Produits", "15 % avec le plan Gratuit, 0 % (aucune commission) avec le plan Pro")}
+        morti = {"it": "si applica a **tutti i pagamenti online",
+                 "en": "applies to **all online payments",
+                 "de": "gilt für **alle über die Plattform",
+                 "fr": "s'applique à **tous les paiements en ligne"}
+        for lang, frasi in vivi.items():
+            for frase in frasi:
+                assert frase in self._terms(lang), \
+                    f"terms_{lang}: manca il perimetro vero della fee (v2.12): {frase}"
+            assert morti[lang] not in self._terms(lang), f"terms_{lang}: tornato il perimetro vecchio"
 
     def test_link_listino_vivo(self):
         # /pricing e' un 404: il rimando contrattuale punta a /costi

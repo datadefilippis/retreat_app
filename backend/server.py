@@ -748,6 +748,8 @@ app.include_router(expenses.router, prefix="/api")
 app.include_router(customers.router, prefix="/api")          # /api/customers
 app.include_router(suppliers.router, prefix="/api")          # /api/suppliers
 app.include_router(products.router, prefix="/api")           # /api/products
+from routers import prodotti as prodotti_router                # P1 (6/10/2026)
+app.include_router(prodotti_router.router, prefix="/api")      # /api/prodotti
 app.include_router(catalog_router.router, prefix="/api")     # /api/catalog/* (P11)
 app.include_router(tickets_router.router, prefix="/api")     # /api/tickets/* (E5)
 app.include_router(purchase_records.router, prefix="/api")   # /api/purchase-records

@@ -110,7 +110,7 @@ La confirmation de la réservation, le billet avec code QR et les reçus sont en
 
 Les paiements en ligne sont gérés via **Stripe Connect** (PCI-DSS Level 1) :
 - Le Client final paie par carte ; les fonds sont crédités **directement sur le compte Stripe de l'Opérateur**. Le Fournisseur n'encaisse ni ne conserve les fonds des réservations.
-- Le Fournisseur retient une **Commission de plateforme** (application fee) sur les paiements en ligne traités via la Plateforme : **5 % avec le plan Gratuit, 0 % (aucune commission) avec le plan Pro** (art. 7).
+- Les retraites, événements et services (lignes de tarif) **ne sont soumis à aucune Commission de plateforme**, quel que soit le Plan. Seuls les **Produits** vendus depuis la page publique de l'Opérateur (produits numériques et physiques) donnent lieu à une **Commission de plateforme** (application fee) retenue par le Fournisseur : **15 % avec le plan Gratuit, 0 % (aucune commission) avec le plan Pro** (art. 7).
 - Les commandes et réservations encaissées en dehors de la Plateforme (par ex. virements, espèces, ventes enregistrées manuellement dans l'outil de gestion) **ne sont soumises à aucune commission**.
 - Les données des cartes de paiement ne transitent jamais sur les serveurs du Fournisseur ni de l'Opérateur (voir Politique de confidentialité art. 9).
 
@@ -149,15 +149,15 @@ Les fonctionnalités effectivement disponibles varient en fonction du Plan sousc
 
 Le Service pour les Opérateurs est proposé avec les Plans suivants :
 
-- **Gratuit** : sans aucune redevance. Commission de plateforme de **5 %** sur les paiements en ligne traités via la Plateforme.
-- **Pro** : redevance mensuelle ou annuelle, avec Commission de plateforme **ramenée à zéro (0 %)** et fonctionnalités supplémentaires.
+- **Gratuit** : sans aucune redevance. Aucune commission sur les retraites, événements et services ; Commission de plateforme de **15 %** uniquement sur les Produits vendus depuis la page publique.
+- **Pro** : redevance mensuelle ou annuelle, avec Commission de plateforme sur les Produits **ramenée à zéro (0 %)** et fonctionnalités supplémentaires.
 - **Plans sur attribution** (par ex. Founding, Partner) : conditions particulières accordées par le Fournisseur à des Opérateurs spécifiques ; leurs termes prévalent, pour ce qu'ils régissent, sur les présentes.
 
 Les fonctionnalités incluses, les limites d'utilisation et les prix actualisés de chaque Plan sont décrits sur la page publique https://aurya.life/costi.
 
 ### 7.2 Commission de plateforme
 
-La Commission de plateforme s'applique à **tous les paiements en ligne traités via la Plateforme** — depuis le Calendrier public comme depuis les pages publiques de l'Opérateur — et est retenue automatiquement via Stripe Connect (application fee) au moment du paiement, y compris les acomptes et les échéances ultérieures. Les paiements encaissés en dehors de la Plateforme (virements, espèces) ne génèrent aucune commission. Le pourcentage appliqué est celui du Plan actif au moment du paiement.
+La Commission de plateforme s'applique **exclusivement aux Produits** (numériques et physiques) vendus depuis la page publique de l'Opérateur et payés en ligne via la Plateforme ; elle est calculée ligne par ligne sur le montant du Produit net d'éventuelles remises (frais de livraison exclus) et retenue automatiquement via Stripe Connect (application fee) au moment du paiement. Les retraites, événements et services ne génèrent aucune commission, quel que soit le Plan ; les paiements encaissés en dehors de la Plateforme (virements, espèces) ne génèrent aucune commission. Le pourcentage appliqué est celui du Plan actif au moment du paiement ; en cas de remboursement, la commission est restituée au prorata.
 
 ### 7.3 Souscription et changement de Plan
 

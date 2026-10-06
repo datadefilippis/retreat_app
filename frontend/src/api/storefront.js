@@ -30,8 +30,15 @@ export const storefrontAPI = {
   getStorefrontMeta: (slug, config) =>
     customerApi.get(`/api/public/storefront/${slug}/meta`, config),
 
-  submitOrder: (payload) =>
-    customerApi.post('/api/public/order-request', payload),
+  // P1 (6/10/2026) — il token dell'account Aurya viaggia in un header
+  // dedicato (l'Authorization resta al cliente-negozio): per i PRODOTTI
+  // il backend lo pretende e timbra l'ordine con l'account vero.
+  submitOrder: (payload) => {
+    let tk = null;
+    try { tk = localStorage.getItem('platform_token'); } catch { /* private mode */ }
+    return customerApi.post('/api/public/order-request', payload,
+      tk ? { headers: { 'X-Aurya-Account': `Bearer ${tk}` } } : undefined);
+  },
 
   getAvailability: (slug, dateFrom, dateTo, duration, productId) =>
     customerApi.get(`/api/public/availability/${slug}`, { params: {

@@ -107,6 +107,19 @@ export default function AccountPage() {
     return () => { mounted = false; };
   }, [authHeaders, navigate]);
 
+  // P1 (6/10/2026) — «I miei file»: i download dei prodotti digitali
+  // comprati con questo account (best-effort: un errore qui non tocca il resto)
+  const [files, setFiles] = useState(null);
+  useEffect(() => {
+    const headers = authHeaders();
+    if (!headers) return;
+    let mounted = true;
+    platformApi.get('/platform/me/file', { headers })
+      .then(res => { if (mounted) setFiles(res.data?.file || []); })
+      .catch(() => { if (mounted) setFiles([]); });
+    return () => { mounted = false; };
+  }, [authHeaders]);
+
   // AP2 — lista delle guide riservate: stesso endpoint pubblico del blog
   // (/public/articles, flag gated), stessa regola lingua del Magazine.
   useEffect(() => {
@@ -368,6 +381,32 @@ export default function AccountPage() {
         {/* AP2 — Guide e materiale: le guide riservate del Magazine per
             gli iscritti confermati alla lettera; per gli altri, l'invito
             a iscriversi (/newsletter). */}
+        {/* P1 (6/10/2026) — I miei file: i prodotti digitali comprati */}
+        {Array.isArray(files) && files.length > 0 && (
+          <section className="mb-8" data-testid="account-file">
+            <h2 className="text-sm font-semibold text-gray-900 mb-2">I miei file</h2>
+            <div className="space-y-2">
+              {files.map(f => (
+                <div key={f.id} className="rounded-2xl border border-gray-200 bg-white p-4 flex flex-col sm:flex-row sm:items-center gap-3" data-testid="account-file-riga">
+                  <div className="min-w-0 flex-1">
+                    <p className="font-medium text-gray-900">{f.product_name}</p>
+                    <p className="text-xs text-gray-500">
+                      {f.org_name}{f.filename ? ` · ${f.filename}` : ''}
+                      {f.downloads_rimasti != null ? ` · ${f.downloads_rimasti} scaricament${f.downloads_rimasti === 1 ? 'o' : 'i'} rimast${f.downloads_rimasti === 1 ? 'o' : 'i'}` : ''}
+                      {f.expires_at ? ` · fino al ${new Date(f.expires_at).toLocaleDateString('it-IT')}` : ''}
+                    </p>
+                  </div>
+                  {f.url && (
+                    <a href={f.url} className="rounded-full bg-[#2f5749] px-4 py-1.5 text-sm font-semibold text-white text-center" data-testid="account-file-scarica">
+                      Scarica
+                    </a>
+                  )}
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
         <section data-testid="account-guides">
           <h2 className="text-sm font-semibold text-gray-900 mb-2">
             {t('landings:account.guidesTitle', { defaultValue: 'Guide e materiale' })}

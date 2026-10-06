@@ -72,6 +72,7 @@ async def submit_order_from_storefront(
     client_ip: Optional[str] = None,
     user_agent: Optional[str] = None,
     cart_id: Optional[str] = None,
+    platform_account_id: Optional[str] = None,
 ) -> dict:
     """Submit a storefront order — the canonical path that all storefront
     surfaces (classic, embed, AI site) flow through.
@@ -157,6 +158,22 @@ async def submit_order_from_storefront(
         valid_products.get(item.product_id, {}).get("item_type") == "course"
         for item in body.items
     )
+    # P1 (6/10/2026) — i PRODOTTI (fisici e digitali) si comprano SOLO con
+    # l'account Aurya: il file deve finire in /account → «I miei file», e
+    # l'ordine deve appartenere a una persona, non a una email di passaggio.
+    has_product_item = any(
+        valid_products.get(item.product_id, {}).get("item_type") in ("digital", "physical")
+        for item in body.items
+    )
+    if has_product_item and not platform_account_id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={
+                "error": "prodotto_richiede_account",
+                "message": "Per comprare un prodotto serve il tuo account Aurya: "
+                           "entra con la tua email e il codice che ti mandiamo.",
+            },
+        )
     if has_course_item and not customer_account_id:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -524,7 +541,18 @@ async def submit_order_from_storefront(
         # platform_account_id su ordine e customer_accounts org esistenti.
         # BEST-EFFORT: il Passaporto non deve MAI bloccare un ordine —
         # la pipeline ordini/pagamenti consolidata resta intoccata.
-        if order:
+        if order and platform_account_id:
+            # P1 (6/10/2026) — chi e' entrato con l'account Aurya timbra
+            # l'ordine con l'id VERO (anche se nel form ha scritto un'altra email)
+            try:
+                from database import orders_collection as _oc_pa
+                await _oc_pa.update_one({"id": order["id"], "organization_id": org_id},
+                                        {"$set": {"platform_account_id": platform_account_id}})
+                order["platform_account_id"] = platform_account_id
+            except Exception as exc_pa0:
+                logger.warning("platform_account stamp fallito per ordine %s: %s",
+                               order.get("id"), exc_pa0)
+        if order and not order.get("platform_account_id"):
             try:
                 from services.platform_account_service import (
                     link_order_to_platform_account,

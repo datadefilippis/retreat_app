@@ -60,6 +60,10 @@ import OperatorsIndexPage from "./features/storefront/OperatorsIndexPage";
 import DestinationsPage from "./features/storefront/DestinationsPage";
 const ServiceWizard = lazy(() => import("./features/services/ServiceWizard"));
 const ListinoPage = lazy(() => import("./features/listino/ListinoPage"));
+// P1 (6/10/2026) — prodotti fisici e digitali venduti dal profilo
+const ProdottiPage = lazy(() => import("./features/prodotti/ProdottiPage"));
+const ProdottoDigitaleWizard = lazy(() => import("./features/prodotti/ProdottoDigitaleWizard"));
+const ProdottoPage = lazy(() => import("./features/prodotti/ProdottoPage"));
 const ReservationWizard = lazy(() => import("./features/reservations/ReservationWizard"));
 const PhysicalWizard = lazy(() => import("./features/physicals/PhysicalWizard"));
 const PhysicalDashboardPage = lazy(() => import("./features/physicals/PhysicalDashboardPage"));
@@ -878,6 +882,10 @@ function AppRoutes() {
         path="/listino"
         element={<ProtectedRoute><ListinoPage /></ProtectedRoute>}
       />
+      {/* P1 (6/10/2026) — Prodotti: lista, wizard digitale, scheda */}
+      <Route path="/prodotti" element={<ProtectedRoute><ProdottiPage /></ProtectedRoute>} />
+      <Route path="/prodotti/nuovo/digitale" element={<ProtectedRoute><ProdottoDigitaleWizard /></ProtectedRoute>} />
+      <Route path="/prodotti/:id" element={<ProtectedRoute><ProdottoPage /></ProtectedRoute>} />
       {/* TW1 — la creazione servizi passa dal Listino; il wizard resta
           l'editor AVANZATO su /services/:id */}
       <Route

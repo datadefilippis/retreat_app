@@ -62,7 +62,8 @@ class TestRb1LeDuePorteInHome:
         assert it["doorSeekCta"] == "Trova il mio ritiro"
         assert "<b>cosa cerchi e dove</b>" in it["doorSeekText"] and "esperienza giusta" in it["doorSeekText"]
         assert it["doorOpTitle"] == "Sei un operatore olistico?", "lessico: all'operatore si dice operatore olistico"
-        for parola in ("profilo", "servizi", "prenotazioni", "eventi e ritiri", "<b>Gratis per sempre, senza commissioni.</b>"):
+        # P1 prodotti (6/10/2026): la promessa si precisa, «su ritiri e servizi»
+        for parola in ("profilo", "servizi", "prenotazioni", "eventi e ritiri", "<b>Gratis per sempre, senza commissioni su ritiri e servizi.</b>"):
             assert parola in it["doorOpText"], f"l'offerta in chiaro nomina: {parola}"
         assert it["doorOpCta"] == "Crea il tuo spazio"
         assert it["heroP1"] == "Trova il professionista, il percorso o il ritiro giusto per te."
@@ -190,7 +191,7 @@ class TestRb2LaLandingDellOperatore:
         shell = SHELL.read_text()
         # SEO-A (14/9 sera): title accorciato a 58 caratteri (Google taglia a ~60)
         assert "Per operatori olistici: il tuo spazio professionale | Aurya" in shell
-        assert "Gratis per sempre, senza commissioni." in shell   # RB2-bis: la frase-marchio, senza data
+        assert "Gratis per sempre, senza commissioni su ritiri e servizi." in shell   # RB2-bis: la frase-marchio, senza data (P1 prodotti 6/10: precisata)
         from services.identita import corpo_professionisti, faq_professionisti
         corpo = corpo_professionisti()
         # 14/9/2026: il corpo per i crawler dice quello che dice la pagina —
@@ -313,7 +314,9 @@ class TestP1LeParoleSuiSoldi:
         # AB-R3 (14/9/2026): due porte (Gratis, Pro 19/200), il patto 2026, la garanzia
         # 14/9: copy di /costi ottimizzato (founder): quattro punti, due
         # schede, il patto 2026, la garanzia, Stripe senza percentuali
-        for frase in ("Aurya non prende commissioni.", "Gratis per sempre, senza commissioni",
+        # P1 prodotti (6/10/2026): l'unica commissione e' sui prodotti del profilo (15% Gratis, 0 Pro)
+        for frase in ("Aurya non prende commissioni su ritiri e servizi.", "Gratis per sempre, senza commissioni",
+                      "AURYA_FEE_PRODOTTI = { gratis: 15, pro: 0 }", "Prodotti dal tuo profilo", "Prodotti senza commissioni",
                       "I prezzi dal 1° gennaio 2027", 'testid="plan-free"', 'testid="plan-pro"',
                       "PRICING_2027 = { pro_mese: 19, pro_anno: 200 }",
                       "Chi entra nel 2026", "31 dicembre 2026", "La garanzia.", "E Stripe?",
@@ -323,7 +326,9 @@ class TestP1LeParoleSuiSoldi:
             assert vecchio not in src, f"tornato: {vecchio}"
         for vecchio in ('testid="plan-spinta"', 'testid="plan-club"', "30 giugno 2027", "Il Club si accende"):
             assert vecchio not in src, f"tornato: {vecchio}"
-        assert "5%" not in src and "sugli incassi online" not in src.split("E Stripe?")[0].replace("senza commissioni", "")
+        assert " 5%" not in src and "5% " not in src.replace("15% ", "") and "sugli incassi online" not in src.split("E Stripe?")[0].replace("senza commissioni", "")
+        from services.seed_commercial_plans import FEE_PRODOTTI_GRATIS, FEE_PRODOTTI_ABBONATO
+        assert FEE_PRODOTTI_GRATIS == {"physical": 15.0, "digital": 15.0} and FEE_PRODOTTI_ABBONATO == {"physical": 0.0, "digital": 0.0}
 
     def test_la_fee_e_zero_nel_seed_e_la_migrazione_esiste(self):
         from services.seed_commercial_plans import RETREAT_COMMERCIAL_PLANS

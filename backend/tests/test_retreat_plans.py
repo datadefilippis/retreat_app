@@ -598,7 +598,8 @@ class TestAbPrezziCoerenti:
         import re as _re
         visibile = _re.sub(r"/\*.*?\*/", "", src, flags=_re.DOTALL)
         visibile = _re.sub(r"^\s*//.*$", "", visibile, flags=_re.MULTILINE)
-        assert "5%" not in visibile and "19 €/mese" not in visibile
+        # P1 prodotti (6/10/2026): il «15%» sui prodotti e' voluto; nessun altro 5%
+        assert _re.search(r"(?<!1)5%", visibile) is None and "19 €/mese" not in visibile
 
     def test_faq_quanto_costa_con_link_ai_piani(self):
         """La FAQ della landing professionisti: tre punti e il rimando

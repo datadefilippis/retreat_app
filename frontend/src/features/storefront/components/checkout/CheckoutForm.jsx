@@ -38,6 +38,9 @@ export default function CheckoutForm({
   // pagina" e il link "Modifica" verso la landing /p/ sarebbero
   // ridondanti e fuorvianti — si sopprimono, resta il picker.
   inlineServiceSelection = false,
+  // P1 (6/10/2026) — per i PRODOTTI l'account Aurya e' obbligatorio: il
+  // file deve finire in /account → «I miei file». Il backend lo impone.
+  richiedeAccount = false,
 }) {
   const { t, i18n } = useTranslation('storefront');
   // PN2 — stati + setter + derivati arrivano impacchettati da
@@ -248,6 +251,11 @@ export default function CheckoutForm({
                     Il login piattaforma NON cambia lo stato consensi: per
                     CG-4 l'utente resta guest (checkbox privacy/termini
                     invariate qui sotto). */}
+                {richiedeAccount && !platformLoggedIn && (
+                  <p className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900" data-testid="prodotto-serve-account">
+                    Per comprare un prodotto serve il tuo account Aurya: il file (o l'ordine) ti aspetta lì, su qualunque telefono. Entra qui sotto con la tua email e il codice.
+                  </p>
+                )}
                 {!isCustomerAuthenticated && (
                   <AuryaQuickLogin
                     onProfile={(acc) => {
@@ -954,7 +962,7 @@ export default function CheckoutForm({
 
                 <button
                   type="submit"
-                  disabled={submitting || selectedItems.length === 0 || !attendeesValid || !orderFieldsValid || !termsValid || !gdprValid || !servicesValid || (wantRegister && !isCustomerAuthenticated && (!computePasswordStrength(regPassword).ok || regPassword !== regPasswordConfirm))}
+                  disabled={submitting || selectedItems.length === 0 || !attendeesValid || !orderFieldsValid || !termsValid || !gdprValid || !servicesValid || (richiedeAccount && !platformLoggedIn) || (wantRegister && !isCustomerAuthenticated && (!computePasswordStrength(regPassword).ok || regPassword !== regPasswordConfirm))}
                   className="w-full py-2.5 rounded-lg text-sm font-medium disabled:opacity-50 transition-colors"
                   style={catalog?.store_info?.brand_color
                     ? { backgroundColor: catalog.store_info.brand_color, color: catalog.store_info.brand_color_text || '#fff' }

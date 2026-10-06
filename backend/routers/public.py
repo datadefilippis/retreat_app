@@ -2813,6 +2813,23 @@ async def submit_order_request(request: Request, response: Response, body: Order
     # ── Phase 0 Step 3 — delegate to order_creation_service ────────────
     # Tutta la logica (validation, GDPR, order creation, Stripe checkout,
     # emails, response messages) vive nel service, condiviso con l'embed.
+    # P1 (6/10/2026) — l'account Aurya di chi compra, dal token piattaforma
+    # nell'header dedicato (l'Authorization resta ai token cliente-negozio).
+    # Decodifica leggera: type=platform, account esistente e attivo. Serve
+    # per i PRODOTTI (obbligatorio) e timbra l'ordine con l'id VERO.
+    platform_account_id = None
+    _raw_pa = request.headers.get("x-aurya-account", "")
+    if _raw_pa.startswith("Bearer "):
+        try:
+            from auth import decode_token as _dt_pa
+            _pl = _dt_pa(_raw_pa[7:])
+            if _pl.get("type") == "platform" and _pl.get("sub"):
+                from services.platform_account_service import get_account as _get_pa
+                _acc = await _get_pa(_pl["sub"])
+                if _acc and _acc.get("is_active", True):
+                    platform_account_id = _acc["id"]
+        except Exception:
+            platform_account_id = None   # token scaduto/invalido = ospite
     from services.order_creation_service import submit_order_from_storefront
 
     # ── Phase 0 Step 5 — cart_id from cookie ────────────────────────────
@@ -2835,6 +2852,7 @@ async def submit_order_request(request: Request, response: Response, body: Order
         client_ip=request.client.host if request.client else None,
         user_agent=request.headers.get("user-agent"),
         cart_id=cart_id_cookie,
+        platform_account_id=platform_account_id,   # P1 (6/10/2026)
     )
 
     # Phase 0 Step 5 — clear cart cookie post-checkout success (solo se
@@ -4565,6 +4583,44 @@ async def public_operators_index(
             "date_filter_ready": date_filter_ready}
 
 
+async def _operator_prodotti(org_id: str) -> list:
+    """P1 (6/10/2026) — i PRODOTTI pubblicati di un'org (fisici e digitali)
+    per la sezione «Prodotti» del profilo: card con tipo, prezzo, foto;
+    l'acquisto avviene in pagina (InlineProdottoCheckout) con l'account
+    Aurya. Un digitale senza file non si lista (non sarebbe consegnabile)."""
+    from database import products_collection
+    rows = await products_collection.find(
+        {"organization_id": org_id, "item_type": {"$in": ["digital", "physical"]},
+         "is_published": True, "is_active": True},
+        {"_id": 0, "id": 1, "name": 1, "slug": 1, "item_type": 1, "unit_price": 1, "transaction_mode": 1,
+         "image_url": 1, "description": 1, "stock_quantity": 1, "category": 1,
+         "metadata.download_filename": 1, "metadata.download_size_bytes": 1,
+         "metadata.long_description": 1, "created_at": 1},
+    ).sort("created_at", -1).to_list(200)
+    out = []
+    for r in rows:
+        meta = r.get("metadata") or {}
+        if r.get("transaction_mode") not in (None, "direct"):
+            continue   # un prodotto si paga subito: «su richiesta» non e' un prodotto
+        if r.get("item_type") == "digital" and not meta.get("download_filename"):
+            continue
+        if r.get("item_type") == "physical" and r.get("stock_quantity") is not None \
+                and int(r.get("stock_quantity") or 0) <= 0:
+            continue
+        nome_file = meta.get("download_filename") or ""
+        out.append({
+            "product_id": r["id"], "name": r.get("name"), "slug": r.get("slug"),
+            "item_type": r.get("item_type"),
+            "tipo": "Digitale" if r.get("item_type") == "digital" else "Fisico",
+            "price": r.get("unit_price"), "image_url": r.get("image_url"),
+            "description": r.get("description"), "category": r.get("category"),
+            "has_landing": bool(meta.get("long_description")),
+            "file_ext": (nome_file.rsplit(".", 1)[-1].lower() if "." in nome_file else None),
+            "file_size_bytes": meta.get("download_size_bytes"),
+        })
+    return out
+
+
 async def _operator_listino(org_id: str) -> list:
     """TW2 — le righe di listino pubblicate di un'org (service).
     Proiezione minima per il rendering: il dettaglio vive su /p/.
@@ -4772,6 +4828,8 @@ async def public_operator_profile(org_slug: str, request: Request = None, lang: 
         # bottone porta alla landing /p/ esistente (slot picker +
         # checkout o richiesta: invariante I3, zero nuovo checkout).
         "listino": await _operator_listino(org_id),
+        # P1 (6/10/2026) — i prodotti del profilo (fisici e digitali)
+        "prodotti": await _operator_prodotti(org_id),
         # PR2 — rating denormalizzato (None finché non ci sono recensioni)
         "reviews_stats": org.get("reviews_stats"),
         "reviews_open": bool(org.get("reviews_open")),

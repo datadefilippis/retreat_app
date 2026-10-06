@@ -26,6 +26,7 @@ import MiniCalendario from './components/MiniCalendario';
 // listino si espande su un harness che riusa il checkout dello storefront
 // (CheckoutForm/OrderSummary/useCheckoutForm, zero fork di logica).
 import InlineServiceCheckout from './components/checkout/InlineServiceCheckout';
+import InlineProdottoCheckout from './components/checkout/InlineProdottoCheckout';   // P1
 import ContattiOperatore, { haContatti } from './components/ContattiOperatore';
 // RC2 (2/10/2026) — la casella del Cerchio nel modal della recensione usa
 // LO STESSO testo versionato di tutte le altre porte
@@ -415,6 +416,8 @@ export default function OperatorProfilePage() {
   // PN3 — riga di listino espansa (una alla volta): l'acquisto avviene
   // in pagina, niente navigazione verso /p/ come CTA primaria.
   const [expandedService, setExpandedService] = useState(null);
+  // P1 (6/10/2026) — il prodotto espanso (acquisto in pagina, uno alla volta)
+  const [expandedProdotto, setExpandedProdotto] = useState(null);
 
   // OP2 — il profilo parla la lingua del viaggiatore: fetch con lang e
   // refetch al cambio lingua (bio/tagline tradotte dove l'operatore le
@@ -727,6 +730,58 @@ export default function OperatorProfilePage() {
                  className="mt-2 inline-block text-xs text-gray-500 underline hover:text-gray-800">
                 {t('landings:operator.conditions', { defaultValue: 'Condizioni di vendita di {{name}}', name: data.name })}
               </a>
+            </section>
+          )}
+
+          {/* P1 (6/10/2026) — I PRODOTTI del profilo (fisici e digitali):
+              card con tipo, prezzo, foto; «Compra» espande l'acquisto in
+              pagina con l'account Aurya (InlineProdottoCheckout). Senza
+              prodotti pubblicati la sezione non compare. */}
+          {Array.isArray(data.prodotti) && data.prodotti.length > 0 && (
+            <section id="prodotti" className="mt-8 scroll-mt-20" data-testid="profile-prodotti">
+              <h2 className="profile-h2 font-heading text-xl font-bold text-foreground mb-3 flex items-center gap-2.5 before:content-[''] before:h-5 before:w-1 before:rounded-full before:bg-[#c9b37e]">
+                {t('landings:operator.prodotti', { defaultValue: 'Prodotti' })}
+              </h2>
+              <div className="grid gap-4 sm:grid-cols-2">
+                {data.prodotti.map((pr) => {
+                  const aperto = expandedProdotto === pr.product_id;
+                  return (
+                    <div key={pr.product_id} id={`prodotto-${pr.slug || pr.product_id}`}
+                         className={`rounded-2xl border border-gray-200 bg-white overflow-hidden ${aperto ? 'sm:col-span-2' : ''}`}
+                         data-testid="prodotto-card">
+                      <div className="flex gap-4 p-4">
+                        <div className="h-20 w-20 flex-none overflow-hidden rounded-lg bg-gray-100">
+                          {pr.image_url
+                            ? <img src={pr.image_url} alt="" loading="lazy" className="h-full w-full object-cover" />
+                            : <div className="flex h-full w-full items-center justify-center text-gray-300 text-xs">{pr.file_ext ? pr.file_ext.toUpperCase() : ''}</div>}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <span className="rounded-full bg-secondary px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-foreground/80">
+                            {pr.tipo}{pr.file_ext ? ` · ${pr.file_ext}` : ''}
+                          </span>
+                          <p className="mt-1 font-semibold text-gray-900">{pr.name}</p>
+                          {pr.description && <p className="text-sm text-gray-600 line-clamp-2">{pr.description}</p>}
+                          <div className="mt-2 flex items-center justify-between gap-3">
+                            <span className="text-base font-bold text-[#376254]">
+                              {pr.price != null ? `${Number(pr.price).toFixed(Number(pr.price) % 1 ? 2 : 0)} €` : ''}
+                            </span>
+                            <button type="button" data-testid="prodotto-cta" aria-expanded={aperto}
+                                    onClick={() => setExpandedProdotto(aperto ? null : pr.product_id)}
+                                    className={`rounded-full px-4 py-1.5 text-sm font-semibold ${aperto ? 'border border-gray-300 bg-white text-gray-700' : 'bg-[#2f5749] text-white hover:opacity-90'}`}>
+                              {aperto ? t('landings:operator.inlineClose', { defaultValue: 'Chiudi' }) : 'Compra'}
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                      {aperto && (
+                        <div className="border-t border-gray-100 bg-gray-50/60 px-4 py-4" data-testid="prodotto-inline">
+                          <InlineProdottoCheckout orgSlug={org_slug} row={pr} onClose={() => setExpandedProdotto(null)} />
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
             </section>
           )}
 

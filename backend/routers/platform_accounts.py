@@ -632,6 +632,54 @@ async def get_my_orders(account: dict = Depends(get_current_platform_account)):
     return {"orders": out, "total": len(out)}
 
 
+@router.get("/me/file")
+async def get_my_files(account: dict = Depends(get_current_platform_account)):
+    """P1 (6/10/2026) — «I miei file»: i download dei prodotti digitali
+    comprati con questo account, su tutti gli operatori. Via gli ordini
+    timbrati con platform_account_id → IssuedDownload attivi. Solo dati
+    del cliente: nome del prodotto, chi lo vende, quante volte si puo'
+    ancora scaricare, scadenza e il link /d/{token} (gia' esistente)."""
+    _flag_enabled()
+    from database import issued_downloads_collection, orders_collection, organizations_collection
+    orders = await orders_collection.find(
+        {"platform_account_id": account["id"]},
+        {"_id": 0, "id": 1, "order_number": 1, "organization_id": 1, "created_at": 1},
+    ).sort("created_at", -1).to_list(500)
+    if not orders:
+        return {"file": [], "total": 0}
+    per_ordine = {o["id"]: o for o in orders}
+    rows = await issued_downloads_collection.find(
+        {"order_id": {"$in": list(per_ordine)}, "status": {"$ne": "cancelled"}},
+        {"_id": 0, "id": 1, "order_id": 1, "organization_id": 1, "product_name": 1,
+         "download_filename": 1, "download_size_bytes": 1, "download_count": 1,
+         "max_downloads": 1, "access_token": 1, "access_token_expires_at": 1,
+         "created_at": 1, "status": 1},
+    ).sort("created_at", -1).to_list(500)
+    org_ids = list({r["organization_id"] for r in rows})
+    orgs = {o["id"]: o async for o in organizations_collection.find(
+        {"id": {"$in": org_ids}}, {"_id": 0, "id": 1, "name": 1, "store_settings.display_name": 1})}
+    out = []
+    for r in rows:
+        org = orgs.get(r["organization_id"]) or {}
+        rimasti = None
+        if r.get("max_downloads") is not None:
+            rimasti = max(0, int(r["max_downloads"]) - int(r.get("download_count") or 0))
+        out.append({
+            "id": r["id"],
+            "product_name": r.get("product_name"),
+            "filename": r.get("download_filename"),
+            "size_bytes": r.get("download_size_bytes"),
+            "org_name": (org.get("store_settings") or {}).get("display_name") or org.get("name"),
+            "order_number": per_ordine.get(r["order_id"], {}).get("order_number"),
+            "download_count": int(r.get("download_count") or 0),
+            "downloads_rimasti": rimasti,
+            "expires_at": r.get("access_token_expires_at"),
+            "url": f"/d/{r['access_token']}" if r.get("access_token") else None,
+            "issued_at": r.get("created_at"),
+        })
+    return {"file": out, "total": len(out)}
+
+
 @router.get("/me/export")
 async def export_my_data(account: dict = Depends(get_current_platform_account_strict)):
     """GDPR — export JSON dei dati dell'identita' piattaforma + vista

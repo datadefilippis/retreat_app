@@ -280,9 +280,10 @@ _HOME_COPY = {
                      "troviamo l’esperienza giusta per te."),
     "doorSeekCta": "Trova il mio ritiro",
     "doorOpTitle": "Sei un operatore olistico?",
+    # P1 prodotti (6/10/2026): la promessa si precisa, «su ritiri e servizi»
     "doorOpText": ("Crea il tuo <b>spazio professionale su Aurya</b>: profilo, "
                    "servizi, prenotazioni, eventi e ritiri. <b>Gratis per sempre, "
-                   "senza commissioni.</b>"),
+                   "senza commissioni su ritiri e servizi.</b>"),
     "doorOpCta": "Crea il tuo spazio",
     "findTitle": ("Un luogo dove conoscere, confrontare e scegliere "
                   "con consapevolezza"),
@@ -537,9 +538,9 @@ _BRAND_PAGES = {
         "title": "Per operatori olistici: il tuo spazio professionale | Aurya",
         # RB2-bis (10/9 sera): la stessa frase della landing
         # SEO-A (14/9): 182 caratteri → sotto i 160
-        "description": ("Una pagina tutta tua per presentarti, mostrare i servizi, "
-                        "ricevere prenotazioni e organizzare eventi e ritiri. "
-                        "Un solo link. Gratis per sempre, senza commissioni."),
+        "description": ("Una pagina tua per mostrare i servizi, ricevere "
+                        "prenotazioni e organizzare eventi e ritiri. Un solo link. "
+                        "Gratis per sempre, senza commissioni su ritiri e servizi."),
         "image": "/media/hero-organizer.webp",
     },
     # SW3 — /chi-siamo e' di nuovo una pagina propria (le persone dietro
@@ -570,12 +571,12 @@ _BRAND_PAGES = {
         "image": "/media/hp-sound.jpg",
     },
     "costi": {
-        # P1 (10/9/2026): zero commissioni, i piani del 2027 scritti da oggi
-        "title": "Quanto costa Aurya | Gratis per sempre, senza commissioni",
-        "description": ("La piattaforma è gratuita: profilo, listino, "
-                        "ritiri e clienti non si pagano, mai commissioni. "
-                        "Dal 2027, se vuoi di più, il Pro: 19 € al mese "
-                        "o 200 € l'anno."),
+        # P1 (10/9/2026): zero commissioni su ritiri e servizi, i piani del 2027
+        # scritti da oggi. P1 prodotti (6/10): l'unica commissione e' sui prodotti.
+        "title": "Quanto costa Aurya | Gratis, senza commissioni su ritiri e servizi",
+        "description": ("Profilo, listino, ritiri e clienti non si pagano, mai "
+                        "commissioni. Sui prodotti del profilo il 15%, "
+                        "zero col Pro. Dal 2027 il Pro: 19 € al mese o 200 € l'anno."),
         "image": "/media/hero-organizer.webp",
     },
     "come-funziona": {
