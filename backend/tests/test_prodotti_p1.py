@@ -205,3 +205,65 @@ class TestP2Fisici:
             t = (BACKEND / "legal" / f"terms_{lang}.md").read_text()
             assert "https://aurya.life/costi" in t
             assert "15%" not in t and "15 %" not in t, f"terms_{lang}: i numeri della commissione vivono solo su /costi"
+
+
+# ── Consolidamento pre-live (6/10/2026 sera) ────────────────────────────────
+
+class TestConsolidamento:
+    def test_verifica_pagamento_pubblica(self):
+        pub = (BACKEND / "routers" / "public.py").read_text()
+        assert '@router.post("/orders/{order_id}/verifica-pagamento")' in pub
+        corpo = pub[pub.index('@router.post("/orders/{order_id}/verifica-pagamento")'):pub.index('@router.get("/orders/{order_id}/status"')]
+        assert "verify_commerce_order_payment(order_id, order[\"organization_id\"])" in corpo
+        assert '"already_reconciled"' in corpo and '"session_not_found"' in corpo
+        assert 'limiter.limit("10/minute")' in corpo
+        fe = (FRONTEND / "features" / "storefront" / "CheckoutResultPage.js").read_text()
+        # una sola verifica dalla pagina (prima erano 3 in concorrenza → due
+        # «Nuovo ordine pagato» all'operatore); il server ha comunque il lucchetto
+        assert "storefrontAPI.verifyOrderPayment(orderId)" in fe and "verifiedRef.current < 1" in fe
+        assert "_VERIFICHE_IN_CORSO" in corpo and "async with lock:" in corpo
+        assert 'data-testid="checkout-file-pronto"' in fe and "includes('digital')" in fe
+        assert "item_types: List[str] = []" in pub and '"items.item_type": 1' in pub
+
+    def test_riconciliazione_idempotente_sulla_stessa_session(self):
+        """Stessa session due volte (verifica + webhook, o due webhook): la
+        seconda e' un no-op, senza seconda conferma ne' seconda email."""
+        src = (BACKEND / "services" / "payment_checkout_service.py").read_text()
+        corpo = src[src.index("async def reconcile_checkout_event"):]
+        assert '"action": "already_collected"' in corpo
+        assert 'order.get("payment_intent") == "collected"' in corpo
+        assert "stored_ref == session_id" in corpo
+        # il guardiano viene PRIMA di confirm_order e di notify_merchant_new_order
+        assert corpo.index('"already_collected"') < corpo.index("confirm_order(")
+        assert "verifica-pagamento" in (FRONTEND / "api" / "storefront.js").read_text()
+
+    def test_email_operatore_ordine_pagato(self):
+        src = (BACKEND / "services" / "order_email_service.py").read_text()
+        corpo = src[src.index("async def notify_merchant_new_order("):src.index("# ── Customer: Order Confirmed")]
+        for s in ('order.get("payment_intent") == "collected"', '"order_merchant_paid_subject"', '"order_merchant_ship_to"',
+                  '"order_merchant_pickup"', '"order_merchant_digital"', '"order_merchant_phone"', '"order_merchant_paid_cta"'):
+            assert s in corpo, s
+        assert '"order_merchant_draft_hint"' in corpo, "la variante richiesta (non pagata) resta"
+        from services.email_service import EMAIL_TRANSLATIONS
+        it = EMAIL_TRANSLATIONS["it"]
+        assert it["order_merchant_paid_subject"] == "Nuovo ordine pagato — {customer_name}"
+        assert "Non devi fare nulla" in it["order_merchant_digital"]
+        assert "bozza" not in it["order_merchant_paid_body"]
+
+    def test_email_cliente_dice_cosa_succede(self):
+        src = (BACKEND / "services" / "order_email_service.py").read_text()
+        corpo = src[src.index("async def notify_customer_order_confirmed("):src.index("async def notify_customer_order_cancelled(")]
+        for s in ('"order_confirmed_body_digital"', '"order_confirmed_body_shipping"', '"order_confirmed_body_pickup"',
+                  '"order_confirmed_cta_files"', 'tipi <= {"digital"}'):
+            assert s in corpo, s
+        from services.email_service import EMAIL_TRANSLATIONS
+        it = EMAIL_TRANSLATIONS["it"]
+        assert "I miei file" in it["order_confirmed_body_digital"]
+        for k in ("order_confirmed_body_digital", "order_confirmed_body_shipping", "order_confirmed_body_pickup",
+                  "order_merchant_paid_body", "order_merchant_digital", "order_merchant_pickup"):
+            for proibita in ("con successo", "click", "Ti contatteremo", "storefront"):
+                assert proibita not in it[k], (k, proibita)
+
+    def test_ordini_mostrano_i_contatti(self):
+        p = (FRONTEND / "features" / "orders" / "OrdersPage.js").read_text()
+        assert 'data-testid="ordine-contatti"' in p and "o.customer_email" in p and "o.contact_phone" in p

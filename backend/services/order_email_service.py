@@ -1021,32 +1021,78 @@ async def notify_merchant_new_order(
         typecount_line = _render_items_typecount_line(order, locale)
         items_list_html = _render_items_list_compact(order, locale)
 
-        lines = [
-            f'<p>{_t("order_merchant_body", locale)}</p>',
-            f'<p>{_t("order_merchant_customer", locale, customer_name=customer_name, customer_email=customer_email)}</p>',
-            f'<p>{typecount_line}<br>',
-            f'   {_t("order_merchant_total", locale, total=total)}</p>',
-            items_list_html,
-        ]
+        # Consolidamento prodotti (6/10/2026): un ordine PAGATO (checkout
+        # Stripe andato a buon fine, chiamata dal webhook o dalla verifica)
+        # non e' una «richiesta in bozza»: l'operatore legge chi ha pagato,
+        # come lo raggiunge e cosa deve fare (spedire, aspettarlo, niente).
+        pagato = (order.get("payment_intent") == "collected"
+                  or str(order.get("status") or "") == "confirmed")
+        phone = (order.get("contact_phone") or order.get("customer_phone") or "").strip()
+        if not phone and order.get("customer_id"):
+            try:
+                from database import customers_collection as _cc
+                _c = await _cc.find_one({"id": order["customer_id"], "organization_id": org_id},
+                                        {"_id": 0, "phone": 1})
+                phone = ((_c or {}).get("phone") or "").strip()
+            except Exception:  # noqa: BLE001
+                phone = ""
+        tipi = {(it or {}).get("item_type") for it in (order.get("items") or [])}
+        riga_telefono = (f'<br>{_t("order_merchant_phone", locale, phone=_html_escape(phone))}' if phone else "")
 
-        if ff_mode != "not_required":
-            mode_label = _fmt_fulfillment_mode(ff_mode, locale)
-            lines.append(f'<p>{_t("order_merchant_fulfillment", locale, mode=mode_label)}</p>')
+        if pagato:
+            lines = [
+                f'<p>{_t("order_merchant_paid_body", locale, customer_name=_html_escape(customer_name))}</p>',
+                f'<p>{_t("order_merchant_customer", locale, customer_name=_html_escape(customer_name), customer_email=_html_escape(customer_email))}{riga_telefono}</p>',
+                f'<p>{typecount_line}<br>',
+                f'   {_t("order_merchant_paid_total", locale, total=total)}</p>',
+                items_list_html,
+            ]
+            if ff_mode == "shipping":
+                addr = (ff.get("shipping_address") or "").strip()
+                if addr:
+                    lines.append(f'<p>{_t("order_merchant_ship_to", locale, address=_html_escape(addr))}</p>')
+                else:
+                    lines.append(f'<p>{_t("order_merchant_fulfillment", locale, mode=_fmt_fulfillment_mode(ff_mode, locale))}</p>')
+            elif ff_mode == "local_pickup":
+                lines.append(f'<p>{_t("order_merchant_pickup", locale)}</p>')
+            if "digital" in tipi:
+                lines.append(f'<p>{_t("order_merchant_digital", locale)}</p>')
+            if order.get("notes"):
+                lines.append(f'<p>{_t("order_merchant_notes", locale, notes=_html_escape(order["notes"]))}</p>')
+            lines.append(f"""
+            <p style="text-align: center;">
+                <a href="{orders_url}" class="btn">{_t("order_merchant_paid_cta", locale)}</a>
+            </p>
+            """)
+            html = _wrap_template("\n".join(lines), locale)
+            subject = _t("order_merchant_paid_subject", locale, customer_name=customer_name)
+        else:
+            lines = [
+                f'<p>{_t("order_merchant_body", locale)}</p>',
+                f'<p>{_t("order_merchant_customer", locale, customer_name=customer_name, customer_email=customer_email)}{riga_telefono}</p>',
+                f'<p>{typecount_line}<br>',
+                f'   {_t("order_merchant_total", locale, total=total)}</p>',
+                items_list_html,
+            ]
 
-        if order.get("notes"):
-            lines.append(f'<p>{_t("order_merchant_notes", locale, notes=_html_escape(order["notes"]))}</p>')
+            if ff_mode != "not_required":
+                mode_label = _fmt_fulfillment_mode(ff_mode, locale)
+                lines.append(f'<p>{_t("order_merchant_fulfillment", locale, mode=mode_label)}</p>')
 
-        lines.append(f"""
+            if order.get("notes"):
+                lines.append(f'<p>{_t("order_merchant_notes", locale, notes=_html_escape(order["notes"]))}</p>')
+
+            lines.append(f"""
             <p style="text-align: center;">
                 <a href="{orders_url}" class="btn">{_t("order_merchant_cta", locale)}</a>
             </p>
             <p style="color: #aaa; font-size: 12px;">
                 {_t("order_merchant_draft_hint", locale)}
             </p>
-        """)
+            """)
 
-        html = _wrap_template("\n".join(lines), locale)
-        subject = _t("order_merchant_subject", locale, customer_name=customer_name)
+            html = _wrap_template("\n".join(lines), locale)
+            subject = _t("order_merchant_subject", locale, customer_name=customer_name)
 
         for recipient in recipients:
             # FV7 — l'operatore che risponde a «nuovo ordine» scrive al cliente
@@ -1785,8 +1831,10 @@ def _render_fulfillment_section(order: dict, locale: str, store_name: str) -> st
         # resolved option at checkout time, so the customer sees the
         # method they paid for alongside the address.
         if shipping_label:
+            # Consolidamento prodotti (6/10/2026): prezzo nel formato della lingua («€ 6,00»)
+            from services.currency_service import get_currency_for_order as _cur
             cost_str = (
-                f'<strong>€{shipping_cost_f:.2f}</strong>'
+                f'<strong>{_fmt_total(shipping_cost_f, _cur(order), locale)}</strong>'
                 if shipping_cost_f > 0
                 else f'<strong>{_t("fulfillment_shipping_free", locale)}</strong>'
             )
@@ -1925,9 +1973,28 @@ async def notify_customer_order_confirmed(order: dict, org_id: str) -> None:
         from services.porte_cerchio import riga_cerchio_html
         riga_cerchio = await riga_cerchio_html(email, "email-ordine", locale)
 
+        # Consolidamento prodotti (6/10/2026): la frase dice cosa succede
+        # davvero. File pronto (digitale), spedizione in preparazione o
+        # ritiro (fisico); per il resto la frase storica.
+        tipi = {(it or {}).get("item_type") for it in (order.get("items") or [])}
+        ff_mode = (order.get("fulfillment") or {}).get("mode")
+        pagato = order.get("payment_intent") == "collected"
+        if pagato and tipi and tipi <= {"digital"}:
+            corpo = _t("order_confirmed_body_digital", locale, store_name=store_name)
+            cta_label = _t("order_confirmed_cta_files", locale)
+        elif pagato and "physical" in tipi and ff_mode == "shipping":
+            corpo = _t("order_confirmed_body_shipping", locale, store_name=store_name)
+            cta_label = _t("order_confirmed_cta", locale)
+        elif pagato and "physical" in tipi and ff_mode == "local_pickup":
+            corpo = _t("order_confirmed_body_pickup", locale, store_name=store_name)
+            cta_label = _t("order_confirmed_cta", locale)
+        else:
+            corpo = _t("order_confirmed_body", locale, store_name=store_name)
+            cta_label = _t("order_confirmed_cta", locale)
+
         html = _wrap_template(f"""
             <p>{_t("greeting", locale)},</p>
-            <p>{_t("order_confirmed_body", locale, store_name=store_name)}</p>
+            <p>{corpo}</p>
             <p>{_t("order_confirmed_ref", locale, order_ref=order_ref)}</p>
             {summary_html}
             {saldo_html}
@@ -1939,7 +2006,7 @@ async def notify_customer_order_confirmed(order: dict, org_id: str) -> None:
             {downloads_html}
             {courses_html}
             <p style="text-align: center;">
-                <a href="{detail_url}" class="btn">{_t("order_confirmed_cta", locale)}</a>
+                <a href="{detail_url}" class="btn">{cta_label}</a>
             </p>
             {riga_cerchio}
         """, locale, reply_to=ctx["reply_to"], store_name=store_name)

@@ -829,6 +829,18 @@ async def reconcile_checkout_event(event: dict) -> dict:
         raise ValueError(f"Session reference mismatch: stored={stored_ref} received={session_id}")
 
     # Validate connected account matches if available
+    # Consolidamento prodotti (6/10/2026) — IDEMPOTENZA sugli effetti: la
+    # stessa session puo' arrivare due volte (verifica dalla pagina di
+    # successo + webhook di Stripe, o due webhook). Se l'ordine e' GIA'
+    # incassato per QUESTA session (quella principale), non si rifanno
+    # conferma ed email all'operatore. Le session delle rate (row_sessions)
+    # passano: ognuna e' un incasso diverso.
+    if (stored_ref == session_id and order.get("payment_intent") == "collected"
+            and str(order.get("status") or "") in ("confirmed", "completed")):
+        logger.info("payment_reconcile: order %s already collected for session %s — no-op",
+                    order_id, session_id)
+        return {"action": "already_collected", "order_id": order_id, "org_id": org_id,
+                "order_number": order.get("order_number")}
     stored_account = (order.get("payment_checkout") or {}).get("connected_account_id")
     if stored_account and event_account and stored_account != event_account:
         logger.warning(

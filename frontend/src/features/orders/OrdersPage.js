@@ -1928,6 +1928,13 @@ export default function OrdersPage() {
                           {o.review_state === 'needs_payment' && o.review_reason !== 'awaiting_payment' && <span className="w-2 h-2 rounded-full bg-blue-400 shrink-0" title={t(`review.${o.review_reason}`, { defaultValue: 'Verifica necessaria' })} />}
                           <span className="truncate">{o.customer_name || '-'}</span>
                         </div>
+                        {/* Consolidamento prodotti (6/10/2026, founder: «non vedo email»):
+                            email e telefono del cliente gia' nella riga, non solo nel dettaglio */}
+                        {(o.customer_email || o.contact_phone) && (
+                          <p className="text-[11px] font-normal text-muted-foreground truncate" data-testid="ordine-contatti">
+                            {[o.customer_email, o.contact_phone].filter(Boolean).join(' · ')}
+                          </p>
+                        )}
                         {/* Onda 14 — Inline meta: first event occurrence date or first booking slot,
                             helps the admin triage without opening the detail panel. */}
                         {(() => {

@@ -12,6 +12,7 @@ Endpoints:
 import copy
 import logging
 import time
+import asyncio
 from typing import Any, Dict, Optional, List
 from pydantic import BaseModel, Field, EmailStr
 from fastapi import APIRouter, HTTPException, Query, Request, Response, status
@@ -497,6 +498,9 @@ class PublicOrderStatus(BaseModel):
     currency: str = "EUR"
     store_slug: Optional[str] = None      # for "back to store" link (null if no store)
     store_name: Optional[str] = None
+    # Consolidamento prodotti (6/10/2026): i TIPI delle righe (mai le righe):
+    # la pagina di successo dice «il tuo file e' pronto» solo se c'e' un digitale
+    item_types: List[str] = []
     # TA4 — i pass emessi (link /t/ e /b/), SOLO a ordine confermato: la
     # pagina success li mostra subito invece di rimandare tutto all'email.
     # access_token e' gia' il segreto di consegna; order_id (UUID nel
@@ -2971,6 +2975,36 @@ async def get_public_availability(
 
 # ── Public Order Status (Fase 2 — Stripe checkout redirect UX) ─────────────
 
+_VERIFICHE_IN_CORSO: Dict[str, "asyncio.Lock"] = {}
+
+
+@router.post("/orders/{order_id}/verifica-pagamento")
+@limiter.limit("10/minute")
+async def verifica_pagamento_pubblico(request: Request, order_id: str):
+    """Consolidamento prodotti (6/10/2026) — la pagina di successo NON si
+    affida al solo webhook: chiede a Stripe se la session e' pagata e, se
+    si', conferma l'ordine per la stessa strada del webhook (ordine,
+    download, email). Idempotente e innocuo: senza pagamento non cambia
+    nulla. L'order_id e' un UUID che conosce solo chi ha comprato; la
+    risposta non espone dati del cliente."""
+    from database import orders_collection
+    order = await orders_collection.find_one(
+        {"id": order_id}, {"_id": 0, "organization_id": 1, "payment_intent": 1, "payment_checkout": 1})
+    if not order:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Order not found")
+    if order.get("payment_intent") == "collected":
+        return {"status": "already_reconciled"}
+    if not (order.get("payment_checkout") or {}).get("reference"):
+        return {"status": "session_not_found"}
+    from services.payment_checkout_service import verify_commerce_order_payment
+    # due richieste insieme (doppio clic, due schede) non devono riconciliare due volte
+    lock = _VERIFICHE_IN_CORSO.setdefault(order_id, asyncio.Lock())
+    async with lock:
+        esito = await verify_commerce_order_payment(order_id, order["organization_id"])
+    _VERIFICHE_IN_CORSO.pop(order_id, None)
+    return {"status": esito.get("status")}
+
+
 @router.get("/orders/{order_id}/status", response_model=PublicOrderStatus)
 @limiter.limit("60/minute")
 async def get_public_order_status(request: Request, order_id: str):
@@ -2998,6 +3032,7 @@ async def get_public_order_status(request: Request, order_id: str):
             "total": 1,
             "currency": 1,
             "store_id": 1,
+            "items.item_type": 1,
         },
     )
     if not order:
@@ -3044,6 +3079,7 @@ async def get_public_order_status(request: Request, order_id: str):
     return PublicOrderStatus(
         order_id=order["id"],
         order_number=order.get("order_number"),
+        item_types=sorted({str((it or {}).get("item_type") or "") for it in (order.get("items") or []) if (it or {}).get("item_type")}),
         order_status=order.get("status", "draft"),
         payment_intent=order.get("payment_intent", "none"),
         total=float(order.get("total", 0) or 0),

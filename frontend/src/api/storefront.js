@@ -51,6 +51,10 @@ export const storefrontAPI = {
   // Used both for first render and for polling while webhook processes payment.
   getOrderStatus: (orderId) =>
     customerApi.get(`/api/public/orders/${orderId}/status`),
+  // Consolidamento prodotti (6/10/2026) — la pagina di successo chiede al
+  // backend di verificare su Stripe: la conferma non dipende dal solo webhook.
+  verifyOrderPayment: (orderId) =>
+    customerApi.post(`/api/public/orders/${orderId}/verifica-pagamento`),
 
   // E3: full landing page payload for a single event occurrence.
   getEventLanding: (orgSlug, slug, lang) =>

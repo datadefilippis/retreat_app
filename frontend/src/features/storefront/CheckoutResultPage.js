@@ -51,11 +51,20 @@ function useOrderStatusPolling(orderId, { pollWhilePending = true } = {}) {
   const timerRef = useRef(null);
   const deadlineRef = useRef(null);
 
+  const verifiedRef = useRef(0);
   const fetchOnce = useCallback(async () => {
     if (!orderId) return null;
+    // Consolidamento prodotti (6/10/2026): mentre l'ordine aspetta il
+    // webhook, chiediamo noi a Stripe UNA volta: se e' pagato
+    // l'ordine si conferma subito, con download ed email, anche se il
+    // webhook tarda. Innocuo se non e' pagato.
+    if (pollWhilePending && verifiedRef.current < 1) {
+      verifiedRef.current += 1;
+      try { await storefrontAPI.verifyOrderPayment(orderId); } catch { /* resta il polling */ }
+    }
     const res = await storefrontAPI.getOrderStatus(orderId);
     return res.data;
-  }, [orderId]);
+  }, [orderId, pollWhilePending]);
 
   useEffect(() => {
     if (!orderId) {
@@ -242,6 +251,22 @@ export function CheckoutSuccessPage() {
         <h2 className="text-xl font-bold text-gray-900">{title}</h2>
         <p className="text-gray-600 mt-2">{description}</p>
         <OrderSummary status={status} />
+
+        {/* Consolidamento prodotti (6/10) — il file digitale e' GIA' nel suo
+            account appena l'ordine e' confermato: dirlo qui, con la porta
+            giusta, senza aspettare l'email. Solo se c'e' una riga digitale. */}
+        {isConfirmed && (status?.item_types || []).includes('digital') && (
+          <div className="mt-5 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-left space-y-2"
+               data-testid="checkout-file-pronto">
+            <p className="text-sm text-gray-800">
+              <span className="font-semibold">Il tuo file è pronto.</span>{' '}
+              Lo trovi in «I miei file», nel tuo account Aurya, da qualunque telefono. Il link ti arriva anche per email.
+            </p>
+            <Link to="/account" className="block w-full text-center rounded-full bg-primary text-white px-5 py-2.5 text-sm font-bold hover:opacity-90">
+              Vai ai miei file
+            </Link>
+          </div>
+        )}
 
         {/* E4 — la porta del Cerchio nella pagina grazie: casella sua
             (non preselezionata) + bottone; sparisce se il cliente l'ha
