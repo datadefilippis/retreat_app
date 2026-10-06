@@ -19,6 +19,7 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ExternalLink, Sparkles } from 'lucide-react';
 import { AppLayout, Header } from '../components/Layout';
+import { PRODOTTI_UI_PRONTA } from '../features/prodotti/stato';
 import { useAuth } from '../context/AuthContext';
 import { modulesAPI } from '../api/modules';
 import { paymentConnectionsAPI } from '../api/paymentConnections';
@@ -27,7 +28,9 @@ import { paymentConnectionsAPI } from '../api/paymentConnections';
 // il wizard non esiste resta «In arrivo», ma dice gia' cosa serve (gli
 // incassi collegati) e lo stato lo legge dal registro dei moduli
 // (/modules/active), non da una costante.
-const PRODOTTI_UI_PRONTA = true;   // P1: /prodotti esiste
+// 6/10 sera: l'interruttore vive in features/prodotti/stato.js (lo legge
+// anche il cancello delle rotte in App.js): finche' e' false la scheda e'
+// un'ANTEPRIMA oscurata e /prodotti non si apre.
 
 export default function StrumentiPage() {
   const { user } = useAuth();
@@ -94,9 +97,15 @@ export default function StrumentiPage() {
         ? (incassiPronti ? 'Incluso nel tuo piano. Incassi collegati.' : 'Incluso nel tuo piano. Prima collega gli incassi.')
         : (prodottiNelPiano
           ? (incassiPronti
-            ? 'In arrivo: è nel tuo piano e i tuoi incassi sono già collegati.'
-            : 'In arrivo: intanto collega gli incassi, è il primo passo per vendere.')
-          : 'In arrivo.'),
+            ? 'Sta arrivando: è nel tuo piano e i tuoi incassi sono già collegati.'
+            : 'Sta arrivando: intanto collega gli incassi, è il primo passo per vendere.')
+          : 'Sta arrivando.'),
+      // l'anteprima: cosa potrai fare, detto prima che si apra
+      anteprima: prodottiAttivi ? null : [
+        'Guide, audio e PDF: il file si consegna da solo dopo il pagamento.',
+        'Libri, kit e oggetti: ritiro di persona o spedizione a costo fisso.',
+        'Chi ti segue compra con l\'account Aurya, tu incassi con Stripe sul tuo conto.',
+      ],
       azioni: prodottiAttivi
         ? [{ label: 'I miei prodotti', to: '/prodotti', primary: true, testid: 'strumenti-apri-prodotti' }]
         : [{ label: incassiPronti ? 'Incassi collegati' : 'Collega gli incassi', to: '/settings',
@@ -114,9 +123,11 @@ export default function StrumentiPage() {
         <div className="grid gap-6 lg:grid-cols-2">
           {strumenti.map((s) => (
             <div key={s.key} data-testid={`strumento-${s.key}`}
-              className="group overflow-hidden rounded-2xl border bg-white shadow-sm
+              className={`group overflow-hidden rounded-2xl border bg-white shadow-sm
                          transition duration-200 hover:-translate-y-0.5
-                         hover:shadow-[0_18px_40px_-18px_rgba(20,33,43,0.35)]">
+                         hover:shadow-[0_18px_40px_-18px_rgba(20,33,43,0.35)]
+                         ${s.inArrivo ? 'opacity-[0.82] saturate-[0.85]' : ''}`}
+              aria-describedby={s.inArrivo ? `strumento-${s.key}-anteprima` : undefined}>
               {/* la COPERTINA: il mondo dello strumento, con lo stato sopra */}
               <div className="relative h-44 overflow-hidden">
                 <img src={s.copertina} alt="" aria-hidden loading="lazy"
@@ -144,6 +155,16 @@ export default function StrumentiPage() {
                   {s.descrizione}
                 </p>
                 <p className="mt-2 text-xs text-gray-400">{s.dettaglio}</p>
+                {/* 6/10 sera: l'ANTEPRIMA di uno strumento in arrivo — si capisce
+                    cosa arriva, senza un pulsante che promette un clic che non c'e' */}
+                {s.anteprima && (
+                  <ul id={`strumento-${s.key}-anteprima`} data-testid={`strumento-${s.key}-anteprima`}
+                      className="mt-3 space-y-1 rounded-xl bg-gray-50 px-4 py-3 text-xs leading-relaxed text-gray-500">
+                    {s.anteprima.map((riga) => (
+                      <li key={riga} className="flex gap-2"><span aria-hidden>·</span><span>{riga}</span></li>
+                    ))}
+                  </ul>
+                )}
                 <div className="mt-4 flex flex-wrap gap-3">
                   {s.azioni.map((a) => (
                     <Link key={a.label} to={a.to} data-testid={a.testid}

@@ -148,7 +148,16 @@ class TestPD7Frontend:
         for s in ("data-testid={`passo-${p.key}`}", "{ key: 'cosa'", "{ key: 'file'", "{ key: 'pubblica'",
                   "DpaPactDialog", "non_pubblicabile", "onUploadProgress"):
             assert s in w, s
-        assert "const PRODOTTI_UI_PRONTA = true" in (FRONTEND / "pages" / "StrumentiPage.js").read_text()
+        # 6/10 sera (founder): i Prodotti escono in ANTEPRIMA finche' non da' il
+        # via: interruttore in features/prodotti/stato.js (false), scheda oscurata
+        # con l'anteprima in Strumenti, rotte /prodotti/* chiuse dal cancello
+        stato = (FRONTEND / "features" / "prodotti" / "stato.js").read_text()
+        assert "export const PRODOTTI_UI_PRONTA = false" in stato
+        strumenti = (FRONTEND / "pages" / "StrumentiPage.js").read_text()
+        assert "from '../features/prodotti/stato'" in strumenti and "const PRODOTTI_UI_PRONTA" not in strumenti
+        assert "strumento-${s.key}-anteprima" in strumenti and "s.inArrivo ? 'opacity-" in strumenti
+        assert "<ProdottiGate>" in app and 'Navigate to="/strumenti" replace' in app
+        assert app.count("<ProdottiGate>") == 4
         assert "'digital'" in (FRONTEND / "constants" / "itemTypes.js").read_text()
 
     def test_acquisto_con_account(self):

@@ -65,6 +65,10 @@ const ProdottiPage = lazy(() => import("./features/prodotti/ProdottiPage"));
 const ProdottoDigitaleWizard = lazy(() => import("./features/prodotti/ProdottoDigitaleWizard"));
 const ProdottoPage = lazy(() => import("./features/prodotti/ProdottoPage"));
 const ProdottoFisicoWizard = lazy(() => import("./features/prodotti/ProdottoFisicoWizard"));
+// 6/10 sera (founder): i Prodotti escono in ANTEPRIMA finche' non arriva il
+// via — la scheda in Strumenti si vede, le pagine no (tornano a Strumenti).
+import { PRODOTTI_UI_PRONTA } from "./features/prodotti/stato";
+const ProdottiGate = ({ children }) => (PRODOTTI_UI_PRONTA ? children : <Navigate to="/strumenti" replace />);
 const ReservationWizard = lazy(() => import("./features/reservations/ReservationWizard"));
 const PhysicalWizard = lazy(() => import("./features/physicals/PhysicalWizard"));
 const PhysicalDashboardPage = lazy(() => import("./features/physicals/PhysicalDashboardPage"));
@@ -884,10 +888,10 @@ function AppRoutes() {
         element={<ProtectedRoute><ListinoPage /></ProtectedRoute>}
       />
       {/* P1 (6/10/2026) — Prodotti: lista, wizard digitale, scheda */}
-      <Route path="/prodotti" element={<ProtectedRoute><ProdottiPage /></ProtectedRoute>} />
-      <Route path="/prodotti/nuovo/digitale" element={<ProtectedRoute><ProdottoDigitaleWizard /></ProtectedRoute>} />
-      <Route path="/prodotti/nuovo/fisico" element={<ProtectedRoute><ProdottoFisicoWizard /></ProtectedRoute>} />
-      <Route path="/prodotti/:id" element={<ProtectedRoute><ProdottoPage /></ProtectedRoute>} />
+      <Route path="/prodotti" element={<ProtectedRoute><ProdottiGate><ProdottiPage /></ProdottiGate></ProtectedRoute>} />
+      <Route path="/prodotti/nuovo/digitale" element={<ProtectedRoute><ProdottiGate><ProdottoDigitaleWizard /></ProdottiGate></ProtectedRoute>} />
+      <Route path="/prodotti/nuovo/fisico" element={<ProtectedRoute><ProdottiGate><ProdottoFisicoWizard /></ProdottiGate></ProtectedRoute>} />
+      <Route path="/prodotti/:id" element={<ProtectedRoute><ProdottiGate><ProdottoPage /></ProdottiGate></ProtectedRoute>} />
       {/* TW1 — la creazione servizi passa dal Listino; il wizard resta
           l'editor AVANZATO su /services/:id */}
       <Route
