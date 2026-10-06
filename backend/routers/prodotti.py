@@ -167,7 +167,87 @@ async def _mio_prodotto(product_id: str, org_id: str) -> dict:
     return prod
 
 
+async def _commissione(org_id: str) -> Dict[str, Any]:
+    """P2 — la commissione in chiaro, dal piano dell'org (fee per riga)."""
+    from database import organizations_collection
+    from services.fee_per_riga import mappa_fee_org
+    org = await organizations_collection.find_one(
+        {"id": org_id}, {"_id": 0, "commercial_plan_slug": 1, "application_fee_by_type": 1})
+    mappa = await mappa_fee_org(org)
+    return {"physical": float(mappa.get("physical", 0.0)), "digital": float(mappa.get("digital", 0.0)),
+            "piano": (org or {}).get("commercial_plan_slug")}
+
+
+async def _consegna(org_id: str) -> Dict[str, Any]:
+    """P2 — come arrivano i prodotti fisici: i modi dell'org (ritiro di
+    persona, spedizione) e l'opzione di spedizione «Spedizione» a costo
+    fisso (org-global). Una scelta sola per tutti i fisici: semplice."""
+    from database import organizations_collection, shipping_options_collection
+    org = await organizations_collection.find_one({"id": org_id}, {"_id": 0, "store_settings": 1})
+    modi = ((org or {}).get("store_settings") or {}).get("fulfillment_modes") or ["shipping"]
+    opz = await shipping_options_collection.find_one(
+        {"organization_id": org_id, "store_id": None, "is_active": True},
+        {"_id": 0, "id": 1, "label": 1, "base_price": 1, "free_shipping_threshold": 1}, sort=[("sort_order", 1)])
+    return {
+        "ritiro": "local_pickup" in modi,
+        "spedizione": "shipping" in modi,
+        "costo_spedizione": (opz or {}).get("base_price"),
+        "soglia_gratis": (opz or {}).get("free_shipping_threshold"),
+        "opzione_id": (opz or {}).get("id"),
+        "configurata": bool(opz) or ("local_pickup" in modi and "shipping" not in modi),
+    }
+
+
+class ConsegnaUpdate(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    ritiro: bool = False
+    spedizione: bool = True
+    costo_spedizione: Optional[float] = Field(default=None, ge=0, le=1000)
+    soglia_gratis: Optional[float] = Field(default=None, ge=0, le=100000)
+
+
 # ── rotte ────────────────────────────────────────────────────────────────
+
+@router.get("/consegna")
+async def leggi_consegna(current_user: dict = Depends(get_verified_user), _=Depends(_gate)):
+    return await _consegna(current_user["organization_id"])
+
+
+@router.put("/consegna")
+async def scrivi_consegna(body: ConsegnaUpdate, current_user: dict = Depends(get_verified_user),
+                          _=Depends(_gate)):
+    """Come arrivano i fisici: scrive i modi (store settings, stessa
+    validazione dell'endpoint storico) e l'opzione «Spedizione» org-global
+    (crea o aggiorna la prima attiva). Niente spedizione → le opzioni
+    restano ma il checkout non le propone (modi senza shipping)."""
+    from database import shipping_options_collection
+    from models.common import utc_now
+    from models.shipping_option import ShippingOption
+    from routers.store_settings import StoreSettingsUpdate, update_store_settings
+    org_id = current_user["organization_id"]
+    if not body.ritiro and not body.spedizione:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail="Scegli almeno un modo: ritiro di persona o spedizione.")
+    modi = ([ "shipping"] if body.spedizione else []) + (["local_pickup"] if body.ritiro else [])
+    await update_store_settings(StoreSettingsUpdate(fulfillment_modes=modi), Response(), current_user)
+    if body.spedizione:
+        costo = float(body.costo_spedizione or 0)
+        esistente = await shipping_options_collection.find_one(
+            {"organization_id": org_id, "store_id": None, "is_active": True}, {"_id": 0, "id": 1},
+            sort=[("sort_order", 1)])
+        campi = {"label": "Spedizione", "base_price": costo,
+                 "free_shipping_threshold": body.soglia_gratis, "is_active": True,
+                 "updated_at": utc_now().isoformat()}
+        if esistente:
+            await shipping_options_collection.update_one({"id": esistente["id"]}, {"$set": campi})
+        else:
+            doc = ShippingOption(organization_id=org_id, store_id=None, label="Spedizione",
+                                 base_price=costo, free_shipping_threshold=body.soglia_gratis,
+                                 sort_order=0, is_active=True).model_dump(mode="json")
+            await shipping_options_collection.insert_one(doc)
+    logger.info("prodotti: consegna org=%s modi=%s costo=%s", org_id, modi, body.costo_spedizione)
+    return await _consegna(org_id)
+
 
 @router.get("")
 async def lista_prodotti(current_user: dict = Depends(get_verified_user), _=Depends(_gate)):
@@ -189,6 +269,9 @@ async def lista_prodotti(current_user: dict = Depends(get_verified_user), _=Depe
         "total": len(rows),
         "prerequisiti": pre,
         "limiti": {"products_max": limiti.get("products_max"), "max_file_mb": limiti.get("max_file_mb")},
+        # P2 — in chiaro: la commissione del piano e come arrivano i fisici
+        "commissione": await _commissione(org_id),
+        "consegna": await _consegna(org_id),
     }
 
 

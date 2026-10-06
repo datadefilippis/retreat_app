@@ -1,5 +1,5 @@
 #!/bin/bash
-# GIRO 7/10/2026 — P0 + P1 PRODOTTI, insieme (il P0 non e' mai andato in prod):
+# GIRO 7/10/2026 — P0 + P1 + P2 PRODOTTI, insieme (nessuno e' mai andato in prod):
 #  P0  la commissione la decide la riga (prodotti 15% Gratis / 0 abbonati,
 #      ritiri e servizi 0 sempre), modulo «prodotti» + tier + interruttore
 #      prodotti_spento, patto DPA sui prodotti, VOLUME per i file digitali,
@@ -8,9 +8,13 @@
 #  P1  prodotti DIGITALI: API /prodotti, wizard in tre gesti, scheda,
 #      sezione «Prodotti» sul profilo con acquisto in pagina (account Aurya
 #      obbligatorio), «I miei file» in /account, limite file per piano.
+#  P2  prodotti FISICI: wizard in tre gesti (cos'e', come arriva, pubblica),
+#      consegna dell'org (ritiro di persona / spedizione a costo fisso) via
+#      store settings + opzione «Spedizione»; magazzino, indirizzo e stati
+#      di evasione gia' nel gestionale; commissione in chiaro in /prodotti.
 #  TESTI + LEGALE v2.12: /costi, landing, piani, Termini ×4 (commissione
-#      SOLO sui prodotti). Il bump innesca il re-consent degli operatori
-#      (un clic, meccanismo esistente).
+#      SOLO sui prodotti, nella misura pubblicata su /costi: i numeri vivono
+#      solo li'). Il bump innesca il re-consent degli operatori (un clic).
 # Backend + frontend + NGINX (le rotte /prodotti nel registro → nginx.conf
 # rigenerato: force-recreate di nginx-proxy dopo il test della conf).
 # NESSUNA scrittura sui dati oltre la
@@ -105,6 +109,6 @@ $SSH 'docker volume ls | grep private-uploads; docker exec $(docker ps -qf name=
 for u in / /costi /esperienze /api/health /api/legal/terms; do printf "   %s → %s\n" "$u" "$(curl -s -o /dev/null -w '%{http_code}' https://aurya.life$u)"; done
 printf "   /api/prodotti senza login → %s (atteso 401/403)\n" "$(curl -s -o /dev/null -w '%{http_code}' https://aurya.life/api/prodotti)"
 printf "   /api/platform/me/file senza login → %s\n" "$(curl -s -o /dev/null -w '%{http_code}' https://aurya.life/api/platform/me/file)"
-curl -s 'https://aurya.life/api/legal/terms?locale=it' | grep -o "15% con il piano Gratis" | head -1 | sed 's/^/   termini in prod: /'
+curl -s 'https://aurya.life/api/legal/terms?locale=it' | grep -o "esclusivamente ai Prodotti" | head -1 | sed 's/^/   termini in prod: /'
 curl -s https://aurya.life/costi | grep -o "senza commissioni su ritiri e servizi" | head -1 | sed 's/^/   \/costi (shell): /'
 echo "== FATTO. Ora: git tag prod-$GIRO. Poi dal browser: /costi, Strumenti → Prodotti, il wizard digitale, il profilo con «Compra»."

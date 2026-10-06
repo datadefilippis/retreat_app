@@ -7461,10 +7461,11 @@ class TestFeeTruthNeiTermini:
         # di nuovo. La commissione sta SOLO sui Prodotti venduti dalla pagina
         # pubblica (15% Gratis, 0% Pro); ritiri, eventi e servizi zero sempre.
         # La vecchia frase «tutti i pagamenti online» non deve tornare.
-        vivi = {"it": ("esclusivamente ai Prodotti", "15% con il piano Gratis, 0% (nessuna commissione) con il piano Pro"),
-                "en": ("exclusively to Products", "15% on the Free plan, 0% (no fee) on the Pro plan"),
-                "de": ("ausschließlich für Produkte", "15 % im Gratis-Plan, 0 % (keine Gebühr) im Pro-Plan"),
-                "fr": ("exclusivement aux Produits", "15 % avec le plan Gratuit, 0 % (aucune commission) avec le plan Pro")}
+        # i numeri vivono SOLO su /costi (founder 6/10: niente bump dei Termini a ogni percentuale)
+        vivi = {"it": ("esclusivamente ai Prodotti", "pubblicata sulla pagina https://aurya.life/costi"),
+                "en": ("exclusively to Products", "published for each Plan on https://aurya.life/costi"),
+                "de": ("ausschließlich für Produkte", "auf https://aurya.life/costi veröffentlichten Höhe"),
+                "fr": ("exclusivement aux Produits", "publié pour chaque Plan sur https://aurya.life/costi")}
         morti = {"it": "si applica a **tutti i pagamenti online",
                  "en": "applies to **all online payments",
                  "de": "gilt für **alle über die Plattform",

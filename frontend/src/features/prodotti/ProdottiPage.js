@@ -12,10 +12,10 @@
  */
 import React, { useCallback, useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { CheckCircle2, AlertCircle, FileDown, Package, GraduationCap, Loader2, Plus } from 'lucide-react';
+import { CheckCircle2, AlertCircle, FileDown, Package, Loader2, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 import { AppLayout, Header } from '../../components/Layout';
-import { prodottiAPI, fmtBytes } from '../../api/prodotti';
+import { prodottiAPI, fmtBytes, fmtEuro } from '../../api/prodotti';
 
 function Prerequisito({ ok, label, hint, to, testid }) {
   return (
@@ -93,18 +93,28 @@ export default function ProdottiPage() {
               <p className="mt-2 font-semibold text-gray-900">Prodotto digitale</p>
               <p className="mt-1 text-sm text-gray-600">Una guida, un audio, un e-book: carichi il file, chi compra lo scarica dal suo account Aurya.</p>
             </button>
-            <div className="rounded-2xl border border-dashed bg-gray-50 p-5 text-left opacity-80" data-testid="tipologia-fisico">
-              <Package className="h-6 w-6 text-gray-400" aria-hidden />
-              <p className="mt-2 font-semibold text-gray-700">Prodotto fisico <span className="ml-1 rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-medium text-amber-800">In arrivo</span></p>
-              <p className="mt-1 text-sm text-gray-500">Libri, kit, oggetti: con spedizione o ritiro di persona. Arriva nel prossimo giro.</p>
-            </div>
-            <button type="button" onClick={() => navigate('/events/new?formato=formazione')} data-testid="tipologia-formazione"
+            <button type="button" onClick={() => navigate('/prodotti/nuovo/fisico')} data-testid="tipologia-fisico"
               className="rounded-2xl border bg-white p-5 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
-              <GraduationCap className="h-6 w-6 text-[#376254]" aria-hidden />
-              <p className="mt-2 font-semibold text-gray-900">Formazione in presenza</p>
-              <p className="mt-1 text-sm text-gray-600">Una data, dei posti, una caparra: è un'esperienza. Si crea come un evento, col formato «formazione».</p>
+              <Package className="h-6 w-6 text-[#376254]" aria-hidden />
+              <p className="mt-2 font-semibold text-gray-900">Prodotto fisico</p>
+              <p className="mt-1 text-sm text-gray-600">Libri, kit, oggetti: lo spedisci o lo consegni di persona, come preferisci.</p>
             </button>
+            {/* P2 (founder 6/10): la formazione in presenza NON sta qui. E' un'esperienza
+                con una data (zero commissioni, Stripe facoltativo) e si crea da Ritiri. */}
+            <p className="md:col-span-2 text-xs text-gray-500" data-testid="prodotti-nota-formazione">
+              Un corso in presenza non è un prodotto: ha una data e dei posti, quindi si crea da{' '}
+              <Link to="/events/new?formato=formazione" className="underline">Ritiri ed esperienze</Link>, senza commissioni.
+            </p>
           </div>
+        )}
+
+        {/* P2 — la commissione in chiaro, con il piano */}
+        {data?.commissione && (
+          <p className="text-sm text-gray-600" data-testid="prodotti-commissione">
+            {Math.max(data.commissione.digital || 0, data.commissione.physical || 0) > 0
+              ? <>Sui prodotti venduti Aurya trattiene il <b>{data.commissione.digital}%</b> col tuo piano, più i costi Stripe. Ritiri, eventi e servizi restano senza commissioni. <Link to="/costi" className="underline">Come funziona</Link></>
+              : <>Col tuo piano Aurya non trattiene commissioni sui prodotti: resta solo il costo di Stripe. <Link to="/costi" className="underline">Come funziona</Link></>}
+          </p>
         )}
 
         {/* prerequisiti */}
@@ -144,32 +154,37 @@ export default function ProdottiPage() {
           </div>
         )}
         {prodotti.length > 0 && (
-          <div className="overflow-hidden rounded-2xl border bg-white divide-y" data-testid="prodotti-lista">
+          <div className="grid gap-3 sm:grid-cols-2" data-testid="prodotti-lista">
             {prodotti.map(p => (
-              <div key={p.id} className="flex flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center" data-testid={`prodotto-${p.id}`}>
-                <div className="h-12 w-12 flex-none overflow-hidden rounded-lg bg-gray-100">
+              <div key={p.id} className="flex gap-3 rounded-2xl border bg-white p-3 shadow-sm" data-testid={`prodotto-${p.id}`}>
+                <Link to={`/prodotti/${p.id}`} className="h-16 w-16 flex-none overflow-hidden rounded-xl bg-gray-100">
                   {p.image_url
                     ? <img src={p.image_url} alt="" className="h-full w-full object-cover" />
-                    : <div className="flex h-full w-full items-center justify-center text-gray-300">
-                        {p.item_type === 'digital' ? <FileDown className="h-5 w-5" /> : <Package className="h-5 w-5" />}
-                      </div>}
-                </div>
-                <div className="min-w-0 sm:flex-1">
-                  <p className="font-medium text-gray-900 truncate">{p.name}</p>
-                  <p className="text-xs text-gray-500">
+                    : <span className="flex h-full w-full items-center justify-center text-gray-300">
+                        {p.item_type === 'digital' ? <FileDown className="h-6 w-6" /> : <Package className="h-6 w-6" />}
+                      </span>}
+                </Link>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-start justify-between gap-2">
+                    <Link to={`/prodotti/${p.id}`} className="min-w-0 font-medium text-gray-900 leading-snug line-clamp-2 hover:underline">{p.name}</Link>
+                    <span className={`flex-none rounded-full px-2 py-0.5 text-[11px] font-medium ${p.is_published ? 'bg-emerald-100 text-emerald-800' : 'bg-gray-100 text-gray-600'}`}
+                          data-testid={`prodotto-${p.id}-stato`}>
+                      {p.is_published ? 'Online' : 'Bozza'}
+                    </span>
+                  </div>
+                  <p className="mt-0.5 text-xs text-gray-500 truncate">
                     {p.tipo_etichetta}
                     {p.file ? ` · ${p.file.filename} (${fmtBytes(p.file.size_bytes)})` : (p.item_type === 'digital' ? ' · file da caricare' : '')}
-                    {' · '}{p.venduti_30gg} vendut{p.venduti_30gg === 1 ? 'o' : 'i'} in 30 giorni
+                    {p.item_type === 'physical' && p.stock_quantity != null ? ` · ${p.stock_quantity} disponibili` : ''}
                   </p>
-                </div>
-                <div className="flex items-center justify-between gap-3 sm:justify-end">
-                  <span className="text-base font-bold text-[#376254]">{Number(p.unit_price || 0).toFixed(2)} €</span>
-                  <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-medium ${p.is_published ? 'bg-emerald-100 text-emerald-800' : 'bg-gray-100 text-gray-600'}`}
-                        data-testid={`prodotto-${p.id}-stato`}>
-                    {p.is_published ? 'Online' : 'Bozza'}
-                  </span>
-                  <Link to={`/prodotti/${p.id}`} className="rounded-full border px-3 py-1 text-xs text-gray-700 hover:bg-gray-50">Modifica</Link>
-                  <button type="button" onClick={() => togli(p)} className="text-xs text-gray-400 hover:text-red-700">Togli</button>
+                  <div className="mt-2 flex items-center justify-between gap-2">
+                    <span className="text-sm font-bold text-[#376254]">{fmtEuro(p.unit_price)}</span>
+                    <span className="text-[11px] text-gray-400">{p.venduti_30gg} vendut{p.venduti_30gg === 1 ? 'o' : 'i'} in 30 giorni</span>
+                    <span className="flex items-center gap-2">
+                      <Link to={`/prodotti/${p.id}`} className="rounded-full border px-3 py-1 text-xs text-gray-700 hover:bg-gray-50">Modifica</Link>
+                      <button type="button" onClick={() => togli(p)} className="text-xs text-gray-400 hover:text-red-700">Togli</button>
+                    </span>
+                  </div>
                 </div>
               </div>
             ))}

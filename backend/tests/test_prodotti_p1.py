@@ -165,3 +165,43 @@ class TestPD7Frontend:
         assert 'data-testid="profile-listino"' in p, "il listino resta"
         a = (FRONTEND / "features" / "account" / "AccountPage.js").read_text()
         assert "/platform/me/file" in a and 'data-testid="account-file"' in a
+
+
+# ── P2 (6/10/2026 sera) — fisici: consegna, commissione in chiaro, niente formazione qui ──
+
+class TestP2Fisici:
+    def test_consegna_e_commissione_nel_router(self):
+        src = (BACKEND / "routers" / "prodotti.py").read_text()
+        assert '@router.get("/consegna")' in src and '@router.put("/consegna")' in src
+        # le rotte fisse vengono PRIMA di /{product_id}: altrimenti «consegna» sarebbe un id
+        assert src.index('@router.get("/consegna")') < src.index('@router.get("/{product_id}")')
+        assert "Scegli almeno un modo" in src
+        assert "update_store_settings(StoreSettingsUpdate(fulfillment_modes=modi)" in src
+        assert '"label": "Spedizione"' in src
+        assert '"commissione": await _commissione(org_id)' in src and '"consegna": await _consegna(org_id)' in src
+
+    def test_modello_consegna(self):
+        from routers.prodotti import ConsegnaUpdate
+        c = ConsegnaUpdate(ritiro=True, spedizione=True, costo_spedizione=6, soglia_gratis=50)
+        assert c.costo_spedizione == 6 and c.soglia_gratis == 50
+        with pytest.raises(Exception):
+            ConsegnaUpdate(spedizione=True, costo_spedizione=-1)
+
+    def test_pagina_prodotti_senza_formazione_e_con_commissione(self):
+        p = (FRONTEND / "features" / "prodotti" / "ProdottiPage.js").read_text()
+        assert 'data-testid="tipologia-fisico"' in p and "/prodotti/nuovo/fisico" in p
+        assert 'data-testid="tipologia-formazione"' not in p, "la formazione in presenza non e' un prodotto"
+        assert 'data-testid="prodotti-nota-formazione"' in p and "events/new?formato=formazione" in p
+        assert 'data-testid="prodotti-commissione"' in p
+        assert "GraduationCap" not in p
+        app = (FRONTEND / "App.js").read_text()
+        assert 'path="/prodotti/nuovo/fisico"' in app
+        w = (FRONTEND / "features" / "prodotti" / "ProdottoFisicoWizard.js").read_text()
+        for s in ("{ key: 'arriva'", "pf-ritiro", "pf-spedizione", "salvaConsegna", "stock_quantity", "DpaPactDialog"):
+            assert s in w, s
+
+    def test_termini_a_principio_i_numeri_su_costi(self):
+        for lang in ("it", "en", "de", "fr"):
+            t = (BACKEND / "legal" / f"terms_{lang}.md").read_text()
+            assert "https://aurya.life/costi" in t
+            assert "15%" not in t and "15 %" not in t, f"terms_{lang}: i numeri della commissione vivono solo su /costi"

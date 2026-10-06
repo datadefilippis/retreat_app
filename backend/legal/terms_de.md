@@ -110,7 +110,7 @@ Die Buchungsbestätigung, das Ticket mit QR-Code und die Quittungen werden dem E
 
 Die Online-Zahlungen werden über **Stripe Connect** abgewickelt (PCI-DSS Level 1):
 - Der Endkunde zahlt per Karte; die Gelder werden **direkt dem Stripe-Konto des Veranstalters** gutgeschrieben. Der Anbieter vereinnahmt und verwahrt die Gelder der Buchungen nicht.
-- Retreats, Veranstaltungen und Dienstleistungen (Preislistenzeilen) **unterliegen in keinem Plan einer Plattformgebühr**. Nur auf **Produkte**, die über die öffentliche Seite des Veranstalters verkauft werden (digitale und physische Produkte), behält der Anbieter eine **Plattformgebühr** (Application Fee) ein: **15 % im Gratis-Plan, 0 % (keine Gebühr) im Pro-Plan** (Art. 7).
+- Retreats, Veranstaltungen und Dienstleistungen (Preislistenzeilen) **unterliegen in keinem Plan einer Plattformgebühr**. Nur auf **Produkte**, die über die öffentliche Seite des Veranstalters verkauft werden (digitale und physische Produkte), behält der Anbieter eine **Plattformgebühr** (Application Fee) in der für den jeweiligen Plan auf https://aurya.life/costi veröffentlichten Höhe ein (Art. 7).
 - Bestellungen und Buchungen, die außerhalb der Plattform vereinnahmt werden (z. B. Überweisungen, Barzahlungen, manuell in der Verwaltungssoftware erfasste Verkäufe), **unterliegen keinerlei Gebühr**.
 - Die Zahlungskartendaten durchlaufen niemals die Server des Anbieters oder des Veranstalters (siehe Datenschutzerklärung Art. 9).
 
@@ -149,15 +149,15 @@ Die tatsächlich verfügbaren Funktionen variieren je nach abonniertem Plan (Art
 
 Der Dienst für die Veranstalter wird mit den folgenden Plänen angeboten:
 
-- **Gratis**: ohne jegliche Grundgebühr. Keine Gebühr auf Retreats, Veranstaltungen und Dienstleistungen; Plattformgebühr von **15 %** nur auf über die öffentliche Seite verkaufte Produkte.
-- **Pro**: monatliche oder jährliche Gebühr, mit **auf null (0 %) reduzierter** Plattformgebühr auf Produkte und zusätzlichen Funktionen.
+- **Gratis**: ohne jegliche Grundgebühr. Keine Gebühr auf Retreats, Veranstaltungen und Dienstleistungen; Plattformgebühr nur auf über die öffentliche Seite verkaufte Produkte, in der auf https://aurya.life/costi veröffentlichten Höhe.
+- **Pro**: monatliche oder jährliche Gebühr, mit reduzierter oder erlassener Plattformgebühr auf Produkte in der auf https://aurya.life/costi veröffentlichten Höhe, und zusätzlichen Funktionen.
 - **Pläne auf Zuweisung** (z. B. Founding, Partner): besondere Konditionen, die der Anbieter bestimmten Veranstaltern gewährt; deren Bedingungen gehen, soweit dort geregelt, den vorliegenden vor.
 
 Die enthaltenen Funktionen, Nutzungslimits und aktuellen Preise jedes Plans sind auf der öffentlichen Seite https://aurya.life/costi beschrieben.
 
 ### 7.2 Plattformgebühr
 
-Die Plattformgebühr gilt **ausschließlich für Produkte** (digitale und physische), die über die öffentliche Seite des Veranstalters verkauft und online über die Plattform bezahlt werden; sie wird zeilenweise auf den Produktbetrag abzüglich etwaiger Rabatte berechnet (Versandkosten ausgenommen) und bei der Zahlung automatisch über Stripe Connect (Application Fee) einbehalten. Retreats, Veranstaltungen und Dienstleistungen erzeugen in keinem Plan eine Gebühr; außerhalb der Plattform vereinnahmte Zahlungen (Überweisungen, Barzahlungen) erzeugen keine Gebühr. Es gilt der Prozentsatz des zum Zahlungszeitpunkt aktiven Plans; bei einer Rückerstattung wird die Gebühr anteilig zurückgegeben.
+Die Plattformgebühr gilt **ausschließlich für Produkte** (digitale und physische), die über die öffentliche Seite des Veranstalters verkauft und online über die Plattform bezahlt werden; sie wird zeilenweise auf den Produktbetrag abzüglich etwaiger Rabatte berechnet (Versandkosten ausgenommen) und bei der Zahlung automatisch über Stripe Connect (Application Fee) einbehalten. Retreats, Veranstaltungen und Dienstleistungen erzeugen in keinem Plan eine Gebühr; außerhalb der Plattform vereinnahmte Zahlungen (Überweisungen, Barzahlungen) erzeugen keine Gebühr. Es gilt der auf https://aurya.life/costi veröffentlichte Prozentsatz des zum Zahlungszeitpunkt aktiven Plans; eine Änderung des Prozentsatzes gilt nur für Zahlungen nach ihrer Veröffentlichung. Bei einer Rückerstattung wird die Gebühr anteilig zurückgegeben.
 
 ### 7.3 Abonnement und Planwechsel
 

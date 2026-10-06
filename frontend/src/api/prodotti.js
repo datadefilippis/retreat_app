@@ -15,9 +15,21 @@ export const prodottiAPI = {
   ritira: (id) => api.post(`/prodotti/${id}/ritira`),
   elimina: (id) => api.delete(`/prodotti/${id}`),
   vendite: (id) => api.get(`/prodotti/${id}/vendite`),
+  // P2 — come arrivano i fisici (modi + spedizione a costo fisso, org-global)
+  consegna: () => api.get('/prodotti/consegna'),
+  salvaConsegna: (data) => api.put('/prodotti/consegna', data),
   uploadFile: (id, file, config) => productsAPI.uploadDigitalFile(id, file, config),
   uploadImage: (id, file, config) => productsAPI.uploadImage(id, file, config),
 };
+
+/** 12 → «12 €», 12.5 → «12,50 €» */
+export function fmtEuro(n) {
+  const v = Number(n || 0);
+  try {
+    return new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'EUR',
+      minimumFractionDigits: Number.isInteger(v) ? 0 : 2, maximumFractionDigits: 2 }).format(v);
+  } catch { return `${v} €`; }
+}
 
 export function fmtBytes(n) {
   if (!n && n !== 0) return '';

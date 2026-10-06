@@ -44,8 +44,10 @@ CURRENT_VERSION_TAG: Final[str] = "v2.12"
 History:
   - v2.12 (P1 prodotti, 2026-10-06) — Termini 6.4 e 7.1-7.2: la
     Commissione di piattaforma riguarda SOLO i Prodotti (digitali e
-    fisici) venduti dalla pagina pubblica dell'Operatore: 15% nel Gratis,
-    0% nel Pro, calcolata riga per riga al netto degli sconti, spedizione
+    fisici) venduti dalla pagina pubblica dell'Operatore, nella misura
+    pubblicata su /costi per il Piano attivo (i numeri vivono SOLO su
+    /costi: cambiarli non richiede un nuovo bump; oggi 15% Gratis, 0 Pro),
+    calcolata riga per riga al netto degli sconti, spedizione
     esclusa, restituita pro-quota nei rimborsi; ritiri, eventi e servizi
     restano senza commissione con qualunque Piano (prima il testo diceva
     ancora «5% Gratis / 0% Pro» su tutti i pagamenti online: non era piu'
@@ -193,7 +195,7 @@ History:
     CERCHIO_SINGOLO_OPTIN. Stesse modifiche in EN/DE/FR.
 """
 
-CURRENT_VERSION_HASH: Final[str] = "34610ce6f076bec8"
+CURRENT_VERSION_HASH: Final[str] = "69137d1e3f451f81"
 """SHA256-hex16 of the rendered IT privacy + terms text bundle.
 
 Computed from the concatenation:

@@ -17,7 +17,7 @@ import { Loader2, UploadCloud, CheckCircle2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { AppLayout, Header } from '../../components/Layout';
 import DpaPactDialog from '../../components/legal/DpaPactDialog';
-import { prodottiAPI, fmtBytes } from '../../api/prodotti';
+import { prodottiAPI, fmtBytes, fmtEuro } from '../../api/prodotti';
 
 const PASSI = [
   { key: 'cosa', label: "Cos'è" },
@@ -241,7 +241,7 @@ export default function ProdottoDigitaleWizard() {
                 <span className="rounded-full bg-secondary px-2 py-0.5 text-[10px] font-semibold uppercase">Digitale</span>
                 <p className="mt-1 font-semibold text-gray-900">{prodotto.name}</p>
                 {prodotto.description && <p className="text-sm text-gray-600">{prodotto.description}</p>}
-                <p className="mt-1 text-base font-bold text-[#376254]">{Number(prodotto.unit_price).toFixed(2)} €</p>
+                <p className="mt-1 text-base font-bold text-[#376254]">{fmtEuro(prodotto.unit_price)}</p>
                 <p className="text-xs text-gray-500">{prodotto.file?.filename} · {fmtBytes(prodotto.file?.size_bytes)}</p>
               </div>
             </div>

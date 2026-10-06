@@ -110,7 +110,7 @@ The booking confirmation, the ticket with QR code and the receipts are sent by e
 
 Online payments are handled via **Stripe Connect** (PCI-DSS Level 1):
 - The End Customer pays by card; funds are credited **directly to the Operator's Stripe account**. The Provider does not collect nor hold booking funds.
-- Retreats, events and services (price-list rows) **are not subject to any Platform fee**, on any Plan. Only on **Products** sold from the Operator's public page (digital and physical products) does the Provider withhold a **Platform fee** (application fee): **15% on the Free plan, 0% (no fee) on the Pro plan** (Art. 7).
+- Retreats, events and services (price-list rows) **are not subject to any Platform fee**, on any Plan. Only on **Products** sold from the Operator's public page (digital and physical products) does the Provider withhold a **Platform fee** (application fee), at the rate published for each Plan on https://aurya.life/costi (Art. 7).
 - Orders and bookings collected outside the Platform (e.g. bank transfers, cash, sales recorded manually in the management software) **are not subject to any fee**.
 - Payment card data never passes through the Provider's or the Operator's servers (see Privacy Policy Art. 9).
 
@@ -149,15 +149,15 @@ The features actually available vary according to the subscribed Plan (Art. 7). 
 
 The Service for Operators is offered under the following Plans:
 
-- **Free**: with no subscription fee. No fee on retreats, events and services; Platform fee of **15%** only on Products sold from the public page.
-- **Pro**: monthly or yearly subscription fee, with the Platform fee on Products **reduced to zero (0%)** and additional features.
+- **Free**: with no subscription fee. No fee on retreats, events and services; Platform fee only on Products sold from the public page, at the rate published on https://aurya.life/costi.
+- **Pro**: monthly or yearly subscription fee, with the Platform fee on Products reduced or waived at the rate published on https://aurya.life/costi, and additional features.
 - **Plans by assignment** (e.g. Founding, Partner): special conditions granted by the Provider to specific Operators; their terms prevail, to the extent regulated therein, over these Terms.
 
 The included features, usage limits and up-to-date prices of each Plan are described on the public page https://aurya.life/costi.
 
 ### 7.2 Platform fee
 
-The Platform fee applies **exclusively to Products** (digital and physical) sold from the Operator's public page and paid online through the Platform; it is calculated row by row on the Product amount net of any discounts (shipping costs excluded) and is withheld automatically via Stripe Connect (application fee) at the time of payment. Retreats, events and services do not generate any fee, on any Plan; payments collected outside the Platform (bank transfers, cash) do not generate any fee. The percentage applied is that of the Plan active at the time of payment; in case of refund the fee is returned proportionally.
+The Platform fee applies **exclusively to Products** (digital and physical) sold from the Operator's public page and paid online through the Platform; it is calculated row by row on the Product amount net of any discounts (shipping costs excluded) and is withheld automatically via Stripe Connect (application fee) at the time of payment. Retreats, events and services do not generate any fee, on any Plan; payments collected outside the Platform (bank transfers, cash) do not generate any fee. The percentage applied is the one published on https://aurya.life/costi for the Plan active at the time of payment; a change of the percentage applies only to payments made after its publication. In case of refund the fee is returned proportionally.
 
 ### 7.3 Subscription and Plan changes
 

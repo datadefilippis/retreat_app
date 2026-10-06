@@ -89,7 +89,10 @@ export default function InlineProdottoCheckout({ orgSlug, row, onClose }) {
     t,
     channel: 'store',
   });
-  const { submitted, shippingSummary, couponValidationState } = checkout;
+  const { submitted, shippingSummary, couponValidationState, setFormOpen } = checkout;
+  // P2 — il gancio carica le opzioni di spedizione solo «a modale aperto»
+  // (lo store): qui il checkout e' sempre aperto, quindi lo si dichiara.
+  useEffect(() => { if (setFormOpen) setFormOpen(true); }, [setFormOpen]);
 
   const submittedRef = useRef(false);
   useEffect(() => { submittedRef.current = !!submitted; }, [submitted]);

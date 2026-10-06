@@ -177,3 +177,12 @@ Vincolo dichiarato: gli eventi sono live e funzionano; ogni tocco agli eventi è
 - guardie: `backend/tests/test_prodotti_p1.py` (12) + `test_rebranding_rb` aggiornato alla nuova verità sui soldi.
 - **Fuori da P1, rimandato**: email FL3 dedicate «Il tuo file è pronto» (oggi la conferma d'ordine storica porta già i link di download); la landing `/dg/` resta la via legacy (col carrello dello store): l'acquisto dei prodotti è dal profilo.
 
+**Lotto P2 «Fisici» + chiarezza IMPLEMENTATO in locale** (6/10 notte, stesso giro `deploy-2026-10-07-prodotti-p1.sh`, attende il via). Decisioni del founder (6/10 sera) recepite:
+- **Formazione fuori da Prodotti**: la carta è sparita; resta una riga che rimanda a Ritiri ed esperienze (`/events/new?formato=formazione`). Nessun conflitto tecnico (la commissione dipende dal tipo di riga: `event_ticket` = 0 e Stripe facoltativo da qualunque porta), ma una porta sola è più chiara.
+- **Commissione in chiaro** in `/prodotti` (`commissione` nel payload, dalla mappa dell'org: «col tuo piano Aurya trattiene il X%» o «nessuna commissione sui prodotti»).
+- **Termini a principio**: §6.4 e §7.1-7.2 ×4 dicono che la commissione riguarda solo i Prodotti «nella misura pubblicata su /costi per il Piano attivo»; i numeri vivono SOLO su `/costi`. Cambiare una percentuale domani non richiede un nuovo bump. Stessa v2.12 (mai andata in prod), hash ricalcolato `69137d1e3f451f81`.
+- **Fisici**: `GET/PUT /prodotti/consegna` (modi dell'org via `update_store_settings` + opzione org-global «Spedizione» a costo fisso con soglia gratis, create-or-update), wizard `/prodotti/nuovo/fisico` in tre gesti (cos'è con quantità o illimitata → come arriva → pubblica), card «Fisico» sul profilo con «Compra»: il checkout in pagina propone ritiro/spedizione, indirizzo e l'opzione (il gancio carica le opzioni solo «a modale aperto»: l'inline lo dichiara con `setFormOpen(true)`); stock validato all'ordine, stati di evasione in Ordini.
+- **Provato in locale**: consegna salvata (ritiro + spedizione 6 €, gratis sopra 50), catalogo pubblico con i due modi, wizard fisico dal browser fino a «Online», ordine fisico via API con account: totale 31 € (25 + 6), evasione «pending», session Stripe di test.
+- **Design**: lista prodotti a card (foto, stato, tipo, prezzo in italiano, venduti, azioni), prezzi con `fmtEuro`, card del profilo con prezzo italiano; mobile verificato.
+- guardie: `TestP2Fisici` in `test_prodotti_p1.py` (consegna, commissione, niente formazione, Termini a principio) + pin dei Termini aggiornati.
+

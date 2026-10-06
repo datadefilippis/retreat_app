@@ -763,7 +763,7 @@ export default function OperatorProfilePage() {
                           {pr.description && <p className="text-sm text-gray-600 line-clamp-2">{pr.description}</p>}
                           <div className="mt-2 flex items-center justify-between gap-3">
                             <span className="text-base font-bold text-[#376254]">
-                              {pr.price != null ? `${Number(pr.price).toFixed(Number(pr.price) % 1 ? 2 : 0)} €` : ''}
+                              {pr.price != null ? new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'EUR', minimumFractionDigits: Number.isInteger(Number(pr.price)) ? 0 : 2, maximumFractionDigits: 2 }).format(Number(pr.price)) : ''}
                             </span>
                             <button type="button" data-testid="prodotto-cta" aria-expanded={aperto}
                                     onClick={() => setExpandedProdotto(aperto ? null : pr.product_id)}

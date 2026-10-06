@@ -112,7 +112,7 @@ La conferma della prenotazione, il biglietto con codice QR e le ricevute vengono
 
 I pagamenti online sono gestiti tramite **Stripe Connect** (PCI-DSS Level 1):
 - Il Cliente finale paga con carta; i fondi vengono accreditati **direttamente sull'account Stripe dell'Operatore**. Il Fornitore non incassa ne' custodisce i fondi delle prenotazioni.
-- Ritiri, eventi e servizi (righe di listino) **non sono soggetti ad alcuna Commissione di piattaforma**, con qualunque Piano. Sui soli **Prodotti** venduti dalla pagina pubblica dell'Operatore (prodotti digitali e fisici) il Fornitore trattiene una **Commissione di piattaforma** (application fee): **15% con il piano Gratis, 0% (nessuna commissione) con il piano Pro** (art. 7).
+- Ritiri, eventi e servizi (righe di listino) **non sono soggetti ad alcuna Commissione di piattaforma**, con qualunque Piano. Sui soli **Prodotti** venduti dalla pagina pubblica dell'Operatore (prodotti digitali e fisici) il Fornitore trattiene una **Commissione di piattaforma** (application fee) nella misura, per ciascun Piano, pubblicata sulla pagina https://aurya.life/costi (art. 7).
 - Gli ordini e le prenotazioni incassati fuori dalla Piattaforma (es. bonifici, contanti, vendite registrate manualmente nel gestionale) **non sono soggetti ad alcuna commissione**.
 - I dati delle carte di pagamento non transitano mai sui server del Fornitore ne' dell'Operatore (vedi Privacy Policy art. 9).
 
@@ -151,15 +151,15 @@ Le funzionalita' effettivamente disponibili variano in funzione del Piano sottos
 
 Il Servizio per gli Operatori e' offerto con i seguenti Piani:
 
-- **Gratis**: senza alcun canone. Nessuna commissione su ritiri, eventi e servizi; Commissione di piattaforma del **15%** sui soli Prodotti venduti dalla pagina pubblica.
-- **Pro**: canone mensile o annuale, con Commissione di piattaforma sui Prodotti **azzerata (0%)** e funzionalita' aggiuntive.
+- **Gratis**: senza alcun canone. Nessuna commissione su ritiri, eventi e servizi; Commissione di piattaforma sui soli Prodotti venduti dalla pagina pubblica, nella misura pubblicata su https://aurya.life/costi.
+- **Pro**: canone mensile o annuale, con Commissione di piattaforma sui Prodotti ridotta o azzerata nella misura pubblicata su https://aurya.life/costi, e funzionalita' aggiuntive.
 - **Piani su assegnazione** (es. Founding, Partner): condizioni particolari concesse dal Fornitore a specifici Operatori; i relativi termini prevalgono, per quanto ivi disciplinato, sui presenti.
 
 Le funzionalita' incluse, i limiti di utilizzo e i prezzi aggiornati di ciascun Piano sono descritti sulla pagina pubblica https://aurya.life/costi.
 
 ### 7.2 Commissione di piattaforma
 
-La Commissione di piattaforma si applica **esclusivamente ai Prodotti** (digitali e fisici) venduti dalla pagina pubblica dell'Operatore e pagati online tramite la Piattaforma; e' calcolata riga per riga sull'importo del Prodotto al netto di eventuali sconti (le spese di spedizione sono escluse) ed e' trattenuta automaticamente tramite Stripe Connect (application fee) al momento del pagamento. Ritiri, eventi e servizi non generano alcuna commissione, con qualunque Piano; i pagamenti incassati fuori dalla Piattaforma (bonifici, contanti) non generano alcuna commissione. La percentuale applicata e' quella del Piano attivo al momento del pagamento; in caso di rimborso la commissione viene restituita in proporzione.
+La Commissione di piattaforma si applica **esclusivamente ai Prodotti** (digitali e fisici) venduti dalla pagina pubblica dell'Operatore e pagati online tramite la Piattaforma; e' calcolata riga per riga sull'importo del Prodotto al netto di eventuali sconti (le spese di spedizione sono escluse) ed e' trattenuta automaticamente tramite Stripe Connect (application fee) al momento del pagamento. Ritiri, eventi e servizi non generano alcuna commissione, con qualunque Piano; i pagamenti incassati fuori dalla Piattaforma (bonifici, contanti) non generano alcuna commissione. La percentuale applicata e' quella pubblicata su https://aurya.life/costi per il Piano attivo al momento del pagamento; una variazione della percentuale vale solo per i pagamenti successivi alla sua pubblicazione. In caso di rimborso la commissione viene restituita in proporzione.
 
 ### 7.3 Sottoscrizione e cambio Piano
 
