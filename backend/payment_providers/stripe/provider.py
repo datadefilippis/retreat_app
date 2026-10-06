@@ -188,13 +188,22 @@ class StripeProvider(PaymentProvider):
                     code=getattr(exc, "code", None),
                 )
 
-        # Application fee (Stripe Connect) sul NET (lordo − sconto). v1 = 0.
-        if request.application_fee_percent and request.application_fee_percent > 0:
-            gross_minor = sum(
-                int(round(float(item.unit_amount) * 100)) * int(item.quantity)
-                for item in request.line_items
-            )
-            net_minor = max(0, gross_minor - discount_minor)
+        # Application fee (Stripe Connect) sul NET (lordo − sconto).
+        # P0 (6/10/2026): se il servizio ha gia' scomposto la fee riga per
+        # riga arriva l'IMPORTO (application_fee_minor) e vince; la
+        # percentuale resta il ramo storico (oggi 0 per tutti).
+        gross_minor = sum(
+            int(round(float(item.unit_amount) * 100)) * int(item.quantity)
+            for item in request.line_items
+        )
+        net_minor = max(0, gross_minor - discount_minor)
+        if request.application_fee_minor is not None:
+            fee_minor = min(max(0, int(request.application_fee_minor)), net_minor)
+            if fee_minor > 0:
+                session_kwargs.setdefault("payment_intent_data", {})[
+                    "application_fee_amount"
+                ] = fee_minor
+        elif request.application_fee_percent and request.application_fee_percent > 0:
             fee_minor = int(round(
                 net_minor * float(request.application_fee_percent) / 100
             ))

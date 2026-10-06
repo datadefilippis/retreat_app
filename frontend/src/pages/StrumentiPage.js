@@ -15,15 +15,40 @@
  * Lo stato arriva da user.sound_crea, derivato dal server a ogni
  * /auth/me — la stessa verita' del portiere delle API.
  */
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ExternalLink, Sparkles } from 'lucide-react';
 import { AppLayout, Header } from '../components/Layout';
 import { useAuth } from '../context/AuthContext';
+import { modulesAPI } from '../api/modules';
+import { paymentConnectionsAPI } from '../api/paymentConnections';
+
+// P0 (6/10/2026) — la scheda Prodotti si accende con P1 (digitali): finche'
+// il wizard non esiste resta «In arrivo», ma dice gia' cosa serve (gli
+// incassi collegati) e lo stato lo legge dal registro dei moduli
+// (/modules/active), non da una costante.
+const PRODOTTI_UI_PRONTA = false;
 
 export default function StrumentiPage() {
   const { user } = useAuth();
   const studioAttivo = !!user?.sound_crea;
+
+  // P0 — il modulo Prodotti nel registro + lo stato degli incassi
+  const [moduloProdotti, setModuloProdotti] = useState(null);   // null = non caricato
+  const [incassi, setIncassi] = useState(null);
+  useEffect(() => {
+    let vivo = true;
+    modulesAPI.listActive()
+      .then(res => { if (vivo) setModuloProdotti((res.data || []).find(m => m.module_key === 'prodotti') || false); })
+      .catch(() => { if (vivo) setModuloProdotti(false); });
+    paymentConnectionsAPI.getStatus()
+      .then(res => { if (vivo) setIncassi(res.data || null); })
+      .catch(() => {});
+    return () => { vivo = false; };
+  }, []);
+  const prodottiNelPiano = !!(moduloProdotti && moduloProdotti.is_active);
+  const prodottiAttivi = prodottiNelPiano && PRODOTTI_UI_PRONTA;
+  const incassiPronti = !!incassi?.checkout_available;
 
   /* il registro delle carte: aggiungerne una domani = una voce qui */
   const strumenti = [
@@ -52,6 +77,30 @@ export default function StrumentiPage() {
             testid: 'strumenti-attiva-pro' },
           { label: 'Scopri Crea Studio', to: '/sound/studio' },
         ],
+    },
+    {
+      key: 'prodotti',
+      nome: 'Prodotti',
+      copertina: '/media/hero-blog.webp',
+      focus: '50% 40%',
+      attivo: prodottiAttivi,
+      inArrivo: !prodottiAttivi,
+      claim: 'Vendi dal tuo profilo: libri, kit, guide, audio.',
+      descrizione:
+        'Prodotti fisici e digitali accanto al tuo listino: chi ti segue '
+        + 'compra con l\'account Aurya, tu incassi con Stripe sul tuo conto. '
+        + 'Consegna, download protetti e ordini sono già nel gestionale.',
+      dettaglio: prodottiAttivi
+        ? (incassiPronti ? 'Incluso nel tuo piano. Incassi collegati.' : 'Incluso nel tuo piano. Prima collega gli incassi.')
+        : (prodottiNelPiano
+          ? (incassiPronti
+            ? 'In arrivo: è nel tuo piano e i tuoi incassi sono già collegati.'
+            : 'In arrivo: intanto collega gli incassi, è il primo passo per vendere.')
+          : 'In arrivo.'),
+      azioni: prodottiAttivi
+        ? [{ label: 'I miei prodotti', to: '/prodotti', primary: true, testid: 'strumenti-apri-prodotti' }]
+        : [{ label: incassiPronti ? 'Incassi collegati' : 'Collega gli incassi', to: '/settings',
+             primary: !incassiPronti, testid: 'strumenti-collega-incassi' }],
     },
   ];
 
@@ -83,7 +132,7 @@ export default function StrumentiPage() {
                       ? 'border-emerald-300/60 bg-emerald-950/40 text-emerald-200'
                       : 'border-amber-300/60 bg-amber-950/40 text-amber-200'}`}
                   data-testid={`strumento-${s.key}-stato`}>
-                  {s.attivo ? 'Attivo' : 'Da attivare'}
+                  {s.attivo ? 'Attivo' : (s.inArrivo ? 'In arrivo' : 'Da attivare')}
                 </span>
                 <div className="absolute bottom-4 left-5 right-5">
                   <h3 className="font-display text-xl text-white">{s.nome}</h3>

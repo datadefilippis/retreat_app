@@ -209,14 +209,15 @@ async def refund_order(
             # non si blocca mai per la contabilita' interna.
             try:
                 from services.platform_fee_ledger import (
-                    record_platform_fee, resolve_fee_percent)
+                    record_platform_fee, resolve_fee_percent_for_order)
                 await record_platform_fee(
                     entry_key=f"refund:{order_id}:{seq}",
                     organization_id=org_id,
                     order_id=order_id,
                     kind="refund",
                     amount_minor=-int(item["amount_minor"]),
-                    fee_percent=await resolve_fee_percent({}, org_id),
+                    # P0 — la percentuale EFFETTIVA dell'incasso (fee per riga)
+                    fee_percent=await resolve_fee_percent_for_order(order_id, org_id),
                     currency=(order.get("currency") or "eur"),
                     row_seq=seq,
                 )

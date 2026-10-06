@@ -49,7 +49,9 @@ logger = logging.getLogger(__name__)
 # I tipi di prodotto "vendibili" del mondo snello: righe di listino
 # (service) e ritiri (event_ticket). I tipi del commerce legacy restano
 # fuori scope PV7 (congelati dietro flag per-org, vedi TW3).
-SELLABLE_ITEM_TYPES = ("service", "event_ticket")
+# P0 (6/10/2026): anche i PRODOTTI del profilo (fisici e digitali) si
+# vendono solo dopo il patto.
+SELLABLE_ITEM_TYPES = ("service", "event_ticket", "physical", "digital")
 
 DPA_REQUIRED_DETAIL = {
     "code": "DPA_REQUIRED",

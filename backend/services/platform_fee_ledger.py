@@ -45,6 +45,14 @@ async def resolve_fee_percent(session: dict, org_id: str) -> float:
     cambi piano avvenuti nel frattempo), poi dall'org come fallback
     per le session create prima di SA1."""
     meta = session.get("metadata") or {}
+    # P0 (6/10/2026) — la fee per riga timbra la percentuale EFFETTIVA
+    # (importo/transato): e' quella vera anche su ordini misti
+    eff = meta.get("application_fee_effective_percent")
+    if eff not in (None, ""):
+        try:
+            return float(eff)
+        except (TypeError, ValueError):
+            pass
     raw = meta.get("application_fee_percent")
     if raw not in (None, ""):
         try:
@@ -68,13 +76,23 @@ async def record_platform_fee(
     currency: Optional[str],
     row_seq: Optional[int] = None,
     collected_at: Optional[str] = None,
+    fee_minor: Optional[int] = None,
+    fee_by_type: Optional[dict] = None,
 ) -> None:
     """Upsert idempotente di una riga del ledger. Best-effort: un
     errore qui NON deve mai bloccare il flusso di pagamento — si
-    logga e si va avanti (il backfill può ricostruire)."""
+    logga e si va avanti (il backfill può ricostruire).
+
+    P0 (6/10/2026): `fee_minor` esplicito (la fee per riga, esatta al
+    centesimo) vince sul calcolo dalla percentuale; `fee_by_type` e' la
+    scomposizione per tipo di riga, informativa."""
     from database import db
     from models.common import utc_now
 
+    if fee_minor is None:
+        fee_minor = (compute_fee_minor(int(amount_minor), fee_percent)
+                     if amount_minor >= 0
+                     else -compute_fee_minor(-int(amount_minor), fee_percent))
     try:
         await db.platform_fee_ledger.update_one(
             {"entry_key": entry_key},
@@ -86,9 +104,8 @@ async def record_platform_fee(
                 "row_seq": row_seq,
                 "amount_minor": int(amount_minor),
                 "fee_percent": float(fee_percent),
-                "fee_minor": compute_fee_minor(int(amount_minor), fee_percent)
-                             if amount_minor >= 0
-                             else -compute_fee_minor(-int(amount_minor), fee_percent),
+                "fee_minor": int(fee_minor),
+                "fee_by_type": fee_by_type or None,
                 "currency": (currency or "eur").lower(),
                 "collected_at": collected_at or utc_now().isoformat(),
             }},
@@ -112,6 +129,23 @@ async def record_from_session(
     if not amount or int(amount) <= 0:
         return
     fee_percent = await resolve_fee_percent(session, organization_id)
+    # P0 — l'importo esatto timbrato alla creazione (fee per riga)
+    meta = session.get("metadata") or {}
+    fee_minor = None
+    fee_by_type = None
+    raw_minor = meta.get("application_fee_minor")
+    if raw_minor not in (None, ""):
+        try:
+            fee_minor = int(raw_minor)
+        except (TypeError, ValueError):
+            fee_minor = None
+    raw_types = meta.get("fee_by_type")
+    if raw_types:
+        try:
+            import json as _json
+            fee_by_type = _json.loads(raw_types)
+        except Exception:  # noqa: BLE001
+            fee_by_type = None
     await record_platform_fee(
         entry_key=str(session.get("id") or f"order:{order_id}:{kind}:{row_seq}"),
         organization_id=organization_id,
@@ -121,4 +155,23 @@ async def record_from_session(
         fee_percent=fee_percent,
         currency=session.get("currency"),
         row_seq=row_seq,
+        fee_minor=fee_minor,
+        fee_by_type=fee_by_type,
     )
+
+
+async def resolve_fee_percent_for_order(order_id: str, org_id: str) -> float:
+    """P0 — per i RIMBORSI: la percentuale effettiva con cui l'ordine e'
+    stato incassato (ultima riga positiva del ledger), cosi' lo storno
+    pro-quota e' coerente con l'incasso anche su ordini misti. Fallback:
+    l'org (storico)."""
+    from database import db
+    try:
+        riga = await db.platform_fee_ledger.find_one(
+            {"order_id": order_id, "organization_id": org_id, "amount_minor": {"$gt": 0}},
+            {"_id": 0, "fee_percent": 1}, sort=[("collected_at", -1)])
+        if riga and riga.get("fee_percent") is not None:
+            return float(riga["fee_percent"])
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("platform_fee_ledger: lettura fee ordine %s fallita: %s", order_id, exc)
+    return await resolve_fee_percent({}, org_id)

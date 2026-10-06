@@ -111,6 +111,14 @@ class CommercialPlan(BaseModel):
     # connesso): la UI le dichiara distinte.
     transaction_fee_percent: Optional[float] = None
 
+    # P0 (6/10/2026) — LA FEE PER TIPO DI RIGA: {"physical": 15, "digital": 15}
+    # nel Gratis, zeri nel Pro (decisione founder). Ritiri e servizi non
+    # hanno chiave: zero per sempre. Propagata sull'org come
+    # `application_fee_by_type` al provisioning; services/fee_per_riga la
+    # legge e la applica riga per riga. None = piano che non governa la
+    # fee per tipo (nessuna fee sui prodotti).
+    transaction_fee_by_type: Optional[Dict[str, float]] = None
+
     # -- Governance (Phase 2a) --------------------------------------------------
     is_archived: bool = False                  # Archived plans: not available for new subs
     admin_modified_at: Optional[datetime] = None  # Set when admin edits via catalog UI

@@ -67,6 +67,10 @@ class CheckoutSessionRequest:
     metadata: dict[str, str] = field(default_factory=dict)
     idempotency_key: Optional[str] = None
     application_fee_percent: Decimal = Decimal("0")
+    # P0 (6/10/2026) — la fee gia' calcolata RIGA PER RIGA, in centesimi
+    # (services/fee_per_riga). Se presente vince sulla percentuale:
+    # il provider la passa com'e' (tetto: il netto della session).
+    application_fee_minor: Optional[int] = None
     # R1 — importo sconto (coupon) in major units. Il provider lo applica come
     # discount nativo (Stripe coupon one-off) così l'addebito = Σ(line_items) −
     # discount = order.total. 0 = nessuno sconto.

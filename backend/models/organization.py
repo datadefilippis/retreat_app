@@ -311,6 +311,11 @@ class Organization(OrganizationBase):
     # data-entry typo can't accidentally drain a merchant's revenue.
     application_fee_percent: float = Field(default=0.0, ge=0, le=10)
 
+    # P0 (6/10/2026) — la fee per TIPO di riga (prodotti fisici/digitali),
+    # propagata dal piano al provisioning. Ritiri e servizi: nessuna
+    # chiave, zero. Vedi services/fee_per_riga.
+    application_fee_by_type: Dict[str, float] = Field(default_factory=dict)
+
     # ── P2 (10/9/2026, piano di business): il BONIFICO e' la strada
     # principale della caparra. Se l'operatore mette l'IBAN, chi chiede
     # un posto in un ritiro «su richiesta» riceve subito le istruzioni

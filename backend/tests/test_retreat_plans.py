@@ -35,6 +35,7 @@ from services.seed_pricing import (
     COMMERCE_PLANS,
     CUSTOMERS_LIGHT_PLANS,
     PRODUCT_CATALOG_PLANS,
+    PRODOTTI_PLANS,   # P0 (6/10/2026): modulo prodotti
 )
 
 ALL_PRICING = (
@@ -43,6 +44,7 @@ ALL_PRICING = (
     + PRODUCT_CATALOG_PLANS
     + COMMERCE_PLANS
     + CUSTOMERS_LIGHT_PLANS
+    + PRODOTTI_PLANS
 )
 PRICING_BY_SLUG = {p["slug"]: p for p in ALL_PRICING}
 

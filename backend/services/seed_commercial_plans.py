@@ -367,6 +367,8 @@ _TIERS_BASE = {
     "product_catalog": "product_catalog_retreat_free",
     "commerce": "commerce_retreat",
     "customers_light": "customers_light_free",
+    # P0 (6/10/2026) — il modulo Prodotti (fisici e digitali dal profilo)
+    "prodotti": "prodotti_retreat_free",
 }
 _TIERS_PRO = {
     "cashflow_monitor": "cashflow_monitor_retreat",
@@ -374,7 +376,15 @@ _TIERS_PRO = {
     "product_catalog": "product_catalog_retreat_pro",
     "commerce": "commerce_retreat_pro",
     "customers_light": "customers_light_pro",
+    "prodotti": "prodotti_retreat_pro",
 }
+
+# P0 (6/10/2026, decisione founder): sui PRODOTTI venduti dal profilo la
+# piattaforma trattiene il 15% nel Gratis e zero in ogni abbonamento;
+# ritiri e servizi restano a zero per sempre (nessuna chiave). Il seed la
+# riscrive a ogni avvio (campo strutturale, non admin-protetto).
+FEE_PRODOTTI_GRATIS = {"physical": 15.0, "digital": 15.0}
+FEE_PRODOTTI_ABBONATO = {"physical": 0.0, "digital": 0.0}
 
 RETREAT_COMMERCIAL_PLANS: List[dict] = [
     {
@@ -390,6 +400,7 @@ RETREAT_COMMERCIAL_PLANS: List[dict] = [
         "is_self_serve": False,   # baseline al signup, non un target di checkout
         "sort_order": 10,
         "transaction_fee_percent": 0.0,   # P1 10/9/2026: zero commissioni, sempre
+        "transaction_fee_by_type": dict(FEE_PRODOTTI_GRATIS),   # P0: solo sui prodotti
         "platform_limits": {"team_members": 2},
         "module_plans": dict(_TIERS_BASE),
         "features_display": [
@@ -423,6 +434,7 @@ RETREAT_COMMERCIAL_PLANS: List[dict] = [
         "is_self_serve": False,
         "sort_order": 11,
         "transaction_fee_percent": 0.0,
+        "transaction_fee_by_type": dict(FEE_PRODOTTI_ABBONATO),
         "platform_limits": {"team_members": 2},
         "module_plans": dict(_TIERS_BASE),
         "features_display": [
@@ -452,6 +464,7 @@ RETREAT_COMMERCIAL_PLANS: List[dict] = [
         "is_self_serve": True,
         "sort_order": 12,
         "transaction_fee_percent": 0.0,
+        "transaction_fee_by_type": dict(FEE_PRODOTTI_ABBONATO),
         "platform_limits": {"team_members": 5},
         "module_plans": dict(_TIERS_PRO),
         "features_display": [
@@ -481,6 +494,7 @@ RETREAT_COMMERCIAL_PLANS: List[dict] = [
         "is_self_serve": False,
         "sort_order": 13,
         "transaction_fee_percent": 0.0,   # trattamento Pro (zero fee)
+        "transaction_fee_by_type": dict(FEE_PRODOTTI_ABBONATO),
         "platform_limits": {"team_members": 5},
         "module_plans": dict(_TIERS_PRO),   # i limiti del Pro: chi c'era prima li aveva
         "features_display": [
@@ -504,6 +518,7 @@ RETREAT_COMMERCIAL_PLANS: List[dict] = [
         "is_self_serve": False,
         "sort_order": 14,
         "transaction_fee_percent": 0.0,
+        "transaction_fee_by_type": dict(FEE_PRODOTTI_ABBONATO),
         "platform_limits": {"team_members": 5},
         "module_plans": dict(_TIERS_PRO),
         "features_display": [

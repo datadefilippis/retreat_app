@@ -149,6 +149,10 @@ services:
       - METRICS_AUTH_TOKEN=${METRICS_AUTH_TOKEN:-}
     volumes:
       - backend_uploads:/app/uploads
+      # P0 (6/10/2026) — i file dei prodotti digitali (private_uploads/)
+      # stanno su un volume: prima vivevano nel container e un
+      # force-recreate li avrebbe persi. Mai serviti come statici.
+      - backend_private_uploads:/app/private_uploads
     networks:
       - internal
     # Not exposed to host — nginx-proxy reaches it via internal network
@@ -231,6 +235,8 @@ volumes:
     name: ms-mongo-data
   backend_uploads:
     name: ms-backend-uploads
+  backend_private_uploads:
+    name: ms-backend-private-uploads
   certbot_conf:
     name: ms-certbot-conf
   certbot_www:

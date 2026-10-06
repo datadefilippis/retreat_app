@@ -239,6 +239,15 @@ async def create_checkout_session(org_id: str, order: dict) -> Optional[dict]:
     # provider). Invariante: Σ(line_items) − discount == order["total"].
     line_item_models, discount_amount = _build_checkout_lines(order)
 
+    # P0 (6/10/2026) — la commissione la decide la RIGA: prodotti fisici e
+    # digitali secondo il piano (15% Gratis, 0 Pro), ritiri e servizi 0.
+    # Un ordine di soli ritiri produce fee 0 identica a oggi.
+    from services.fee_per_riga import (fee_per_ordine, quota_fee, metadata_fee,
+                                       totale_ordine_minor)
+    fee_ordine_minor, fee_per_tipo = await fee_per_ordine(
+        org_doc_for_provider, order, discount_amount)
+    fee_session_minor = fee_ordine_minor
+
     # Sub-stream 2.5: a deterministic idempotency key prevents Stripe
     # from creating a second Session if afianco retries the request
     # within Stripe's 24h idempotency window. Same input (order_id) →
@@ -284,6 +293,10 @@ async def create_checkout_session(org_id: str, order: dict) -> Optional[dict]:
             "schedule_id": schedule_doc["id"],
             "schedule_row_seq": str(deposit_row["seq"]),
         }
+        # P0: la caparra porta la QUOTA di fee proporzionale all'importo
+        # (per i ritiri e' 0: la riga evento non ha fee)
+        fee_session_minor = quota_fee(fee_ordine_minor, int(deposit_row["amount_minor"]),
+                                      totale_ordine_minor(order))
         logger.info(
             "payment_checkout: deposit mode for order %s — charging row %s (%s minor)",
             order_id, deposit_row["seq"], deposit_row["amount_minor"],
@@ -299,6 +312,8 @@ async def create_checkout_session(org_id: str, order: dict) -> Optional[dict]:
         customer_email=customer_email,
         idempotency_key=idempotency_key,
         application_fee_percent=application_fee_percent,
+        # P0 — l'importo per riga vince sulla percentuale (vedi provider)
+        application_fee_minor=fee_session_minor,
         discount_amount=discount_amount,  # R1
         metadata={
             "checkout_type": "commerce",
@@ -312,6 +327,12 @@ async def create_checkout_session(org_id: str, order: dict) -> Optional[dict]:
             # fee si timbra con il valore VERO della creazione, immune
             # ai cambi piano avvenuti nel frattempo.
             "application_fee_percent": str(application_fee_percent),
+            # P0 — fee per riga: importo, scomposizione per tipo e
+            # percentuale effettiva (per il ledger e i rimborsi pro-quota)
+            **metadata_fee(fee_session_minor,
+                           fee_per_tipo if deposit_row is None else {},
+                           sum(int(round(float(li.unit_amount) * 100)) for li in line_item_models)
+                           - int(round(float(discount_amount) * 100))),
             # Fase 2 S2 — presente solo per session-caparra (vuoto = full).
             **schedule_metadata,
         },
@@ -663,6 +684,11 @@ async def create_row_checkout_session(
     provider = PaymentProviderRegistry.get_for_org(org_doc_for_provider)
     application_fee_percent = _Decimal(str(
         (org_doc_for_provider or {}).get("application_fee_percent", 0) or 0))
+    # P0 — quota di fee per riga proporzionale all'importo della rata
+    from services.fee_per_riga import (fee_per_ordine, quota_fee, metadata_fee,
+                                       totale_ordine_minor)
+    _fee_tot, _ = await fee_per_ordine(org_doc_for_provider, order)
+    fee_session_minor = quota_fee(_fee_tot, int(row["amount_minor"]), totale_ordine_minor(order))
 
     from services.currency_service import get_currency_for_order
     order_id = order["id"]
@@ -686,6 +712,7 @@ async def create_row_checkout_session(
         # session scaduta) — il link /pay resta quindi sempre vivo
         idempotency_key=f"checkout:{order_id}:row:{row_seq}",
         application_fee_percent=application_fee_percent,
+        application_fee_minor=fee_session_minor,   # P0
         discount_amount=_Decimal("0"),
         metadata={
             "checkout_type": "commerce",
@@ -696,6 +723,7 @@ async def create_row_checkout_session(
             "connected_account_id": connected_account_id,
             # SA1 — vedi checkout principale: fee timbrata alla creazione
             "application_fee_percent": str(application_fee_percent),
+            **metadata_fee(fee_session_minor, {}, int(row["amount_minor"])),   # P0
             "schedule_id": schedule_doc["id"],
             "schedule_row_seq": str(row_seq),
         },

@@ -20,6 +20,7 @@ Limit values:
 """
 
 import logging
+from datetime import datetime
 from typing import Dict, List
 
 from models.pricing_plan import PricingPlan
@@ -517,6 +518,33 @@ COMMERCE_PLANS.append({
 })
 
 
+# ── P0 (6/10/2026) — modulo PRODOTTI (fisici e digitali dal profilo) ──────
+# Due tier: Gratis e Pro. `products_max` = prodotti a catalogo,
+# `max_file_mb` = dimensione massima del file digitale, `vendita` = il
+# modulo e' acceso (-1: illimitato). La fee NON sta qui: vive sul piano
+# commerciale (transaction_fee_by_type) e sull'org (application_fee_by_type).
+PRODOTTI_PLANS: List[dict] = [
+    {
+        "module_key": "prodotti",
+        "slug": "prodotti_retreat_free",
+        "name": "Prodotti Gratis",
+        "price_monthly": 0.0,
+        "currency": "EUR",
+        "limits": {"vendita": -1, "products_max": 20, "max_file_mb": 100},
+        "sort_order": 10,
+    },
+    {
+        "module_key": "prodotti",
+        "slug": "prodotti_retreat_pro",
+        "name": "Prodotti Pro",
+        "price_monthly": 0.0,
+        "currency": "EUR",
+        "limits": {"vendita": -1, "products_max": 200, "max_file_mb": 500},
+        "sort_order": 11,
+    },
+]
+
+
 # ── Target limits for migration ────────────────────────────────────────────
 # Maps slug -> (module_key, target_limits). Used by migrate_pricing_plans()
 # to update existing plans in DB to match current seed definitions.
@@ -538,6 +566,7 @@ async def seed_pricing_plans_if_empty() -> None:
     await _seed_module_plans("product_catalog", PRODUCT_CATALOG_PLANS)
     await _seed_module_plans("commerce", COMMERCE_PLANS)
     await _seed_module_plans("customers_light", CUSTOMERS_LIGHT_PLANS)
+    await _seed_module_plans("prodotti", PRODOTTI_PLANS)
     # Wave 7A (2026-05): commerce_signals removed from platform.
 
 
@@ -646,7 +675,7 @@ async def ensure_pricing_plans_exist() -> None:
     all_plans = (
         AI_ASSISTANT_PLANS + CASHFLOW_MONITOR_PLANS
         + PRODUCT_CATALOG_PLANS + COMMERCE_PLANS
-        + CUSTOMERS_LIGHT_PLANS
+        + CUSTOMERS_LIGHT_PLANS + PRODOTTI_PLANS
     )
     inserted = 0
     for plan_data in all_plans:
@@ -1216,6 +1245,72 @@ async def migrate_stripe_prezzi_2027_v1() -> None:
         "applied_at": __import__("datetime").datetime.now(__import__("datetime").timezone.utc),
     })
     logger.info("migrate_stripe_prezzi_2027_v1: done")
+
+
+async def migrate_prodotti_p0_v1() -> None:
+    """P0 (6/10/2026) — il modulo «prodotti» e la fee per riga arrivano
+    anche alle org GIA' esistenti (il provisioning li scrive solo ai
+    cambi piano). Per ogni org con un piano retreat_*:
+      - organization_modules.prodotti attivo (come sync_module_activation);
+      - un ModuleSubscription attivo al tier del piano, se manca;
+      - application_fee_by_type copiata dal piano (15% prodotti nel
+        Gratis, 0 negli abbonamenti). Nessun'altra riga toccata.
+    Flag-gated, idempotente, best-effort per org (un'org rotta non ferma
+    le altre). Scrive nel log quante org ha toccato."""
+    from database import db, organizations_collection, organization_modules_collection
+    from models.common import generate_id, utc_now
+    from models.subscription import ModuleSubscription
+    from services.fee_per_riga import mappa_pulita
+    migrations = db["migrations"]
+    if await migrations.find_one({"_id": "prodotti_p0_v1"}):
+        return
+    logger.info("migrate_prodotti_p0_v1: applying...")
+    piani = {p["slug"]: p async for p in db["commercial_plans"].find({"slug": {"$regex": "^retreat_"}}, {"_id": 0})}
+    tier_ids = {}
+    for slug in ("prodotti_retreat_free", "prodotti_retreat_pro"):
+        pp = await subscription_repository.get_pricing_plan_by_slug(module_key="prodotti", slug=slug)
+        if pp:
+            tier_ids[slug] = pp["id"]
+    toccate = 0
+    now_iso = utc_now().isoformat()
+    async for org in organizations_collection.find(
+            {"commercial_plan_slug": {"$regex": "^retreat_"}},
+            {"_id": 0, "id": 1, "commercial_plan_slug": 1, "application_fee_by_type": 1}):
+        piano = piani.get(org.get("commercial_plan_slug"))
+        if not piano:
+            continue
+        try:
+            tier_slug = (piano.get("module_plans") or {}).get("prodotti")
+            if tier_slug and tier_slug in tier_ids:
+                await organization_modules_collection.update_one(
+                    {"organization_id": org["id"], "module_key": "prodotti"},
+                    {"$set": {"is_active": True},
+                     "$setOnInsert": {"id": generate_id(), "activated_at": now_iso}},
+                    upsert=True)
+                if not await subscription_repository.get_active_subscription(org["id"], "prodotti"):
+                    sub = ModuleSubscription(
+                        organization_id=org["id"], module_key="prodotti",
+                        pricing_plan_id=tier_ids[tier_slug], assigned_by="migrate_prodotti_p0_v1",
+                        notes=f"P0: tier dal piano '{piano['slug']}'",
+                        commercial_plan_slug=piano["slug"])
+                    doc = sub.model_dump()
+                    for f in ("started_at", "expires_at", "cancelled_at", "created_at", "updated_at"):
+                        if isinstance(doc.get(f), datetime):
+                            doc[f] = doc[f].isoformat()
+                    await subscription_repository.create_subscription(doc)
+            if not isinstance(org.get("application_fee_by_type"), dict):
+                await organizations_collection.update_one(
+                    {"id": org["id"]},
+                    {"$set": {"application_fee_by_type": mappa_pulita(piano.get("transaction_fee_by_type"))}})
+            toccate += 1
+        except Exception as exc:  # noqa: BLE001 — un'org rotta non ferma le altre
+            logger.error("migrate_prodotti_p0_v1: org %s saltata: %s", org["id"], exc)
+    await migrations.insert_one({
+        "_id": "prodotti_p0_v1",
+        "applied_at": __import__("datetime").datetime.now(__import__("datetime").timezone.utc),
+        "orgs": toccate,
+    })
+    logger.info("migrate_prodotti_p0_v1: done (%d org)", toccate)
 
 
 async def migrate_zero_commissioni_v1() -> None:

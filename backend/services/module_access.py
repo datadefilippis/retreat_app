@@ -762,6 +762,14 @@ MODULE_OWNERSHIP = {
     # RS4 — la vista Clienti (overview/lista/export/timeline) era
     # protetta solo lato frontend: ora dichiara il suo modulo
     "customer_insights": "customers_light",
+    # P0 (6/10/2026) — il modulo Prodotti (fisici e digitali dal profilo)
+    "prodotti": "prodotti",
+}
+
+# P0 — interruttore di emergenza per modulo: il flag per-org spegne il
+# modulo anche se il piano lo include (regia, senza deploy, con audit).
+KILL_SWITCH_FLAGS = {
+    "prodotti": "prodotti_spento",
 }
 
 
@@ -787,6 +795,16 @@ def require_module(feature_key: str):
                         "module_key": module_key,
                         "message": f"Il modulo '{module_key}' non è attivo "
                                    f"per questa organizzazione."})
+        flag = KILL_SWITCH_FLAGS.get(module_key)
+        if flag:
+            from services import feature_flag_service
+            if await feature_flag_service.is_enabled(current_user["organization_id"], flag):
+                raise HTTPException(
+                    status_code=http_status.HTTP_403_FORBIDDEN,
+                    detail={"error": "module_not_active",
+                            "module_key": module_key,
+                            "message": f"Il modulo '{module_key}' è stato spento "
+                                       f"dalla regia per questa organizzazione."})
         return current_user
 
     return _gate

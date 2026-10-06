@@ -180,6 +180,10 @@ async def provision_commercial_plan(
     plan_fee = plan.get("transaction_fee_percent")
     if plan_fee is not None:
         org_fields["application_fee_percent"] = float(plan_fee)
+    # P0 (6/10/2026) — la fee per tipo di riga segue il piano: Gratis 15%
+    # sui prodotti, Pro 0. None = il piano non la governa → campo vuoto.
+    from services.fee_per_riga import mappa_pulita
+    org_fields["application_fee_by_type"] = mappa_pulita(plan.get("transaction_fee_by_type"))
     if stripe_subscription_id is not None:
         org_fields["stripe_subscription_id"] = stripe_subscription_id
     if trial_ends_at is not None:
