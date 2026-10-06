@@ -50,7 +50,7 @@ export default function ProdottoFisicoWizard() {
   const [form, setForm] = useState({ name: '', description: '', long_description: '', unit_price: '', quantita: '', illimitata: true });
   const [altro, setAltro] = useState(false);
   const [prodotto, setProdotto] = useState(null);
-  const [coverFile, setCoverFile] = useState(null);
+  const [coverFiles, setCoverFiles] = useState([]);   // GL: piu' foto, la prima e' la principale
   const [consegna, setConsegna] = useState({ ritiro: false, spedizione: true, costo_spedizione: '', soglia_gratis: '' });
   const [consegnaSalvata, setConsegnaSalvata] = useState(false);
   const [salvando, setSalvando] = useState(false);
@@ -96,9 +96,13 @@ export default function ProdottoFisicoWizard() {
       } else {
         p = (await prodottiAPI.create(payload)).data;
       }
-      if (coverFile) {
-        try { const res = await prodottiAPI.uploadImage(p.id, coverFile); p = { ...p, image_url: res.data?.image_url || p.image_url }; setCoverFile(null); }
-        catch { toast.error('La foto non è stata caricata: puoi riprovare dopo.'); }
+      if (coverFiles.length) {
+        try {
+          let ultimo = null;
+          for (const f of coverFiles) ultimo = (await prodottiAPI.aggiungiFoto(p.id, f)).data;
+          if (ultimo) p = { ...p, image_url: ultimo.image_url, galleria: ultimo.galleria };
+          setCoverFiles([]);
+        } catch { toast.error('Una foto non è stata caricata: puoi riprovare dalla scheda.'); }
       }
       setProdotto(p); setPasso(1);
     } catch (err) {
@@ -176,7 +180,7 @@ export default function ProdottoFisicoWizard() {
                     <span className="pointer-events-none absolute inset-y-0 right-3.5 flex items-center text-sm text-gray-400">€</span>
                   </div>
                 </Campo>
-                <SceltaImmagine file={coverFile} onFile={setCoverFile} label="Foto (facoltativa)" />
+                <SceltaImmagine multiple files={coverFiles} onFiles={setCoverFiles} label="Foto (facoltativa)" />
               </div>
               <Campo label="Quantità disponibile" hint="Con una quantità, il prodotto sparisce dal profilo quando finisce.">
                 <div className="flex flex-wrap items-center gap-3">

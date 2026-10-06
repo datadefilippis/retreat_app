@@ -36,7 +36,7 @@ export default function ProdottoDigitaleWizard() {
   const [prodotto, setProdotto] = useState(null);        // creato al passo 1
   const [salvando, setSalvando] = useState(false);
   const [pactOpen, setPactOpen] = useState(false);
-  const [coverFile, setCoverFile] = useState(null);
+  const [coverFiles, setCoverFiles] = useState([]);   // GL: piu' foto, la prima e' la principale
   const [file, setFile] = useState(null);
   const [avanzamento, setAvanzamento] = useState(null);   // 0..100 | null
   const [ragioni, setRagioni] = useState([]);
@@ -76,12 +76,13 @@ export default function ProdottoDigitaleWizard() {
       } else {
         p = (await prodottiAPI.create(payload)).data;
       }
-      if (coverFile) {
+      if (coverFiles.length) {
         try {
-          const res = await prodottiAPI.uploadImage(p.id, coverFile);
-          p = { ...p, image_url: res.data?.image_url || p.image_url };
-          setCoverFile(null);
-        } catch { toast.error('L\'immagine non è stata caricata: puoi riprovare dopo.'); }
+          let ultimo = null;
+          for (const f of coverFiles) ultimo = (await prodottiAPI.aggiungiFoto(p.id, f)).data;
+          if (ultimo) p = { ...p, image_url: ultimo.image_url, galleria: ultimo.galleria };
+          setCoverFiles([]);
+        } catch { toast.error('Una foto non è stata caricata: puoi riprovare dalla scheda.'); }
       }
       setProdotto(p);
       setPasso(1);
@@ -167,7 +168,7 @@ export default function ProdottoDigitaleWizard() {
                     <span className="pointer-events-none absolute inset-y-0 right-3.5 flex items-center text-sm text-gray-400">€</span>
                   </div>
                 </Campo>
-                <SceltaImmagine file={coverFile} onFile={setCoverFile} label="Immagine (facoltativa)" />
+                <SceltaImmagine multiple files={coverFiles} onFiles={setCoverFiles} label="Immagine (facoltativa)" />
               </div>
               <button type="button" onClick={() => setAltro(a => !a)} className="text-sm font-medium text-[#2f5749] underline-offset-4 hover:underline">
                 {altro ? 'Nascondi' : 'Altro'}: racconto completo, scaricamenti, scadenza

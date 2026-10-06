@@ -21,7 +21,7 @@ import logging
 from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Literal, Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Response, status
+from fastapi import APIRouter, Depends, File, HTTPException, Request, Response, UploadFile, status
 from pydantic import BaseModel, ConfigDict, Field
 
 from auth import get_verified_user_strict as get_verified_user
@@ -147,6 +147,7 @@ def _riga(prod: dict, venduti: Dict[str, int], pre: Dict[str, Any]) -> dict:
         "unit_price": prod.get("unit_price"),
         "currency": prod.get("currency") or "EUR",
         "image_url": prod.get("image_url"),
+        "galleria": _galleria(prod),
         "category": prod.get("category"),
         "is_published": bool(prod.get("is_published")),
         "stock_quantity": prod.get("stock_quantity"),
@@ -160,6 +161,17 @@ def _riga(prod: dict, venduti: Dict[str, int], pre: Dict[str, Any]) -> dict:
         "public_slug": pre.get("public_slug"),
         "ragioni_pubblicazione": _ragioni_pubblicazione(prod, pre),
     }
+
+
+def _galleria(prod: dict) -> List[str]:
+    """GL (6/10/2026 notte) — le foto del prodotto, in ordine: la principale
+    (image_url) per prima, poi le altre di metadata.galleria, senza doppioni."""
+    meta = prod.get("metadata") or {}
+    out: List[str] = []
+    for u in [prod.get("image_url")] + list(meta.get("galleria") or []):
+        if u and u not in out:
+            out.append(u)
+    return out
 
 
 async def _mio_prodotto(product_id: str, org_id: str) -> dict:
@@ -339,6 +351,73 @@ async def dettaglio_prodotto(product_id: str, current_user: dict = Depends(get_v
     pre = await _prerequisiti(org_id)
     venduti = await _venduti_30gg(org_id, [product_id])
     return _riga(prod, venduti, pre)
+
+
+# ── GL (6/10/2026 notte) — LA GALLERIA: piu' foto per prodotto ──────────
+# Founder: «una foto principale e sotto le altre, ci si muove avanti e
+# indietro». Modello: image_url = la principale; metadata.galleria = le
+# altre, in ordine. Massimo 8 foto. Stesso storage delle copertine.
+
+GALLERIA_MAX = 8
+_FOTO_EXT = {".jpg", ".jpeg", ".png", ".webp", ".heic", ".heif"}
+_FOTO_MAX_BYTES = 5 * 1024 * 1024
+
+
+class FotoBody(BaseModel):
+    url: str = Field(min_length=1, max_length=500)
+
+
+async def _scrivi_foto(product_id: str, org_id: str, nuove: List[str]) -> dict:
+    from database import products_collection
+    from models.common import utc_now
+    await products_collection.update_one(
+        {"id": product_id, "organization_id": org_id},
+        {"$set": {"image_url": nuove[0] if nuove else None, "metadata.galleria": nuove[1:],
+                  "updated_at": utc_now()}})
+    return {"image_url": nuove[0] if nuove else None, "galleria": nuove}
+
+
+@router.post("/{product_id}/foto")
+async def aggiungi_foto(product_id: str, file: UploadFile = File(...),
+                        current_user: dict = Depends(get_verified_user), _=Depends(_gate)):
+    """Aggiunge una foto: la prima diventa la principale, le altre vanno in galleria."""
+    import os, uuid
+    from services.object_storage import content_type_for_ext, save_public_upload
+    org_id = current_user["organization_id"]
+    prod = await _mio_prodotto(product_id, org_id)
+    ext = os.path.splitext(file.filename or "")[1].lower()
+    if ext not in _FOTO_EXT:
+        raise HTTPException(status_code=400, detail="Formato non supportato: usa JPG, PNG o WebP.")
+    contents = await file.read()
+    if len(contents) > _FOTO_MAX_BYTES:
+        raise HTTPException(status_code=400, detail="Foto troppo grande: massimo 5 MB.")
+    attuali = _galleria(prod)
+    if len(attuali) >= GALLERIA_MAX:
+        raise HTTPException(status_code=400, detail=f"Al massimo {GALLERIA_MAX} foto per prodotto.")
+    url = save_public_upload("products", f"{product_id}-g{uuid.uuid4().hex[:8]}{ext}", contents,
+                             content_type=content_type_for_ext(ext))
+    return await _scrivi_foto(product_id, org_id, attuali + [url])
+
+
+@router.delete("/{product_id}/foto")
+async def togli_foto(product_id: str, body: FotoBody, current_user: dict = Depends(get_verified_user),
+                     _=Depends(_gate)):
+    """Toglie una foto; se era la principale, la prossima prende il suo posto."""
+    org_id = current_user["organization_id"]
+    prod = await _mio_prodotto(product_id, org_id)
+    return await _scrivi_foto(product_id, org_id, [u for u in _galleria(prod) if u != body.url])
+
+
+@router.post("/{product_id}/foto/principale")
+async def foto_principale(product_id: str, body: FotoBody, current_user: dict = Depends(get_verified_user),
+                          _=Depends(_gate)):
+    """Rende principale una foto della galleria (va per prima)."""
+    org_id = current_user["organization_id"]
+    prod = await _mio_prodotto(product_id, org_id)
+    attuali = _galleria(prod)
+    if body.url not in attuali:
+        raise HTTPException(status_code=404, detail="Foto non trovata.")
+    return await _scrivi_foto(product_id, org_id, [body.url] + [u for u in attuali if u != body.url])
 
 
 @router.patch("/{product_id}")

@@ -29,6 +29,57 @@ function testoStelle(stats) {
   return `★ ${avg.toFixed(1)} · ${n} recension${n === 1 ? 'e' : 'i'}`;
 }
 
+/** GL — la galleria: la foto grande, sotto le altre; frecce, tastiera, dito */
+function Galleria({ foto, nome, Segnaposto }) {
+  const [i, setI] = useState(0);
+  const touchX = useRef(null);
+  const n = foto.length;
+  const vai = (k) => setI(((k % n) + n) % n);
+  useEffect(() => { setI(0); }, [foto]);
+  if (n === 0) {
+    return (
+      <div className="overflow-hidden rounded-3xl bg-gradient-to-br from-[#eef3ef] to-[#dfe8e2] shadow-[0_24px_48px_-32px_rgba(30,47,40,0.35)]">
+        <div className="flex aspect-[16/9] w-full items-center justify-center text-[#2f5749]/30 lg:aspect-[4/5]"><Segnaposto className="h-16 w-16" aria-hidden /></div>
+      </div>
+    );
+  }
+  return (
+    <div data-testid="prodotto-landing-galleria">
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#eef3ef] to-[#dfe8e2] shadow-[0_24px_48px_-32px_rgba(30,47,40,0.35)]"
+           tabIndex={n > 1 ? 0 : -1} role={n > 1 ? 'group' : undefined} aria-label={n > 1 ? `Foto ${i + 1} di ${n}` : undefined}
+           onKeyDown={e => { if (e.key === 'ArrowRight') vai(i + 1); if (e.key === 'ArrowLeft') vai(i - 1); }}
+           onTouchStart={e => { touchX.current = e.touches[0].clientX; }}
+           onTouchEnd={e => {
+             if (touchX.current == null) return;
+             const dx = e.changedTouches[0].clientX - touchX.current; touchX.current = null;
+             if (Math.abs(dx) > 40) vai(dx < 0 ? i + 1 : i - 1);
+           }}>
+        <img key={foto[i]} src={foto[i]} alt={`${nome}${n > 1 ? ` — foto ${i + 1} di ${n}` : ''}`}
+             className="aspect-[4/3] w-full object-cover duration-300 animate-in fade-in lg:aspect-[4/5]" />
+        {n > 1 && (
+          <>
+            <button type="button" onClick={() => vai(i - 1)} aria-label="Foto precedente" data-testid="galleria-prev"
+              className="absolute left-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-xl text-gray-800 shadow hover:bg-white">‹</button>
+            <button type="button" onClick={() => vai(i + 1)} aria-label="Foto successiva" data-testid="galleria-next"
+              className="absolute right-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-xl text-gray-800 shadow hover:bg-white">›</button>
+            <span className="absolute bottom-3 right-3 rounded-full bg-black/50 px-2.5 py-0.5 text-xs font-medium text-white">{i + 1} / {n}</span>
+          </>
+        )}
+      </div>
+      {n > 1 && (
+        <div className="mt-3 flex gap-2 overflow-x-auto pb-1" data-testid="galleria-miniature">
+          {foto.map((u, k) => (
+            <button key={u} type="button" onClick={() => vai(k)} aria-label={`Vai alla foto ${k + 1}`} aria-current={k === i}
+              className={`h-16 w-20 flex-none overflow-hidden rounded-xl ring-2 transition ${k === i ? 'ring-[#2f5749]' : 'ring-transparent opacity-70 hover:opacity-100'}`}>
+              <img src={u} alt="" loading="lazy" className="h-full w-full object-cover" />
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function ProdottoLandingPage() {
   const { org_slug: orgSlug, slug } = useParams();
   const [data, setData] = useState(null);
@@ -95,11 +146,7 @@ export default function ProdottoLandingPage() {
 
         {/* ── il prodotto: immagine e scheda ── */}
         <div className="mt-5 grid gap-6 lg:grid-cols-[1.05fr_1fr] lg:gap-10">
-          <div className="overflow-hidden rounded-3xl bg-gradient-to-br from-[#eef3ef] to-[#dfe8e2] shadow-[0_24px_48px_-32px_rgba(30,47,40,0.35)]">
-            {pr.image_url
-              ? <img src={pr.image_url} alt={pr.name} className="aspect-[4/3] w-full object-cover lg:aspect-[4/5]" />
-              : <div className="flex aspect-[16/9] w-full items-center justify-center text-[#2f5749]/30 lg:aspect-[4/5]"><Icona className="h-16 w-16" aria-hidden /></div>}
-          </div>
+          <Galleria foto={(pr.galleria && pr.galleria.length ? pr.galleria : (pr.image_url ? [pr.image_url] : []))} nome={pr.name} Segnaposto={Icona} />
 
           <div className="lg:py-2">
             <h1 className="font-display text-3xl leading-tight text-gray-900 sm:text-4xl">{pr.name}</h1>

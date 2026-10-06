@@ -13,7 +13,7 @@ import { ArrowLeft, Loader2, UploadCloud, CheckCircle2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { AppLayout, Header } from '../../components/Layout';
 import { prodottiAPI, fmtBytes, fmtEuro } from '../../api/prodotti';
-import { Bottone, Campo, LinkPagina, Ragioni, Scheda, SceltaImmagine, campo } from './ui';
+import { Bottone, Campo, GestoreFoto, LinkPagina, Ragioni, Scheda, campo } from './ui';
 
 export default function ProdottoPage() {
   const { id } = useParams();
@@ -22,7 +22,7 @@ export default function ProdottoPage() {
   const [vendite, setVendite] = useState(null);
   const [salvando, setSalvando] = useState(false);
   const [file, setFile] = useState(null);
-  const [cover, setCover] = useState(null);
+  const [fotoOccupato, setFotoOccupato] = useState(false);
   const [avanzamento, setAvanzamento] = useState(null);
   const [ragioni, setRagioni] = useState([]);
   const [sporco, setSporco] = useState(false);
@@ -61,16 +61,41 @@ export default function ProdottoPage() {
       } else if (form.stock_quantity !== '') {
         upd.stock_quantity = Number(form.stock_quantity);
       }
-      let res = await prodottiAPI.update(id, upd);
-      if (cover) {
-        try { await prodottiAPI.uploadImage(id, cover); setCover(null); res = await prodottiAPI.get(id); }
-        catch { toast.error('L\'immagine non è stata caricata: riprova.'); }
-      }
+      const res = await prodottiAPI.update(id, upd);
       setP(res.data); setSporco(false); toast.success('Salvato.');
     } catch (err) {
       const d = err?.response?.data?.detail;
       toast.error((typeof d === 'string' && d) || 'Non sono riuscito a salvare.');
     } finally { setSalvando(false); }
+  };
+
+  // GL — le foto: aggiungi (anche piu' d'una), togli, rendi principale
+  const aggiornaFoto = (data) => setP(prev => ({ ...prev, image_url: data.image_url, galleria: data.galleria }));
+  const aggiungiFoto = async (files) => {
+    if (!files.length || fotoOccupato) return;
+    setFotoOccupato(true);
+    try {
+      let ultimo = null;
+      for (const f of files) ultimo = (await prodottiAPI.aggiungiFoto(id, f)).data;
+      if (ultimo) aggiornaFoto(ultimo);
+      toast.success(files.length > 1 ? `${files.length} foto aggiunte.` : 'Foto aggiunta.');
+    } catch (err) {
+      const d = err?.response?.data?.detail;
+      toast.error((typeof d === 'string' && d) || 'Una foto non è stata caricata.');
+      load();
+    } finally { setFotoOccupato(false); }
+  };
+  const togliFoto = async (url) => {
+    setFotoOccupato(true);
+    try { aggiornaFoto((await prodottiAPI.togliFoto(id, url)).data); }
+    catch { toast.error('Non sono riuscito a togliere la foto.'); }
+    finally { setFotoOccupato(false); }
+  };
+  const fotoPrincipale = async (url) => {
+    setFotoOccupato(true);
+    try { aggiornaFoto((await prodottiAPI.fotoPrincipale(id, url)).data); }
+    catch { toast.error('Non sono riuscito a cambiare la principale.'); }
+    finally { setFotoOccupato(false); }
   };
 
   const caricaFile = async () => {
@@ -134,15 +159,12 @@ export default function ProdottoPage() {
               <textarea className={`${campo} resize-y`} rows={6} maxLength={20000} value={form.long_description}
                         data-testid="prodotto-racconto" onChange={e => set('long_description', e.target.value)} />
             </Campo>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <Campo label="Prezzo" obbligatorio hint="Pagamento subito con carta, sul tuo conto Stripe.">
-                <div className="relative">
-                  <input className={`${campo} pr-9`} type="number" inputMode="decimal" min="0" step="0.5" value={form.unit_price} onChange={e => set('unit_price', e.target.value)} />
-                  <span className="pointer-events-none absolute inset-y-0 right-3.5 flex items-center text-sm text-gray-400">€</span>
-                </div>
-              </Campo>
-              <SceltaImmagine file={cover} onFile={(f) => { setCover(f); setSporco(true); }} attuale={p.image_url} label="Immagine" />
-            </div>
+            <Campo label="Prezzo" obbligatorio hint="Pagamento subito con carta, sul tuo conto Stripe." className="sm:max-w-xs">
+              <div className="relative">
+                <input className={`${campo} pr-9`} type="number" inputMode="decimal" min="0" step="0.5" value={form.unit_price} onChange={e => set('unit_price', e.target.value)} />
+                <span className="pointer-events-none absolute inset-y-0 right-3.5 flex items-center text-sm text-gray-400">€</span>
+              </div>
+            </Campo>
             {digitale ? (
               <div className="grid gap-4 sm:grid-cols-2">
                 <Campo label="Scaricamenti per acquisto" hint="Vuoto = illimitati.">
@@ -162,6 +184,11 @@ export default function ProdottoPage() {
               <Bottone onClick={salva} disabled={salvando || !sporco} caricando={salvando} data-testid="prodotto-salva">Salva</Bottone>
             </div>
           </div>
+        </Scheda>
+
+        <Scheda title="Le foto" sub="La prima è quella del profilo; nella pagina del prodotto si sfogliano tutte.">
+          <GestoreFoto galleria={p.galleria || (p.image_url ? [p.image_url] : [])} occupato={fotoOccupato}
+                       onAggiungi={aggiungiFoto} onTogli={togliFoto} onPrincipale={fotoPrincipale} />
         </Scheda>
 
         {digitale && (

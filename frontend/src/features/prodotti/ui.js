@@ -166,15 +166,23 @@ export function LinkPagina({ orgSlug, slug, online }) {
   );
 }
 
-/** il selettore della copertina: un'area da toccare, non un input grezzo */
-export function SceltaImmagine({ file, onFile, attuale, label = 'Copertina', hint }) {
+/** il selettore delle foto: un'area da toccare, non un input grezzo.
+ *  `multiple`: piu' foto insieme (la prima diventa la principale). */
+export function SceltaImmagine({ file, files = [], onFile, onFiles, attuale, label = 'Copertina', hint, multiple = false }) {
   const [anteprima, setAnteprima] = useState(null);
-  const scegli = (f) => {
-    onFile(f || null);
+  const scegli = (lista) => {
+    const arr = Array.from(lista || []);
+    if (multiple) { onFiles?.(arr); }
+    else { onFile?.(arr[0] || null); }
     if (anteprima) URL.revokeObjectURL(anteprima);
-    setAnteprima(f ? URL.createObjectURL(f) : null);
+    setAnteprima(arr[0] ? URL.createObjectURL(arr[0]) : null);
   };
   const src = anteprima || attuale;
+  const n = multiple ? files.length : (file ? 1 : 0);
+  const titolo = n > 1 ? `${n} foto scelte`
+    : n === 1 ? (multiple ? files[0].name : file.name)
+    : attuale ? 'Cambia immagine'
+    : multiple ? 'Scegli una o più foto' : "Scegli un'immagine";
   return (
     <Campo label={label} hint={hint}>
       <label className="flex cursor-pointer items-center gap-3 rounded-xl border border-dashed border-gray-300 p-3 transition hover:border-[#2f5749] hover:bg-[#2f5749]/[0.03]">
@@ -182,11 +190,43 @@ export function SceltaImmagine({ file, onFile, attuale, label = 'Copertina', hin
           {src && <img src={src} alt="" className="h-full w-full object-cover" />}
         </div>
         <span className="min-w-0 text-sm text-gray-700">
-          <span className="block font-medium">{file ? file.name : (attuale ? 'Cambia immagine' : 'Scegli un\'immagine')}</span>
-          <span className="block text-xs text-gray-500">JPG o PNG, orizzontale viene meglio.</span>
+          <span className="block font-medium">{titolo}</span>
+          <span className="block text-xs text-gray-500">{multiple ? 'JPG o PNG, fino a 8. La prima è quella principale.' : 'JPG o PNG, orizzontale viene meglio.'}</span>
         </span>
-        <input type="file" accept="image/*" className="hidden" onChange={e => scegli(e.target.files?.[0])} />
+        <input type="file" accept="image/*" multiple={multiple} className="hidden" onChange={e => scegli(e.target.files)} />
       </label>
     </Campo>
+  );
+}
+
+/** GL — le foto di un prodotto gia' creato: griglia, principale, togli, aggiungi */
+export function GestoreFoto({ galleria = [], onAggiungi, onTogli, onPrincipale, occupato = false, max = 8 }) {
+  return (
+    <div data-testid="prodotto-foto">
+      {galleria.length > 0 && (
+        <ul className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+          {galleria.map((url, i) => (
+            <li key={url} className="group relative aspect-square overflow-hidden rounded-xl bg-gray-100">
+              <img src={url} alt="" className="h-full w-full object-cover" />
+              {i === 0 && <span className="absolute left-1.5 top-1.5 rounded-full bg-white/95 px-2 py-0.5 text-[10px] font-semibold text-[#2f5749]">Principale</span>}
+              <div className="absolute inset-x-0 bottom-0 flex justify-between gap-1 bg-gradient-to-t from-black/60 to-transparent p-1.5 opacity-100 sm:opacity-0 sm:transition sm:group-hover:opacity-100">
+                {i > 0
+                  ? <button type="button" onClick={() => onPrincipale(url)} disabled={occupato} className="rounded-full bg-white/95 px-2 py-0.5 text-[11px] font-medium text-gray-800">Principale</button>
+                  : <span />}
+                <button type="button" onClick={() => onTogli(url)} disabled={occupato} aria-label="Togli foto" className="rounded-full bg-white/95 px-2 py-0.5 text-[11px] font-medium text-red-700">Togli</button>
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
+      {galleria.length < max && (
+        <label className={`mt-3 flex cursor-pointer items-center justify-center gap-2 rounded-xl border border-dashed border-gray-300 px-4 py-3 text-sm text-gray-700 transition hover:border-[#2f5749] hover:bg-[#2f5749]/[0.03] ${occupato ? 'opacity-50' : ''}`}>
+          {occupato && <Loader2 className="h-4 w-4 animate-spin" aria-hidden />}
+          <span>{galleria.length ? 'Aggiungi foto' : 'Scegli una o più foto'}</span>
+          <input type="file" accept="image/*" multiple className="hidden" disabled={occupato} onChange={e => { onAggiungi(Array.from(e.target.files || [])); e.target.value = ''; }} />
+        </label>
+      )}
+      <p className="mt-1.5 text-xs text-gray-500">Fino a {max} foto. La principale è quella sul profilo; nella pagina del prodotto si sfogliano tutte.</p>
+    </div>
   );
 }

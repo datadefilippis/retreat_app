@@ -204,3 +204,11 @@ Vincolo dichiarato: gli eventi sono live e funzionano; ogni tocco agli eventi è
 - **Gestionale**: kit `features/prodotti/ui.js` (campi con etichetta sopra e suggerimento sotto, bottoni 42px, schede, passi a tre segmenti, anteprima senza tipo, selettore immagine con miniatura, link della pagina con Copia/Apri); `/prodotti` (prerequisiti = riga verde quando tutto c'è, lista con «Copia link» del prodotto online, commissione e limiti in una riga in fondo), `/prodotti/:id` (La scheda con «Il racconto completo», Il file, La pagina del prodotto, Vendite a tre numeri; Salva attivo solo con modifiche), i due wizard (passi, «Altro» col racconto, modi di consegna a card). Il `public_slug` arriva dal payload del gestionale.
 - guardie: `TestDesignDP` in `test_prodotti_p1.py`; pin `solo_con_slug` e nginx aggiornati in `test_indicizzazione_ix.py`.
 
+**Rifinitura GL «Galleria + proporzioni» IMPLEMENTATA in locale** (6/10 notte). Founder: «nel profilo i prodotti della stessa misura dei ritiri; più foto per prodotto, nella pagina una principale e sotto le altre, ci si muove avanti e indietro».
+- **Modello**: `image_url` = la principale, `metadata.galleria` = le altre in ordine; `_galleria(prod)` le unisce senza doppioni. Massimo 8 foto, 5 MB l'una, stesso storage delle copertine (`save_public_upload`, ottimizzate in WebP).
+- **API** (`routers/prodotti.py`, prima del PATCH): `POST /prodotti/{id}/foto` (la prima diventa principale), `DELETE /prodotti/{id}/foto` {url} (se era la principale, la prossima prende il posto), `POST /prodotti/{id}/foto/principale` {url}. `galleria` nella riga del gestionale, nel profilo e nella landing. Provato dal vivo: 3 foto, principale cambiata, nona rifiutata, cancellazioni.
+- **Gestionale**: scheda «Le foto» (`GestoreFoto`: griglia, badge Principale, Principale/Togli, aggiungi anche più foto insieme); i wizard accettano più foto al passo 1 (`SceltaImmagine multiple`), caricate dopo la bozza. Il selettore singolo nella scheda è uscito.
+- **Landing**: `Galleria` (foto grande con frecce e contatore, miniature sotto, tastiera ← →, scorrimento col dito); con una sola foto niente frecce.
+- **Profilo**: card prodotto della misura dei ritiri (immagine h-36, p-3, bottoni 34px): tutto proporzionato.
+- guardie: `TestGalleriaGL` in `test_prodotti_p1.py`.
+

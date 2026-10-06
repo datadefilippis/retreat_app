@@ -752,26 +752,27 @@ export default function OperatorProfilePage() {
                          data-testid="prodotto-card">
                       {/* DP (6/10 sera): niente etichetta «Digitale/Fisico» (founder: lo
                           racconta l'operatore); immagine sopra, «Scopri di più» → la pagina */}
-                      <Link to={pagina} className="block aspect-[16/9] overflow-hidden bg-gradient-to-br from-[#eef3ef] to-[#dfe8e2]" aria-label={`Scopri ${pr.name}`}>
+                      {/* GL: la stessa misura delle card dei ritiri (h-36, p-3) */}
+                      <Link to={pagina} className="block h-36 overflow-hidden bg-gradient-to-br from-[#eef3ef] to-[#dfe8e2]" aria-label={`Scopri ${pr.name}`}>
                         {pr.image_url
                           ? <img src={pr.image_url} alt="" loading="lazy" className="h-full w-full object-cover transition duration-500 hover:scale-[1.03]" />
-                          : <span className="flex h-full w-full items-center justify-center text-[#376254]/30"><Package className="h-9 w-9" aria-hidden /></span>}
+                          : <span className="flex h-full w-full items-center justify-center text-[#376254]/30"><Package className="h-8 w-8" aria-hidden /></span>}
                       </Link>
-                      <div className="flex flex-1 flex-col p-4">
-                        <Link to={pagina} className="font-semibold leading-snug text-gray-900 hover:underline">{pr.name}</Link>
-                        {pr.description && <p className="mt-1 text-sm leading-relaxed text-gray-600 line-clamp-2">{pr.description}</p>}
-                        <div className="mt-auto flex items-center justify-between gap-3 pt-3">
-                          <span className="text-lg font-bold text-[#376254]">
+                      <div className="flex flex-1 flex-col p-3">
+                        <Link to={pagina} className="font-semibold leading-snug text-gray-900 line-clamp-2 hover:underline">{pr.name}</Link>
+                        {pr.description && <p className="mt-0.5 text-sm text-gray-600 line-clamp-1">{pr.description}</p>}
+                        <div className="mt-auto flex items-center justify-between gap-2 pt-2">
+                          <span className="font-bold text-gray-900">
                             {pr.price != null ? new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'EUR', minimumFractionDigits: Number.isInteger(Number(pr.price)) ? 0 : 2, maximumFractionDigits: 2 }).format(Number(pr.price)) : ''}
                           </span>
                           <div className="flex items-center gap-2">
                             <Link to={pagina} data-testid="prodotto-info"
-                                  className="inline-flex min-h-[38px] items-center rounded-full border border-gray-200 bg-white px-3.5 text-sm font-medium text-gray-700 hover:bg-gray-50">
+                                  className="inline-flex min-h-[34px] items-center rounded-full border border-gray-200 bg-white px-3 text-xs font-medium text-gray-700 hover:bg-gray-50">
                               Scopri di più
                             </Link>
                             <button type="button" data-testid="prodotto-cta" aria-expanded={aperto}
                                     onClick={() => setExpandedProdotto(aperto ? null : pr.product_id)}
-                                    className={`inline-flex min-h-[38px] items-center rounded-full px-4 text-sm font-semibold ${aperto ? 'border border-gray-300 bg-white text-gray-700' : 'bg-[#2f5749] text-white hover:opacity-90'}`}>
+                                    className={`inline-flex min-h-[34px] items-center rounded-full px-3.5 text-xs font-semibold ${aperto ? 'border border-gray-300 bg-white text-gray-700' : 'bg-[#2f5749] text-white hover:opacity-90'}`}>
                               {aperto ? t('landings:operator.inlineClose', { defaultValue: 'Chiudi' }) : 'Compra'}
                             </button>
                           </div>

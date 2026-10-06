@@ -359,3 +359,47 @@ class TestDesignDP:
         assert '"public_slug": (org or {}).get("public_slug")' in src
         assert '"public_slug": pre.get("public_slug")' in src
 
+
+# ── GL (6/10/2026 notte) — la galleria: piu' foto per prodotto ──
+
+class TestGalleriaGL:
+    def test_endpoint_e_modello(self):
+        src = (BACKEND / "routers" / "prodotti.py").read_text()
+        for r in ('@router.post("/{product_id}/foto")', '@router.delete("/{product_id}/foto")',
+                  '@router.post("/{product_id}/foto/principale")', "GALLERIA_MAX = 8", "def _galleria(prod: dict)"):
+            assert r in src, r
+        # image_url = la principale, metadata.galleria = le altre; la riga del gestionale le espone tutte
+        assert '"metadata.galleria": nuove[1:]' in src and '"galleria": _galleria(prod)' in src
+        # le rotte fisse /foto vengono PRIMA del PATCH /{product_id}
+        assert src.index('@router.post("/{product_id}/foto")') < src.index('@router.patch("/{product_id}")')
+        from routers.prodotti import _galleria
+        assert _galleria({"image_url": "a", "metadata": {"galleria": ["b", "a", "c"]}}) == ["a", "b", "c"]
+        assert _galleria({"image_url": None, "metadata": {}}) == []
+        pub = (BACKEND / "routers" / "public.py").read_text()
+        assert '"metadata.galleria": 1' in pub and '"galleria": [u for u in [r.get("image_url")]' in pub
+        assert '"file_size_bytes", "galleria")' in pub
+
+    def test_gestionale_e_wizard(self):
+        api = (FRONTEND / "api" / "prodotti.js").read_text()
+        for n in ("aggiungiFoto", "togliFoto", "fotoPrincipale", "compressImage"):
+            assert n in api, n
+        ui = (FRONTEND / "features" / "prodotti" / "ui.js").read_text()
+        assert "export function GestoreFoto" in ui and 'data-testid="prodotto-foto"' in ui and "multiple" in ui
+        pag = (FRONTEND / "features" / "prodotti" / "ProdottoPage.js").read_text()
+        assert "<GestoreFoto" in pag and "SceltaImmagine" not in pag
+        for f in ("ProdottoDigitaleWizard.js", "ProdottoFisicoWizard.js"):
+            w = (FRONTEND / "features" / "prodotti" / f).read_text()
+            assert "coverFiles" in w and "aggiungiFoto" in w and "<SceltaImmagine multiple" in w, f
+
+    def test_landing_sfoglia_e_profilo_proporzionato(self):
+        l = (FRONTEND / "features" / "storefront" / "ProdottoLandingPage.js").read_text()
+        assert "function Galleria(" in l and 'data-testid="prodotto-landing-galleria"' in l
+        for t in ("galleria-prev", "galleria-next", "galleria-miniature"):
+            assert f'data-testid="{t}"' in l, t
+        assert "onTouchStart" in l and "ArrowRight" in l
+        p = (FRONTEND / "features" / "storefront" / "OperatorProfilePage.js").read_text()
+        sez = p[p.index('data-testid="profile-prodotti"'):p.index("<Gallery")]
+        # la stessa misura delle card dei ritiri: h-36 e p-3
+        assert 'className="block h-36 overflow-hidden' in sez and 'className="flex flex-1 flex-col p-3"' in sez
+        assert 'className="h-36 bg-gray-100"' in p, "la card dei ritiri resta h-36"
+

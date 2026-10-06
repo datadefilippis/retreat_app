@@ -5,6 +5,7 @@
  */
 import api from './client';
 import { productsAPI } from './products';
+import { compressImage } from '../lib/compressImage';
 
 export const prodottiAPI = {
   list: () => api.get('/prodotti'),
@@ -20,6 +21,14 @@ export const prodottiAPI = {
   salvaConsegna: (data) => api.put('/prodotti/consegna', data),
   uploadFile: (id, file, config) => productsAPI.uploadDigitalFile(id, file, config),
   uploadImage: (id, file, config) => productsAPI.uploadImage(id, file, config),
+  // GL — la galleria: piu' foto per prodotto (la prima e' la principale)
+  aggiungiFoto: async (id, file, config = {}) => {
+    const fd = new FormData();
+    fd.append('file', await compressImage(file));
+    return api.post(`/prodotti/${id}/foto`, fd, { ...config, headers: { 'Content-Type': 'multipart/form-data', ...(config.headers || {}) } });
+  },
+  togliFoto: (id, url) => api.delete(`/prodotti/${id}/foto`, { data: { url } }),
+  fotoPrincipale: (id, url) => api.post(`/prodotti/${id}/foto/principale`, { url }),
 };
 
 /** 12 → «12 €», 12.5 → «12,50 €» */

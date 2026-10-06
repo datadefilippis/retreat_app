@@ -4673,7 +4673,7 @@ async def get_prodotto_landing(org_slug: str, slug: str):
         },
         prodotto={
             **{k: riga.get(k) for k in ("product_id", "slug", "name", "description", "price",
-                                        "image_url", "item_type", "file_ext", "file_size_bytes")},
+                                        "image_url", "item_type", "file_ext", "file_size_bytes", "galleria")},
             "long_description": meta.get("long_description"),
             "max_downloads": meta.get("max_downloads_per_delivery") or None,
             "access_expiry_days": meta.get("access_expiry_days") or None,
@@ -4698,7 +4698,7 @@ async def _operator_prodotti(org_id: str) -> list:
         {"_id": 0, "id": 1, "name": 1, "slug": 1, "item_type": 1, "unit_price": 1, "transaction_mode": 1,
          "image_url": 1, "description": 1, "stock_quantity": 1, "category": 1,
          "metadata.download_filename": 1, "metadata.download_size_bytes": 1,
-         "metadata.long_description": 1, "created_at": 1},
+         "metadata.long_description": 1, "metadata.galleria": 1, "created_at": 1},
     ).sort("created_at", -1).to_list(200)
     out = []
     for r in rows:
@@ -4718,6 +4718,8 @@ async def _operator_prodotti(org_id: str) -> list:
             "price": r.get("unit_price"), "image_url": r.get("image_url"),
             "description": r.get("description"), "category": r.get("category"),
             "has_landing": bool(meta.get("long_description")),
+            # GL: tutte le foto, la principale per prima (la landing le sfoglia)
+            "galleria": [u for u in [r.get("image_url")] + list(meta.get("galleria") or []) if u],
             "file_ext": (nome_file.rsplit(".", 1)[-1].lower() if "." in nome_file else None),
             "file_size_bytes": meta.get("download_size_bytes"),
         })
