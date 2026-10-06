@@ -12,6 +12,10 @@
 #      consegna dell'org (ritiro di persona / spedizione a costo fisso) via
 #      store settings + opzione «Spedizione»; magazzino, indirizzo e stati
 #      di evasione gia' nel gestionale; commissione in chiaro in /prodotti.
+#  CONS consolidamento pre-live: verifica immediata del pagamento dalla
+#      pagina di successo (+ lucchetto e riconciliazione idempotente), email
+#      «Nuovo ordine pagato» con i contatti, email cliente per tipo, hint
+#      «Il tuo file e' pronto», contatti nella lista Ordini.
 #  TESTI + LEGALE v2.12: /costi, landing, piani, Termini ×4 (commissione
 #      SOLO sui prodotti, nella misura pubblicata su /costi: i numeri vivono
 #      solo li'). Il bump innesca il re-consent degli operatori (un clic).
