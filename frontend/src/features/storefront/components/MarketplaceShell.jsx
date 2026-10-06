@@ -353,6 +353,9 @@ const NAV_ITEMS = [
 // dentro Chi siamo e nel footer: le pagine restano vive e indicizzate,
 // escono solo dal menu.
 const NETWORK_NAV_ITEMS = [
+  // 6/10/2026 (founder): i professionisti stanno pubblicando eventi e ritiri,
+  // /esperienze torna nel menu, per prima: e' quello che la persona cerca
+  { to: '/esperienze', key: 'marketplace.navExperiences', fallback: 'Esperienze' },
   { to: '/operatori', key: 'marketplace.navOperators', fallback: 'I nostri professionisti' },
   // P3 (10/9/2026) aveva messo «Ritiri ed esperienze» qui; NV (10/9 sera,
   // founder): finche' non ci sono ritiri, TUTTO il traffico va alla
@@ -778,6 +781,7 @@ const PRO_CTA = `rounded-full border border-[#8a7440] bg-[#8a7440]/[0.07]
                     SR1 (3/9/2026): /operatori E' la directory in ogni
                     fase, quindi una sola etichetta, la stessa del menu:
                     «Professionisti» (era «La Rete» / «Esplora operatori»). */}
+                {isNetwork && <li><Link to="/esperienze" className="hover:text-white" data-testid="footer-nw-esperienze">{t('marketplace.navExperiences', { defaultValue: 'Esperienze' })}</Link></li>}
                 <li><Link to="/operatori" className="hover:text-white" data-testid="footer-nw-operatori">
                   {t('marketplace.navOperators', { defaultValue: 'I nostri professionisti' })}
                 </Link></li>

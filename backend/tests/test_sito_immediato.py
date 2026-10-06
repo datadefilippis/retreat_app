@@ -74,8 +74,9 @@ class TestSr1Directory:
         voci = [l for l in blocco.splitlines() if l.strip().startswith("{ to:")]
         # P3 (10/9/2026) aveva aggiunto «Ritiri ed esperienze»; NV (10/9 sera):
         # esce dal menu finche' non ci sono ritiri (traffico alla landing)
-        assert [v.split("'")[1] for v in voci] == ["/operatori", "/blog", "/sound", "/chi-siamo"], \
-            "SR3+NV: quattro voci, Professionisti per prima; /esperienze viva ma fuori dal menu"
+        # 6/10/2026 (founder): «Esperienze» entra per prima (i professionisti pubblicano ritiri)
+        assert [v.split("'")[1] for v in voci] == ["/esperienze", "/operatori", "/blog", "/sound", "/chi-siamo"], \
+            "cinque voci: Esperienze, poi Professionisti"
         assert "navNetwork'" not in shell and "'La Rete'" not in shell
         assert "footer-nw-operatori" in shell
         j = shell.index('data-testid="footer-nw-operatori"')

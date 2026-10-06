@@ -506,12 +506,14 @@ class TestDs3EsperienzeOut:
     /esperienze/* rimanda ancora alla home, la sitemap non la elenca e
     la shell la serve come pagina cardine (noindex in fase rete)."""
 
-    def test_esperienze_viva_ma_fuori_dal_menu(self):
-        # NV (10/9/2026 sera, founder): niente voce di menu finche' non ci
-        # sono ritiri; la pagina resta raggiungibile dal link
+    def test_esperienze_viva_e_nel_menu(self):
+        # NV (10/9/2026 sera): fuori dal menu finche' non c'erano ritiri.
+        # 6/10/2026 (founder): i professionisti pubblicano eventi e ritiri,
+        # «Esperienze» torna nel menu, per prima, e nel footer
         shell = (FRONTEND_SRC / "features" / "storefront" / "components"
                  / "MarketplaceShell.jsx").read_text()
-        assert "{ to: '/esperienze'" not in shell
+        assert "{ to: '/esperienze', key: 'marketplace.navExperiences', fallback: 'Esperienze' }" in shell
+        assert 'data-testid="footer-nw-esperienze"' in shell
         app = (FRONTEND_SRC / "App.js").read_text()
         assert 'path="/esperienze" element={<EsperienzeGate />}' in app
 
