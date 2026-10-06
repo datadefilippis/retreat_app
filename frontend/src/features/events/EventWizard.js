@@ -148,10 +148,29 @@ const CANCELLATION_PRESETS = {
 
 // ── Validation helpers ────────────────────────────────────────────────────
 
+// P4 «formato» (6/10/2026, founder): il secondo asse accanto alla disciplina.
+// Dice che cos'e' (un ritiro di piu' giorni, un evento di un giorno, una
+// formazione), non di che cosa parla. Etichette di riserva: la fonte e'
+// /products/taxonomies (formati_esperienza).
+const FORMATI_RISERVA = { ritiro: 'Ritiro', evento: 'Evento', formazione: 'Formazione' };
+const FORMATI_DESCRIZIONE = {
+  ritiro: 'Più giorni, spesso con pernottamento',
+  evento: 'Un incontro, una giornata, una serata',
+  formazione: 'Un corso: si impara una pratica o un metodo',
+};
+// Suggerimento dalle date (stessa regola del backend formato_suggerito):
+// piu' giorni → ritiro, un giorno → evento. La formazione la dichiara chi la tiene.
+function suggerisciFormato(startAt, endAt) {
+  const s = (startAt || '').slice(0, 10);
+  const e = (endAt || '').slice(0, 10);
+  return (s && e && e > s) ? 'ritiro' : 'evento';
+}
+
 function validateBase(state, t) {
   const errors = {};
   if (!state.name?.trim()) errors.name = t('wizards.common.validation.nameRequired');
   if (!state.category) errors.category = t('wizards.event.validation.categoryRequired', { defaultValue: 'Scegli la categoria del ritiro' });
+  if (!state.formato) errors.formato = t('wizards.event.validation.formatoRequired', { defaultValue: 'Dicci che cos’è: un ritiro, un evento o una formazione.' });
   if (state.unit_price !== '' && state.unit_price !== null
       && state.unit_price !== undefined && Number(state.unit_price) < 0) {
     errors.unit_price = t('wizards.event.validation.priceNegative');
@@ -269,11 +288,22 @@ export default function EventWizard() {
   const toInput = (v) => (v === null || v === undefined ? '' : String(v));
 
   // Tab 1 — base (seeded from prefill when present)
+  // P4 — formato iniziale: dal duplica (metadata.formato) o dall'URL
+  // (?formato=formazione, la terza carta del selettore prodotti arrivera'
+  // da li'); altrimenti lo suggeriscono le date, finche' non lo si tocca.
+  const formatoIniziale = (() => {
+    const dup = prefillRef.current?.product?.metadata?.formato;
+    const qs = new URLSearchParams(location.search).get('formato');
+    const v = dup || qs || '';
+    return FORMATI_RISERVA[v] ? v : '';
+  })();
+  const [formatoScelto, setFormatoScelto] = useState(() => Boolean(formatoIniziale));
   const [base, setBase] = useState(() => {
     const p = prefillRef.current?.product || {};
     return {
       name: p.name || '',
       category: p.category || '',
+      formato: formatoIniziale,
       description: p.description || '',
       image_url: p.image_url || '',
       unit_price: toInput(p.unit_price),
@@ -324,6 +354,7 @@ export default function EventWizard() {
   // categoria suggerita dalle discipline del profilo.
   const [categoryOptions, setCategoryOptions] = useState({});
   const [categoriaSuggerita, setCategoriaSuggerita] = useState(null);
+  const [formatiOptions, setFormatiOptions] = useState(FORMATI_RISERVA);
   useEffect(() => {
     let mounted = true;
     import('../../api/client').then(({ default: api }) =>
@@ -331,6 +362,7 @@ export default function EventWizard() {
         .then(res => {
           if (!mounted) return;
           setCategoryOptions(res.data?.event_ticket || {});
+          if (res.data?.formati_esperienza) setFormatiOptions(res.data.formati_esperienza);
           const sug = res.data?.suggerita_event_ticket || null;
           setCategoriaSuggerita(sug);
           if (sug && !prefillRef.current?.product) {
@@ -369,6 +401,14 @@ export default function EventWizard() {
       region: o.region || '',
     };
   });
+
+  // P4 — finche' l'operatore non sceglie, il formato segue le date
+  // (piu' giorni → ritiro, un giorno → evento)
+  useEffect(() => {
+    if (formatoScelto) return;
+    const sug = suggerisciFormato(where.start_at, where.end_at);
+    setBase(prev => (prev.formato === sug ? prev : { ...prev, formato: sug }));
+  }, [where.start_at, where.end_at, formatoScelto]);
 
   // Tab 3 — tiers
   const [tiers, setTiers] = useState(() => {
@@ -700,6 +740,8 @@ export default function EventWizard() {
           is_published: publishNow,
           store_ids: storeIds,
           metadata: {
+            // P4 (6/10/2026) — il secondo asse: ritiro | evento | formazione
+            formato: base.formato || null,
             // F1 (Onda 8) — when true, the storefront checkout requires N
             // name+email+phone entries (one per seat) and each ticket is
             // issued with its own holder + receives a personal email.
@@ -1000,6 +1042,40 @@ export default function EventWizard() {
                 )}
               </p>
               {fieldError(errorsBase.category)}
+            </div>
+
+            {/* P4 «formato» (6/10/2026, founder): il secondo asse. La
+                disciplina dice di cosa parla, qui si dice che cos'e'.
+                Suggerito dalle date finche' non lo si tocca. */}
+            <div data-testid="wizard-formato">
+              <label className="block text-xs font-medium text-gray-700 mb-1">
+                {t('wizards.event.base.formatoLabel', { defaultValue: 'Che cos’è?' })} *
+              </label>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2" role="radiogroup" aria-label={t('wizards.event.base.formatoLabel', { defaultValue: 'Che cos’è?' })}>
+                {Object.entries(formatiOptions).map(([key, label]) => {
+                  const attivo = base.formato === key;
+                  return (
+                    <button
+                      key={key} type="button" role="radio" aria-checked={attivo}
+                      data-testid={`wizard-formato-${key}`}
+                      onClick={() => { setFormatoScelto(true); setBase({ ...base, formato: key }); }}
+                      className={`text-left rounded-lg border px-3 py-2 transition-colors ${
+                        attivo ? 'border-primary bg-primary/5 ring-1 ring-primary' : 'border-gray-300 bg-white hover:border-gray-400'
+                      }`}
+                    >
+                      <span className="block text-sm font-semibold text-gray-900">{label}</span>
+                      <span className="block text-[11px] text-gray-500 mt-0.5">{FORMATI_DESCRIZIONE[key] || ''}</span>
+                    </button>
+                  );
+                })}
+              </div>
+              <p className="text-[11px] text-gray-400 mt-1">
+                {t('wizards.event.base.formatoHint', { defaultValue: 'Su Esperienze chi cerca filtra per tipo. La disciplina resta quella qui sopra.' })}
+                {!formatoScelto && base.formato && (
+                  <span data-testid="wizard-formato-suggerito"> {t('wizards.event.base.formatoSuggested', { defaultValue: 'Suggerito dalle date: cambialo se è una formazione.' })}</span>
+                )}
+              </p>
+              {fieldError(errorsBase.formato)}
             </div>
 
           </div>

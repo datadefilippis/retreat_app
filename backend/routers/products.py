@@ -281,7 +281,8 @@ async def create_product(
 async def get_product_taxonomies(current_user: dict = Depends(get_verified_user)):
     """V4 — le tassonomie categoria per tipo, per i dropdown dei wizard.
     Fonte unica: models/retreat_taxonomy (la stessa che valida)."""
-    from models.retreat_taxonomy import PRODUCT_TAXONOMIES, RETREAT_CATEGORIES, categoria_suggerita
+    from models.retreat_taxonomy import (PRODUCT_TAXONOMIES, RETREAT_CATEGORIES,
+                                         FORMATI_ESPERIENZA, categoria_suggerita)
     # TX (10/9/2026): la categoria di ritiro coerente con le discipline del profilo
     suggerita = None
     try:
@@ -291,7 +292,10 @@ async def get_product_taxonomies(current_user: dict = Depends(get_verified_user)
     except Exception:   # noqa: BLE001 — il suggerimento e' un aiuto, mai un errore
         suggerita = None
     return {"event_ticket": RETREAT_CATEGORIES, **PRODUCT_TAXONOMIES,
-            "suggerita_event_ticket": suggerita}
+            "suggerita_event_ticket": suggerita,
+            # P4 (6/10/2026) — il secondo asse delle esperienze, per le
+            # tre carte del wizard e il selettore nel pannello evento
+            "formati_esperienza": FORMATI_ESPERIENZA}
 
 
 @router.get("/{product_id}", response_model=ProductResponse)
@@ -443,6 +447,15 @@ async def update_product(
             existing = await product_repository.find_by_id(product_id, org_id)
             effective_type = getattr(existing, "item_type", None) or "physical" if existing else "physical"
         update_dict["metadata"] = validate_metadata(effective_type, update_dict.get("metadata"))
+        # P4 «formato» (6/10/2026) — validate_metadata non alza mai e
+        # conserva i valori grezzi: un formato fuori lista va fermato qui
+        # (422), come fa il wizard eventi alla creazione.
+        if effective_type == "event_ticket":
+            from models.retreat_taxonomy import errore_formato
+            _err_formato = errore_formato(update_dict.get("metadata"))
+            if _err_formato:
+                raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                                    detail=_err_formato)
 
     # Sprint 1 W1.5 — sanitize merchant-editable text fields on update.
     # Mirror del pattern create_product. Pinned by sentinel

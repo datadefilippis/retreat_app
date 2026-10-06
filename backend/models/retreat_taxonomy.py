@@ -109,3 +109,51 @@ PRODUCT_TAXONOMIES = {
         "video": "Video",
     },
 }
+
+
+# P4 «formato» (6/10/2026, founder: «formazione non sostituisce la
+# disciplina yoga, meditazione… ci dovrebbe essere un campo nuovo che
+# indica una seconda categoria: evento, ritiro, formazione»). Fino a oggi
+# l'unico asse di un'esperienza con una data era la disciplina (sopra) e
+# la pagina chiamava tutto «ritiro» per convenzione. Il formato e' il
+# secondo asse, ORTOGONALE alla disciplina: dice che cosa e' (un ritiro
+# di piu' giorni, un evento di un giorno, una formazione), non di che
+# cosa parla. Vive in product.metadata.formato degli event_ticket,
+# facoltativo: le righe nate prima restano senza e si mostrano come
+# prima (nessun backfill automatico; la mappatura delle esperienze gia'
+# in produzione la fa la regia con scripts/formato_esperienze.py).
+FORMATI_ESPERIENZA = {
+    "ritiro": "Ritiro",
+    "evento": "Evento",
+    "formazione": "Formazione",
+}
+
+# Etichette al plurale per il filtro «Tipo» di /esperienze.
+FORMATI_ESPERIENZA_PLURALE = {
+    "ritiro": "Ritiri",
+    "evento": "Eventi",
+    "formazione": "Formazione",
+}
+
+
+def errore_formato(metadata) -> "str | None":
+    """Il messaggio d'errore se metadata.formato c'e' ed e' fuori lista,
+    altrimenti None. Assente o None = valido (riga senza formato). Usata
+    dal wizard eventi e dal PATCH prodotto: validate_metadata_for_type
+    non alza mai e conserva i valori grezzi, quindi senza questo controllo
+    un formato inventato finirebbe in archivio."""
+    if not isinstance(metadata, dict) or metadata.get("formato") is None:
+        return None
+    if metadata["formato"] not in FORMATI_ESPERIENZA:
+        return ("Formato non valido. Scegli fra: "
+                + ", ".join(FORMATI_ESPERIENZA.values()).lower() + ".")
+    return None
+
+
+def formato_suggerito(start_at: "str | None", end_at: "str | None") -> str:
+    """Il suggerimento del wizard (anche lato server, per lo script di
+    mappatura): piu' giorni → ritiro, un giorno → evento. La formazione
+    non si indovina dalle date: la dichiara chi la tiene."""
+    s = (start_at or "")[:10]
+    e = (end_at or "")[:10]
+    return "ritiro" if (s and e and e > s) else "evento"

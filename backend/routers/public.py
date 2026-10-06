@@ -282,6 +282,8 @@ class PublicEventProduct(BaseModel):
     currency: str = "EUR"
     # M2 — breadcrumb della landing (Ritiri › categoria › titolo)
     category: Optional[str] = None
+    # P4 (6/10/2026) — ritiro | evento | formazione; None sulle righe nate prima
+    formato: Optional[str] = None
     # Onda 15 — base unit_price surfaced so the landing can compute the
     # total for mono-tier events (general-price events without tiers).
     # Fallback chain on the frontend: occurrence.price_override ?? product.unit_price ?? 0.
@@ -1444,6 +1446,8 @@ async def get_public_event_landing(org_slug: str, slug: str,
             image_url=product.get("image_url"),
             transaction_mode=product.get("transaction_mode", "direct"),
             category=product.get("category"),   # M2 — breadcrumb landing
+            # P4 (6/10/2026) — ritiro · evento · formazione (None sulle righe nate prima)
+            formato=(product.get("metadata") or {}).get("formato"),
             currency=get_currency_for_org(org),
             # Onda 15 — base unit_price for mono-tier events (no tiers &
             # no per-occurrence override). The landing riepilogo falls
@@ -3478,15 +3482,25 @@ async def _categorie_con_ritiri(preview: int = 1) -> dict:
     accanto. Prima il filtro mostrava tutta la tassonomia e chi sceglieva
     una categoria vuota trovava una pagina vuota. Ritorna
     {chiave: {"label", "count"}} nell'ordine della tassonomia."""
+    return (await _conteggi_esperienze(preview))["categories"]
+
+
+async def _conteggi_esperienze(preview: int = 1) -> dict:
+    """P4 «formato» (6/10/2026): la stessa passata di _categorie_con_ritiri
+    conta anche i FORMATI (ritiro · evento · formazione) delle edizioni
+    listabili, per il filtro «Tipo» di /esperienze (stessa regola RE-ter:
+    mai un'opzione vuota). Le esperienze senza formato (nate prima del
+    campo) contano nelle categorie ma in nessun formato. Ritorna
+    {"categories": {...}, "formati": {chiave: {"label", "count"}}}."""
     from datetime import datetime as _dt, timezone as _tz
     from database import event_occurrences_collection, products_collection
-    from models.retreat_taxonomy import RETREAT_CATEGORIES
+    from models.retreat_taxonomy import RETREAT_CATEGORIES, FORMATI_ESPERIENZA_PLURALE
     now_iso = _dt.now(_tz.utc).isoformat()
     occs = await event_occurrences_collection.find(
         {"status": "published", "start_at": {"$gte": now_iso[:16]}},
         {"_id": 0, "product_id": 1, "slug": 1}).to_list(2000)
     if not occs:
-        return {}
+        return {"categories": {}, "formati": {}}
     from database import (organizations_collection, stores_collection,
                           payment_connections_collection)
     per_prodotto: dict = {}
@@ -3496,7 +3510,8 @@ async def _categorie_con_ritiri(preview: int = 1) -> dict:
     prodotti = await products_collection.find(
         {"id": {"$in": list(per_prodotto)}, "is_active": True, "is_published": True,
          "item_type": "event_ticket", "transaction_mode": {"$in": ["direct", "request"]}},
-        {"_id": 0, "id": 1, "category": 1, "organization_id": 1, "transaction_mode": 1}).to_list(2000)
+        {"_id": 0, "id": 1, "category": 1, "organization_id": 1, "transaction_mode": 1,
+         "metadata.formato": 1}).to_list(2000)
     org_ids = list({p.get("organization_id") for p in prodotti})
     # DEPLOY 10/9 notte — la stessa superficie pubblica della lista (store
     # pubblicato oppure public_slug con vetrina pubblicata; attiva, non
@@ -3521,19 +3536,31 @@ async def _categorie_con_ritiri(preview: int = 1) -> dict:
         {"organization_id": {"$in": org_ids}, "status": "active", "runtime_status": "ready"},
         {"_id": 0, "organization_id": 1})}
     conteggi: dict = {}
+    conteggi_formato: dict = {}
     # una categoria conta le EDIZIONI future (cio' che si vede nella lista)
     for p in prodotti:
-        if p.get("category") and p.get("organization_id") in org_ok \
+        if p.get("organization_id") in org_ok \
                 and _ritiro_listabile(p, pay_ready, sample_orgs, preview):
-            conteggi[p["category"]] = conteggi.get(p["category"], 0) + per_prodotto.get(p["id"], 0)
-    return {k: {"label": v, "count": conteggi[k]}
-            for k, v in RETREAT_CATEGORIES.items() if conteggi.get(k)}
+            n = per_prodotto.get(p["id"], 0)
+            if p.get("category"):
+                conteggi[p["category"]] = conteggi.get(p["category"], 0) + n
+            f = (p.get("metadata") or {}).get("formato")
+            if f:
+                conteggi_formato[f] = conteggi_formato.get(f, 0) + n
+    return {
+        "categories": {k: {"label": v, "count": conteggi[k]}
+                       for k, v in RETREAT_CATEGORIES.items() if conteggi.get(k)},
+        "formati": {k: {"label": v, "count": conteggi_formato[k]}
+                    for k, v in FORMATI_ESPERIENZA_PLURALE.items() if conteggi_formato.get(k)},
+    }
 
 
 @router.get("/retreats")
 async def list_public_retreats(
     request: Request = None,
     category: Optional[str] = Query(default=None, max_length=30),
+    # P4 (6/10/2026) — il secondo asse: ritiro | evento | formazione
+    formato: Optional[str] = Query(default=None, max_length=20),
     region: Optional[str] = Query(default=None, max_length=30),
     # G1 — ricerca per raggio (docs/GEO_SEARCH_PLAN.md): lat+lng+radius_km
     # attivano il filtro geografico; country raggruppa/filtra per paese.
@@ -3569,9 +3596,14 @@ async def list_public_retreats(
         products_collection,
         stores_collection,
     )
-    from models.retreat_taxonomy import RETREAT_CATEGORIES
+    from models.retreat_taxonomy import RETREAT_CATEGORIES, FORMATI_ESPERIENZA
 
     now_iso = datetime.now(timezone.utc).isoformat()
+    # P4 — un formato fuori lista non e' un errore ma una lista vuota
+    # (come una categoria sconosciuta): i link vecchi non si rompono mai.
+    if formato and formato not in FORMATI_ESPERIENZA:
+        return {"items": [], "total": 0, "categories": await _categorie_con_ritiri(preview),
+                "formati": (await _conteggi_esperienze(preview))["formati"]}
 
     occ_query: Dict[str, Any] = {
         "status": "published",
@@ -3603,7 +3635,8 @@ async def list_public_retreats(
     ).sort("start_at", 1).limit(500)
     occs = await cursor.to_list(500)
     if not occs:
-        return {"items": [], "total": 0, "categories": await _categorie_con_ritiri(preview)}
+        return {"items": [], "total": 0, "categories": await _categorie_con_ritiri(preview),
+                "formati": (await _conteggi_esperienze(preview))["formati"]}
 
     # prodotti (categoria + prezzo + nome) — solo vendibili.
     # GT1b (luglio) elencava SOLO i ritiri prenotabili online con Stripe
@@ -3617,9 +3650,12 @@ async def list_public_retreats(
         {"id": {"$in": product_ids}, "is_active": True, "is_published": True,
          "item_type": "event_ticket",
          "transaction_mode": {"$in": ["direct", "request"]},
-         **({"category": category} if category else {})},
+         **({"category": category} if category else {}),
+         # P4 — filtro per formato: solo le righe che lo dichiarano
+         **({"metadata.formato": formato} if formato else {})},
         {"_id": 0, "id": 1, "name": 1, "category": 1, "unit_price": 1,
          "image_url": 1, "organization_id": 1, "metadata.payment_plan": 1,
+         "metadata.formato": 1,
          "translations": 1, "transaction_mode": 1, "prima_fila": 1},
     ).to_list(1000)
 
@@ -3722,6 +3758,9 @@ async def list_public_retreats(
             "longitude": occ.get("longitude"),
             "title": prod.get("name"),
             "category": prod.get("category"),
+            # P4 — il formato (ritiro · evento · formazione), None sulle
+            # righe nate prima del campo: la card non mostra l'etichetta
+            "formato": (prod.get("metadata") or {}).get("formato"),
             "org_name": "" if _smp else org_name.get(prod["organization_id"], ""),
             "org_slug": slug_org,
             # MD3 — promessa Pro resa vera: badge + boost nel calendario
@@ -3776,11 +3815,14 @@ async def list_public_retreats(
             request.headers.get("user-agent") if request else None)
     except Exception:                 # noqa: BLE001
         pass
+    _conteggi = await _conteggi_esperienze()
     return {
         "items": page_items,
         "total": total,
         # RE-ter: solo le categorie con ritiri, col conteggio (mai un filtro vuoto)
-        "categories": await _categorie_con_ritiri(),
+        "categories": _conteggi["categories"],
+        # P4: i formati con almeno un'edizione, col conteggio (stessa regola)
+        "formati": _conteggi["formati"],
     }
 
 

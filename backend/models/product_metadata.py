@@ -146,14 +146,20 @@ class RentalMetadata(BaseModel):
 
 
 class EventTicketMetadata(BaseModel):
-    """Event ticket — no type-specific metadata today.
+    """Event ticket — per-occurrence data (dates, capacity, location
+    overrides) lives in the dedicated event_occurrences collection, NOT
+    here. The wizard's attendee/order policy, terms and payment_plan
+    pass through as extras (kept verbatim by validate_metadata_for_type).
 
-    Per-occurrence data (dates, capacity, location overrides) lives in
-    the dedicated event_occurrences collection, NOT here. This class
-    exists so the registry can hand everyone a uniform shape.
+    P4 «formato» (6/10/2026): the ONE typed field. The second axis of an
+    experience next to the discipline (`product.category`): ritiro |
+    evento | formazione. Optional on purpose: rows created before this
+    field have none and must keep listing exactly as before.
     """
 
     model_config = ConfigDict(extra="ignore")
+
+    formato: Optional[Literal["ritiro", "evento", "formazione"]] = None
 
 
 class DigitalMetadata(BaseModel):

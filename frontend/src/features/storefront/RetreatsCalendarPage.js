@@ -101,6 +101,8 @@ export default function RetreatsCalendarPage() {
   const category = routeParams.categoria || params.get('categoria') || '';
   const region = routeParams.regione || params.get('regione') || '';
   const month = params.get('mese') || '';
+  // P4 «formato» (6/10/2026) — il filtro «Tipo»: ritiro | evento | formazione
+  const formato = params.get('tipo') || '';
   const [query, setQuery] = useState('');
 
   // G3 — posizione+raggio dall'URL (condivisibile): ?lat&lng&r&luogo
@@ -132,6 +134,7 @@ export default function RetreatsCalendarPage() {
     if (category) q.category = category;
     if (region) q.region = region;
     if (month) q.month = month;
+    if (formato) q.formato = formato;
     if (geoLat && geoLng) {
       q.lat = geoLat; q.lng = geoLng; q.radius_km = geoRadius;
     }
@@ -145,7 +148,7 @@ export default function RetreatsCalendarPage() {
       .catch(() => { if (mounted) setData({ items: [], total: 0, categories: {} }); })
       .finally(() => { if (mounted) setLoading(false); });
     return () => { mounted = false; };
-  }, [category, region, month, geoLat, geoLng, geoRadius, i18n.language]);
+  }, [category, region, month, formato, geoLat, geoLng, geoRadius, i18n.language]);
 
   const setFilter = (key, value) => {
     const next = new URLSearchParams(params);
@@ -154,6 +157,9 @@ export default function RetreatsCalendarPage() {
   };
 
   const categories = useMemo(() => Object.entries(data?.categories || {}), [data]);
+  // P4 — i formati con almeno un'edizione (stessa regola RE-ter delle categorie)
+  const formati = useMemo(() => Object.entries(data?.formati || {}), [data]);
+  const etichettaFormato = (key) => t(`landings:calendar.formato.${key}`, { defaultValue: { ritiro: 'Ritiro', evento: 'Evento', formazione: 'Formazione' }[key] || key });
 
   // Ricerca client-side sul dataset già caricato (titolo, luogo, operatore)
   const items = useMemo(() => {
@@ -219,7 +225,7 @@ export default function RetreatsCalendarPage() {
     } : undefined,
   });
 
-  const anyFilter = category || region || month || query;
+  const anyFilter = category || region || month || formato || query;
 
   return (
     <MarketplaceShell noSearch>
@@ -316,6 +322,25 @@ export default function RetreatsCalendarPage() {
               ))}
               {category && !categories.some(([k]) => k === category) && (
                 <option value={category}>{catLabel}</option>
+              )}
+            </select>
+            {/* P4 «formato» (6/10/2026, founder): il filtro «Tipo». Solo
+                i formati con almeno un'edizione, col conteggio. */}
+            <select
+              value={formato}
+              onChange={e => setFilter('tipo', e.target.value)}
+              aria-label={t('landings:calendar.allFormats', { defaultValue: 'Tutti i tipi' })}
+              data-testid="esp-f-tipo"
+              className="flex-none w-36 lg:w-40 rounded-full border border-gray-300 bg-white px-3.5 py-1.5 text-sm text-gray-700 focus:border-primary focus:outline-none"
+            >
+              <option value="">{t('landings:calendar.allFormats', { defaultValue: 'Tutti i tipi' })}</option>
+              {formati.map(([key, info]) => (
+                <option key={key} value={key}>
+                  {info?.label || etichettaFormato(key)}{info?.count ? ` (${info.count})` : ''}
+                </option>
+              ))}
+              {formato && !formati.some(([k]) => k === formato) && (
+                <option value={formato}>{etichettaFormato(formato)}</option>
               )}
             </select>
             <input
@@ -497,6 +522,18 @@ export default function RetreatsCalendarPage() {
                     )}
                   </div>
                   <div className="p-4">
+                    {/* P4 — l'etichetta del formato (solo se dichiarato); un
+                        tap filtra per tipo, come la categoria qui sotto */}
+                    {item.formato && (
+                      <span
+                        role="button" tabIndex={0} data-testid="esp-card-formato"
+                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); setFilter('tipo', item.formato); }}
+                        onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); e.stopPropagation(); setFilter('tipo', item.formato); } }}
+                        className="inline-block mb-1 rounded-full bg-secondary px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-foreground/80 hover:underline"
+                      >
+                        {etichettaFormato(item.formato)}
+                      </span>
+                    )}
                     {/* V3 — tap sulla categoria → filtra la directory */}
                     <p
                       role="button"

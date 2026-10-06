@@ -140,3 +140,11 @@ Ogni lotto: guardia propria, suite al baseline, deploy separato con prova dal br
 3. Account Aurya obbligatorio per comprare un prodotto, anche fisico.
 4. Ordine: S → P4 → P0 → P1 digitali → P2 fisici → P3.
 Vincolo dichiarato: gli eventi sono live e funzionano; ogni tocco agli eventi è additivo e coperto da guardie sui dati esistenti.
+
+## 11. Stato (6/10/2026 sera)
+
+**P4 «formato» IMPLEMENTATO in locale** (giro `deploy/giri/deploy-2026-10-06-formato.sh`, in attesa del via per la prod):
+- backend: `FORMATI_ESPERIENZA` in `models/retreat_taxonomy.py` (+ `errore_formato`, `formato_suggerito`), `EventTicketMetadata.formato` facoltativo, 422 nel wizard e nel PATCH prodotto se fuori lista, `formati_esperienza` in `/products/taxonomies`, il duplica porta il formato, `/public/retreats` con `?formato=`, `formato` sulle card e conteggi `formati` (stessa regola RE-ter: mai un'opzione vuota), `formato` nel prodotto della landing pubblica; `scripts/formato_esperienze.py` (`--lista`, `--imposta pref=formato`, `--scrivi`) per la mappatura della regia;
+- frontend: tre carte «Che cos'è?» nel primo passo del wizard eventi (suggerita dalle date finché non si tocca, `?formato=` dall'URL per la futura terza carta dei prodotti), selettore nel pannello evento (parte da «Non indicato» sulle righe vecchie), filtro «Tipo» ed etichetta sulla card in `/esperienze` (`?tipo=`);
+- guardie: `backend/tests/test_formato_fm.py` (15 test: schema, wizard, PATCH, listing, superfici) + le suite storiche eventi/listing/prelaunch verdi;
+- mappatura decisa per le 10 esperienze in prod (nel giro, prova generale poi scrittura): i due corsi (Reiki I livello, Theta Healing DNA Base) → formazione; «Il ritorno alle origini» (tre giorni con alloggio) → ritiro; le altre sette (serate, giornate, i quattro seminari di due giorni in sala de «Il Potere dell'Immaginazione») → evento. Si cambia con un clic dal pannello dell'evento o con lo script.

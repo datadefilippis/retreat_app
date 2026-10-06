@@ -473,6 +473,8 @@
     "title": "I prossimi ritiri ed esperienze.",
     "subtitle": "I ritiri e le esperienze dei professionisti della rete, per data. Ogni scheda dice chi conduce, dove, quando, il prezzo e come si prenota.",
     "allCategories": "Tutte le categorie",
+    "allFormats": "Tutti i tipi",
+    "formato": { "ritiro": "Ritiro", "evento": "Evento", "formazione": "Formazione" },
     "allRegions": "Tutte le regioni",
     "clearFilters": "Azzera filtri",
     "loading": "Cerco i ritiri…",

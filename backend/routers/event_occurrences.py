@@ -229,6 +229,15 @@ async def create_event_wizard(
         # Persistiamo la forma normalizzata (default espliciti inclusi).
         body.product.metadata["payment_plan"] = validated_plan.model_dump(mode="json")
 
+    # P4 «formato» (6/10/2026) — secondo asse accanto alla disciplina:
+    # facoltativo (un payload senza formato e' accettato come prima), ma
+    # se c'e' deve essere uno dei tre (422, come il piano di pagamento).
+    from models.retreat_taxonomy import errore_formato
+    _err_formato = errore_formato(body.product.metadata)
+    if _err_formato:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                            detail=_err_formato)
+
     # v5.8 / Onda 9.L — This wrapper creates a Product as part of an event
     # occurrence wizard flow; same catalog quota gate as POST /products.
     from services.module_access import enforce_count_quota
@@ -596,7 +605,8 @@ async def duplicate_occurrence_data(
             k: v for k, v in (product.get("metadata") or {}).items()
             if k in ("payment_plan", "requires_attendee_details",
                      "require_attendee_email", "require_attendee_phone",
-                     "attendee_fields", "order_fields", "terms_content")
+                     "attendee_fields", "order_fields", "terms_content",
+                     "formato")   # P4: la quarta edizione dello stesso corso resta «formazione»
         },
     }
     occurrence_clean = {

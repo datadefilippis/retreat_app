@@ -452,6 +452,8 @@ export default function EventDashboardPage() {
           order_fields: occ.product_metadata?.order_fields || [],
           // F4 Onda 11
           terms_content: occ.product_metadata?.terms_content || '',
+          // P4 (6/10/2026) — ritiro | evento | formazione ('' = nato prima del campo)
+          formato: occ.product_metadata?.formato || '',
           // W1.S5/Phase 2.9 — hydrate cost composition. The
           // occurrence_details endpoint returns `product_cost_source`
           // when present; null when the merchant hasn't configured it.
@@ -1030,6 +1032,27 @@ export default function EventDashboardPage() {
                 </div>
                 </MultiLangSection>
                 </div>
+                {/* P4 «formato» (6/10/2026) — il secondo asse accanto alla
+                    disciplina; le esperienze nate prima del campo partono
+                    da «non indicato» e si dichiarano con un clic. */}
+                <div className="sm:col-span-2" data-testid="dash-formato">
+                  <label className="block text-xs font-medium text-gray-700 mb-1">
+                    {t('dashboards.event.product.formatoLabel', { defaultValue: 'Che cos’è?' })}
+                  </label>
+                  <select value={productForm.formato || ''}
+                    onChange={e => setProductForm(f => ({ ...f, formato: e.target.value }))}
+                    data-testid="dash-formato-select"
+                    className="w-full sm:w-72 rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-gray-900 focus:outline-none bg-white"
+                  >
+                    {!productForm.formato && <option value="">{t('dashboards.event.product.formatoNone', { defaultValue: 'Non indicato' })}</option>}
+                    <option value="ritiro">{t('dashboards.event.product.formatoRitiro', { defaultValue: 'Ritiro' })}</option>
+                    <option value="evento">{t('dashboards.event.product.formatoEvento', { defaultValue: 'Evento' })}</option>
+                    <option value="formazione">{t('dashboards.event.product.formatoFormazione', { defaultValue: 'Formazione' })}</option>
+                  </select>
+                  <p className="text-[11px] text-gray-400 mt-0.5">
+                    {t('dashboards.event.product.formatoHint', { defaultValue: 'Su Esperienze chi cerca filtra per tipo: ritiri, eventi, formazione. La disciplina non cambia.' })}
+                  </p>
+                </div>
                 <div>
                   <label className="block text-xs font-medium text-gray-700 mb-1">{t('dashboards.event.product.imageLabel')}</label>
                   {/* File upload */}
@@ -1227,6 +1250,8 @@ export default function EventDashboardPage() {
                           order_fields: pruneFieldConfigs(productForm.order_fields),
                           // F4 Onda 11 — per-event T&C override
                           terms_content: productForm.terms_content?.trim() || null,
+                          // P4 — il formato scelto nel pannello; se vuoto resta quello salvato
+                          ...(productForm.formato ? { formato: productForm.formato } : {}),
                         },
                         // W1.S5/Phase 2.9 — additive cost composition.
                         cost_source: productForm.cost_source || null,
