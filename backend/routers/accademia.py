@@ -407,6 +407,8 @@ async def modifica_corso(course_id: str, body: CorsoUpdate, current_user: dict =
         raise HTTPException(status_code=400, detail="Con l'accesso a tempo serve il numero di giorni.")
     if upd:
         await update(course_id, org_id, upd)
+        if "title" in upd:
+            await _rinomina_su_bunny(org_id, doc, titolo_corso=upd["title"])
     prodotto = await _prodotto_di(doc, org_id)
     pupd: Dict[str, Any] = {"updated_at": datetime.now(timezone.utc).isoformat()}
     if "title" in upd:
@@ -585,7 +587,10 @@ async def modifica_lezione(course_id: str, lesson_id: str, body: LezioneUpdate,
         m["lessons"] = [x for x in m.get("lessons") or [] if x.get("id") != lesson_id]
         l["order"] = len(dest.get("lessons") or [])
         dest.setdefault("lessons", []).append(l)
-    return await _risposta(await _salva_moduli(doc, org_id), org_id)
+    salvato = await _salva_moduli(doc, org_id)
+    if body.title is not None:
+        await _rinomina_su_bunny(org_id, salvato, l=_trova_lezione(salvato, lesson_id)[1])
+    return await _risposta(salvato, org_id)
 
 
 @router.delete("/{course_id}/lezioni/{lesson_id}")
@@ -629,10 +634,70 @@ async def riordina(course_id: str, body: OrdineBody, current_user: dict = Depend
     if len(visti_m) != len(moduli) or len(visti_l) != len(lezioni):
         raise HTTPException(status_code=400, detail="Ordine non valido: manca un modulo o una lezione.")
     doc["modules"] = nuovi
-    return await _risposta(await _salva_moduli(doc, org_id), org_id)
+    salvato = await _salva_moduli(doc, org_id)
+    for l in _lezioni(salvato):
+        if (l.get("video") or {}).get("guid"):
+            await _rinomina_su_bunny(org_id, salvato, l=l)
+    return await _risposta(salvato, org_id)
 
 
 # ── il video di una lezione ──────────────────────────────────────────────
+
+def _titolo_video(doc: dict, l: dict) -> str:
+    """Il titolo su Bunny: «NN · titolo della lezione» (il corso e' la
+    collezione, l'operatore la libreria): ordinato e leggibile nel pannello."""
+    n = 0
+    for m in sorted(doc.get("modules") or [], key=lambda x: x.get("order", 0)):
+        for x in sorted(m.get("lessons") or [], key=lambda x: x.get("order", 0)):
+            n += 1
+            if x.get("id") == l.get("id"):
+                return f"{n:02d} · {l.get('title', '')}"[:255]
+    return (l.get("title") or "Lezione")[:255]
+
+
+async def _collezione_del_corso(doc: dict, org_id: str, lib: dict) -> Optional[str]:
+    """La collezione Bunny del corso (una cartella per corso nella libreria
+    dell'operatore), creata alla prima lezione video e salvata sul corso."""
+    from database import courses_collection
+    from services.bunny.client import BunnyClient
+    gia = (doc.get("bunny") or {}).get("collection_id")
+    if gia:
+        return gia
+    try:
+        async with BunnyClient(lib["api_key"]) as c:
+            creata = await c.create_collection(str(lib["library_id"]), doc.get("title") or "Corso")
+        cid = creata.get("guid") or creata.get("id")
+        if cid:
+            await courses_collection.update_one({"id": doc["id"], "organization_id": org_id},
+                                                {"$set": {"bunny.collection_id": str(cid), "bunny.library_id": lib.get("id")}})
+            doc.setdefault("bunny", {})["collection_id"] = str(cid)
+        return str(cid) if cid else None
+    except Exception as exc:  # noqa: BLE001 — senza collezione il video va comunque nella libreria
+        logger.warning("accademia: collezione non creata per il corso %s: %s", doc.get("id"), exc)
+        return None
+
+
+async def _rinomina_su_bunny(org_id: str, doc: dict, l: Optional[dict] = None, titolo_corso: Optional[str] = None) -> None:
+    """Best-effort: allinea su Bunny il titolo del video (NN · lezione) o
+    della collezione (corso). Mai blocca."""
+    from database import organizations_collection
+    from services.bunny.client import BunnyClient
+    org = await organizations_collection.find_one({"id": org_id}, {"_id": 0, "integrations.bunny_libraries": 1})
+    librerie = {x.get("id"): x for x in ((org or {}).get("integrations") or {}).get("bunny_libraries") or []}
+    try:
+        if titolo_corso and (doc.get("bunny") or {}).get("collection_id"):
+            lib = librerie.get((doc.get("bunny") or {}).get("library_id"))
+            if lib:
+                async with BunnyClient(lib["api_key"]) as c:
+                    await c.update_collection(str(lib["library_id"]), doc["bunny"]["collection_id"], titolo_corso)
+        if l and (l.get("video") or {}).get("guid"):
+            lib = librerie.get(l["video"].get("library_id"))
+            if lib:
+                async with BunnyClient(lib["api_key"]) as c:
+                    await c.update_video(str(lib["library_id"]), l["video"]["guid"], title=_titolo_video(doc, l))
+    except Exception as exc:  # noqa: BLE001
+        logger.info("accademia: titolo non allineato su Bunny: %s", exc)
+
 
 async def _cancella_video_bunny(org_id: str, l: dict) -> None:
     """Best-effort: cancella il video su Bunny e scala la quota. Mai blocca."""
@@ -684,8 +749,9 @@ async def nuovo_video(course_id: str, lesson_id: str, body: VideoBody,
     except RuntimeError:
         raise HTTPException(status_code=503, detail={"code": "bunny_non_configurato", "message": "Caricamento video non attivo."})
     await _cancella_video_bunny(org_id, l)    # un video per lezione: il nuovo sostituisce il vecchio
+    collezione = await _collezione_del_corso(doc, org_id, lib)
     async with BunnyClient(lib["api_key"]) as c:
-        creato = await c.create_video(str(lib["library_id"]), f"{doc.get('title', '')} — {l.get('title', '')}")
+        creato = await c.create_video(str(lib["library_id"]), _titolo_video(doc, l), collection_id=collezione)
     guid = creato.get("guid")
     if not guid:
         raise HTTPException(status_code=502, detail="Bunny non ha creato il video.")

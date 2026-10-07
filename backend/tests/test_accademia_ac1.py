@@ -169,3 +169,23 @@ class TestRouterAccademia:
         from routers.accademia import _slugify
         assert _slugify("Respiro consapevole in 5 giorni!") == "respiro-consapevole-in-5-giorni"
         assert _slugify("   ") == "corso"
+
+
+class TestOrdineSuBunny:
+    """Founder (7/10): «non vorrei fare un mappazzone». Libreria = operatore,
+    collezione = corso, video = «NN · lezione»."""
+
+    def test_collezione_per_corso_e_titoli_numerati(self):
+        src = (BACKEND / "routers" / "accademia.py").read_text()
+        assert "async def _collezione_del_corso" in src and '"bunny.collection_id"' in src
+        assert "create_video(str(lib[\"library_id\"]), _titolo_video(doc, l), collection_id=collezione)" in src
+        assert "await _rinomina_su_bunny(org_id, doc, titolo_corso=upd[\"title\"])" in src
+        c = (BACKEND / "services" / "bunny" / "client.py").read_text()
+        for n in ("async def create_collection", "async def update_collection", "async def update_video", "collection_id: Optional[str] = None"):
+            assert n in c, n
+        from routers.accademia import _titolo_video
+        doc = {"modules": [{"order": 0, "lessons": [{"id": "a", "order": 0, "title": "Benvenuto"}, {"id": "b", "order": 1, "title": "Il respiro"}]},
+                           {"order": 1, "lessons": [{"id": "c", "order": 0, "title": "Chiusura"}]}]}
+        assert _titolo_video(doc, {"id": "b", "title": "Il respiro"}) == "02 · Il respiro"
+        assert _titolo_video(doc, {"id": "c", "title": "Chiusura"}) == "03 · Chiusura"
+

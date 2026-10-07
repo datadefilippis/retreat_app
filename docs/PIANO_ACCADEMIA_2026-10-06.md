@@ -216,3 +216,5 @@ Ogni lotto: suite al baseline, prova in locale dal browser, deploy separato in *
 3. **Le miniature si firmano a ogni lettura** (24 ore), mai salvate firmate.
 Pulizia: il video orfano della prova diretta è stato cancellato; la pagina HTML di prova non è nel repo.
 
+**Ordine su Bunny (7/10, founder: «non vorrei fare un mappazzone»).** La struttura su Bunny rispecchia Aurya: **libreria = operatore** (`aurya-{slug}`), **collezione = corso** (cartella creata alla prima lezione video, salvata in `courses.bunny.collection_id`, rinominata se cambia il titolo del corso), **video = lezione** col titolo «NN · titolo» dove NN è la posizione nel corso; al riordino i numeri si riallineano, alla rinomina il titolo segue. Provato dal vivo sulla libreria del demo: collezione «Respiro consapevole in 5 giorni», video «01 · …», «03 · …». Niente dipende dai titoli Bunny: l'ordine vero vive in Aurya, i titoli servono a chi guarda il pannello.
+

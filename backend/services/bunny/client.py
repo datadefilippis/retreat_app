@@ -125,10 +125,35 @@ class BunnyClient:
     # GET /library/{id}/videos/{guid} → length (secondi), status, storageSize,
     # thumbnailFileName, availableResolutions; DELETE /library/{id}/videos/{guid}.
 
-    async def create_video(self, library_id: str, title: str) -> Dict[str, Any]:
-        response = await self._client.post(f"/library/{library_id}/videos", json={"title": title[:255]})
+    async def create_video(self, library_id: str, title: str, collection_id: Optional[str] = None) -> Dict[str, Any]:
+        """Il video nasce DENTRO la collezione del corso (Bunny: cartella nella
+        libreria): libreria = operatore, collezione = corso, video = lezione."""
+        body: Dict[str, Any] = {"title": title[:255]}
+        if collection_id:
+            body["collectionId"] = collection_id
+        response = await self._client.post(f"/library/{library_id}/videos", json=body)
         response.raise_for_status()
         return response.json()
+
+    async def update_video(self, library_id: str, video_guid: str, **campi: Any) -> None:
+        """POST /library/{id}/videos/{guid} con title e/o collectionId."""
+        response = await self._client.post(f"/library/{library_id}/videos/{video_guid}", json=campi)
+        response.raise_for_status()
+
+    # ── collezioni: una cartella per corso ──
+    async def create_collection(self, library_id: str, name: str) -> Dict[str, Any]:
+        response = await self._client.post(f"/library/{library_id}/collections", json={"name": name[:255]})
+        response.raise_for_status()
+        return response.json()
+
+    async def update_collection(self, library_id: str, collection_id: str, name: str) -> None:
+        response = await self._client.post(f"/library/{library_id}/collections/{collection_id}", json={"name": name[:255]})
+        response.raise_for_status()
+
+    async def delete_collection(self, library_id: str, collection_id: str) -> None:
+        response = await self._client.delete(f"/library/{library_id}/collections/{collection_id}")
+        if response.status_code != 404:
+            response.raise_for_status()
 
     async def get_video(self, library_id: str, video_guid: str) -> Dict[str, Any]:
         response = await self._client.get(f"/library/{library_id}/videos/{video_guid}")
