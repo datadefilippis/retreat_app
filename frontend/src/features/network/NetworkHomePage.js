@@ -210,6 +210,7 @@ const SOUND_PHOTO = '/media/hp-sound.jpg';
 const PHOTO = {
   magazine: '/media/hero-blog.webp',
   pros: '/media/prelaunch/r06.jpg',
+  esperienze: '/media/prelaunch/r03.jpg',   // 7/10: la terza scheda, ora che le esperienze ci sono
   operators: '/media/hero-organizer.webp',
   letter: '/media/hero-destination.webp',
 };
@@ -274,6 +275,19 @@ export default function NetworkHomePage() {
       text: t('nwHome.pillarProText', { defaultValue: "Persone che conosciamo una per una: la loro storia, il modo in cui lavorano, i loro servizi e i loro ritiri." }),
       to: NETWORK_PATH,
       ctaLabel: t('nwHome.pillarProCta', { defaultValue: "Scopri i professionisti" }),
+    },
+    {
+      // 7/10/2026 (founder): la scheda «Esperienze» TORNA, stavolta con una
+      // porta vera: i professionisti pubblicano ritiri, eventi e formazione
+      // (nove in programma) e /esperienze e' nel menu dal 6/10. A settembre
+      // era una promessa («Prossimamente») senza link, e CP l'aveva tolta.
+      id: 'esperienze',
+      numeral: '03',
+      image: PHOTO.esperienze,
+      title: t('nwHome.pillarExpTitle', { defaultValue: "Esperienze" }),
+      text: t('nwHome.pillarExpText', { defaultValue: "Ritiri, eventi e formazione proposti dai professionisti della rete: date, luoghi e come partecipare." }),
+      to: '/esperienze',
+      ctaLabel: t('nwHome.pillarExpCta', { defaultValue: "Scopri le esperienze" }),
     },
   ];
 
@@ -448,9 +462,10 @@ export default function NetworkHomePage() {
             </div>
             {/* con la scheda-oggetto il gap puo' stringersi: a separarle
                 ci pensano il bordo e l'ombra, non piu' il vuoto */}
-            {/* CP: due schede, affiancate da `sm` (tre colonne con due
-                schede lascerebbero un buco a destra) */}
-            <ul className="mt-12 sm:mt-14 grid gap-7 sm:gap-8 sm:grid-cols-2 list-none p-0">
+            {/* 7/10/2026: tre schede. Da telefono una colonna, da tablet due
+                (la terza sotto, a tutta larghezza di colonna), da desktop
+                tutte e tre sulla stessa riga (1088 px / 3 = 341 px l'una) */}
+            <ul className="mt-12 sm:mt-14 grid gap-7 sm:gap-8 sm:grid-cols-2 lg:grid-cols-3 list-none p-0">
               {/* `id` esce dallo spread: e' la chiave della lista e il
                   nostro appiglio nei test, non un attributo da versare
                   sul DOM della scheda */}

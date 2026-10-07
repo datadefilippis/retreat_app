@@ -474,7 +474,11 @@
     "subtitle": "I ritiri e le esperienze dei professionisti della rete, per data. Ogni scheda dice chi conduce, dove, quando, il prezzo e come si prenota.",
     "allCategories": "Tutte le categorie",
     "allFormats": "Tutti i tipi",
-    "formato": { "ritiro": "Ritiro", "evento": "Evento", "formazione": "Formazione" },
+    "formato": {
+      "ritiro": "Ritiro",
+      "evento": "Evento",
+      "formazione": "Formazione"
+    },
     "allRegions": "Tutte le regioni",
     "clearFilters": "Azzera filtri",
     "loading": "Cerco i ritiri…",
@@ -976,8 +980,7 @@
     "pillarProText": "Persone che conosciamo una per una: la loro storia, il modo in cui lavorano, i loro servizi e i loro ritiri.",
     "pillarProCta": "Scopri i professionisti",
     "pillarExpTitle": "Esperienze",
-    "pillarExpText": "Workshop, ritiri ed eventi per trasformare ciò che hai scoperto in qualcosa da vivere.",
-    "pillarExpBadge": "Prossimamente",
+    "pillarExpText": "Ritiri, eventi e formazione proposti dai professionisti della rete: date, luoghi e come partecipare.",
     "whyTitle": "Perché esiste Aurya?",
     "whyP1": "Ogni giorno migliaia di persone cercano un professionista del benessere.",
     "whyP2": "Trovare un professionista è semplice.",
@@ -1016,7 +1019,8 @@
     "prosOffer": "Profilo pubblico, prenotazioni, eventi e ritiri con caparra, un link solo per Instagram. Gratis per sempre, senza commissioni su ritiri e servizi.",
     "prosFounders": "I primi venti operatori olistici che pubblicano il profilo entro il 31 ottobre 2026 entrano da fondatori.",
     "prosCta2": "Apri il tuo spazio",
-    "prosHow": "Come funziona"
+    "prosHow": "Come funziona",
+    "pillarExpCta": "Scopri le esperienze"
   },
   "nwOps": {
     "seoTitle": "La rete Aurya | I professionisti che stiamo conoscendo",

@@ -5808,9 +5808,14 @@ class TestHomeHp2:
         home nessuna scheda promette senza una porta. Il ramo senza
         `to` di PillarCard resta uno <span> per chi lo usera'."""
         src = self.HOME.read_text()
-        assert "id: 'esperienze'" not in src and "pillarExpBadge" not in src, \
-            "la scheda-promessa «Esperienze — Prossimamente» e' tornata"
-        assert "sm:grid-cols-2" in src[src.index('data-testid="hp-pillars"'):src.index('data-testid="hp-sound"')]
+        # 7/10/2026 (founder): la scheda «Esperienze» e' tornata CON una porta
+        # (/esperienze, nel menu dal 6/10): niente piu' promessa, niente badge
+        assert "pillarExpBadge" not in src, "la scheda-promessa «Prossimamente» e' tornata"
+        pillars = src.split("const pillars = [")[1].split("\n  ];")[0]
+        esp = pillars[pillars.index("id: 'esperienze'"):]
+        assert "to: '/esperienze'" in esp, "la scheda Esperienze deve avere una porta"
+        griglia = src[src.index('data-testid="hp-pillars"'):src.index('data-testid="hp-sound"')]
+        assert "sm:grid-cols-2 lg:grid-cols-3" in griglia, "tre schede: due da tablet, tre da desktop"
         pillar = (self.EDITORIAL / "PillarCard.jsx").read_text()
         # il ramo senza `to` rende uno <span>, non un Link/button
         ramo = pillar[pillar.index("{to ? ("):]
@@ -6044,7 +6049,7 @@ class TestHomeHp2:
         "findTitle", "findSubA", "findSubB",
         "pillarMagTitle", "pillarMagText", "pillarMagCta",
         "pillarProTitle", "pillarProText", "pillarProCta",
-        "pillarExpTitle", "pillarExpText", "pillarExpBadge",
+        "pillarExpTitle", "pillarExpText", "pillarExpCta",   # 7/10: la scheda ha una porta, non un badge
         "whyTitle", "whyP1", "whyP2", "whyP3", "whyCta",
         "magTitle", "magSub", "magCta",
         "netTitleA", "netTitleB", "netBody", "netCta",
