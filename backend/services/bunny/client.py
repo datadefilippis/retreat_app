@@ -173,12 +173,33 @@ class BunnyAccountClient:
         response.raise_for_status()
         return response.json()
 
+    async def list_libraries(self, per_page: int = 100) -> list:
+        """GET /videolibrary → le librerie dell'account (per adottare una
+        libreria gia' creata con lo stesso nome, se un salvataggio e' fallito)."""
+        response = await self._client.get("/videolibrary", params={"page": 1, "perPage": per_page})
+        response.raise_for_status()
+        d = response.json()
+        return d.get("Items", d if isinstance(d, list) else [])
+
+    async def get_library(self, library_id: str) -> Dict[str, Any]:
+        """GET /videolibrary/{id} → con ApiKey e ReadOnlyApiKey."""
+        response = await self._client.get(f"/videolibrary/{library_id}")
+        response.raise_for_status()
+        return response.json()
+
     async def update_library(self, library_id: str, settings: Dict[str, Any]) -> Dict[str, Any]:
         """POST /videolibrary/{id} con le impostazioni (risoluzioni, originali,
         token auth, referrer, webhook...)."""
         response = await self._client.post(f"/videolibrary/{library_id}", json=settings)
         response.raise_for_status()
         return response.json() if response.content else {}
+
+    async def add_allowed_referrer(self, library_id: str, hostname: str) -> None:
+        """POST /videolibrary/{id}/addAllowedReferrer {Hostname}: il campo
+        AllowedReferrers nell'update viene ignorato da Bunny (provato il 7/10),
+        l'endpoint dedicato no."""
+        response = await self._client.post(f"/videolibrary/{library_id}/addAllowedReferrer", json={"Hostname": hostname})
+        response.raise_for_status()
 
     async def get_pullzone(self, pullzone_id: str) -> Dict[str, Any]:
         response = await self._client.get(f"/pullzone/{pullzone_id}")

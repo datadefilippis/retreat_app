@@ -66,6 +66,13 @@ class TestBunnyGestito:
             assert n in src, n
         assert '_ACCOUNT_BASE_URL = "https://api.bunny.net"' in src
         assert 'self._client.post(f"/library/{library_id}/videos"' in src
+        assert "async def add_allowed_referrer" in src and "async def list_libraries" in src
+        g = (BACKEND / "services" / "bunny" / "gestito.py").read_text()
+        # un salvataggio fallito non lascia orfani: si adotta la libreria con lo stesso nome
+        assert "await acc.list_libraries()" in g and "adotto la libreria" in g
+        # org nate con integrations null: $set dell'oggetto intero, non $push
+        assert '{"$set": {"integrations": {"bunny_libraries": [lib]}}}' in g
+        assert "await acc.add_allowed_referrer(library_id, dominio)" in g
 
     def test_modelli_additivi(self):
         from models.course import Lesson, VideoLezione

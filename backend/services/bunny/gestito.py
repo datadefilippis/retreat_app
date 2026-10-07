@@ -144,7 +144,19 @@ async def assicura_libreria(org_id: str) -> Dict[str, Any]:
         raise RuntimeError("bunny_non_configurato")
     from services.bunny.client import BunnyAccountClient
     async with BunnyAccountClient(chiave) as acc:
-        creata = await acc.create_library(nome_libreria(org))
+        # prima si cerca una libreria con lo stesso nome gia' sull'account
+        # (un salvataggio fallito non deve lasciare orfani su Bunny)
+        creata = None
+        try:
+            for esistente_bunny in await acc.list_libraries():
+                if esistente_bunny.get("Name") == nome_libreria(org):
+                    creata = await acc.get_library(str(esistente_bunny.get("Id")))
+                    logger.info("bunny gestito: adotto la libreria %s gia' esistente per org %s", creata.get("Id"), org_id)
+                    break
+        except Exception as exc:  # noqa: BLE001 — se la lista non risponde, si crea
+            logger.warning("bunny gestito: lista librerie non letta: %s", exc)
+        if creata is None:
+            creata = await acc.create_library(nome_libreria(org))
         library_id = str(creata.get("Id"))
         impostazioni = dict(IMPOSTAZIONI_LIBRERIA)
         wh = url_webhook()
@@ -154,6 +166,12 @@ async def assicura_libreria(org_id: str) -> Dict[str, Any]:
             await acc.update_library(library_id, impostazioni)
         except Exception as exc:  # noqa: BLE001 — la libreria esiste: le impostazioni si riprovano
             logger.warning("bunny gestito: impostazioni non applicate alla libreria %s: %s", library_id, exc)
+        # i referrer passano dall'endpoint dedicato (il campo nell'update e' ignorato)
+        for dominio in DOMINI_PLAYER:
+            try:
+                await acc.add_allowed_referrer(library_id, dominio)
+            except Exception as exc:  # noqa: BLE001
+                logger.warning("bunny gestito: referrer %s non aggiunto alla libreria %s: %s", dominio, library_id, exc)
         hostname = None
         try:
             if creata.get("PullZoneId"):
@@ -180,9 +198,15 @@ async def assicura_libreria(org_id: str) -> Dict[str, Any]:
         "library_name": nome_libreria(org),
         "created_at": now, "updated_at": now,
     }
-    await organizations_collection.update_one(
-        {"id": org_id}, {"$push": {"integrations.bunny_libraries": lib}})
-    logger.info("bunny gestito: libreria %s creata per org %s", library_id, org_id)
+    # `integrations` puo' essere null sulle org nate prima: $push non puo'
+    # creare un campo dentro un null → in quel caso si scrive l'oggetto intero
+    if isinstance(org.get("integrations"), dict):
+        await organizations_collection.update_one(
+            {"id": org_id}, {"$push": {"integrations.bunny_libraries": lib}})
+    else:
+        await organizations_collection.update_one(
+            {"id": org_id}, {"$set": {"integrations": {"bunny_libraries": [lib]}}})
+    logger.info("bunny gestito: libreria %s pronta per org %s", library_id, org_id)
     return lib
 
 
