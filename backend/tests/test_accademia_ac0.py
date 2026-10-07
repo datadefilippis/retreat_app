@@ -123,8 +123,10 @@ class TestStrumentiInArrivo:
         s = (FRONTEND / "pages" / "StrumentiPage.js").read_text()
         assert "key: 'accademia'" in s and "m.module_key === 'accademia'" in s
         blocco = s[s.index("key: 'accademia'"):]
-        assert "inArrivo: true" in blocco and "azioni: []" in blocco
-        assert "'In arrivo: è già previsto nel tuo piano.'" in blocco
+        # AC1: la scheda e' attiva per i piloti («I miei corsi»), in arrivo per tutti gli altri
+        assert "attivo: accademiaAttiva" in blocco and "inArrivo: !accademiaAttiva" in blocco
+        assert "'In arrivo: è già previsto nel tuo piano.'" in blocco and "to: '/accademia'" in blocco
+        assert "accademiaAperta(user)" in s
         stato = (FRONTEND / "features" / "accademia" / "stato.js").read_text()
         assert "export const ACCADEMIA_UI_PRONTA = false" in stato
         assert "PILOTI_ACCADEMIA = ['admin@demo.com']" in stato
