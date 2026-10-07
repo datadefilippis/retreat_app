@@ -110,7 +110,8 @@ class TestFrontend:
 
     def test_player_e_landing(self):
         sp = (FRONTEND / "features" / "accademia" / "player" / "SuonoPlayer.jsx").read_text()
-        assert "creaAscolto(traccia.score" in sp and "useSafetyGate" in sp and "{curtain}" in sp
+        assert "creaAscolto(traccia.score" in sp
+        assert "SafetyCurtain" not in sp and "Headphones" not in sp      # founder 8/10: niente sipario, niente testi in piu'
         ap = (FRONTEND / "features" / "accademia" / "player" / "AudioPlayer.jsx").read_text()
         assert "<audio ref={ref}" in ap and 'controlsList="nodownload"' in ap
         st = (FRONTEND / "features" / "account" / "CorsoStudentePage.js").read_text()

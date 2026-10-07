@@ -183,7 +183,6 @@ function Lezione({ corso, modulo, lezione, prima, ultima, onSposta, ricarica, bu
               {soundAttivo && (tracce || []).length === 0 && (
                 <p className="text-xs text-gray-500">Non hai ancora tracce tue: <a href="/sound/crea" className="underline underline-offset-4">creane una in Aurya Sound</a>, poi torna qui.</p>
               )}
-              {lezione.suono && <p className="text-xs text-gray-500">Chi compra la ascolta dal vivo nel corso, col motore di Aurya Sound: se la ritocchi, la lezione segue. Resta tua e privata.</p>}
             </div>
           ) : v ? (
             <div className="flex flex-wrap items-center gap-3">
