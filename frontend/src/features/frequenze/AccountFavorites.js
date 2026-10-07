@@ -2,8 +2,8 @@
  * Le mie meditazioni — sezione preferiti dentro /account (FQ3).
  *
  * Componente ISOLATO del modulo Frequenze innestato nell'hub account:
- * carica da solo, stile del mondo marketplace (non fqz), e se non ci
- * sono preferiti non occupa spazio. L'hub consolidato non cambia:
+ * carica da solo, stile del mondo marketplace (non fqz); vuoto mostra
+ * l'invito (RF 8/10: nell'hub ogni sezione esiste sempre). L'hub consolidato non cambia:
  * un import e una riga.
  */
 import React, { useEffect, useState } from 'react';
@@ -24,7 +24,20 @@ export default function AccountFavorites() {
       .catch(() => { /* sezione silenziosa se l'endpoint non risponde */ });
   }, []);
 
-  if (!items.length) return null;
+  // RF (8/10/2026, founder): nell'hub ogni cosa ha la sua sezione anche
+  // quando e' vuota, con l'invito — prima qui non c'era nulla e la tessera
+  // «Meditazioni» atterrava sulla sezione dopo
+  if (!items.length) {
+    return (
+      <section data-testid="account-meditations">
+        <h2 className="text-sm font-semibold text-gray-900 mb-2">Le mie meditazioni</h2>
+        <div className="rounded-2xl border border-dashed border-gray-300 bg-white p-5 text-center" data-testid="account-meditations-vuoto">
+          <p className="text-sm text-gray-600">Nessuna meditazione salvata ancora. Ascolta su Aurya Sound e tocca il cuore: le ritrovi qui.</p>
+          <Link to="/meditazioni" className="mt-2 inline-block text-sm font-medium text-primary hover:underline">Scopri le meditazioni →</Link>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section data-testid="account-meditations">

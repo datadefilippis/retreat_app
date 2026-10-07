@@ -92,3 +92,5 @@ class TestLandingProfiloAccount:
         assert 'data-testid="account-corsi-vuoto"' in a and 'to="/corsi"' in a
         assert 'data-testid="account-file-vuoto"' in a and 'to="/operatori"' in a
         assert "Array.isArray(corsi) && corsi.length > 0 &&" not in a
+        fav = (FRONTEND / "features" / "frequenze" / "AccountFavorites.js").read_text()
+        assert 'data-testid="account-meditations-vuoto"' in fav and "if (!items.length) return null;" not in fav
