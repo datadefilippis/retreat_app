@@ -19,7 +19,7 @@ class TestBackendPubblico:
         assert 'customer_email=None, ttl_seconds=3600' in corpo
         assert '/play-url")\n@limiter.limit("30/minute")\nasync def anteprima_corso_play_url' in src
         # solo il trailer o una lezione is_preview E pronta E video
-        assert 'if not l or not l.get("is_preview") or not _lezione_pronta(l) or (l.get("tipo") or "video") != "video":' in corpo
+        assert 'if not l or not l.get("is_preview") or not _lezione_pronta(l) or (l.get("tipo") or "video") not in ("video", "audio", "suono"):' in corpo   # AU: anche audio e suono
         # la landing: il programma non porta GUID
         landing = src.split("async def get_corso_landing")[1].split("\n@router")[0]
         assert '"guid"' not in landing

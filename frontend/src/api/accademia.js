@@ -32,6 +32,26 @@ export const accademiaAPI = {
   videoPrepara: (id, lid, { filename, size_bytes }) => api.post(`/accademia/${id}/lezioni/${lid}/video`, { filename, size_bytes }),
   videoStato: (id, lid) => api.get(`/accademia/${id}/lezioni/${lid}/video`),
   videoTogli: (id, lid) => api.delete(`/accademia/${id}/lezioni/${lid}/video`),
+  // AU (8/10/2026): l'audio mp3 della lezione, le tracce Aurya Sound, gli allegati
+  audioCarica: (id, lid, file, durata, onProgress) => {
+    const fd = new FormData();
+    fd.append('file', file);
+    fd.append('duration_seconds', String(Math.round(durata || 0)));
+    return api.post(`/accademia/${id}/lezioni/${lid}/audio`, fd, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+      onUploadProgress: (e) => { if (onProgress && e.total) onProgress(Math.round((100 * e.loaded) / e.total)); },
+    });
+  },
+  audioTogli: (id, lid) => api.delete(`/accademia/${id}/lezioni/${lid}/audio`),
+  audioUrl: (id, lid) => `${api.defaults.baseURL || ''}/accademia/${id}/lezioni/${lid}/audio`,
+  tracce: (id) => api.get(`/accademia/${id}/tracce`),
+  allegatoCarica: (id, lid, file, label) => {
+    const fd = new FormData();
+    fd.append('file', file);
+    if (label) fd.append('label', label);
+    return api.post(`/accademia/${id}/lezioni/${lid}/allegati`, fd, { headers: { 'Content-Type': 'multipart/form-data' } });
+  },
+  allegatoTogli: (id, lid, aid) => api.delete(`/accademia/${id}/lezioni/${lid}/allegati/${aid}`),
   // il video di presentazione (trailer): stesso ciclo delle lezioni
   trailerPrepara: (id, { filename, size_bytes }) => api.post(`/accademia/${id}/trailer`, { filename, size_bytes }),
   trailerStato: (id) => api.get(`/accademia/${id}/trailer`),
@@ -51,6 +71,26 @@ export function fmtDurata(sec) {
   if (m) return `${m} min`;
   return `${s} s`;
 }
+
+/** la durata di un file audio, misurata dal browser prima di caricarlo (0 se non riesce) */
+export function durataAudio(file) {
+  return new Promise((resolve) => {
+    try {
+      const url = URL.createObjectURL(file);
+      const a = document.createElement('audio');
+      a.preload = 'metadata';
+      a.onloadedmetadata = () => { URL.revokeObjectURL(url); resolve(Number.isFinite(a.duration) ? Math.round(a.duration) : 0); };
+      a.onerror = () => { URL.revokeObjectURL(url); resolve(0); };
+      a.src = url;
+    } catch { resolve(0); }
+  });
+}
+
+export const FORMATI_AUDIO = '.mp3,.m4a,.aac,.wav,.ogg,audio/mpeg,audio/mp4,audio/aac,audio/wav,audio/ogg';
+export const MAX_AUDIO_BYTES = 50 * 1024 * 1024;
+export const FORMATI_ALLEGATO = '.pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt,.md,.png,.jpg,.jpeg,.webp,.zip,.mp3,.m4a';
+export const MAX_ALLEGATO_BYTES = 20 * 1024 * 1024;
+export const fmtBytes = (n) => (n >= 1024 ** 2 ? `${(n / 1024 ** 2).toFixed(1)} MB` : `${Math.max(1, Math.round(n / 1024))} KB`);
 
 export const ETICHETTA_STATO_VIDEO = {
   caricamento: 'Caricamento…',

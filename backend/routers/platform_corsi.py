@@ -18,7 +18,7 @@ Sicurezza (come il legacy, che ha questi invarianti giusti):
 # niente `from __future__ import annotations`: con il decoratore del rate limit
 # le annotazioni-stringa non si risolvono e il corpo diventa una query (422)
 import logging
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
@@ -98,7 +98,14 @@ def _proietta(course_doc: dict, firma=None) -> dict:
                 "has_video": bool(v.get("guid") or l.get("bunny_video_guid")),
                 "video_pronto": _video_pronto(l),
                 "thumbnail_url": (firma(v) if (firma and v.get("thumbnail_url")) else None),
-                "resources": l.get("resources") or [],
+                # AU (8/10/2026): audio mp3 e traccia Aurya Sound; gli allegati
+                # arrivano con il pass (li firma `un_corso`, che sa l'iscrizione)
+                "audio_pronto": bool((l.get("audio") or {}).get("filename")),
+                "suono_pronto": bool((l.get("suono") or {}).get("track_id")),
+                "suono_title": (l.get("suono") or {}).get("title"),
+                "resources": [{"id": r.get("id"), "label": r.get("label"), "size_bytes": r.get("size_bytes"),
+                               "mime_type": r.get("mime_type"), "url": r.get("url")}
+                              for r in (l.get("resources") or []) if r.get("label")],
             })
         moduli.append({"id": m.get("id"), "order": int(m.get("order") or 0), "title": m.get("title", ""),
                        "description": m.get("description"), "lessons": lezioni})
@@ -208,7 +215,16 @@ async def un_corso(enrollment_id: str, account: dict = Depends(get_current_platf
     _apri_o_403(enr, now)
     doc = await _corso_vivo(enr)
     firma = await _firma_org(enr.get("organization_id"))
-    return {"enrollment": _iscrizione_out(enr, now), "course": _proietta(doc, firma),
+    corso = _proietta(doc, firma)
+    # AU: gli allegati si scaricano con un pass a tempo legato all'iscrizione
+    from services import lezioni_file
+    for m in corso["modules"]:
+        for l in m["lessons"]:
+            for r in l["resources"]:
+                if r.get("id"):
+                    r["url"] = (f"/api/platform/me/corsi/{enrollment_id}/lezioni/{l['id']}/allegati/{r['id']}"
+                                f"?pass={lezioni_file.firma_pass('corso_allegato', e=enrollment_id, l=l['id'], a=r['id'])}")
+    return {"enrollment": _iscrizione_out(enr, now), "course": corso,
             "progress": enr.get("progress") or {}, "progress_stats": _stats(doc, enr.get("progress") or {})}
 
 
@@ -226,6 +242,25 @@ async def play_url(request: Request, enrollment_id: str, lesson_id: str,
     lezione = next((l for l in _lezioni(doc) if l.get("id") == lesson_id), None)
     if not lezione:
         raise HTTPException(status_code=404, detail="Lezione non trovata in questo corso")
+    # AU (8/10/2026): l'audio ha un pass in query (un <audio> non manda
+    # header), la traccia Aurya Sound viaggia come ricetta per il motore
+    if lezione.get("tipo") == "audio":
+        from services import lezioni_file
+        if not (lezione.get("audio") or {}).get("filename"):
+            raise HTTPException(status_code=status.HTTP_409_CONFLICT,
+                                detail={"error": "audio_not_ready", "message": "L'audio di questa lezione non è ancora pronto."})
+        pazz = lezioni_file.firma_pass("corso_audio", e=enrollment_id, l=lesson_id)
+        await _tocca(enrollment_id, account["id"], now)
+        return {"tipo": "audio", "play_url": f"/api/platform/me/corsi/{enrollment_id}/lezioni/{lesson_id}/audio?pass={pazz}",
+                "duration_seconds": int(lezione.get("duration_seconds") or 0),
+                "expires_at": (now + timedelta(seconds=lezioni_file.PASS_TTL_SEC)).isoformat()}
+    if lezione.get("tipo") == "suono":
+        tr = await payload_traccia((lezione.get("suono") or {}).get("track_id"))
+        if not tr:
+            raise HTTPException(status_code=status.HTTP_409_CONFLICT,
+                                detail={"error": "traccia_non_disponibile", "message": "La traccia di questa lezione non è più disponibile."})
+        await _tocca(enrollment_id, account["id"], now)
+        return {"tipo": "suono", "traccia": tr}
     if not _video_pronto(lezione):
         raise HTTPException(status_code=status.HTTP_409_CONFLICT,
                             detail={"error": "video_not_ready", "message": "Il video di questa lezione non è ancora pronto."})
@@ -243,6 +278,81 @@ async def play_url(request: Request, enrollment_id: str, lesson_id: str,
     except Exception as exc:  # noqa: BLE001
         logger.info("platform_corsi: last_accessed_at non aggiornato: %s", exc)
     return {"play_url": firmato.play_url, "expires_at": firmato.expires_at.isoformat(), "watermark_text": firmato.watermark_text}
+
+
+async def _tocca(enrollment_id: str, account_id: str, now: datetime) -> None:
+    from database import issued_course_accesses_collection
+    try:
+        await issued_course_accesses_collection.update_one(
+            {"id": enrollment_id, "platform_account_id": account_id}, {"$set": {"last_accessed_at": now}})
+    except Exception as exc:  # noqa: BLE001
+        logger.info("platform_corsi: last_accessed_at non aggiornato: %s", exc)
+
+
+async def payload_traccia(track_id: Optional[str]) -> Optional[dict]:
+    """AU — la ricetta di una traccia Aurya Sound per il motore del player
+    (stesso contratto di GET /frequencies/public/{slug}: score, voice_assets).
+    Mai l'id dell'org, mai i campi interni. None se la traccia non c'e' piu'."""
+    from database import frequency_tracks_collection
+    if not track_id:
+        return None
+    t = await frequency_tracks_collection.find_one(
+        {"id": track_id}, {"_id": 0, "id": 1, "title": 1, "description": 1, "intent": 1, "score": 1, "status": 1})
+    if not t or not t.get("score"):
+        return None
+    out = {"id": t["id"], "title": t.get("title"), "description": t.get("description"), "intent": t.get("intent"),
+           "score": t["score"], "duration_sec": int(((t.get("score") or {}).get("duration_sec")) or 0)}
+    voice_ids = [l.get("asset_id") for l in (t.get("score") or {}).get("layers", [])
+                 if l.get("kind") == "voice" and l.get("asset_id")]
+    if voice_ids:
+        from database import voice_assets_collection
+        out["voice_assets"] = await voice_assets_collection.find(
+            {"id": {"$in": voice_ids}}, {"_id": 0, "id": 1, "stream_url": 1, "tappeto_url": 1, "duration_sec": 1}
+        ).to_list(len(voice_ids))
+    return out
+
+
+@router.get("/{enrollment_id}/lezioni/{lesson_id}/audio")
+async def ascolta_audio(enrollment_id: str, lesson_id: str, request: Request, pazz: Optional[str] = None):
+    """AU — la consegna dell'mp3: pass firmato in query (scope, iscrizione,
+    lezione) E iscrizione ancora viva (una revoca chiude anche i pass gia'
+    emessi). Range a mano per il seek."""
+    from services import lezioni_file
+    from database import issued_course_accesses_collection
+    token = request.query_params.get("pass")
+    if not lezioni_file.verifica_pass(token, "corso_audio", e=enrollment_id, l=lesson_id):
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Pass non valido")
+    enr = await issued_course_accesses_collection.find_one({"id": enrollment_id}, {"_id": 0})
+    if not enr:
+        raise HTTPException(status_code=404, detail="Iscrizione non trovata")
+    _apri_o_403(enr, datetime.now(timezone.utc))
+    doc = await _corso_vivo(enr)
+    lezione = next((l for l in _lezioni(doc) if l.get("id") == lesson_id), None)
+    a = (lezione or {}).get("audio") or {}
+    p = lezioni_file.percorso(enr["organization_id"], doc["id"], lesson_id, a.get("filename"))
+    return lezioni_file.risposta_file(p, request, a.get("mime_type") or "audio/mpeg")
+
+
+@router.get("/{enrollment_id}/lezioni/{lesson_id}/allegati/{allegato_id}")
+async def scarica_allegato(enrollment_id: str, lesson_id: str, allegato_id: str, request: Request):
+    """AU — l'allegato della lezione, con il pass emesso dal dettaglio del corso."""
+    from services import lezioni_file
+    from database import issued_course_accesses_collection
+    token = request.query_params.get("pass")
+    if not lezioni_file.verifica_pass(token, "corso_allegato", e=enrollment_id, l=lesson_id, a=allegato_id):
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Pass non valido")
+    enr = await issued_course_accesses_collection.find_one({"id": enrollment_id}, {"_id": 0})
+    if not enr:
+        raise HTTPException(status_code=404, detail="Iscrizione non trovata")
+    _apri_o_403(enr, datetime.now(timezone.utc))
+    doc = await _corso_vivo(enr)
+    lezione = next((l for l in _lezioni(doc) if l.get("id") == lesson_id), None)
+    r = next((x for x in ((lezione or {}).get("resources") or []) if x.get("id") == allegato_id and x.get("filename")), None)
+    if not r:
+        raise HTTPException(status_code=404, detail="Allegato non trovato")
+    p = lezioni_file.percorso(enr["organization_id"], doc["id"], lesson_id, r["filename"])
+    return lezioni_file.risposta_file(p, request, r.get("mime_type") or "application/octet-stream",
+                                      scarica_come=r.get("original_name") or r.get("label"))
 
 
 @router.post("/{enrollment_id}/progresso")

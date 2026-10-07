@@ -4852,7 +4852,9 @@ async def get_corso_landing(org_slug: str, slug: str):
             lez.append({"id": l.get("id"), "title": l.get("title"), "tipo": l.get("tipo") or ("video" if v else "testo"),
                         "duration_seconds": int(l.get("duration_seconds") or 0),
                         "is_preview": bool(l.get("is_preview")) and _lezione_pronta(l),
-                        "pronta": _lezione_pronta(l), "description": l.get("description")})
+                        "pronta": _lezione_pronta(l), "description": l.get("description"),
+                        # AU: quanti allegati scaricabili (i file arrivano solo a chi compra)
+                        "allegati": sum(1 for r in (l.get("resources") or []) if r.get("filename"))})
         moduli.append({"id": m.get("id"), "title": m.get("title"), "lezioni": lez})
     tr = c.get("trailer") or {}
     return PublicCorsoLanding(
@@ -4890,14 +4892,49 @@ async def anteprima_corso_play_url(request: Request, org_slug: str, slug: str, l
             raise HTTPException(status_code=404, detail="Nessun video di presentazione")
     else:
         l = next((x for m in (c.get("modules") or []) for x in (m.get("lessons") or []) if x.get("id") == lesson_id), None)
-        if not l or not l.get("is_preview") or not _lezione_pronta(l) or (l.get("tipo") or "video") != "video":
+        if not l or not l.get("is_preview") or not _lezione_pronta(l) or (l.get("tipo") or "video") not in ("video", "audio", "suono"):
             raise HTTPException(status_code=404, detail="Questa lezione non è un'anteprima")
+        # AU (8/10/2026): l'anteprima di un audio (pass pubblico a tempo) o
+        # di una traccia Aurya Sound (la ricetta per il motore)
+        if l.get("tipo") == "audio":
+            from services import lezioni_file
+            pazz = lezioni_file.firma_pass("corso_anteprima_audio", o=org["id"], c=c["id"], l=lesson_id)
+            return {"tipo": "audio", "play_url": f"/api/public/corso/{org_slug}/{slug}/anteprima/{lesson_id}/audio?pass={pazz}",
+                    "duration_seconds": int(l.get("duration_seconds") or 0)}
+        if l.get("tipo") == "suono":
+            from routers.platform_corsi import payload_traccia
+            tr = await payload_traccia((l.get("suono") or {}).get("track_id"))
+            if not tr:
+                raise HTTPException(status_code=404, detail="Questa anteprima non è disponibile")
+            return {"tipo": "suono", "traccia": tr}
         v = l.get("video") or {"guid": l.get("bunny_video_guid"), "library_id": l.get("bunny_library_id")}
     cfg = resolve_library_config({"bunny_library_id": v.get("library_id"), "bunny_video_guid": v.get("guid")}, org)
     if not validate_bunny_config(cfg):
         raise HTTPException(status_code=503, detail="Servizio video non disponibile.")
     firmato = generate_signed_embed_url(cfg, v["guid"], customer_email=None, ttl_seconds=3600)
-    return {"play_url": firmato.play_url, "expires_at": firmato.expires_at.isoformat()}
+    return {"tipo": "video", "play_url": firmato.play_url, "expires_at": firmato.expires_at.isoformat()}
+
+
+@router.get("/corso/{org_slug}/{slug}/anteprima/{lesson_id}/audio")
+async def anteprima_corso_audio(request: Request, org_slug: str, slug: str, lesson_id: str):
+    """AU — l'mp3 di una lezione in anteprima gratuita, col pass pubblico a tempo."""
+    from database import courses_collection
+    from services import lezioni_file
+    from routers.accademia import _lezione_pronta
+    org = await _org_pubblica(org_slug)
+    righe = await _operator_corsi(org["id"])
+    riga = next((r for r in righe if r.get("slug") == slug), None)
+    if not riga:
+        raise HTTPException(status_code=404, detail="Corso non trovato")
+    c = await courses_collection.find_one({"id": riga["course_id"]}, {"_id": 0})
+    if not lezioni_file.verifica_pass(request.query_params.get("pass"), "corso_anteprima_audio", o=org["id"], c=c["id"], l=lesson_id):
+        raise HTTPException(status_code=401, detail="Pass non valido")
+    l = next((x for m in (c.get("modules") or []) for x in (m.get("lessons") or []) if x.get("id") == lesson_id), None)
+    if not l or not l.get("is_preview") or not _lezione_pronta(l) or l.get("tipo") != "audio":
+        raise HTTPException(status_code=404, detail="Questa lezione non è un'anteprima")
+    a = l.get("audio") or {}
+    p = lezioni_file.percorso(org["id"], c["id"], lesson_id, a.get("filename"))
+    return lezioni_file.risposta_file(p, request, a.get("mime_type") or "audio/mpeg")
 
 
 async def _operator_prodotti(org_id: str) -> list:

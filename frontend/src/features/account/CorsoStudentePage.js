@@ -17,6 +17,8 @@ import useSeoMeta from '../storefront/lib/useSeoMeta';
 import platformApi, { PLATFORM_TOKEN_KEY } from '../../api/platformClient';
 import { corsiAPI } from '../../api/corsi';
 import LessonPlayer from '../customer-portal/course-player/components/LessonPlayer';
+import AudioPlayer from '../accademia/player/AudioPlayer';
+import SuonoPlayer from '../accademia/player/SuonoPlayer';
 import LessonActionBar from '../customer-portal/course-player/components/LessonActionBar';
 import LessonDetails from '../customer-portal/course-player/components/LessonDetails';
 import CourseSidebar from '../customer-portal/course-player/components/CourseSidebar';
@@ -132,6 +134,27 @@ export default function CorsoStudentePage() {
   const { handlePrev, handleNext, hasPrev, hasNext } = useLessonNavigation({ flatLessons, selectedLessonId, setSelectedLessonId, isCurrentCompleted, onMarkCompleted: handleMarkCompleted });
   const handleLessonSelect = (id) => { setSelectedLessonId(id); setLessonsDrawerOpen(false); };
 
+  // AU (8/10/2026) — audio mp3 e traccia Aurya Sound: il play-url dice il tipo
+  const [media, setMedia] = useState(null);     // {lessonId, tipo, play_url | traccia}
+  useEffect(() => {
+    if (!selectedLesson || !['audio', 'suono'].includes(selectedLesson.tipo)) { setMedia(null); return undefined; }
+    let vivo = true;
+    setMedia(null);
+    corsiAPI.getPlayUrl(enrollmentId, selectedLesson.id)
+      .then(({ data }) => { if (vivo) setMedia({ lessonId: selectedLesson.id, ...data }); })
+      .catch((err) => {
+        const code = err?.response?.data?.detail?.error;
+        if (code === 'enrollment_revoked' || code === 'enrollment_expired') { handleAccessRevoked(code); return; }
+        if (vivo) setMedia({ lessonId: selectedLesson.id, errore: code || 'generic' });
+      });
+    return () => { vivo = false; };
+  }, [selectedLesson, enrollmentId, handleAccessRevoked]);
+  const inviaTempo = useCallback(async (sec) => {
+    if (!selectedLessonId) return;
+    try { const { data: resp } = await corsiAPI.sendProgress(enrollmentId, { lesson_id: selectedLessonId, watched_seconds: Math.floor(sec), completed: false }); handleProgressUpdate(resp); }
+    catch { /* il prossimo battito riprova */ }
+  }, [enrollmentId, selectedLessonId, handleProgressUpdate]);
+
   let corpo;
   if (!loading && error) corpo = <Errore kind={error.kind} />;
   else if (loading || !data || !course) corpo = <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6"><CoursePlayerSkeleton /></div>;
@@ -163,6 +186,20 @@ export default function CorsoStudentePage() {
                   <h2 className="mt-1 font-display text-xl text-gray-900">{selectedLesson.title}</h2>
                   <div className="mt-4 whitespace-pre-line text-[16px] leading-relaxed text-gray-700">{selectedLesson.testo}</div>
                 </div>
+              ) : selectedLesson.tipo === 'audio' || selectedLesson.tipo === 'suono' ? (
+                media?.lessonId === selectedLesson.id && media.tipo === 'audio' ? (
+                  <AudioPlayer src={`${process.env.REACT_APP_BACKEND_URL || ''}${media.play_url}`} titolo={selectedLesson.title} copertina={course.cover_image_url}
+                               onTime={inviaTempo} onEnded={handleLessonEnded} />
+                ) : media?.lessonId === selectedLesson.id && media.tipo === 'suono' ? (
+                  <SuonoPlayer traccia={media.traccia} onTic={(t) => { if (Math.floor(t) % 15 === 0) inviaTempo(t); }} onFine={handleLessonEnded} />
+                ) : media?.errore ? (
+                  <div className="flex aspect-video flex-col items-center justify-center gap-2 rounded-2xl border border-gray-200 bg-white px-6 text-center shadow-sm" data-testid="media-non-pronto">
+                    <p className="text-sm font-semibold text-gray-900">{selectedLesson.tipo === 'suono' ? 'La traccia di questa lezione non è disponibile.' : 'L’audio di questa lezione sta arrivando.'}</p>
+                    <p className="text-xs text-gray-600">Chi ha pubblicato il corso lo sta sistemando: torna fra poco.</p>
+                  </div>
+                ) : (
+                  <div className="aspect-video animate-pulse rounded-2xl bg-gray-100" />
+                )
               ) : selectedLesson.video_pronto ? (
                 <LessonPlayer enrollmentId={enrollmentId} lesson={selectedLesson} customerEmail={me?.email || null}
                               onProgressUpdate={handleProgressUpdate} onAccessRevoked={handleAccessRevoked} onLessonEnded={handleLessonEnded}
@@ -185,7 +222,7 @@ export default function CorsoStudentePage() {
               <LessonActionBar lesson={selectedLesson} isCompleted={isCurrentCompleted} hasPrev={hasPrev} hasNext={hasNext}
                                onMarkCompleted={handleMarkCompleted} onPrev={handlePrev} onNext={handleNext} onOpenLessons={() => setLessonsDrawerOpen(true)} />
             )}
-            {selectedLesson && selectedLesson.tipo !== 'testo' && <LessonDetails lesson={selectedLesson} completedAt={progress?.[selectedLesson.id]?.completed_at} />}
+            {selectedLesson && (selectedLesson.tipo !== 'testo' || (selectedLesson.resources || []).length > 0) && <LessonDetails lesson={selectedLesson} completedAt={progress?.[selectedLesson.id]?.completed_at} />}
             {course.instructor_name && (
               <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
                 <h3 className="text-base font-semibold text-gray-900">{course.instructor_name}</h3>

@@ -15,7 +15,9 @@
  */
 import React, { useEffect, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { ArrowLeft, Check, Share2, ShieldCheck, Play, FileText, Film, Clock, Infinity as InfinityIcon, SearchX, GraduationCap } from 'lucide-react';
+import { ArrowLeft, Check, Share2, ShieldCheck, Play, FileText, Film, Music, Waves, Paperclip, Clock, Infinity as InfinityIcon, SearchX, GraduationCap } from 'lucide-react';
+import AudioPlayer from '../accademia/player/AudioPlayer';
+import SuonoPlayer from '../accademia/player/SuonoPlayer';
 import { toast } from 'sonner';
 import { storefrontAPI } from '../../api/storefront';
 import { corsiAPI } from '../../api/corsi';
@@ -37,14 +39,28 @@ function testoStelle(stats) {
 /** il riquadro video: miniatura con il play, poi l'iframe firmato (anteprima gratuita) */
 function Anteprima({ orgSlug, slug, lessonId, thumbnail, titolo, etichetta }) {
   const [url, setUrl] = useState(null);
+  const [media, setMedia] = useState(null);     // AU: {tipo:'audio', play_url} | {tipo:'suono', traccia}
   const [errore, setErrore] = useState(null);
   useEffect(() => {
     let vivo = true;
+    setUrl(null); setMedia(null); setErrore(null);
     storefrontAPI.anteprimaCorsoPlayUrl(orgSlug, slug, lessonId)
-      .then(res => { if (vivo) setUrl(res.data?.play_url || null); })
+      .then(res => {
+        if (!vivo) return;
+        const d = res.data || {};
+        if (d.tipo === 'audio' || d.tipo === 'suono') setMedia(d); else setUrl(d.play_url || null);
+      })
       .catch(() => { if (vivo) setErrore('Questa anteprima non è disponibile al momento.'); });
     return () => { vivo = false; };
   }, [orgSlug, slug, lessonId]);
+  if (media?.tipo === 'audio') {
+    return <div className="relative" data-testid="corso-anteprima"><AudioPlayer compatto src={`${process.env.REACT_APP_BACKEND_URL || ''}${media.play_url}`} titolo={titolo} copertina={thumbnail} />
+      {etichetta && <span className="pointer-events-none absolute left-3 top-3 rounded-full bg-black/60 px-3 py-1 text-xs font-medium text-white" data-testid="corso-anteprima-etichetta">{etichetta}</span>}</div>;
+  }
+  if (media?.tipo === 'suono') {
+    return <div className="relative" data-testid="corso-anteprima"><SuonoPlayer compatto traccia={media.traccia} />
+      {etichetta && <span className="pointer-events-none absolute left-3 top-3 rounded-full bg-black/40 px-3 py-1 text-xs font-medium text-white" data-testid="corso-anteprima-etichetta">{etichetta}</span>}</div>;
+  }
   return (
     <div className="relative aspect-video w-full overflow-hidden rounded-3xl bg-black" data-testid="corso-anteprima">
       {url ? (
@@ -246,16 +262,19 @@ export default function CorsoLandingPage() {
                   {m.lezioni.map((l, li) => (
                     <li key={l.id} className="flex items-center gap-3 px-4 py-3" data-testid={`programma-lezione-${l.id}`}>
                       <span className="flex h-7 w-7 flex-none items-center justify-center rounded-full bg-[#2f5749]/10 text-[#2f5749]">
-                        {l.tipo === 'testo' ? <FileText className="h-3.5 w-3.5" aria-hidden /> : <Film className="h-3.5 w-3.5" aria-hidden />}
+                        {l.tipo === 'testo' ? <FileText className="h-3.5 w-3.5" aria-hidden /> : l.tipo === 'audio' ? <Music className="h-3.5 w-3.5" aria-hidden /> : l.tipo === 'suono' ? <Waves className="h-3.5 w-3.5" aria-hidden /> : <Film className="h-3.5 w-3.5" aria-hidden />}
                       </span>
                       <div className="min-w-0 flex-1">
                         <p className="text-sm font-medium text-gray-900">{l.title}</p>
-                        <p className="text-xs text-gray-500">{l.tipo === 'testo' ? 'Lettura' : (l.duration_seconds ? fmtDurata(l.duration_seconds) : 'Video')}</p>
+                        <p className="text-xs text-gray-500">
+                          {l.tipo === 'testo' ? 'Lettura' : l.tipo === 'suono' ? `Traccia Aurya Sound${l.duration_seconds ? ` · ${fmtDurata(l.duration_seconds)}` : ''}` : l.tipo === 'audio' ? `Audio${l.duration_seconds ? ` · ${fmtDurata(l.duration_seconds)}` : ''}` : (l.duration_seconds ? fmtDurata(l.duration_seconds) : 'Video')}
+                          {l.allegati > 0 && <span className="ml-2 inline-flex items-center gap-0.5"><Paperclip className="h-3 w-3" aria-hidden /> {l.allegati}</span>}
+                        </p>
                       </div>
                       {l.is_preview && l.tipo !== 'testo' && (
                         <button type="button" onClick={() => guarda(l.id)} data-testid={`anteprima-${l.id}`} aria-pressed={anteprima === l.id}
                           className={`inline-flex min-h-[34px] items-center gap-1.5 rounded-full border px-3 text-xs font-semibold ${anteprima === l.id ? 'border-[#2f5749] bg-[#2f5749] text-white' : 'border-[#2f5749]/30 bg-[#2f5749]/[0.06] text-[#2f5749] hover:bg-[#2f5749]/10'}`}>
-                          <Play className="h-3.5 w-3.5 fill-current" aria-hidden /> {anteprima === l.id ? 'In riproduzione' : 'Guarda gratis'}
+                          <Play className="h-3.5 w-3.5 fill-current" aria-hidden /> {anteprima === l.id ? 'In riproduzione' : (l.tipo === 'video' ? 'Guarda gratis' : 'Ascolta gratis')}
                         </button>
                       )}
                     </li>

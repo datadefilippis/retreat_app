@@ -9,9 +9,9 @@
  * gia', gli altri si aggiungono solo se servono.
  */
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { ArrowDown, ArrowUp, FileText, Film, Plus, Trash2, UploadCloud, CheckCircle2, AlertCircle, Loader2, Eye } from 'lucide-react';
+import { ArrowDown, ArrowUp, FileText, Film, Music, Waves, Paperclip, Plus, Trash2, UploadCloud, CheckCircle2, AlertCircle, Loader2, Eye } from 'lucide-react';
 import { toast } from 'sonner';
-import { accademiaAPI, fmtDurata, ETICHETTA_STATO_VIDEO } from '../../api/accademia';
+import { accademiaAPI, fmtDurata, ETICHETTA_STATO_VIDEO, durataAudio, FORMATI_AUDIO, MAX_AUDIO_BYTES, FORMATI_ALLEGATO, MAX_ALLEGATO_BYTES, fmtBytes } from '../../api/accademia';
 import { Bottone, campo } from '../prodotti/ui';
 import { caricaVideo, FORMATI_VIDEO, MAX_VIDEO_BYTES } from './upload';
 
@@ -35,7 +35,43 @@ function StatoVideo({ video, avanzamento }) {
   return <span className="text-xs text-gray-500">{ETICHETTA_STATO_VIDEO[stato] || stato}</span>;
 }
 
-function Lezione({ corso, modulo, lezione, prima, ultima, onSposta, ricarica, bunnyAttivo }) {
+const ICONA_TIPO = { testo: FileText, video: Film, audio: Music, suono: Waves };
+
+/* AU (8/10/2026) — gli allegati scaricabili di una lezione (pdf, schede, audio) */
+function Allegati({ corso, lezione, ricarica }) {
+  const [occupato, setOccupato] = useState(false);
+  const carica = async (file) => {
+    if (!file) return;
+    if (file.size > MAX_ALLEGATO_BYTES) { toast.error('L’allegato supera i 20 MB.'); return; }
+    setOccupato(true);
+    try { await accademiaAPI.allegatoCarica(corso.id, lezione.id, file, file.name.replace(/\.[^.]+$/, '')); ricarica(); }
+    catch (err) { const d = err?.response?.data?.detail; toast.error(d?.message || 'Non sono riuscito a caricare l’allegato.'); }
+    finally { setOccupato(false); }
+  };
+  const togli = async (a) => {
+    if (!window.confirm(`Togliere l’allegato «${a.label}»?`)) return;
+    try { await accademiaAPI.allegatoTogli(corso.id, lezione.id, a.id); ricarica(); } catch { toast.error('Non sono riuscito a toglierlo.'); }
+  };
+  const allegati = lezione.allegati || [];
+  return (
+    <div className="flex flex-wrap items-center gap-2" data-testid="lezione-allegati">
+      {allegati.map(a => (
+        <span key={a.id} className="inline-flex items-center gap-1.5 rounded-full bg-gray-100 px-2.5 py-1 text-xs text-gray-700">
+          <Paperclip className="h-3 w-3" aria-hidden /> {a.label}{a.size_bytes ? ` · ${fmtBytes(a.size_bytes)}` : ''}
+          <button type="button" onClick={() => togli(a)} aria-label={`Togli ${a.label}`} className="ml-0.5 text-gray-400 hover:text-red-700">×</button>
+        </span>
+      ))}
+      {allegati.length < 10 && (
+        <label className={`inline-flex cursor-pointer items-center gap-1 text-xs text-gray-500 underline-offset-4 hover:underline ${occupato ? 'opacity-60' : ''}`}>
+          <Paperclip className="h-3.5 w-3.5" aria-hidden /> {occupato ? 'Carico…' : 'Aggiungi allegato'}
+          <input type="file" accept={FORMATI_ALLEGATO} className="hidden" disabled={occupato} onChange={e => { carica(e.target.files?.[0]); e.target.value = ''; }} />
+        </label>
+      )}
+    </div>
+  );
+}
+
+function Lezione({ corso, modulo, lezione, prima, ultima, onSposta, ricarica, bunnyAttivo, tracce, soundAttivo }) {
   const [titolo, setTitolo] = useState(lezione.title || '');
   const [testo, setTesto] = useState(lezione.testo || '');
   const [avanzamento, setAvanzamento] = useState(null);
@@ -78,12 +114,31 @@ function Lezione({ corso, modulo, lezione, prima, ultima, onSposta, ricarica, bu
   };
   const v = lezione.video;
   const inCorso = v && (v.stato === 'caricamento' || v.stato === 'codifica');
+  // AU — l'audio mp3: la durata la misura il browser, poi l'upload con la barra
+  const scegliAudio = async (file) => {
+    if (!file) return;
+    if (file.size > MAX_AUDIO_BYTES) { toast.error('L’audio supera i 50 MB: comprimilo (mp3 a 128 kbps basta).'); return; }
+    setOccupato(true); setAvanzamento(0);
+    try {
+      const durata = await durataAudio(file);
+      await accademiaAPI.audioCarica(corso.id, lezione.id, file, durata, setAvanzamento);
+      toast.success('Audio caricato: è già pronto.'); ricarica();
+    } catch (err) {
+      const d = err?.response?.data?.detail;
+      toast.error(d?.message || (typeof d === 'string' && d) || 'Non sono riuscito a caricare l’audio.');
+    } finally { setOccupato(false); setAvanzamento(null); }
+  };
+  const togliAudio = async () => {
+    if (!window.confirm('Togliere l’audio di questa lezione?')) return;
+    try { await accademiaAPI.audioTogli(corso.id, lezione.id); ricarica(); } catch { toast.error('Non sono riuscito a togliere l’audio.'); }
+  };
+  const IconaTipo = ICONA_TIPO[lezione.tipo] || Film;
 
   return (
     <li className="rounded-xl border border-gray-200 bg-white p-3 sm:p-4" data-testid={`lezione-${lezione.id}`}>
       <div className="flex items-start gap-3">
         <span className="mt-1 flex h-7 w-7 flex-none items-center justify-center rounded-full bg-[#2f5749]/10 text-[#2f5749]">
-          {lezione.tipo === 'testo' ? <FileText className="h-3.5 w-3.5" aria-hidden /> : <Film className="h-3.5 w-3.5" aria-hidden />}
+          <IconaTipo className="h-3.5 w-3.5" aria-hidden />
         </span>
         <div className="min-w-0 flex-1 space-y-3">
           <input className={`${campo} font-medium`} value={titolo} maxLength={255} aria-label="Titolo della lezione"
@@ -91,6 +146,45 @@ function Lezione({ corso, modulo, lezione, prima, ultima, onSposta, ricarica, bu
           {lezione.tipo === 'testo' ? (
             <textarea className={`${campo} resize-y`} rows={4} maxLength={20000} value={testo} placeholder="Il testo della lezione."
                       onChange={e => setTesto(e.target.value)} onBlur={() => { if (testo !== (lezione.testo || '')) salva({ testo }); }} />
+          ) : lezione.tipo === 'audio' ? (
+            lezione.audio ? (
+              <div className="flex flex-wrap items-center gap-3" data-testid="lezione-audio">
+                <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-medium text-emerald-800"><CheckCircle2 className="h-3.5 w-3.5" aria-hidden /> Pronto{lezione.audio.duration_seconds ? ` · ${fmtDurata(lezione.audio.duration_seconds)}` : ''}{lezione.audio.size_bytes ? ` · ${fmtBytes(lezione.audio.size_bytes)}` : ''}</span>
+                <span className="truncate text-xs text-gray-500">{lezione.audio.original_name}</span>
+                <label className="cursor-pointer text-xs font-medium text-gray-600 underline-offset-4 hover:underline">
+                  Sostituisci<input type="file" accept={FORMATI_AUDIO} className="hidden" onChange={e => scegliAudio(e.target.files?.[0])} />
+                </label>
+                <button type="button" onClick={togliAudio} className="text-xs text-gray-500 hover:text-red-700">Togli audio</button>
+              </div>
+            ) : (
+              <label className={`flex cursor-pointer items-center gap-3 rounded-xl border-2 border-dashed border-gray-300 px-4 py-4 text-sm text-gray-700 transition hover:border-[#2f5749] hover:bg-[#2f5749]/[0.03] ${occupato ? 'opacity-60' : ''}`}
+                     data-testid="audio-dropzone" onDragOver={e => e.preventDefault()} onDrop={e => { e.preventDefault(); scegliAudio(e.dataTransfer.files?.[0]); }}>
+                <Music className="h-5 w-5 flex-none text-[#2f5749]" aria-hidden />
+                <span className="min-w-0 flex-1">
+                  <span className="block font-medium">{occupato ? `Carico… ${avanzamento != null ? `${avanzamento}%` : ''}` : 'Trascina qui l’audio, o scegli il file'}</span>
+                  <span className="block text-xs text-gray-500">MP3, M4A, WAV o OGG fino a 50 MB. È pronto appena caricato: anche una traccia esportata da Aurya Sound.</span>
+                </span>
+                <input type="file" accept={FORMATI_AUDIO} className="hidden" disabled={occupato} onChange={e => scegliAudio(e.target.files?.[0])} />
+              </label>
+            )
+          ) : lezione.tipo === 'suono' ? (
+            <div className="space-y-2" data-testid="lezione-suono">
+              {soundAttivo ? (
+                <select className={campo} value={lezione.suono?.track_id || ''} data-testid="suono-select"
+                        onChange={e => salva({ suono_track_id: e.target.value })}>
+                  <option value="">Scegli una delle tue tracce Aurya Sound…</option>
+                  {(tracce || []).map(tr => (
+                    <option key={tr.id} value={tr.id}>{tr.title || 'Senza titolo'} · {fmtDurata(tr.duration_sec) || `${tr.duration_sec} s`}{tr.status === 'published' ? '' : ' · bozza'}</option>
+                  ))}
+                </select>
+              ) : (
+                <p className="rounded-xl bg-amber-50 px-4 py-3 text-xs text-amber-900">Le lezioni con una traccia Aurya Sound si aprono con Crea Studio.</p>
+              )}
+              {soundAttivo && (tracce || []).length === 0 && (
+                <p className="text-xs text-gray-500">Non hai ancora tracce tue: <a href="/sound/crea" className="underline underline-offset-4">creane una in Aurya Sound</a>, poi torna qui.</p>
+              )}
+              {lezione.suono && <p className="text-xs text-gray-500">Chi compra la ascolta dal vivo nel corso, col motore di Aurya Sound: se la ritocchi, la lezione segue. Resta tua e privata.</p>}
+            </div>
           ) : v ? (
             <div className="flex flex-wrap items-center gap-3">
               {v.thumbnail_url && <img src={v.thumbnail_url} alt="" className="h-14 w-24 rounded-lg object-cover" />}
@@ -127,6 +221,7 @@ function Lezione({ corso, modulo, lezione, prima, ultima, onSposta, ricarica, bu
               <button type="button" onClick={() => salva({ tipo: 'video' })} className="text-xs text-gray-500 underline-offset-4 hover:underline">Trasforma in lezione video</button>
             )}
           </div>
+          <Allegati corso={corso} lezione={lezione} ricarica={ricarica} />
         </div>
         <div className="flex flex-none flex-col items-center gap-1">
           <button type="button" onClick={() => onSposta(-1)} disabled={prima} aria-label="Sposta su" className="rounded-full p-1.5 text-gray-500 hover:bg-gray-100 disabled:opacity-30"><ArrowUp className="h-4 w-4" /></button>
@@ -143,6 +238,15 @@ export default function LezioniEditor({ corso, ricarica }) {
   const [nuovoModulo, setNuovoModulo] = useState('');
   const moduli = corso?.moduli || [];
   const bunnyAttivo = !!corso?.bunny_attivo;
+  // AU — le tracce Aurya Sound dell'operatore (una lettura per editor, solo col privilegio)
+  const soundAttivo = !!corso?.sound_attivo;
+  const [tracce, setTracce] = useState(null);
+  useEffect(() => {
+    if (!soundAttivo || !corso?.id) return undefined;
+    let vivo = true;
+    accademiaAPI.tracce(corso.id).then(res => { if (vivo) setTracce(res.data?.tracce || []); }).catch(() => { if (vivo) setTracce([]); });
+    return () => { vivo = false; };
+  }, [soundAttivo, corso?.id]);
 
   // le lezioni in lavorazione si rileggono ogni 6 secondi (il webhook puo' tardare)
   const inLavorazione = moduli.some(m => (m.lezioni || []).some(l => l.video && (l.video.stato === 'caricamento' || l.video.stato === 'codifica')));
@@ -212,7 +316,7 @@ export default function LezioniEditor({ corso, ricarica }) {
           <ol className="space-y-2">
             {(m.lezioni || []).map((l, li) => (
               <Lezione key={l.id} corso={corso} modulo={m} lezione={l} prima={li === 0} ultima={li === (m.lezioni || []).length - 1}
-                       onSposta={(d) => sposta(mi, li, d)} ricarica={ricarica} bunnyAttivo={bunnyAttivo} />
+                       onSposta={(d) => sposta(mi, li, d)} ricarica={ricarica} bunnyAttivo={bunnyAttivo} tracce={tracce} soundAttivo={soundAttivo} />
             ))}
           </ol>
           <div className="mt-2 flex flex-col gap-2 rounded-xl border border-dashed border-gray-300 p-3 sm:flex-row sm:items-center">
@@ -221,6 +325,8 @@ export default function LezioniEditor({ corso, ricarica }) {
                    onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); aggiungi(m.id, 'video'); } }} />
             <div className="flex flex-none gap-2">
               <Bottone variante="secondario" onClick={() => aggiungi(m.id, 'video')} className="min-h-[40px] px-4"><Film className="h-4 w-4" aria-hidden /> Video</Bottone>
+              <Bottone variante="secondario" onClick={() => aggiungi(m.id, 'audio')} className="min-h-[40px] px-4" data-testid="aggiungi-audio"><Music className="h-4 w-4" aria-hidden /> Audio</Bottone>
+              {soundAttivo && <Bottone variante="secondario" onClick={() => aggiungi(m.id, 'suono')} className="min-h-[40px] px-4" data-testid="aggiungi-suono"><Waves className="h-4 w-4" aria-hidden /> Suono</Bottone>}
               <Bottone variante="secondario" onClick={() => aggiungi(m.id, 'testo')} className="min-h-[40px] px-4"><FileText className="h-4 w-4" aria-hidden /> Testo</Bottone>
             </div>
           </div>

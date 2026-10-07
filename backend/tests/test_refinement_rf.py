@@ -65,7 +65,7 @@ class TestLandingProfiloAccount:
     def test_anteprima_sempre_nella_copertina(self):
         p = (FRONTEND / "features" / "storefront" / "CorsoLandingPage.js").read_text()
         assert "setAnteprima(cc?.trailer ? 'trailer' : (prima ? prima.id : null));" in p
-        assert 'data-testid="corso-anteprima-etichetta"' in p and "'In riproduzione' : 'Guarda gratis'" in p
+        assert 'data-testid="corso-anteprima-etichetta"' in p and "'In riproduzione' : (l.tipo === 'video' ? 'Guarda gratis' : 'Ascolta gratis')" in p
         assert "onChiudi" not in p                      # niente piu' «Chiudi»: l'anteprima e' la copertina
         assert 'data-testid="corso-landing-categoria"' in p and "to={`/corsi/${c.categoria}`}" in p
 

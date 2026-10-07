@@ -25,7 +25,7 @@ import re
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
-from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Request, UploadFile, status
 from pydantic import BaseModel, ConfigDict, Field
 
 from auth import get_verified_user_strict as get_verified_user
@@ -89,7 +89,7 @@ class LezioneCreate(BaseModel):
     model_config = ConfigDict(extra="ignore")
     title: str = Field(min_length=1, max_length=255)
     description: Optional[str] = Field(default=None, max_length=2000)
-    tipo: str = Field(default="video", pattern="^(video|testo)$")
+    tipo: str = Field(default="video", pattern="^(video|testo|audio|suono)$")   # AU: audio mp3, suono = traccia Aurya Sound
     testo: Optional[str] = Field(default=None, max_length=20000)
     module_id: Optional[str] = None
     is_preview: bool = False
@@ -99,10 +99,11 @@ class LezioneUpdate(BaseModel):
     model_config = ConfigDict(extra="ignore")
     title: Optional[str] = Field(default=None, min_length=1, max_length=255)
     description: Optional[str] = Field(default=None, max_length=2000)
-    tipo: Optional[str] = Field(default=None, pattern="^(video|testo)$")
+    tipo: Optional[str] = Field(default=None, pattern="^(video|testo|audio|suono)$")
     testo: Optional[str] = Field(default=None, max_length=20000)
     module_id: Optional[str] = None
     is_preview: Optional[bool] = None
+    suono_track_id: Optional[str] = Field(default=None, max_length=64)   # AU: "" = via
 
 
 class OrdineBody(BaseModel):
@@ -168,10 +169,37 @@ async def _quota_video(org_id: str) -> Dict[str, Any]:
     org = await organizations_collection.find_one({"id": org_id}, {"_id": 0, "integrations": 1})
     lib = gestito.libreria_gestita_di(org)
     usati = int(((lib or {}).get("quota") or {}).get("video_bytes") or 0)
+    usati += await _audio_bytes(org_id)                           # AU: l'audio conta nella stessa quota
     lim = await _limiti(org_id)
     max_gb = lim.get("video_gb")
     return {"usati_bytes": usati, "usati_gb": gestito.gb(usati), "max_gb": max_gb,
             "max_bytes": int(max_gb * 1024 ** 3) if max_gb else None}
+
+
+async def _audio_bytes(org_id: str) -> int:
+    """AU — i byte degli audio e degli allegati delle lezioni dell'org."""
+    from database import courses_collection
+    tot = 0
+    try:
+        async for c in courses_collection.find({"organization_id": org_id, "is_active": {"$ne": False}},
+                                               {"_id": 0, "modules.lessons.audio.size_bytes": 1, "modules.lessons.resources.size_bytes": 1}):
+            for m in c.get("modules") or []:
+                for l in m.get("lessons") or []:
+                    tot += int(((l.get("audio") or {}).get("size_bytes")) or 0)
+                    tot += sum(int(r.get("size_bytes") or 0) for r in (l.get("resources") or []))
+    except Exception as exc:  # noqa: BLE001
+        logger.info("accademia: audio_bytes non letti: %s", exc)
+    return tot
+
+
+async def _sound_attivo(org_id: str) -> bool:
+    """AU — il privilegio del comporre (services/studio_access): senza, la
+    lezione «suono» non esiste. Deciso in UN posto, qui si chiede."""
+    from services.studio_access import org_per_studio, studio_attivo
+    try:
+        return studio_attivo(await org_per_studio(org_id))
+    except Exception:  # noqa: BLE001
+        return False
 
 
 def _lezioni(course_doc: dict) -> List[dict]:
@@ -181,6 +209,10 @@ def _lezioni(course_doc: dict) -> List[dict]:
 def _lezione_pronta(l: dict) -> bool:
     if l.get("tipo") == "testo":
         return bool((l.get("testo") or "").strip())
+    if l.get("tipo") == "audio":                                  # AU
+        return bool((l.get("audio") or {}).get("filename"))
+    if l.get("tipo") == "suono":                                  # AU
+        return bool((l.get("suono") or {}).get("track_id"))
     v = l.get("video") or {}
     return v.get("stato") in STATI_VIDEO_PRONTI or bool(l.get("bunny_video_guid") and not v)
 
@@ -198,7 +230,7 @@ def _ragioni_pubblicazione(course_doc: dict, prodotto: dict, pre: Dict[str, Any]
     lezioni = _lezioni(course_doc)
     pronte = [l for l in lezioni if _lezione_pronta(l)]
     if not pronte:
-        ragioni.append("Serve almeno una lezione pronta (un video codificato o un testo).")
+        ragioni.append("Serve almeno una lezione pronta (un video codificato, un audio, una traccia o un testo).")
     in_corso = [l for l in lezioni if l.get("tipo", "video") == "video" and (l.get("video") or {}).get("stato") in ("caricamento", "codifica")]
     if in_corso:
         ragioni.append(f"{len(in_corso)} lezion{'e' if len(in_corso) == 1 else 'i'} con il video ancora in lavorazione: aspetta che sia pronto o toglilo.")
@@ -207,7 +239,7 @@ def _ragioni_pubblicazione(course_doc: dict, prodotto: dict, pre: Dict[str, Any]
         ragioni.append(f"{len(errori)} lezion{'e' if len(errori) == 1 else 'i'} con un video in errore: ricaricalo.")
     vuote = [l for l in lezioni if not _lezione_pronta(l) and not (l.get("video") or {}).get("stato")]
     if vuote:
-        ragioni.append(f"{len(vuote)} lezion{'e' if len(vuote) == 1 else 'i'} senza contenuto: carica il video, scrivi il testo o toglila.")
+        ragioni.append(f"{len(vuote)} lezion{'e' if len(vuote) == 1 else 'i'} senza contenuto: carica il video o l'audio, scegli la traccia, scrivi il testo o toglila.")
     return ragioni
 
 
@@ -244,6 +276,13 @@ def _riga_lezione(l: dict, firma=None) -> dict:
                    "thumbnail_url": (firma(v) if firma else v.get("thumbnail_url")), "duration_seconds": v.get("duration_seconds"),
                    "uploaded_at": v.get("uploaded_at")} if v else None),
         "resources": l.get("resources") or [],
+        # AU (8/10/2026): l'audio caricato, la traccia Aurya Sound, gli allegati
+        "audio": ({k: (l.get("audio") or {}).get(k) for k in ("filename", "size_bytes", "mime_type", "original_name", "duration_seconds", "uploaded_at")}
+                  if (l.get("audio") or {}).get("filename") else None),
+        "suono": ({k: (l.get("suono") or {}).get(k) for k in ("track_id", "title", "duration_sec", "slug", "status")}
+                  if (l.get("suono") or {}).get("track_id") else None),
+        "allegati": [{k: r.get(k) for k in ("id", "label", "filename", "size_bytes", "mime_type")}
+                     for r in (l.get("resources") or []) if r.get("filename")],
     }
 
 
@@ -343,7 +382,9 @@ async def _risposta(course_doc: dict, org_id: str) -> dict:
     pre = await _prerequisiti(org_id)
     prodotto = await _prodotto_di(course_doc, org_id)
     studenti = await _studenti_per_corso(org_id, [course_doc["id"]])
-    return await _riga(course_doc, prodotto, pre, studenti.get(course_doc["id"], 0), pre.get("public_slug"), await _firma_org(org_id))
+    riga = await _riga(course_doc, prodotto, pre, studenti.get(course_doc["id"], 0), pre.get("public_slug"), await _firma_org(org_id))
+    riga["sound_attivo"] = await _sound_attivo(org_id)
+    return riga
 
 
 # ── il corso ─────────────────────────────────────────────────────────────
@@ -595,7 +636,10 @@ async def crea_lezione(course_id: str, body: LezioneCreate, current_user: dict =
     lezione = {"id": generate_id(), "order": len(m.get("lessons") or []), "title": body.title.strip(),
                "description": body.description, "tipo": body.tipo, "testo": body.testo if body.tipo == "testo" else None,
                "video": None, "duration_seconds": 0, "bunny_video_guid": None, "bunny_library_id": None,
-               "resources": [], "is_preview": bool(body.is_preview)}
+               "resources": [], "is_preview": bool(body.is_preview), "audio": None, "suono": None}
+    if body.tipo == "suono" and not await _sound_attivo(org_id):
+        raise HTTPException(status_code=403, detail={"code": "sound_non_attivo",
+                            "message": "Le lezioni con una traccia Aurya Sound si aprono con Crea Studio (piano Pro o concessione)."})
     m.setdefault("lessons", []).append(lezione)
     salvato = await _salva_moduli(doc, org_id)
     return {**(await _risposta(salvato, org_id)), "lezione_id": lezione["id"]}
@@ -617,6 +661,18 @@ async def modifica_lezione(course_id: str, lesson_id: str, body: LezioneUpdate,
         l["testo"] = body.testo
     if body.is_preview is not None:
         l["is_preview"] = bool(body.is_preview)
+    if body.suono_track_id is not None:                            # AU
+        if body.suono_track_id == "":
+            l["suono"] = None
+            if l.get("tipo") == "suono":
+                l["duration_seconds"] = 0
+        else:
+            l["suono"] = await _traccia_mia(org_id, body.suono_track_id)
+            l["tipo"] = "suono"
+            l["duration_seconds"] = int(l["suono"].get("duration_sec") or 0)
+    if body.tipo == "suono" and not (l.get("suono") or {}).get("track_id") and not await _sound_attivo(org_id):
+        raise HTTPException(status_code=403, detail={"code": "sound_non_attivo",
+                            "message": "Le lezioni con una traccia Aurya Sound si aprono con Crea Studio (piano Pro o concessione)."})
     if body.module_id and body.module_id != m.get("id"):
         dest = next((x for x in doc.get("modules") or [] if x.get("id") == body.module_id), None)
         if not dest:
@@ -637,6 +693,8 @@ async def elimina_lezione(course_id: str, lesson_id: str, current_user: dict = D
     doc = await _mio_corso(course_id, org_id)
     m, l = _trova_lezione(doc, lesson_id)
     await _cancella_video_bunny(org_id, l)
+    from services import lezioni_file
+    lezioni_file.cancella_lezione(org_id, course_id, lesson_id)      # AU: audio e allegati
     m["lessons"] = [x for x in m.get("lessons") or [] if x.get("id") != lesson_id]
     return await _risposta(await _salva_moduli(doc, org_id), org_id)
 
@@ -734,6 +792,131 @@ async def _rinomina_su_bunny(org_id: str, doc: dict, l: Optional[dict] = None, t
                     await c.update_video(str(lib["library_id"]), l["video"]["guid"], title=_titolo_video(doc, l))
     except Exception as exc:  # noqa: BLE001
         logger.info("accademia: titolo non allineato su Bunny: %s", exc)
+
+
+# ── AU (8/10/2026): l'audio, la traccia Aurya Sound, gli allegati ──────────
+
+async def _traccia_mia(org_id: str, track_id: str) -> dict:
+    """SOLO le tracce dell'org (l'id dell'org e' nella query) e SOLO con il
+    privilegio del comporre: niente biblioteca pubblica, niente tracce altrui."""
+    from database import frequency_tracks_collection
+    if not await _sound_attivo(org_id):
+        raise HTTPException(status_code=403, detail={"code": "sound_non_attivo",
+                            "message": "Le lezioni con una traccia Aurya Sound si aprono con Crea Studio (piano Pro o concessione)."})
+    t = await frequency_tracks_collection.find_one(
+        {"id": track_id, "organization_id": org_id},
+        {"_id": 0, "id": 1, "title": 1, "slug": 1, "status": 1, "score.duration_sec": 1})
+    if not t:
+        raise HTTPException(status_code=404, detail="Traccia non trovata fra le tue.")
+    return {"track_id": t["id"], "title": t.get("title"), "slug": t.get("slug"), "status": t.get("status"),
+            "duration_sec": int(((t.get("score") or {}).get("duration_sec")) or 0)}
+
+
+@router.get("/{course_id}/tracce")
+async def tracce_mie(course_id: str, current_user: dict = Depends(get_verified_user), _=Depends(_gate)):
+    """Le tracce Aurya Sound dell'operatore, da scegliere per una lezione
+    «suono»: bozze e pubblicate, mai quelle di altri."""
+    from database import frequency_tracks_collection
+    org_id = current_user["organization_id"]
+    await _mio_corso(course_id, org_id)
+    if not await _sound_attivo(org_id):
+        return {"tracce": [], "sound_attivo": False}
+    out = []
+    async for t in frequency_tracks_collection.find(
+            {"organization_id": org_id},
+            {"_id": 0, "id": 1, "title": 1, "slug": 1, "status": 1, "visibility": 1, "score.duration_sec": 1, "updated_at": 1}
+    ).sort("updated_at", -1).limit(200):
+        out.append({"id": t["id"], "title": t.get("title"), "slug": t.get("slug"), "status": t.get("status"),
+                    "visibility": t.get("visibility"), "duration_sec": int(((t.get("score") or {}).get("duration_sec")) or 0)})
+    return {"tracce": out, "sound_attivo": True}
+
+
+@router.post("/{course_id}/lezioni/{lesson_id}/audio")
+async def carica_audio(course_id: str, lesson_id: str, file: UploadFile = File(...), duration_seconds: int = Form(0),
+                       current_user: dict = Depends(get_verified_user), _=Depends(_gate)):
+    """L'mp3 della lezione: storage privato, un file per lezione (il nuovo
+    sostituisce), la durata la misura il browser prima di caricare."""
+    from services import lezioni_file
+    org_id = current_user["organization_id"]
+    doc = await _mio_corso(course_id, org_id)
+    m, l = _trova_lezione(doc, lesson_id)
+    quota = await _quota_video(org_id)
+    if quota.get("max_bytes") and quota["usati_bytes"] + lezioni_file.AUDIO_MAX_BYTES > quota["max_bytes"] * 1.05:
+        raise HTTPException(status_code=409, detail={"code": "quota_video",
+                            "message": f"Il tuo piano comprende {quota['max_gb']} GB di video e audio: sei al limite (usati {quota['usati_gb']} GB)."})
+    salvato = await lezioni_file.salva(org_id, course_id, lesson_id, file, genere="audio",
+                                       max_bytes=lezioni_file.AUDIO_MAX_BYTES, ammesse=lezioni_file.AUDIO_EXT,
+                                       sostituisce=(l.get("audio") or {}).get("filename"))
+    l["audio"] = {**salvato, "duration_seconds": max(0, int(duration_seconds or 0)),
+                  "uploaded_at": datetime.now(timezone.utc).isoformat()}
+    l["tipo"] = "audio"
+    l["duration_seconds"] = max(0, int(duration_seconds or 0))
+    return await _risposta(await _salva_moduli(doc, org_id), org_id)
+
+
+@router.delete("/{course_id}/lezioni/{lesson_id}/audio")
+async def togli_audio(course_id: str, lesson_id: str, current_user: dict = Depends(get_verified_user), _=Depends(_gate)):
+    from services import lezioni_file
+    org_id = current_user["organization_id"]
+    doc = await _mio_corso(course_id, org_id)
+    m, l = _trova_lezione(doc, lesson_id)
+    lezioni_file.cancella(org_id, course_id, lesson_id, (l.get("audio") or {}).get("filename"))
+    l["audio"] = None
+    if l.get("tipo") == "audio":
+        l["duration_seconds"] = 0
+    return await _risposta(await _salva_moduli(doc, org_id), org_id)
+
+
+@router.post("/{course_id}/lezioni/{lesson_id}/allegati")
+async def carica_allegato(course_id: str, lesson_id: str, file: UploadFile = File(...), label: str = Form(""),
+                          current_user: dict = Depends(get_verified_user), _=Depends(_gate)):
+    """Un allegato scaricabile della lezione (pdf, schede, audio): fino a 10."""
+    from models.common import generate_id
+    from services import lezioni_file
+    org_id = current_user["organization_id"]
+    doc = await _mio_corso(course_id, org_id)
+    m, l = _trova_lezione(doc, lesson_id)
+    allegati = [r for r in (l.get("resources") or []) if r.get("filename")]
+    if len(allegati) >= lezioni_file.ALLEGATI_MAX_PER_LEZIONE:
+        raise HTTPException(status_code=409, detail={"code": "troppi_allegati",
+                            "message": f"Al massimo {lezioni_file.ALLEGATI_MAX_PER_LEZIONE} allegati per lezione."})
+    salvato = await lezioni_file.salva(org_id, course_id, lesson_id, file, genere="allegato",
+                                       max_bytes=lezioni_file.ALLEGATO_MAX_BYTES, ammesse=lezioni_file.ALLEGATO_EXT)
+    aid = generate_id()
+    etichetta = (label or "").strip()[:200] or str(salvato["original_name"])
+    l.setdefault("resources", []).append({"id": aid, "label": etichetta,
+                                          # `url` e' il campo storico del modello: qui e' solo la via del router
+                                          "url": f"/api/accademia/{course_id}/lezioni/{lesson_id}/allegati/{aid}",
+                                          **salvato})
+    return await _risposta(await _salva_moduli(doc, org_id), org_id)
+
+
+@router.delete("/{course_id}/lezioni/{lesson_id}/allegati/{allegato_id}")
+async def togli_allegato(course_id: str, lesson_id: str, allegato_id: str,
+                         current_user: dict = Depends(get_verified_user), _=Depends(_gate)):
+    from services import lezioni_file
+    org_id = current_user["organization_id"]
+    doc = await _mio_corso(course_id, org_id)
+    m, l = _trova_lezione(doc, lesson_id)
+    r = next((x for x in (l.get("resources") or []) if x.get("id") == allegato_id), None)
+    if not r:
+        raise HTTPException(status_code=404, detail="Allegato non trovato")
+    lezioni_file.cancella(org_id, course_id, lesson_id, r.get("filename"))
+    l["resources"] = [x for x in (l.get("resources") or []) if x.get("id") != allegato_id]
+    return await _risposta(await _salva_moduli(doc, org_id), org_id)
+
+
+@router.get("/{course_id}/lezioni/{lesson_id}/audio")
+async def ascolta_audio_operatore(course_id: str, lesson_id: str, request: Request,
+                                  current_user: dict = Depends(get_verified_user), _=Depends(_gate)):
+    """L'operatore riascolta il suo audio dall'editor (stessa consegna con Range)."""
+    from services import lezioni_file
+    org_id = current_user["organization_id"]
+    doc = await _mio_corso(course_id, org_id)
+    _, l = _trova_lezione(doc, lesson_id)
+    a = l.get("audio") or {}
+    p = lezioni_file.percorso(org_id, course_id, lesson_id, a.get("filename"))
+    return lezioni_file.risposta_file(p, request, a.get("mime_type") or "audio/mpeg")
 
 
 async def _cancella_video_bunny(org_id: str, l: dict) -> None:
