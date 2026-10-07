@@ -344,9 +344,8 @@ export default function AccountPage() {
     );
   };
 
-  // RF-bis (8/10/2026, founder): le voci dell'hub, UNA lista per le tessere
-  // in testa e per la barra fissa in basso su telefono (dopo il salto alla
-  // sezione le tessere sono lontane: la barra resta sotto il pollice)
+  // RF-bis (8/10/2026, founder): le voci dell'hub, una lista sola per la
+  // barra fissa in basso (ovunque: resta sotto il pollice e sotto il mouse)
   const vociHub = [
     { id: 'esperienze', icon: Calendar, label: 'Esperienze', stato: upcoming.length ? `${upcoming.length} in programma` : (past.length ? `${past.length} passat${past.length === 1 ? 'a' : 'e'}` : 'Nessuna ancora'), testid: 'hub-esperienze' },
     { id: 'corsi', icon: GraduationCap, label: 'Corsi', stato: corsi === null ? '…' : corsi.length ? `${corsi.length} cors${corsi.length === 1 ? 'o' : 'i'}` : 'Nessuno ancora', testid: 'hub-corsi' },
@@ -358,7 +357,7 @@ export default function AccountPage() {
 
   return (
     <MarketplaceShell>
-    <div className="min-h-screen bg-gray-50 pb-24 lg:pb-0">
+    <div className="min-h-screen bg-gray-50 pb-24">
       <header className="bg-gradient-sidebar text-white">
         <div className="max-w-3xl mx-auto px-4 py-6 flex items-center justify-between">
           <div>
@@ -375,22 +374,8 @@ export default function AccountPage() {
         </div>
       </header>
 
-      {/* RF (8/10/2026, founder): l'HUB. Entri e vedi subito tutto quello che
-          puoi fare su Aurya, una tessera per cosa, anche quando e' vuota: un
-          tocco porta alla sezione, senza scorrere alla cieca. */}
-      <nav aria-label="Il tuo spazio" className="max-w-3xl mx-auto px-4 -mt-0.5 pt-4" data-testid="account-hub">
-        <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-6">
-          {vociHub.map(({ id, icon: Icon, label, stato, testid }) => (
-            <a key={id} href={`#${id}`} data-testid={testid} onClick={(e) => { e.preventDefault(); vaiA(id); }}
-               className="group rounded-2xl border border-gray-200 bg-white p-3 transition hover:border-[#376254]/50 hover:shadow-sm">
-              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#2f5749]/10 text-[#2f5749]"><Icon className="h-4 w-4" aria-hidden /></span>
-              <span className="mt-2 block text-sm font-semibold text-gray-900">{label}</span>
-              <span className="block text-[11px] leading-snug text-gray-500">{stato}</span>
-            </a>
-          ))}
-        </div>
-      </nav>
-
+      {/* RF (8/10/2026, founder): l'orientamento e' la BARRA fissa in basso,
+          ovunque (le tessere in testa sono state tolte l'8/10 sera). */}
       <main className="max-w-3xl mx-auto px-4 py-6 space-y-8">
         {dueRows.length > 0 && (
           <section>
@@ -652,20 +637,21 @@ export default function AccountPage() {
         <AccountSettingsSection me={me} authHeaders={authHeaders} onLogout={logout} t={t} />
       </main>
 
-      {/* RF-bis — la barra fissa in basso su telefono: le stesse voci delle
-          tessere, la sezione in vista evidenziata; sparisce da desktop */}
+      {/* RF-bis — la barra fissa in basso, su ogni schermo: le sei voci con
+          icona, la sezione in vista evidenziata, un tocco salta li' */}
       <nav aria-label="Sezioni del tuo account" data-testid="account-barra"
-           className="fixed inset-x-0 bottom-0 z-30 bg-gradient-to-r from-[#1f3a30] to-[#2f5749] text-white shadow-[0_-8px_24px_-12px_rgba(31,58,48,0.5)] lg:hidden"
+           className="fixed inset-x-0 bottom-0 z-30 bg-gradient-to-r from-[#1f3a30] to-[#2f5749] text-white shadow-[0_-8px_24px_-12px_rgba(31,58,48,0.5)]"
            style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
         <ul className="mx-auto flex max-w-3xl justify-between px-1">
-          {vociHub.map(({ id, icon: Icon, label, testid }) => {
+          {vociHub.map(({ id, icon: Icon, label, stato, testid }) => {
             const attiva = sezioneAttiva === id;
             return (
               <li key={id} className="min-w-0 flex-1">
-                <button type="button" onClick={() => vaiA(id)} aria-current={attiva ? 'true' : undefined} data-testid={`barra-${testid}`}
-                        className={`flex w-full flex-col items-center gap-0.5 px-1 pb-1.5 pt-2 text-[10px] font-medium leading-none transition ${attiva ? 'text-white' : 'text-white/60'}`}>
-                  <span className={`flex h-7 w-10 items-center justify-center rounded-full transition ${attiva ? 'bg-white/20 ring-1 ring-white/40' : ''}`}><Icon className="h-4 w-4" aria-hidden /></span>
+                <button type="button" onClick={() => vaiA(id)} aria-current={attiva ? 'true' : undefined} data-testid={`barra-${testid}`} title={stato}
+                        className={`flex w-full flex-col items-center gap-0.5 px-1 pb-1.5 pt-2 text-[10px] font-medium leading-none transition sm:text-xs ${attiva ? 'text-[#e3d3a6]' : 'text-[#c9b37e]/70 hover:text-[#c9b37e]'}`}>
+                  <span className={`flex h-7 w-10 items-center justify-center rounded-full transition sm:h-8 sm:w-12 ${attiva ? 'bg-[#c9b37e]/20 ring-1 ring-[#c9b37e]/60' : ''}`}><Icon className="h-4 w-4 sm:h-5 sm:w-5" aria-hidden /></span>
                   <span className="truncate">{label}</span>
+                  <span className="hidden truncate text-[10px] font-normal text-[#c9b37e]/60 sm:block">{stato}</span>
                 </button>
               </li>
             );

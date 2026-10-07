@@ -83,7 +83,8 @@ class TestLandingProfiloAccount:
 
     def test_account_hub(self):
         a = (FRONTEND / "features" / "account" / "AccountPage.js").read_text()
-        assert 'data-testid="account-hub"' in a
+        # l'orientamento e' la barra (le tessere in testa sono state tolte l'8/10 sera)
+        assert 'data-testid="account-hub"' not in a
         for t in ("hub-esperienze", "hub-corsi", "hub-file", "hub-guide", "hub-meditazioni", "hub-account"):
             assert f"testid: '{t}'" in a, t
         # ogni sezione ha la sua ancora ed esiste anche vuota, con l'invito
@@ -93,7 +94,7 @@ class TestLandingProfiloAccount:
         assert 'data-testid="account-file-vuoto"' in a and 'to="/operatori"' in a
         assert "Array.isArray(corsi) && corsi.length > 0 &&" not in a
         # RF-bis: la barra fissa in basso su telefono con le stesse voci (una lista sola)
-        assert 'data-testid="account-barra"' in a and "const vociHub = [" in a and a.count("vociHub.map(") == 2
-        assert "lg:hidden" in a.split('data-testid="account-barra"')[1][:200]
+        assert 'data-testid="account-barra"' in a and "const vociHub = [" in a and a.count("vociHub.map(") == 1
+        assert "lg:hidden" not in a.split('data-testid="account-barra"')[1][:300]      # ovunque, anche desktop
         fav = (FRONTEND / "features" / "frequenze" / "AccountFavorites.js").read_text()
         assert 'data-testid="account-meditations-vuoto"' in fav and "if (!items.length) return null;" not in fav
