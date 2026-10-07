@@ -119,3 +119,68 @@ class BunnyClient:
         )
         response.raise_for_status()
         return response.json()
+
+    # ── AC1 (7/10/2026) — il video: crea, leggi, cancella ──────────────────
+    # Documentazione Bunny Stream: POST /library/{id}/videos {title} → {guid};
+    # GET /library/{id}/videos/{guid} → length (secondi), status, storageSize,
+    # thumbnailFileName, availableResolutions; DELETE /library/{id}/videos/{guid}.
+
+    async def create_video(self, library_id: str, title: str) -> Dict[str, Any]:
+        response = await self._client.post(f"/library/{library_id}/videos", json={"title": title[:255]})
+        response.raise_for_status()
+        return response.json()
+
+    async def get_video(self, library_id: str, video_guid: str) -> Dict[str, Any]:
+        response = await self._client.get(f"/library/{library_id}/videos/{video_guid}")
+        response.raise_for_status()
+        return response.json()
+
+    async def delete_video(self, library_id: str, video_guid: str) -> None:
+        response = await self._client.delete(f"/library/{library_id}/videos/{video_guid}")
+        if response.status_code != 404:
+            response.raise_for_status()
+
+
+_ACCOUNT_BASE_URL = "https://api.bunny.net"
+
+
+class BunnyAccountClient:
+    """AC1 (7/10/2026) — il client dell'ACCOUNT Aurya (chiave di account,
+    solo in env): crea e configura le librerie Stream degli operatori e
+    legge il pull zone. Mai usato con chiavi di libreria."""
+
+    def __init__(self, account_key: str, timeout: float = 15.0):
+        self._client = httpx.AsyncClient(
+            base_url=_ACCOUNT_BASE_URL,
+            headers={"AccessKey": (account_key or "").strip(), "accept": "application/json",
+                     "content-type": "application/json"},
+            timeout=timeout,
+        )
+
+    async def __aenter__(self) -> "BunnyAccountClient":
+        return self
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb) -> None:
+        await self._client.aclose()
+
+    async def create_library(self, name: str, replication_regions: Optional[list] = None) -> Dict[str, Any]:
+        """POST /videolibrary {Name, ReplicationRegions} → {Id, ApiKey, ReadOnlyApiKey, PullZoneId, ...}.
+        Nessuna replica: una regione basta (costi)."""
+        body: Dict[str, Any] = {"Name": name[:100]}
+        if replication_regions:
+            body["ReplicationRegions"] = replication_regions
+        response = await self._client.post("/videolibrary", json=body)
+        response.raise_for_status()
+        return response.json()
+
+    async def update_library(self, library_id: str, settings: Dict[str, Any]) -> Dict[str, Any]:
+        """POST /videolibrary/{id} con le impostazioni (risoluzioni, originali,
+        token auth, referrer, webhook...)."""
+        response = await self._client.post(f"/videolibrary/{library_id}", json=settings)
+        response.raise_for_status()
+        return response.json() if response.content else {}
+
+    async def get_pullzone(self, pullzone_id: str) -> Dict[str, Any]:
+        response = await self._client.get(f"/pullzone/{pullzone_id}")
+        response.raise_for_status()
+        return response.json()

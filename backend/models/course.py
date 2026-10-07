@@ -61,8 +61,26 @@ class CourseResource(BaseModel):
 
 # ── Lesson (atomic content unit inside a module) ─────────────────────────────
 
+class VideoLezione(BaseModel):
+    """AC1 (7/10/2026) — il video di una lezione sulla libreria GESTITA da
+    Aurya: creato dal backend, caricato dal browser (TUS), aggiornato dal
+    webhook. `stato`: caricamento · codifica · pronto · errore."""
+
+    model_config = ConfigDict(extra="ignore")
+
+    guid: str = Field(min_length=10, max_length=64)
+    library_id: Optional[str] = Field(default=None, max_length=32)        # BunnyLibrary.id (lato Aurya)
+    bunny_library_id: Optional[str] = Field(default=None, max_length=64)  # l'id numerico di Bunny
+    stato: str = Field(default="caricamento", max_length=20)
+    duration_seconds: int = Field(default=0, ge=0)
+    size_bytes: int = Field(default=0, ge=0)
+    thumbnail_url: Optional[str] = Field(default=None, max_length=2048)
+    uploaded_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
+
+
 class Lesson(BaseModel):
-    """A single video lesson inside a CourseModule."""
+    """A single lesson inside a CourseModule: video (AC1) or testo."""
 
     model_config = ConfigDict(extra="ignore")
 
@@ -70,6 +88,10 @@ class Lesson(BaseModel):
     order: int = Field(ge=0)                          # 0-indexed sort key within module
     title: str = Field(min_length=1, max_length=255)
     description: Optional[str] = Field(default=None, max_length=2000)
+    # AC1 — il tipo e il contenuto: `video` (sulla libreria gestita) o `testo`
+    tipo: str = Field(default="video", max_length=10)
+    testo: Optional[str] = Field(default=None, max_length=20000)
+    video: Optional[VideoLezione] = None
     duration_seconds: int = Field(default=0, ge=0)    # 0 = unknown / placeholder
     bunny_video_guid: Optional[str] = Field(default=None, max_length=64)
     # Multi-library support (Step 2): which Bunny library hosts this

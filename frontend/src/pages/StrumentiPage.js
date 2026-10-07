@@ -20,6 +20,7 @@ import { Link } from 'react-router-dom';
 import { ExternalLink, Sparkles } from 'lucide-react';
 import { AppLayout, Header } from '../components/Layout';
 import { prodottiAperti } from '../features/prodotti/stato';
+import { accademiaAperta } from '../features/accademia/stato';   // AC1
 import { useAuth } from '../context/AuthContext';
 import { modulesAPI } from '../api/modules';
 import { paymentConnectionsAPI } from '../api/paymentConnections';
@@ -57,6 +58,7 @@ export default function StrumentiPage() {
   }, []);
   const prodottiNelPiano = !!(moduloProdotti && moduloProdotti.is_active);
   const accademiaNelPiano = !!(moduloAccademia && moduloAccademia.is_active);
+  const accademiaAttiva = accademiaNelPiano && accademiaAperta(user);   // anteprima: aperta solo ai piloti
   const prodottiAttivi = prodottiNelPiano && prodottiAperti(user);   // anteprima: aperto solo ai piloti
   const incassiPronti = !!incassi?.checkout_available;
 
@@ -124,22 +126,22 @@ export default function StrumentiPage() {
       nome: 'Accademia',
       copertina: '/media/hero-destination.webp',
       focus: '50% 45%',
-      attivo: false,
-      inArrivo: true,
       claim: 'I tuoi percorsi, seguiti da chiunque, ovunque.',
+      attivo: accademiaAttiva,
+      inArrivo: !accademiaAttiva,
       descrizione: [
         'Crea un corso online con moduli e lezioni video: lo carichi dal browser, Aurya si occupa del resto. '
         + 'Chi lo compra lo segue nel suo account, lezione dopo lezione, con i progressi salvati.',
         'Il corso vive sul tuo profilo con una pagina da condividere; ordini e incassi restano nel tuo gestionale.',
       ],
-      dettaglio: accademiaNelPiano ? 'In arrivo: è già previsto nel tuo piano.' : 'In arrivo.',
-      anteprima: [
+      dettaglio: accademiaAttiva ? 'Incluso nel tuo piano.' : (accademiaNelPiano ? 'In arrivo: è già previsto nel tuo piano.' : 'In arrivo.'),
+      anteprima: accademiaAttiva ? null : [
         ['Lezioni video', 'carichi il file, si codifica da solo, la durata si legge da sola.'],
         ['Moduli e progressi', 'chi studia riprende da dove era e vede il percorso completarsi.'],
         ['Vendita dal profilo', 'una pagina per corso, acquisto con l\'account Aurya, Stripe sul tuo conto.'],
         ['Anteprime gratuite', 'una lezione aperta a tutti, per far capire di cosa si tratta.'],
       ],
-      azioni: [],
+      azioni: accademiaAttiva ? [{ label: 'I miei corsi', to: '/accademia', primary: true, testid: 'strumenti-apri-accademia' }] : [],
     },
   ];
 

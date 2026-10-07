@@ -68,6 +68,15 @@ const ProdottoFisicoWizard = lazy(() => import("./features/prodotti/ProdottoFisi
 // 6/10 sera (founder): i Prodotti escono in ANTEPRIMA finche' non arriva il
 // via — la scheda in Strumenti si vede, le pagine no (tornano a Strumenti).
 import { prodottiAperti } from "./features/prodotti/stato";
+// AC1 (7/10/2026): l'Accademia in ANTEPRIMA, stesso cancello dei Prodotti
+import { accademiaAperta } from "./features/accademia/stato";
+const AccademiaPage = lazy(() => import("./features/accademia/AccademiaPage"));
+const CorsoWizard = lazy(() => import("./features/accademia/CorsoWizard"));
+const CorsoPage = lazy(() => import("./features/accademia/CorsoPage"));
+const AccademiaGate = ({ children }) => {
+  const { user } = useAuth();
+  return accademiaAperta(user) ? children : <Navigate to="/strumenti" replace />;
+};
 const ProdottiGate = ({ children }) => {
   const { user } = useAuth();   // dentro ProtectedRoute: l'utente c'e'
   return prodottiAperti(user) ? children : <Navigate to="/strumenti" replace />;
@@ -901,6 +910,10 @@ function AppRoutes() {
       <Route path="/prodotti/nuovo/digitale" element={<ProtectedRoute><ProdottiGate><ProdottoDigitaleWizard /></ProdottiGate></ProtectedRoute>} />
       <Route path="/prodotti/nuovo/fisico" element={<ProtectedRoute><ProdottiGate><ProdottoFisicoWizard /></ProdottiGate></ProtectedRoute>} />
       <Route path="/prodotti/:id" element={<ProtectedRoute><ProdottiGate><ProdottoPage /></ProdottiGate></ProtectedRoute>} />
+      {/* AC1 (7/10/2026) — l'Accademia: corsi online con moduli e lezioni */}
+      <Route path="/accademia" element={<ProtectedRoute><AccademiaGate><AccademiaPage /></AccademiaGate></ProtectedRoute>} />
+      <Route path="/accademia/nuovo" element={<ProtectedRoute><AccademiaGate><CorsoWizard /></AccademiaGate></ProtectedRoute>} />
+      <Route path="/accademia/:id" element={<ProtectedRoute><AccademiaGate><CorsoPage /></AccademiaGate></ProtectedRoute>} />
       {/* TW1 — la creazione servizi passa dal Listino; il wizard resta
           l'editor AVANZATO su /services/:id */}
       <Route

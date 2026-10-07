@@ -84,6 +84,7 @@
     "verify-email-required"
   ],
   "app": [
+    "accademia",
     "admin",
     "calendar",
     "coupons",

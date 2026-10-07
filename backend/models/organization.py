@@ -137,6 +137,13 @@ class BunnyLibrary(BaseModel):
     id: str = Field(default_factory=lambda: secrets.token_urlsafe(8), max_length=32)
     alias: str = Field(min_length=1, max_length=64)
     is_default: bool = False
+    # ── AC1 (7/10/2026) — la libreria GESTITA da Aurya (creata via API con
+    #     l'account Aurya): read-only key per verificare il webhook, chi l'ha
+    #     creata, la quota consumata (byte e numero di video) ──────────────
+    read_only_api_key: Optional[str] = Field(default=None, max_length=255)
+    managed: bool = False
+    created_by: Optional[str] = Field(default=None, max_length=32)
+    quota: Dict[str, int] = Field(default_factory=dict)
 
     # ── Bunny credentials (same as legacy BunnyIntegration) ──────────────
     library_id: str = Field(min_length=1, max_length=64)
