@@ -9,6 +9,7 @@ import { ArrowLeft, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { AppLayout, Header } from '../../components/Layout';
 import { accademiaAPI, fmtDurata } from '../../api/accademia';
+import { famiglieVive } from '../../lib/disciplines';
 import { Bottone, Campo, LinkPagina, Ragioni, Scheda, SceltaImmagine, campo } from '../prodotti/ui';
 import LezioniEditor from './LezioniEditor';
 import TrailerEditor from './TrailerEditor';
@@ -30,7 +31,7 @@ export default function CorsoPage() {
       setC(res.data);
       setForm(f => f && sporco ? f : {
         title: res.data.title || '', description: res.data.description || '', long_description: res.data.long_description || '',
-        instructor_name: res.data.instructor_name || '', unit_price: res.data.unit_price != null ? String(res.data.unit_price) : '',
+        instructor_name: res.data.instructor_name || '', categoria: res.data.categoria || '', unit_price: res.data.unit_price != null ? String(res.data.unit_price) : '',
         access_policy: res.data.access_policy || 'lifetime', access_expiry_days: res.data.access_expiry_days || '',
       });
     }).catch(() => toast.error('Corso non trovato.'));
@@ -45,7 +46,7 @@ export default function CorsoPage() {
     try {
       const res = await accademiaAPI.update(id, {
         title: form.title.trim(), description: form.description, long_description: form.long_description,
-        instructor_name: form.instructor_name, unit_price: form.unit_price !== '' ? Number(form.unit_price) : undefined,
+        instructor_name: form.instructor_name, categoria: form.categoria, unit_price: form.unit_price !== '' ? Number(form.unit_price) : undefined,
         access_policy: form.access_policy, access_expiry_days: form.access_policy === 'expiring' ? Number(form.access_expiry_days || 0) : 0,
       });
       setC(res.data); setSporco(false); toast.success('Salvato.');
@@ -103,6 +104,12 @@ export default function CorsoPage() {
                 </div>
               </Campo>
               <Campo label="Chi insegna" hint="Se vuoto, il nome del tuo profilo."><input className={campo} value={form.instructor_name} maxLength={255} onChange={e => set('instructor_name', e.target.value)} /></Campo>
+              <Campo label="Categoria" hint="Dove lo trovano nella directory dei corsi.">
+                <select className={campo} value={form.categoria} data-testid="corso-categoria" onChange={e => set('categoria', e.target.value)}>
+                  <option value="">Nessuna</option>
+                  {famiglieVive().map(f => <option key={f.slug} value={f.slug}>{f.label}</option>)}
+                </select>
+              </Campo>
               <Campo label="Durata dell'accesso">
                 <select className={campo} value={form.access_policy} onChange={e => set('access_policy', e.target.value)}>
                   <option value="lifetime">Per sempre</option><option value="expiring">A tempo</option>

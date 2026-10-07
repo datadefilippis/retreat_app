@@ -4738,8 +4738,75 @@ async def _operator_corsi(org_id: str) -> list:
             "access_expiry_days": c.get("access_expiry_days"),
             "instructor_name": c.get("instructor_name"),
             "has_trailer": (c.get("trailer") or {}).get("stato") == "pronto",
+            "categoria": c.get("categoria"),
+            "anteprime": sum(1 for l in pronte if l.get("is_preview") and (l.get("tipo") or "video") == "video"),
         })
     return out
+
+
+class PublicCorsiDirectory(BaseModel):
+    """RF (8/10/2026) — la DIRECTORY dei corsi online: /corsi."""
+    corsi: List[Dict[str, Any]]
+    categorie: List[Dict[str, Any]]
+    total: int
+
+
+@router.get("/corsi", response_model=PublicCorsiDirectory)
+async def directory_corsi(categoria: Optional[str] = None, q: Optional[str] = None,
+                          ordina: str = "recenti", anteprima: bool = False):
+    """RF (8/10/2026) — tutti i corsi online pubblicati dei professionisti con
+    la pagina online (org non campione, Accademia non spenta, almeno una
+    lezione pronta), con i filtri: categoria (famiglia delle discipline),
+    ricerca su titolo e professionista, ordine (recenti · prezzo · durata),
+    solo con anteprima gratuita. `categorie` porta i conteggi PRIMA dei
+    filtri di categoria, cosi' le pastiglie non spariscono scegliendone una."""
+    from database import products_collection, organizations_collection
+    from services.store_guard import org_has_public_home
+    from services.discipline_vive import famiglie_rosa
+    org_ids = sorted({p["organization_id"] async for p in products_collection.find(
+        {"item_type": "course", "is_published": True, "is_active": True},
+        {"_id": 0, "organization_id": 1})})
+    orgs = {o["id"]: o async for o in organizations_collection.find(
+        {"id": {"$in": org_ids}, "is_sample": {"$ne": True}, "is_active": {"$ne": False},
+         "deactivated_at": None, "public_slug": {"$nin": [None, ""]}},
+        {"_id": 0, "id": 1, "name": 1, "public_slug": 1, "store_settings.display_name": 1,
+         "public_profile.city": 1, "public_profile.region": 1, "public_profile.portrait_url": 1})}
+    tutti = []
+    for oid, o in orgs.items():
+        if not await org_has_public_home(oid):
+            continue
+        nome = (o.get("store_settings") or {}).get("display_name") or o.get("name") or ""
+        pp = o.get("public_profile") or {}
+        for r in await _operator_corsi(oid):
+            tutti.append({**r, "org": {"slug": o["public_slug"], "name": nome, "city": pp.get("city"),
+                                       "region": pp.get("region"), "portrait_url": pp.get("portrait_url")},
+                          "url": f"/corso/{o['public_slug']}/{r.get('slug')}"})
+    etichette = {f["slug"]: f["label"] for f in famiglie_rosa()}
+    conteggi: Dict[str, int] = {}
+    for r in tutti:
+        if r.get("categoria"):
+            conteggi[r["categoria"]] = conteggi.get(r["categoria"], 0) + 1
+    categorie = [{"slug": s, "label": etichette.get(s, s), "n": n} for s, n in conteggi.items()]
+    categorie.sort(key=lambda x: (-x["n"], x["label"]))
+    righe = tutti
+    if categoria:
+        righe = [r for r in righe if r.get("categoria") == categoria]
+    if anteprima:
+        righe = [r for r in righe if r.get("has_trailer") or r.get("anteprime")]
+    if q and q.strip():
+        qq = q.strip().lower()
+        righe = [r for r in righe if qq in (r.get("name") or "").lower() or qq in (r.get("description") or "").lower()
+                 or qq in (r["org"]["name"] or "").lower() or qq in (r.get("instructor_name") or "").lower()]
+    if ordina == "prezzo":
+        righe.sort(key=lambda r: float(r.get("price") or 0))
+    elif ordina == "prezzo_desc":
+        righe.sort(key=lambda r: -float(r.get("price") or 0))
+    elif ordina == "durata":
+        righe.sort(key=lambda r: -int(r.get("durata_totale_seconds") or 0))
+    # «recenti»: l'ordine di _operator_corsi e' gia' created_at desc per org
+    for r in righe:
+        r["categoria_label"] = etichette.get(r.get("categoria")) if r.get("categoria") else None
+    return PublicCorsiDirectory(corsi=righe, categorie=categorie, total=len(righe))
 
 
 class PublicCorsoLanding(BaseModel):

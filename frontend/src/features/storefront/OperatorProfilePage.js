@@ -438,6 +438,20 @@ export default function OperatorProfilePage() {
   // pagine si comportano come un'unica scheda. (ScrollToTop in App.js
   // riparte dall'alto al cambio pathname: qui si corregge dopo.)
   const { hash, state: navState } = useLocation();
+  /* RF (8/10/2026, founder): il catalogo del profilo si SFOGLIA a schede
+     (Servizi · Esperienze · Prodotti · Corsi) invece di una sezione sotto
+     l'altra. Le schede esistono solo per le categorie che l'operatore ha;
+     con una sola categoria niente barra. L'hash (#listino, #prodotti,
+     #corsi, #ritiri, #servizio-x, #corso-x, #prodotto-x) sceglie la scheda. */
+  const [catalogo, setCatalogo] = useState(null);
+  useEffect(() => {
+    const h = (hash || '').replace('#', '');
+    if (!h) return;
+    if (h === 'listino' || h.startsWith('servizio-')) setCatalogo('listino');
+    else if (h === 'prodotti' || h.startsWith('prodotto-')) setCatalogo('prodotti');
+    else if (h === 'corsi' || h.startsWith('corso-')) setCatalogo('corsi');
+    else if (h === 'ritiri') setCatalogo('ritiri');
+  }, [hash]);
   useEffect(() => {
     if (!data || !hash) return;
     const el = document.getElementById(hash.slice(1));
@@ -559,6 +573,15 @@ export default function OperatorProfilePage() {
   // R2 (25/9): cosa c'e' lo dice haContatti (in chiaro o dietro la porta)
   const hasContacts = !!(data.languages?.length || haContatti(data));
   const hasUpcoming = Array.isArray(data.upcoming) && data.upcoming.length > 0;
+  const schede = [
+    hasListino && { key: 'listino', label: t('landings:operator.listino', { defaultValue: 'Servizi e prezzi' }), n: data.listino.length },
+    hasUpcoming && { key: 'ritiri', label: 'Esperienze', n: data.upcoming.length },
+    Array.isArray(data.prodotti) && data.prodotti.length > 0 && { key: 'prodotti', label: t('landings:operator.prodotti', { defaultValue: 'Prodotti' }), n: data.prodotti.length },
+    Array.isArray(data.corsi) && data.corsi.length > 0 && { key: 'corsi', label: 'Corsi online', n: data.corsi.length },
+  ].filter(Boolean);
+  const schedaAttiva = schede.find(x => x.key === catalogo)?.key || schede[0]?.key || null;
+  // con una sola categoria la barra non serve e tutto resta visibile
+  const classeScheda = (key) => (schede.length > 1 && schedaAttiva !== key ? ' hidden' : '');
 
   return (
     <MarketplaceShell>
@@ -627,13 +650,28 @@ export default function OperatorProfilePage() {
             </section>
           )}
 
+          {schede.length > 1 && (
+            <div className="mt-8 sticky top-14 z-20 -mx-4 bg-gray-50/95 px-4 py-2 backdrop-blur sm:static sm:mx-0 sm:bg-transparent sm:px-0 sm:py-0" data-testid="profile-catalogo">
+              <div role="tablist" aria-label="Cosa offre" className="flex gap-2 overflow-x-auto [scrollbar-width:none]">
+                {schede.map(sc => (
+                  <button key={sc.key} type="button" role="tab" aria-selected={schedaAttiva === sc.key} id={`scheda-${sc.key}`}
+                    data-testid={`profile-scheda-${sc.key}`}
+                    onClick={() => setCatalogo(sc.key)}
+                    className={`flex-none rounded-full px-4 py-2 text-sm font-medium transition ${schedaAttiva === sc.key ? 'bg-[#376254] text-white shadow-sm' : 'bg-white text-gray-700 ring-1 ring-gray-200 hover:bg-gray-50'}`}>
+                    {sc.label} <span className={schedaAttiva === sc.key ? 'opacity-80' : 'text-gray-400'}>· {sc.n}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* TW2+PN3 (piano Profilo=Negozio) — il profilo E' il negozio:
               i servizi a listino con la porta d'azione per riga. Il
               bottone ESPANDE la riga e l'acquisto avviene in pagina
               (InlineServiceCheckout riusa il checkout dello storefront).
               La landing /p/ resta come link secondario "Vedi dettagli". */}
           {Array.isArray(data.listino) && data.listino.length > 0 && (
-            <section id="listino" className="mt-8 scroll-mt-20" data-testid="profile-listino">
+            <section id="listino" className={`mt-6 scroll-mt-24${classeScheda('listino')}`} data-testid="profile-listino">
               <h2 className="profile-h2 font-heading text-xl font-bold text-foreground mb-3 flex items-center gap-2.5 before:content-[''] before:h-5 before:w-1 before:rounded-full before:bg-[#c9b37e]">
                 {t('landings:operator.listino', { defaultValue: 'Servizi e prezzi' })}
               </h2>
@@ -738,7 +776,7 @@ export default function OperatorProfilePage() {
               pagina con l'account Aurya (InlineProdottoCheckout). Senza
               prodotti pubblicati la sezione non compare. */}
           {Array.isArray(data.prodotti) && data.prodotti.length > 0 && (
-            <section id="prodotti" className="mt-8 scroll-mt-20" data-testid="profile-prodotti">
+            <section id="prodotti" className={`mt-6 scroll-mt-24${classeScheda('prodotti')}`} data-testid="profile-prodotti">
               <h2 className="profile-h2 font-heading text-xl font-bold text-foreground mb-3 flex items-center gap-2.5 before:content-[''] before:h-5 before:w-1 before:rounded-full before:bg-[#c9b37e]">
                 {t('landings:operator.prodotti', { defaultValue: 'Prodotti' })}
               </h2>
@@ -793,7 +831,7 @@ export default function OperatorProfilePage() {
           {/* AC3 (7/10/2026) — I CORSI del profilo: card della misura dei ritiri,
               «Scopri di più» → /corso/{org}/{slug}, «Compra» in pagina (account Aurya) */}
           {Array.isArray(data.corsi) && data.corsi.length > 0 && (
-            <section id="corsi" className="mt-8 scroll-mt-20" data-testid="profile-corsi">
+            <section id="corsi" className={`mt-6 scroll-mt-24${classeScheda('corsi')}`} data-testid="profile-corsi">
               <h2 className="profile-h2 font-heading text-xl font-bold text-foreground mb-3 flex items-center gap-2.5 before:content-[''] before:h-5 before:w-1 before:rounded-full before:bg-[#c9b37e]">
                 Corsi online
               </h2>
@@ -836,12 +874,6 @@ export default function OperatorProfilePage() {
             </section>
           )}
 
-          <Gallery
-            photos={data.portrait_url && !(data.photos || []).includes(data.portrait_url)
-              ? [data.portrait_url, ...(data.photos || [])]
-              : data.photos}
-            name={data.name} t={t} />
-
           {/* PN0 — il profilo e' la vetrina dell'operatore: i suoi
               ritiri pubblicati si vedono SEMPRE, anche in fase network
               e anche senza Stripe (il gate GT1b vale solo per la
@@ -850,7 +882,7 @@ export default function OperatorProfilePage() {
               titolo con «Nessun ritiro in programma» era rumore, non
               informazione (l'ancora #ritiri risponde solo se c'e' qualcosa) */}
           {hasUpcoming && (
-          <section id="ritiri" className="mt-8 scroll-mt-20">
+          <section id="ritiri" className={`mt-6 scroll-mt-24${classeScheda('ritiri')}`}>
             <h2 className="profile-h2 font-heading text-xl font-bold text-foreground mb-3 flex items-center gap-2.5 before:content-[''] before:h-5 before:w-1 before:rounded-full before:bg-[#c9b37e]">
               {t('landings:operator.upcoming', { count: data.upcoming_count })}
             </h2>
@@ -880,6 +912,12 @@ export default function OperatorProfilePage() {
               </div>
           </section>
           )}
+
+          <Gallery
+            photos={data.portrait_url && !(data.photos || []).includes(data.portrait_url)
+              ? [data.portrait_url, ...(data.photos || [])]
+              : data.photos}
+            name={data.name} t={t} />
 
           <MiniCalendario upcoming={data.upcoming} t={t} />
 

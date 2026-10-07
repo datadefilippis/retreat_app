@@ -27,6 +27,7 @@ import api from '../../../api/client';
 // niente provider nuovi, /account resta il gate (senza token rimanda
 // lui stesso a /account/accedi).
 import { PLATFORM_TOKEN_KEY } from '../../../api/platformClient';
+import { ACCADEMIA_UI_PRONTA } from '../../accademia/stato';   // RF: la voce «Corsi» del menu
 // LR1 — il menu dell'omino riusa i primitivi ui gia' in casa:
 // dropdown ancorato su desktop, sheet dal basso su mobile.
 import {
@@ -356,6 +357,8 @@ const NETWORK_NAV_ITEMS = [
   // 6/10/2026 (founder): i professionisti stanno pubblicando eventi e ritiri,
   // /esperienze torna nel menu, per prima: e' quello che la persona cerca
   { to: '/esperienze', key: 'marketplace.navExperiences', fallback: 'Esperienze' },
+  // RF (8/10/2026): la directory dei corsi online entra nel menu allo sblocco dell'Accademia
+  ...(ACCADEMIA_UI_PRONTA ? [{ to: '/corsi', key: 'marketplace.navCorsi', fallback: 'Corsi' }] : []),
   { to: '/operatori', key: 'marketplace.navOperators', fallback: 'I nostri professionisti' },
   // P3 (10/9/2026) aveva messo «Ritiri ed esperienze» qui; NV (10/9 sera,
   // founder): finche' non ci sono ritiri, TUTTO il traffico va alla

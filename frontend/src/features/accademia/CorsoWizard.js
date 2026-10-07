@@ -12,6 +12,7 @@ import { ArrowLeft, CheckCircle2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { AppLayout, Header } from '../../components/Layout';
 import DpaPactDialog from '../../components/legal/DpaPactDialog';
+import { famiglieVive } from '../../lib/disciplines';
 import { accademiaAPI, fmtDurata } from '../../api/accademia';
 import { AnteprimaProdotto, Bottone, Campo, Ragioni, Scheda, SceltaImmagine, campo, classePasso } from '../prodotti/ui';
 import LezioniEditor from './LezioniEditor';
@@ -25,7 +26,7 @@ const PASSI = [
 export default function CorsoWizard() {
   const navigate = useNavigate();
   const [passo, setPasso] = useState(0);
-  const [form, setForm] = useState({ title: '', description: '', long_description: '', instructor_name: '', unit_price: '', access_policy: 'lifetime', access_expiry_days: '' });
+  const [form, setForm] = useState({ title: '', description: '', categoria: '', long_description: '', instructor_name: '', unit_price: '', access_policy: 'lifetime', access_expiry_days: '' });
   const [altro, setAltro] = useState(false);
   const [cover, setCover] = useState(null);
   const [corso, setCorso] = useState(null);
@@ -37,7 +38,7 @@ export default function CorsoWizard() {
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
   const prezzoOk = form.unit_price !== '' && Number(form.unit_price) > 0;
   const giorniOk = form.access_policy === 'lifetime' || Number(form.access_expiry_days) > 0;
-  const passo1Ok = form.title.trim().length > 0 && prezzoOk && giorniOk;
+  const passo1Ok = form.title.trim().length > 0 && prezzoOk && giorniOk && !!form.categoria;   // RF: la categoria serve alla directory /corsi
 
   const ricarica = useCallback(() => {
     if (!corso?.id) return;
@@ -51,6 +52,7 @@ export default function CorsoWizard() {
       const payload = {
         title: form.title.trim(), description: form.description.trim() || null,
         long_description: form.long_description.trim() || null, instructor_name: form.instructor_name.trim() || null,
+        categoria: form.categoria || null,
         unit_price: Number(form.unit_price), access_policy: form.access_policy,
         access_expiry_days: form.access_policy === 'expiring' ? Number(form.access_expiry_days) : null,
       };
@@ -107,6 +109,12 @@ export default function CorsoWizard() {
               </Campo>
               <Campo label="Due righe per chi compra" hint="Cosa impara e a chi è pensato. Si legge sulla card del profilo.">
                 <textarea className={`${campo} resize-none`} rows={2} maxLength={2000} value={form.description} onChange={e => set('description', e.target.value)} />
+              </Campo>
+              <Campo label="Categoria" obbligatorio hint="Dove lo trovano nella directory dei corsi: una famiglia di pratiche.">
+                <select className={campo} value={form.categoria} data-testid="corso-categoria" onChange={e => set('categoria', e.target.value)}>
+                  <option value="">Scegli…</option>
+                  {famiglieVive().map(f => <option key={f.slug} value={f.slug}>{f.label}</option>)}
+                </select>
               </Campo>
               <div className="grid gap-4 sm:grid-cols-2">
                 <Campo label="Prezzo" obbligatorio hint="Pagamento subito con carta, sul tuo conto Stripe.">

@@ -43,11 +43,23 @@ MAX_VIDEO_BYTES = 5 * 1024 ** 3
 
 # ── modelli di ingresso ──────────────────────────────────────────────────
 
+def _categoria_valida(slug: Optional[str]) -> Optional[str]:
+    """RF (8/10/2026) — la categoria e' una famiglia del registro discipline;
+    vuota = nessuna. Uno slug ignoto e' un 400, non un salvataggio sporco."""
+    from services.discipline_vive import famiglie_rosa
+    if not slug:
+        return None
+    if slug not in {f["slug"] for f in famiglie_rosa()}:
+        raise HTTPException(status_code=400, detail="Categoria non valida.")
+    return slug
+
+
 class CorsoCreate(BaseModel):
     model_config = ConfigDict(extra="ignore")
     title: str = Field(min_length=1, max_length=255)
     description: Optional[str] = Field(default=None, max_length=2000)
     long_description: Optional[str] = Field(default=None, max_length=20000)
+    categoria: Optional[str] = Field(default=None, max_length=40)
     instructor_name: Optional[str] = Field(default=None, max_length=255)
     unit_price: Optional[float] = Field(default=None, ge=0)
     access_policy: str = Field(default="lifetime", pattern="^(lifetime|expiring)$")
@@ -59,6 +71,7 @@ class CorsoUpdate(BaseModel):
     title: Optional[str] = Field(default=None, min_length=1, max_length=255)
     description: Optional[str] = Field(default=None, max_length=2000)
     long_description: Optional[str] = Field(default=None, max_length=20000)
+    categoria: Optional[str] = Field(default=None, max_length=40)          # "" = via
     instructor_name: Optional[str] = Field(default=None, max_length=255)
     instructor_bio: Optional[str] = Field(default=None, max_length=4000)
     unit_price: Optional[float] = Field(default=None, ge=0)
@@ -243,6 +256,8 @@ async def _riga(course_doc: dict, prodotto: dict, pre: Dict[str, Any], studenti:
         "description": course_doc.get("description"), "long_description": course_doc.get("long_description"),
         "cover_image_url": course_doc.get("cover_image_url"),
         "instructor_name": course_doc.get("instructor_name"), "instructor_bio": course_doc.get("instructor_bio"),
+        "categoria": course_doc.get("categoria"),
+        "categoria_label": _etichetta_categoria(course_doc.get("categoria")),
         "access_policy": course_doc.get("access_policy") or "lifetime",
         "access_expiry_days": course_doc.get("access_expiry_days"),
         "access_etichetta": ETICHETTE_ACCESSO.get(course_doc.get("access_policy") or "lifetime"),
@@ -272,6 +287,13 @@ async def _studenti_per_corso(org_id: str, course_ids: List[str]) -> Dict[str, i
             {"$group": {"_id": "$course_id", "n": {"$sum": 1}}}]):
         out[r["_id"]] = int(r["n"])
     return out
+
+
+def _etichetta_categoria(slug: Optional[str]) -> Optional[str]:
+    if not slug:
+        return None
+    from services.discipline_vive import famiglie_rosa
+    return next((f["label"] for f in famiglie_rosa() if f["slug"] == slug), slug)
 
 
 async def _commissione_corsi(org_id: str) -> Dict[str, Any]:
@@ -330,6 +352,7 @@ async def _risposta(course_doc: dict, org_id: str) -> dict:
 async def lista_corsi(current_user: dict = Depends(get_verified_user), _=Depends(_gate)):
     from database import courses_collection, products_collection
     from routers.prodotti import _prerequisiti, _commissione
+    from services.discipline_vive import famiglie_rosa
     from services.bunny import gestito
     org_id = current_user["organization_id"]
     corsi = await courses_collection.find(
@@ -351,6 +374,7 @@ async def lista_corsi(current_user: dict = Depends(get_verified_user), _=Depends
         "quota_video": await _quota_video(org_id),
         "commissione": await _commissione_corsi(org_id),
         "bunny_attivo": gestito.attivo(),
+        "categorie": famiglie_rosa(),      # RF: la rosa per il wizard e la scheda
     }
 
 
@@ -374,6 +398,7 @@ async def crea_corso(body: CorsoCreate, current_user: dict = Depends(get_verifie
     dati = CourseCreate(
         title=body.title.strip(), slug=slug, description=(body.description or None),
         long_description=(body.long_description or None), instructor_name=(body.instructor_name or None),
+        categoria=_categoria_valida(body.categoria),
         access_policy=body.access_policy,
         access_expiry_days=body.access_expiry_days if body.access_policy == "expiring" else None,
     )
@@ -410,6 +435,8 @@ async def modifica_corso(course_id: str, body: CorsoUpdate, current_user: dict =
         v = getattr(body, k)
         if v is not None:
             upd[k] = v.strip() if isinstance(v, str) and k == "title" else v
+    if body.categoria is not None:
+        upd["categoria"] = _categoria_valida(body.categoria)          # "" → None = via
     if body.access_expiry_days is not None:
         upd["access_expiry_days"] = body.access_expiry_days or None
     if (upd.get("access_policy") or doc.get("access_policy")) == "expiring" and not (

@@ -22,6 +22,7 @@ import { corsiAPI } from '../../api/corsi';
 import { PLATFORM_TOKEN_KEY } from '../../api/platformClient';
 import { fmtEuro } from '../../api/prodotti';
 import { fmtDurata } from '../../api/accademia';
+import { famiglieVive } from '../../lib/disciplines';
 import useSeoMeta from './lib/useSeoMeta';
 
 const InlineProdottoCheckout = React.lazy(() => import('./components/checkout/InlineProdottoCheckout'));
@@ -34,7 +35,7 @@ function testoStelle(stats) {
 }
 
 /** il riquadro video: miniatura con il play, poi l'iframe firmato (anteprima gratuita) */
-function Anteprima({ orgSlug, slug, lessonId, thumbnail, titolo, onChiudi }) {
+function Anteprima({ orgSlug, slug, lessonId, thumbnail, titolo, etichetta }) {
   const [url, setUrl] = useState(null);
   const [errore, setErrore] = useState(null);
   useEffect(() => {
@@ -53,8 +54,8 @@ function Anteprima({ orgSlug, slug, lessonId, thumbnail, titolo, onChiudi }) {
           {errore || 'Carico l’anteprima…'}
         </div>
       )}
-      {onChiudi && (
-        <button type="button" onClick={onChiudi} className="absolute right-3 top-3 rounded-full bg-black/60 px-3 py-1 text-xs font-medium text-white hover:bg-black/80">Chiudi</button>
+      {etichetta && (
+        <span className="pointer-events-none absolute left-3 top-3 rounded-full bg-black/60 px-3 py-1 text-xs font-medium text-white" data-testid="corso-anteprima-etichetta">{etichetta}</span>
       )}
       {thumbnail && !url && !errore && <img src={thumbnail} alt="" className="absolute inset-0 h-full w-full object-cover opacity-40" />}
     </div>
@@ -75,7 +76,16 @@ export default function CorsoLandingPage() {
     let vivo = true;
     setStato('loading'); setCompra(false); setAnteprima(null);
     storefrontAPI.getCorsoLanding(orgSlug, slug)
-      .then(res => { if (vivo) { setData(res.data); setStato('ready'); } })
+      .then(res => {
+        if (!vivo) return;
+        setData(res.data); setStato('ready');
+        // RF (8/10/2026, founder): l'anteprima vive SEMPRE nella copertina,
+        // senza clic: il video di presentazione se c'e', altrimenti la prima
+        // lezione gratuita. «Guarda gratis» cambia solo quale.
+        const cc = res.data?.corso;
+        const prima = (cc?.moduli || []).flatMap(m => m.lezioni).find(l => l.is_preview && l.tipo !== 'testo');
+        setAnteprima(cc?.trailer ? 'trailer' : (prima ? prima.id : null));
+      })
       .catch(err => { if (vivo) setStato(err?.response?.status === 404 ? 'notfound' : 'error'); });
     return () => { vivo = false; };
   }, [orgSlug, slug]);
@@ -127,6 +137,7 @@ export default function CorsoLandingPage() {
 
   const lezioniTot = c.lezioni_count || 0;
   const anteprime = (c.moduli || []).flatMap(m => m.lezioni.filter(l => l.is_preview));
+  const categoriaLabel = c.categoria ? (famiglieVive().find(f => f.slug === c.categoria)?.label || c.categoria) : null;
   const accesso = c.access_policy === 'expiring' && c.access_expiry_days ? `Accesso per ${c.access_expiry_days} giorni` : 'Accesso per sempre';
 
   return (
@@ -141,7 +152,8 @@ export default function CorsoLandingPage() {
           <div ref={heroRef} className="scroll-mt-24">
             {anteprima ? (
               <Anteprima orgSlug={orgSlug} slug={slug} lessonId={anteprima} thumbnail={c.image_url}
-                         titolo={anteprima === 'trailer' ? `Presentazione · ${c.name}` : 'Anteprima gratuita'} onChiudi={() => setAnteprima(null)} />
+                         titolo={anteprima === 'trailer' ? `Presentazione · ${c.name}` : 'Anteprima gratuita'}
+                         etichetta={anteprima === 'trailer' ? 'Presentazione' : `Anteprima gratuita · ${anteprime.find(l => l.id === anteprima)?.title || ''}`} />
             ) : (
               <div className="relative aspect-video w-full overflow-hidden rounded-3xl bg-gradient-to-br from-[#eef3ef] to-[#dfe8e2] shadow-[0_24px_48px_-32px_rgba(30,47,40,0.35)]">
                 {(c.trailer?.thumbnail_url || c.image_url)
@@ -161,6 +173,9 @@ export default function CorsoLandingPage() {
 
           {/* ── la scheda ── */}
           <div className="lg:py-2">
+            {categoriaLabel && (
+              <Link to={`/corsi/${c.categoria}`} className="mb-2 inline-flex rounded-full bg-[#2f5749]/10 px-3 py-1 text-xs font-semibold text-[#2f5749] hover:bg-[#2f5749]/15" data-testid="corso-landing-categoria">{categoriaLabel}</Link>
+            )}
             <h1 className="font-display text-3xl leading-tight text-gray-900 sm:text-4xl">{c.name}</h1>
             <Link to={`/o/${orgSlug}`} className="mt-4 inline-flex items-center gap-3 rounded-full bg-white/80 py-1.5 pl-1.5 pr-4 ring-1 ring-gray-200 hover:bg-white" data-testid="corso-landing-org">
               <span className="h-9 w-9 overflow-hidden rounded-full bg-gray-200">{org?.portrait_url && <img src={org.portrait_url} alt="" className="h-full w-full object-cover" />}</span>
@@ -238,9 +253,9 @@ export default function CorsoLandingPage() {
                         <p className="text-xs text-gray-500">{l.tipo === 'testo' ? 'Lettura' : (l.duration_seconds ? fmtDurata(l.duration_seconds) : 'Video')}</p>
                       </div>
                       {l.is_preview && l.tipo !== 'testo' && (
-                        <button type="button" onClick={() => guarda(l.id)} data-testid={`anteprima-${l.id}`}
-                          className="inline-flex min-h-[34px] items-center gap-1.5 rounded-full border border-[#2f5749]/30 bg-[#2f5749]/[0.06] px-3 text-xs font-semibold text-[#2f5749] hover:bg-[#2f5749]/10">
-                          <Play className="h-3.5 w-3.5 fill-current" aria-hidden /> Guarda gratis
+                        <button type="button" onClick={() => guarda(l.id)} data-testid={`anteprima-${l.id}`} aria-pressed={anteprima === l.id}
+                          className={`inline-flex min-h-[34px] items-center gap-1.5 rounded-full border px-3 text-xs font-semibold ${anteprima === l.id ? 'border-[#2f5749] bg-[#2f5749] text-white' : 'border-[#2f5749]/30 bg-[#2f5749]/[0.06] text-[#2f5749] hover:bg-[#2f5749]/10'}`}>
+                          <Play className="h-3.5 w-3.5 fill-current" aria-hidden /> {anteprima === l.id ? 'In riproduzione' : 'Guarda gratis'}
                         </button>
                       )}
                     </li>

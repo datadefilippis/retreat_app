@@ -147,6 +147,7 @@ const ReservationConfirmationPage = lazy(() => import("./features/storefront/Res
 const ProductLandingPage = lazy(() => import("./features/storefront/ProductLandingPage"));   // SEO-E: fuori dal bundle iniziale
 const ProdottoLandingPage = lazy(() => import("./features/storefront/ProdottoLandingPage"));   // DP (6/10): la pagina del prodotto
 const CorsoLandingPage = lazy(() => import("./features/storefront/CorsoLandingPage"));         // AC3 (7/10): la pagina del corso
+const CorsiDirectoryPage = lazy(() => import("./features/storefront/CorsiDirectoryPage"));     // RF (8/10): la directory dei corsi
 const ReservationLandingPage = lazy(() => import("./features/storefront/ReservationLandingPage"));   // SEO-E: fuori dal bundle iniziale
 const PhysicalLandingPage = lazy(() => import("./features/storefront/PhysicalLandingPage"));   // SEO-E: fuori dal bundle iniziale
 const DigitalLandingPage = lazy(() => import("./features/storefront/DigitalLandingPage"));   // SEO-E: fuori dal bundle iniziale
@@ -764,6 +765,9 @@ function AppRoutes() {
         <PublicStorefrontShell showFloatingSwitcher={false}><CorsoLandingPage /></PublicStorefrontShell>
       } />
       <Route path="/co/:org_slug/:product_slug" element={<RedirectCoLegacy />} />
+      {/* RF (8/10/2026): la directory dei corsi online, con la categoria nel percorso */}
+      <Route path="/corsi" element={<CorsiDirectoryPage />} />
+      <Route path="/corsi/:categoria" element={<CorsiDirectoryPage />} />
       {/* Onda 16 Fase 5: post-confirmation reservation landing (token-based) */}
       <Route path="/rsv/:token" element={<ReservationConfirmationPage />} />
       {/* Customer Portal legacy — PS4: UN SOLO login utente.

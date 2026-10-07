@@ -67,6 +67,8 @@ export const storefrontAPI = {
   // AC3 (7/10/2026): la pagina di un corso e le anteprime gratuite (trailer o lezione)
   getCorsoLanding: (orgSlug, slug) =>
     customerApi.get(`/api/public/corso/${orgSlug}/${slug}`),
+  // RF (8/10/2026): la directory dei corsi online, con i filtri
+  getCorsiDirectory: (params = {}) => customerApi.get('/api/public/corsi', { params }),
   anteprimaCorsoPlayUrl: (orgSlug, slug, lessonId) =>
     customerApi.post(`/api/public/corso/${orgSlug}/${slug}/anteprima/${lessonId}/play-url`),
 

@@ -636,7 +636,7 @@ async def _meta_brand_page(slug: str) -> Optional[dict]:
     tipi = {"chi-siamo": "AboutPage", "manifesto": "Article",
             "meditazioni": "CollectionPage", "newsletter": "WebPage",
             "entra-nella-rete": "WebPage", "costi": "WebPage",
-            "cerca-ritiro": "WebPage", "esperienze": "CollectionPage",
+            "cerca-ritiro": "WebPage", "esperienze": "CollectionPage", "corsi": "CollectionPage",
             "aziende": "WebPage"}
     jsonld = []
     if slug in tipi:
@@ -2316,6 +2316,40 @@ async def _meta_esperienze(categoria: Optional[str] = None,
     }
 
 
+async def _meta_corsi(categoria: Optional[str] = None) -> dict:
+    """RF (8/10/2026) — la directory dei corsi online (/corsi, /corsi/{cat}).
+    Come /esperienze: noindex finche' e' vuota, si accende da sola al primo
+    corso pubblicato. La categoria, se c'e', entra nel titolo."""
+    base = _base_url()
+    canonical = f"{base}/corsi" + (f"/{categoria}" if categoria else "")
+    quanti = 0
+    etichetta = None
+    try:
+        from routers.public import directory_corsi
+        d = await directory_corsi(categoria=categoria)
+        quanti = d.total
+        etichetta = next((c["label"] for c in d.categorie if c["slug"] == categoria), None) if categoria else None
+    except Exception:   # noqa: BLE001
+        quanti = 0
+    tema = f" di {etichetta}" if etichetta else ""
+    corpo = (f"<div><h1>Corsi online{tema}</h1>"
+             "<p>I corsi online dei professionisti della rete Aurya: video lezioni, "
+             "testi e materiali da seguire dal tuo account, quando vuoi, con "
+             "un'anteprima gratuita prima di comprare.</p>"
+             + ("" if quanti else "<p>I primi corsi stanno arrivando. Intanto puoi conoscere i professionisti della rete.</p>")
+             + '<p><a href="/operatori">I professionisti</a> · <a href="/esperienze">Le esperienze</a></p></div>')
+    return {
+        "title": (f"Corsi online{tema} | Aurya" if etichetta else "Corsi online di benessere e pratiche olistiche | Aurya"),
+        "description": ("I corsi online dei professionisti della rete Aurya: video lezioni "
+                        "da seguire dal tuo account, con un'anteprima gratuita prima di comprare."),
+        "canonical": canonical,
+        "hreflang": _hub_hreflang(canonical),
+        "image": f"{base}/media/hero-destination.webp",
+        "content_html": corpo,
+        "noindex": quanti == 0,
+    }
+
+
 async def _meta_frequenza(slug: str) -> Optional[dict]:
     """RS (26/8) — LA MEDITAZIONE PUBBLICA parlava di ritiri.
 
@@ -2820,6 +2854,8 @@ async def resolve_meta(path: str) -> Optional[dict]:
         return await _meta_prodotto(parts[1], parts[2])
     if head == "corso" and len(parts) >= 3:         # AC3 (7/10/2026): la pagina del corso
         return await _meta_corso(parts[1], parts[2])
+    if head == "corsi":                              # RF (8/10/2026): la directory dei corsi
+        return await _meta_corsi(parts[1] if len(parts) > 1 else None)
     if head == "operatori":
         # SEO-B (14/9 sera): /operatori/{disciplina|regione}[/{regione}]
         if len(parts) > 3:

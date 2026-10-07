@@ -156,6 +156,9 @@ class CourseBase(BaseModel):
     cover_image_url: Optional[str] = Field(default=None, max_length=2048)
     instructor_name: Optional[str] = Field(default=None, max_length=255)
     instructor_bio: Optional[str] = Field(default=None, max_length=4000)
+    # RF (8/10/2026) — la CATEGORIA del corso: una famiglia del registro delle
+    # discipline (corpo, mente, energia…), per la directory /corsi e i filtri.
+    categoria: Optional[str] = Field(default=None, max_length=40)
     access_policy: CourseAccessPolicy = CourseAccessPolicy.LIFETIME
     # Required when access_policy = EXPIRING. Validated below.
     access_expiry_days: Optional[int] = Field(default=None, ge=1, le=3650)

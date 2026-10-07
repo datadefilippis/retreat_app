@@ -113,7 +113,7 @@ export default function AccademiaPage() {
                     </div>
                     <p className="mt-0.5 truncate text-xs text-gray-500">
                       {c.lezioni_pronte}/{c.lezioni_count} lezion{c.lezioni_count === 1 ? 'e' : 'i'} pront{c.lezioni_pronte === 1 ? 'a' : 'e'}
-                      {c.durata_totale_seconds ? ` · ${fmtDurata(c.durata_totale_seconds)}` : ''} · {c.access_etichetta}
+                      {c.durata_totale_seconds ? ` · ${fmtDurata(c.durata_totale_seconds)}` : ''} · {c.access_etichetta}{c.categoria_label ? ` · ${c.categoria_label}` : ''}
                     </p>
                     <div className="mt-2 flex items-baseline gap-3">
                       <span className="text-base font-bold text-[#2f5749]">{c.unit_price != null ? fmtEuro(c.unit_price) : 'Senza prezzo'}</span>

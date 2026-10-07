@@ -195,6 +195,13 @@ async def build_core() -> str:
             from services.seo_listing import listable_retreats
             if await listable_retreats():
                 urls.append(_url(f"{base}/esperienze", priority="0.9"))   # RE (10/9): la pagina vera
+            # RF (8/10/2026): la directory dei corsi, solo quando ha almeno un corso
+            try:
+                from routers.public import directory_corsi
+                if (await directory_corsi()).total:
+                    urls.append(_url(f"{base}/corsi", priority="0.8"))
+            except Exception:   # noqa: BLE001
+                pass
             # RS (26/8) — LE MEDITAZIONI PUBBLICATE. Sono il link che
             # l'operatore condivide coi suoi clienti, e non stavano in
             # nessuna sitemap: trovate insieme alla loro pagina muta,

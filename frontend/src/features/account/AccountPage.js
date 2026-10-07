@@ -11,7 +11,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
   Loader2, Calendar, MapPin, Ticket, LogOut, CreditCard, ChevronRight,
-  Clock, BookOpen,
+  Clock, BookOpen, GraduationCap, FileDown, Compass, UserCircle, Sparkles, Briefcase,
 } from 'lucide-react';
 import platformApi, { PLATFORM_TOKEN_KEY } from '../../api/platformClient';
 // FQ3 — sezione preferiti meditazioni: componente isolato del modulo
@@ -311,10 +311,11 @@ export default function AccountPage() {
     <MarketplaceShell>
     <div className="min-h-screen bg-gray-50">
       <header className="bg-gradient-sidebar text-white">
-        <div className="max-w-2xl mx-auto px-4 py-6 flex items-center justify-between">
+        <div className="max-w-3xl mx-auto px-4 py-6 flex items-center justify-between">
           <div>
+            <p className="text-[11px] font-semibold uppercase tracking-wider text-white/60">Il tuo account Aurya</p>
             <h1 className="text-xl font-bold">
-              {t('landings:account.title', { defaultValue: 'Le mie prenotazioni' })}
+              {me.name ? `Ciao ${String(me.name).split(' ')[0]}` : t('landings:account.title', { defaultValue: 'Le mie prenotazioni' })}
             </h1>
             <p className="text-white/70 text-sm">{me.email}</p>
           </div>
@@ -325,7 +326,30 @@ export default function AccountPage() {
         </div>
       </header>
 
-      <main className="max-w-2xl mx-auto px-4 py-6 space-y-6">
+      {/* RF (8/10/2026, founder): l'HUB. Entri e vedi subito tutto quello che
+          puoi fare su Aurya, una tessera per cosa, anche quando e' vuota: un
+          tocco porta alla sezione, senza scorrere alla cieca. */}
+      <nav aria-label="Il tuo spazio" className="max-w-3xl mx-auto px-4 -mt-0.5 pt-4" data-testid="account-hub">
+        <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-6">
+          {[
+            { href: '#esperienze', icon: Calendar, label: 'Esperienze', stato: upcoming.length ? `${upcoming.length} in programma` : (past.length ? `${past.length} passat${past.length === 1 ? 'a' : 'e'}` : 'Nessuna ancora'), testid: 'hub-esperienze' },
+            { href: '#corsi', icon: GraduationCap, label: 'Corsi', stato: corsi === null ? '…' : corsi.length ? `${corsi.length} cors${corsi.length === 1 ? 'o' : 'i'}` : 'Nessuno ancora', testid: 'hub-corsi' },
+            { href: '#file', icon: FileDown, label: 'File', stato: files === null ? '…' : files.length ? `${files.length} file` : 'Nessuno ancora', testid: 'hub-file' },
+            { href: '#guide', icon: BookOpen, label: 'Guide', stato: me.newsletter_subscriber ? 'Sbloccate' : me.newsletter_state === 'pending' ? 'Manca un clic' : 'Da sbloccare', testid: 'hub-guide' },
+            { href: '#meditazioni', icon: Sparkles, label: 'Meditazioni', stato: 'I tuoi preferiti', testid: 'hub-meditazioni' },
+            { href: me.operator_linked ? '#professionista' : '#impostazioni', icon: me.operator_linked ? Briefcase : UserCircle, label: me.operator_linked ? 'Gestionale' : 'Account', stato: me.operator_linked ? 'Il tuo spazio pro' : 'Password e dati', testid: 'hub-account' },
+          ].map(({ href, icon: Icon, label, stato, testid }) => (
+            <a key={href} href={href} data-testid={testid}
+               className="group rounded-2xl border border-gray-200 bg-white p-3 transition hover:border-[#376254]/50 hover:shadow-sm">
+              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#2f5749]/10 text-[#2f5749]"><Icon className="h-4 w-4" aria-hidden /></span>
+              <span className="mt-2 block text-sm font-semibold text-gray-900">{label}</span>
+              <span className="block text-[11px] leading-snug text-gray-500">{stato}</span>
+            </a>
+          ))}
+        </div>
+      </nav>
+
+      <main className="max-w-3xl mx-auto px-4 py-6 space-y-8">
         {dueRows.length > 0 && (
           <section>
             <h2 className="text-sm font-semibold text-amber-800 mb-2">
@@ -348,20 +372,26 @@ export default function AccountPage() {
           </section>
         )}
 
-        <AccountFavorites />
+        <div id="meditazioni" className="scroll-mt-24"><AccountFavorites /></div>
 
-        <section>
-          <h2 className="text-sm font-semibold text-gray-900 mb-2">
+        <section id="esperienze" className="scroll-mt-24" data-testid="account-esperienze">
+          <h2 className="text-sm font-semibold text-gray-900 mb-2 flex items-center gap-2">
+            <Calendar className="h-4 w-4 text-[#2f5749]" aria-hidden />
             {t('landings:account.upcomingTitle', { defaultValue: 'Prossimi ritiri' })}
           </h2>
           {upcoming.length === 0 ? (
-            <div className="rounded-2xl border border-gray-200 bg-white p-5 text-center">
+            <div className="rounded-2xl border border-dashed border-gray-300 bg-white p-5 text-center">
               <p className="text-sm text-gray-600">
                 {t('landings:account.noUpcoming', { defaultValue: 'Nessun ritiro in programma.' })}
               </p>
               {!isNetwork && (
                 <Link to="/" className="text-sm font-medium text-primary hover:underline">
                   {t('landings:account.browse', { defaultValue: 'Scopri i prossimi ritiri →' })}
+                </Link>
+              )}
+              {isNetwork && (
+                <Link to="/esperienze" className="mt-2 inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline">
+                  <Compass className="h-4 w-4" aria-hidden /> Scopri ritiri ed esperienze →
                 </Link>
               )}
             </div>
@@ -387,9 +417,16 @@ export default function AccountPage() {
             gli iscritti confermati alla lettera; per gli altri, l'invito
             a iscriversi (/newsletter). */}
         {/* AC2 (7/10/2026) — I miei corsi: card con progresso e «Continua» */}
-        {Array.isArray(corsi) && corsi.length > 0 && (
-          <section className="mb-8" data-testid="account-corsi">
-            <h2 className="text-sm font-semibold text-gray-900 mb-2">I miei corsi</h2>
+        <section id="corsi" className="scroll-mt-24" data-testid="account-corsi">
+          <h2 className="text-sm font-semibold text-gray-900 mb-2 flex items-center gap-2"><GraduationCap className="h-4 w-4 text-[#2f5749]" aria-hidden /> I miei corsi</h2>
+          {corsi === null ? (
+            <div className="rounded-2xl border border-gray-200 bg-white p-5 flex justify-center"><Loader2 className="h-5 w-5 animate-spin text-primary" /></div>
+          ) : corsi.length === 0 ? (
+            <div className="rounded-2xl border border-dashed border-gray-300 bg-white p-5 text-center" data-testid="account-corsi-vuoto">
+              <p className="text-sm text-gray-600">Nessun corso ancora. I corsi online che compri dai professionisti li segui da qui, lezione dopo lezione.</p>
+              <Link to="/corsi" className="mt-2 inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline"><Compass className="h-4 w-4" aria-hidden /> Esplora i corsi online →</Link>
+            </div>
+          ) : (
             <div className="grid gap-3 sm:grid-cols-2">
               {corsi.map(({ iscrizione, corso, operatore, progress_stats, prossima_lezione }) => {
                 const terminato = iscrizione.stato === 'scaduto' || iscrizione.stato === 'revocato';
@@ -419,13 +456,20 @@ export default function AccountPage() {
                 );
               })}
             </div>
-          </section>
-        )}
+          )}
+        </section>
 
         {/* P1 (6/10/2026) — I miei file: i prodotti digitali comprati */}
-        {Array.isArray(files) && files.length > 0 && (
-          <section className="mb-8" data-testid="account-file">
-            <h2 className="text-sm font-semibold text-gray-900 mb-2">I miei file</h2>
+        <section id="file" className="scroll-mt-24" data-testid="account-file">
+          <h2 className="text-sm font-semibold text-gray-900 mb-2 flex items-center gap-2"><FileDown className="h-4 w-4 text-[#2f5749]" aria-hidden /> I miei file</h2>
+          {files === null ? (
+            <div className="rounded-2xl border border-gray-200 bg-white p-5 flex justify-center"><Loader2 className="h-5 w-5 animate-spin text-primary" /></div>
+          ) : files.length === 0 ? (
+            <div className="rounded-2xl border border-dashed border-gray-300 bg-white p-5 text-center" data-testid="account-file-vuoto">
+              <p className="text-sm text-gray-600">Nessun file ancora. Guide, audio e materiali digitali comprati dai professionisti restano qui, scaricabili quando vuoi.</p>
+              <Link to="/operatori" className="mt-2 inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline"><Compass className="h-4 w-4" aria-hidden /> Scopri i professionisti →</Link>
+            </div>
+          ) : (
             <div className="space-y-2">
               {files.map(f => (
                 <div key={f.id} className="rounded-2xl border border-gray-200 bg-white p-4 flex flex-col sm:flex-row sm:items-center gap-3" data-testid="account-file-riga">
@@ -445,11 +489,12 @@ export default function AccountPage() {
                 </div>
               ))}
             </div>
-          </section>
-        )}
+          )}
+        </section>
 
-        <section data-testid="account-guides">
-          <h2 className="text-sm font-semibold text-gray-900 mb-2">
+        <section id="guide" className="scroll-mt-24" data-testid="account-guides">
+          <h2 className="text-sm font-semibold text-gray-900 mb-2 flex items-center gap-2">
+            <BookOpen className="h-4 w-4 text-[#2f5749]" aria-hidden />
             {t('landings:account.guidesTitle', { defaultValue: 'Guide e materiale' })}
           </h2>
           {me.newsletter_subscriber ? (
@@ -523,7 +568,7 @@ export default function AccountPage() {
             dalla registrazione professionale — che, avendo la stessa
             email verificata, al termine collega i due cappelli da sola. */}
         {!me.operator_linked && (
-          <section className="mb-8" data-testid="account-become-pro">
+          <section id="professionista" className="scroll-mt-24" data-testid="account-become-pro">
             <h2 className="text-sm font-semibold text-gray-900 mb-2">
               {t('landings:account.becomeProTitle', { defaultValue: 'Sei un professionista del benessere?' })}
             </h2>
@@ -542,7 +587,7 @@ export default function AccountPage() {
         {/* ID-bis (20/8) — il cappello professionista: chi e' anche
             operatore ritrova il gestionale da qui, senza cercarlo */}
         {me.operator_linked && (
-          <section className="mb-8" data-testid="account-operator-hat">
+          <section id="professionista" className="scroll-mt-24" data-testid="account-operator-hat">
             <h2 className="text-sm font-semibold text-gray-900 mb-2">
               {t('landings:account.proHatTitle', { defaultValue: 'Il tuo spazio professionale' })}
             </h2>
@@ -624,7 +669,7 @@ function AccountSettingsSection({ me, authHeaders, onLogout, t }) {
   };
 
   return (
-    <section data-testid="account-settings">
+    <section id="impostazioni" className="scroll-mt-24" data-testid="account-settings">
       <h2 className="text-sm font-semibold text-gray-900 mb-2">
         {t('landings:account.settingsTitle', { defaultValue: 'Il tuo account' })}
       </h2>
