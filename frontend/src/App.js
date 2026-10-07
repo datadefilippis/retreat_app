@@ -396,11 +396,21 @@ const ANCHOR_GIVE_UP_MS = 2000;
 
 function ScrollToTop() {
   const { pathname, hash } = useLocation();
+  // RF-ter (8/10/2026, founder: «clicco Comincia e atterro nel footer»):
+  // un link con un'ancora che NON e' un elemento (es. #lesson-<id>, che il
+  // player usa solo per scegliere la lezione) lasciava la pagina nuova allo
+  // scroll della pagina vecchia. Ora al CAMBIO di pagina si torna sempre in
+  // cima prima di cercare l'ancora; se cambia solo l'hash sulla stessa
+  // pagina (schede del profilo, #listino) non si tocca nulla.
+  const ultimoPathname = React.useRef(null);
   React.useEffect(() => {
+    const paginaNuova = ultimoPathname.current !== pathname;
+    ultimoPathname.current = pathname;
     if (!hash) {
       window.scrollTo(0, 0);
       return undefined;
     }
+    if (paginaNuova) window.scrollTo(0, 0);
     let timer = 0;
     let waited = 0;
     const seek = () => {

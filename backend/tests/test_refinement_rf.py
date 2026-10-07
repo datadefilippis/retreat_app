@@ -61,6 +61,20 @@ class TestCategoriaEDirectory:
         assert "const navItems = isNetwork ? NETWORK_NAV_ITEMS : NAV_ITEMS;" in shell
 
 
+class TestScrollAlCambioPagina:
+    def test_in_cima_anche_con_ancora(self):
+        """RF-ter (8/10): «clicco Comincia e atterro nel footer» — un link con
+        un'ancora che non e' un elemento (#lesson-<id>) lasciava lo scroll
+        della pagina vecchia. Al cambio di pagina si torna in cima SEMPRE;
+        se cambia solo l'hash sulla stessa pagina non si tocca nulla."""
+        app = (FRONTEND / "App.js").read_text()
+        blocco = app[app.index("function ScrollToTop()"):]
+        blocco = blocco[:blocco.index("return null;")]
+        assert "const paginaNuova = ultimoPathname.current !== pathname;" in blocco
+        assert "if (paginaNuova) window.scrollTo(0, 0);" in blocco
+        assert blocco.index("if (paginaNuova) window.scrollTo(0, 0);") < blocco.index("scrollIntoView")
+
+
 class TestLandingProfiloAccount:
     def test_anteprima_sempre_nella_copertina(self):
         p = (FRONTEND / "features" / "storefront" / "CorsoLandingPage.js").read_text()
