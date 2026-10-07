@@ -31,6 +31,7 @@ confronto a tempo costante.
 """
 from __future__ import annotations
 
+import base64
 import hashlib
 import hmac
 import logging
@@ -182,13 +183,22 @@ async def assicura_libreria(org_id: str) -> Dict[str, Any]:
             except Exception as exc:  # noqa: BLE001
                 logger.warning("bunny gestito: referrer %s non aggiunto alla libreria %s: %s", dominio, library_id, exc)
         hostname = None
+        zone_key = None
+        pull_zone_id = str(creata.get("PullZoneId") or "") or None
         try:
-            if creata.get("PullZoneId"):
-                pz = await acc.get_pullzone(str(creata["PullZoneId"]))
+            if pull_zone_id:
+                # la PROTEZIONE VERA: token auth sul pull zone (ZoneSecurity). Provato
+                # il 7/10: con questo acceso playlist e miniature rispondono 403
+                # senza firma anche col referrer giusto; la chiave del pull zone e'
+                # la `token_security_key` che firma embed e file CDN.
+                await acc.update_pullzone(pull_zone_id, {"ZoneSecurityEnabled": True,
+                                                         "ZoneSecurityIncludeHashRemoteIP": False})
+                pz = await acc.get_pullzone(pull_zone_id)
                 nomi = [h.get("Value") for h in (pz.get("Hostnames") or []) if h.get("Value")]
                 hostname = nomi[0] if nomi else None
+                zone_key = pz.get("ZoneSecurityKey") or None
         except Exception as exc:  # noqa: BLE001
-            logger.warning("bunny gestito: hostname del pull zone non letto: %s", exc)
+            logger.warning("bunny gestito: pull zone non configurato: %s", exc)
     librerie = (org.get("integrations") or {}).get("bunny_libraries") or []
     now = datetime.now(timezone.utc).isoformat()
     lib = {
@@ -198,7 +208,8 @@ async def assicura_libreria(org_id: str) -> Dict[str, Any]:
         "library_id": library_id,
         "api_key": creata.get("ApiKey") or "",
         "read_only_api_key": creata.get("ReadOnlyApiKey") or None,
-        "token_security_key": None,      # con PlayerTokenAuthenticationEnabled la firma usa l'ApiKey
+        "token_security_key": zone_key,  # la chiave del pull zone: firma embed e file CDN
+        "pull_zone_id": pull_zone_id,
         "cdn_hostname": hostname,
         "watermark_enabled": True,
         "managed": True,
@@ -251,12 +262,38 @@ def stato_da_oggetto_video(status: Any) -> str:
 
 
 def url_thumbnail(lib: Dict[str, Any], video: Dict[str, Any]) -> Optional[str]:
+    """L'URL NUDO della miniatura (si salva questo); con il token auth della
+    libreria si serve solo firmato: vedi `firma_url_cdn` al momento della lettura."""
     host = lib.get("cdn_hostname")
     nome = video.get("thumbnailFileName")
     guid = video.get("guid")
     if host and nome and guid:
         return f"https://{host}/{guid}/{nome}"
     return None
+
+
+THUMB_TTL_SECONDS = 24 * 3600
+
+
+def firma_url_cdn(lib: Dict[str, Any], url: Optional[str], video_guid: str = "", ttl: int = THUMB_TTL_SECONDS) -> Optional[str]:
+    """Firma di un FILE del CDN (miniatura, playlist) con il token auth del
+    pull zone. Provato il 7/10: lo schema e' quello del CDN Bunny —
+    token = base64url(sha256_raw(zone_key + path + expires)) — NON quello
+    dell'embed (che e' sha256_hex(key + guid + expires)). Senza chiave del
+    pull zone l'URL resta nudo (libreria senza ZoneSecurity: protegge il
+    referrer). La firma vive 24 ore e si rifa' a ogni lettura."""
+    if not url:
+        return url
+    chiave = lib.get("token_security_key")
+    if not chiave:
+        return url
+    from urllib.parse import urlsplit
+    path = urlsplit(url).path or "/"
+    expire = int(time.time()) + int(ttl)
+    raw = hashlib.sha256(f"{chiave}{path}{expire}".encode("utf-8")).digest()
+    token = base64.urlsafe_b64encode(raw).decode("ascii").rstrip("=")
+    sep = "&" if "?" in url else "?"
+    return f"{url}{sep}token={token}&expires={expire}"
 
 
 async def aggiorna_quota(org_id: str, lib_id: str, delta_bytes: int, delta_count: int) -> None:
@@ -278,5 +315,5 @@ __all__: List[str] = [
     "TUS_ENDPOINT", "TUS_TTL_SECONDS", "RISOLUZIONI", "IMPOSTAZIONI_LIBRERIA", "STATI_VIDEO",
     "chiave_account", "attivo", "url_webhook", "firma_tus", "credenziali_tus", "firma_webhook_valida",
     "libreria_gestita_di", "assicura_libreria", "org_per_libreria", "libreria_per_id_bunny",
-    "stato_da_bunny", "stato_da_oggetto_video", "url_thumbnail", "aggiorna_quota", "gb",
+    "stato_da_bunny", "stato_da_oggetto_video", "url_thumbnail", "firma_url_cdn", "THUMB_TTL_SECONDS", "aggiorna_quota", "gb",
 ]

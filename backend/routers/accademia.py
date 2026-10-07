@@ -198,7 +198,19 @@ def _ragioni_pubblicazione(course_doc: dict, prodotto: dict, pre: Dict[str, Any]
     return ragioni
 
 
-def _riga_lezione(l: dict) -> dict:
+def _firmatore(org: Optional[dict]):
+    """Chiude sulle librerie dell'org: firma le miniature al momento della
+    lettura (token auth: senza firma il CDN risponde 403)."""
+    from services.bunny import gestito
+    librerie = {x.get("id"): x for x in ((org or {}).get("integrations") or {}).get("bunny_libraries") or []}
+
+    def firma(v: dict) -> Optional[str]:
+        lib = librerie.get((v or {}).get("library_id"))
+        return gestito.firma_url_cdn(lib, v.get("thumbnail_url"), v.get("guid")) if lib else v.get("thumbnail_url")
+    return firma
+
+
+def _riga_lezione(l: dict, firma=None) -> dict:
     v = l.get("video") or {}
     return {
         "id": l["id"], "order": l.get("order", 0), "title": l.get("title"), "description": l.get("description"),
@@ -207,13 +219,14 @@ def _riga_lezione(l: dict) -> dict:
         "duration_seconds": int(l.get("duration_seconds") or v.get("duration_seconds") or 0),
         "pronta": _lezione_pronta(l),
         "video": ({"guid": v.get("guid"), "stato": v.get("stato"), "size_bytes": v.get("size_bytes"),
-                   "thumbnail_url": v.get("thumbnail_url"), "duration_seconds": v.get("duration_seconds"),
+                   "thumbnail_url": (firma(v) if firma else v.get("thumbnail_url")), "duration_seconds": v.get("duration_seconds"),
                    "uploaded_at": v.get("uploaded_at")} if v else None),
         "resources": l.get("resources") or [],
     }
 
 
-async def _riga(course_doc: dict, prodotto: dict, pre: Dict[str, Any], studenti: int, public_slug: Optional[str]) -> dict:
+async def _riga(course_doc: dict, prodotto: dict, pre: Dict[str, Any], studenti: int, public_slug: Optional[str],
+                firma=None) -> dict:
     lezioni = _lezioni(course_doc)
     from services.bunny import gestito
     return {
@@ -229,7 +242,7 @@ async def _riga(course_doc: dict, prodotto: dict, pre: Dict[str, Any], studenti:
         "lezioni_count": len(lezioni), "lezioni_pronte": sum(1 for l in lezioni if _lezione_pronta(l)),
         "durata_totale_seconds": sum(int(l.get("duration_seconds") or 0) for l in lezioni),
         "moduli": [{"id": m["id"], "order": m.get("order", 0), "title": m.get("title"), "description": m.get("description"),
-                    "lezioni": [_riga_lezione(l) for l in sorted(m.get("lessons") or [], key=lambda x: x.get("order", 0))]}
+                    "lezioni": [_riga_lezione(l, firma) for l in sorted(m.get("lessons") or [], key=lambda x: x.get("order", 0))]}
                    for m in sorted(course_doc.get("modules") or [], key=lambda x: x.get("order", 0))],
         "studenti": studenti,
         "ragioni_pubblicazione": _ragioni_pubblicazione(course_doc, prodotto, pre),
@@ -287,12 +300,18 @@ async def _salva_moduli(course_doc: dict, org_id: str) -> dict:
     return await _mio_corso(course_doc["id"], org_id)
 
 
+async def _firma_org(org_id: str):
+    from database import organizations_collection
+    org = await organizations_collection.find_one({"id": org_id}, {"_id": 0, "integrations.bunny_libraries": 1})
+    return _firmatore(org)
+
+
 async def _risposta(course_doc: dict, org_id: str) -> dict:
     from routers.prodotti import _prerequisiti
     pre = await _prerequisiti(org_id)
     prodotto = await _prodotto_di(course_doc, org_id)
     studenti = await _studenti_per_corso(org_id, [course_doc["id"]])
-    return await _riga(course_doc, prodotto, pre, studenti.get(course_doc["id"], 0), pre.get("public_slug"))
+    return await _riga(course_doc, prodotto, pre, studenti.get(course_doc["id"], 0), pre.get("public_slug"), await _firma_org(org_id))
 
 
 # ── il corso ─────────────────────────────────────────────────────────────
@@ -310,10 +329,11 @@ async def lista_corsi(current_user: dict = Depends(get_verified_user), _=Depends
         {"organization_id": org_id, "item_type": "course", "is_active": {"$ne": False},
          "metadata.course_id": {"$in": [c["id"] for c in corsi]}}, {"_id": 0})}
     studenti = await _studenti_per_corso(org_id, [c["id"] for c in corsi])
+    firma = await _firma_org(org_id)
     righe = []
     for c in corsi:
         prodotto = prodotti.get(c["id"]) or await _prodotto_di(c, org_id)
-        righe.append(await _riga(c, prodotto, pre, studenti.get(c["id"], 0), pre.get("public_slug")))
+        righe.append(await _riga(c, prodotto, pre, studenti.get(c["id"], 0), pre.get("public_slug"), firma))
     return {
         "corsi": righe, "total": len(righe),
         "prerequisiti": pre, "public_slug": pre.get("public_slug"),
@@ -707,7 +727,7 @@ async def stato_video(course_id: str, lesson_id: str, current_user: dict = Depen
                     m, l = _trova_lezione(doc, lesson_id)
             except Exception as exc:  # noqa: BLE001
                 logger.info("accademia: stato video %s non riletto: %s", v.get("guid"), exc)
-    return _riga_lezione(l)
+    return _riga_lezione(l, await _firma_org(org_id))
 
 
 @router.delete("/{course_id}/lezioni/{lesson_id}/video")

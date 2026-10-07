@@ -205,3 +205,10 @@ class BunnyAccountClient:
         response = await self._client.get(f"/pullzone/{pullzone_id}")
         response.raise_for_status()
         return response.json()
+
+    async def update_pullzone(self, pullzone_id: str, settings: Dict[str, Any]) -> None:
+        """POST /pullzone/{id}: qui si accende la VERA protezione a token del
+        CDN (ZoneSecurityEnabled) — provato il 7/10: il flag della libreria
+        (PlayerTokenAuthenticationEnabled) da solo non blocca la playlist."""
+        response = await self._client.post(f"/pullzone/{pullzone_id}", json=settings)
+        response.raise_for_status()

@@ -65,6 +65,26 @@ class TestBunnyGestito:
         os.environ.pop("BUNNY_ACCOUNT_API_KEY", None)
         assert chiave_account() is None and attivo() is False
 
+    def test_file_cdn_firmati_con_lo_schema_del_pull_zone(self):
+        """Provato il 7/10: con ZoneSecurity acceso playlist e miniature
+        rispondono 403 senza firma (anche col referrer giusto) e 200 con
+        token = base64url(sha256_raw(zone_key + path + expires))."""
+        import base64
+        from services.bunny.gestito import firma_url_cdn
+        lib = {"api_key": "k", "token_security_key": "zona"}
+        u = firma_url_cdn(lib, "https://vz-x.b-cdn.net/g/thumbnail.jpg", "g", ttl=60)
+        assert u.startswith("https://vz-x.b-cdn.net/g/thumbnail.jpg?token=") and "&expires=" in u
+        tok = u.split("token=")[1].split("&")[0]; exp = u.split("expires=")[1]
+        atteso = base64.urlsafe_b64encode(hashlib.sha256(("zona" + "/g/thumbnail.jpg" + exp).encode()).digest()).decode().rstrip("=")
+        assert tok == atteso
+        # senza chiave del pull zone l'URL resta nudo (protegge il referrer)
+        assert firma_url_cdn({"api_key": "k"}, "https://vz-x.b-cdn.net/g/thumbnail.jpg", "g") == "https://vz-x.b-cdn.net/g/thumbnail.jpg"
+        assert firma_url_cdn(lib, None, "g") is None
+        g = (BACKEND / "services" / "bunny" / "gestito.py").read_text()
+        assert '{"ZoneSecurityEnabled": True' in g and '"token_security_key": zone_key' in g
+        acc = (BACKEND / "routers" / "accademia.py").read_text()
+        assert "def _firmatore(org" in acc and "gestito.firma_url_cdn(lib, v.get(\"thumbnail_url\"), v.get(\"guid\"))" in acc
+
     def test_client_esteso(self):
         src = (BACKEND / "services" / "bunny" / "client.py").read_text()
         for n in ("async def create_video", "async def get_video", "async def delete_video",
