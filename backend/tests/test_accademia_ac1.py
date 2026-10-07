@@ -45,6 +45,12 @@ class TestBunnyGestito:
         assert stato_da_bunny(3) == "pronto" and stato_da_bunny(4) == "pronto"
         assert stato_da_bunny(5) == "errore" and stato_da_bunny(8) == "errore"
         assert stato_da_bunny(0) == "codifica" and stato_da_bunny("x") == "codifica" and stato_da_bunny(6) == "caricamento"
+        # l'OGGETTO video ha un altro vocabolario: 4 = finito, 3 = transcodifica (provato il 7/10)
+        from services.bunny.gestito import stato_da_oggetto_video
+        assert stato_da_oggetto_video(4) == "pronto" and stato_da_oggetto_video(3) == "codifica"
+        assert stato_da_oggetto_video(2) == "codifica" and stato_da_oggetto_video(5) == "errore" and stato_da_oggetto_video(6) == "errore"
+        acc = (BACKEND / "routers" / "accademia.py").read_text()
+        assert 'gestito.stato_da_oggetto_video(remoto.get("status"))' in acc
         # le leve sui costi: niente 240p/1440p/2160p, niente originali, niente copie extra
         assert RISOLUZIONI == "360p,720p,1080p"
         assert IMPOSTAZIONI_LIBRERIA["EnabledResolutions"] == RISOLUZIONI

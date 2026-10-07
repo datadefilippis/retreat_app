@@ -700,7 +700,7 @@ async def stato_video(course_id: str, lesson_id: str, current_user: dict = Depen
             try:
                 async with BunnyClient(lib["api_key"]) as c:
                     remoto = await c.get_video(str(lib["library_id"]), v["guid"])
-                stato = gestito.stato_da_bunny(remoto.get("status"))
+                stato = gestito.stato_da_oggetto_video(remoto.get("status"))   # vocabolario dell'oggetto video, non del webhook
                 if stato != v.get("stato"):
                     await applica_evento(org_id, lib, v["guid"], stato)
                     doc = await _mio_corso(course_id, org_id)

@@ -57,12 +57,21 @@ IMPOSTAZIONI_LIBRERIA: Dict[str, Any] = {
     "AllowedReferrers": list(DOMINI_PLAYER),
 }
 
+# ATTENZIONE: due vocabolari diversi (provato il 7/10 sulla chiave vera).
+# Il WEBHOOK manda Status: 0 in coda, 1 elaborazione, 2 codifica, 3 FINITO,
+# 4 una risoluzione pronta (riproducibile), 5 errore, 6-8 upload firmato.
 STATI_VIDEO = {
-    # dal webhook Bunny (Status) allo stato della lezione
     0: "codifica", 1: "codifica", 2: "codifica",
     3: "pronto", 4: "pronto",
     5: "errore",
     6: "caricamento", 7: "codifica", 8: "errore",
+}
+# L'OGGETTO VIDEO (GET /videos/{guid}) ha `status`: 0 creato, 1 caricato,
+# 2 elaborazione, 3 TRANSCODIFICA, 4 FINITO, 5 errore, 6 upload fallito,
+# 7-8 JIT. Qui «pronto» e' SOLO 4.
+STATI_OGGETTO_VIDEO = {
+    0: "caricamento", 1: "codifica", 2: "codifica", 3: "codifica",
+    4: "pronto", 5: "errore", 6: "errore", 7: "codifica", 8: "codifica",
 }
 
 
@@ -226,8 +235,17 @@ def libreria_per_id_bunny(org: Dict[str, Any], library_id: str) -> Optional[Dict
 
 
 def stato_da_bunny(status: Any) -> str:
+    """Dal `Status` del WEBHOOK allo stato della lezione."""
     try:
         return STATI_VIDEO.get(int(status), "codifica")
+    except (TypeError, ValueError):
+        return "codifica"
+
+
+def stato_da_oggetto_video(status: Any) -> str:
+    """Dal `status` dell'OGGETTO video (GET) allo stato della lezione."""
+    try:
+        return STATI_OGGETTO_VIDEO.get(int(status), "codifica")
     except (TypeError, ValueError):
         return "codifica"
 
@@ -260,5 +278,5 @@ __all__: List[str] = [
     "TUS_ENDPOINT", "TUS_TTL_SECONDS", "RISOLUZIONI", "IMPOSTAZIONI_LIBRERIA", "STATI_VIDEO",
     "chiave_account", "attivo", "url_webhook", "firma_tus", "credenziali_tus", "firma_webhook_valida",
     "libreria_gestita_di", "assicura_libreria", "org_per_libreria", "libreria_per_id_bunny",
-    "stato_da_bunny", "url_thumbnail", "aggiorna_quota", "gb",
+    "stato_da_bunny", "stato_da_oggetto_video", "url_thumbnail", "aggiorna_quota", "gb",
 ]
