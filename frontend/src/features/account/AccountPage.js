@@ -655,7 +655,7 @@ export default function AccountPage() {
       {/* RF-bis — la barra fissa in basso su telefono: le stesse voci delle
           tessere, la sezione in vista evidenziata; sparisce da desktop */}
       <nav aria-label="Sezioni del tuo account" data-testid="account-barra"
-           className="fixed inset-x-0 bottom-0 z-30 border-t border-gray-200 bg-white/95 backdrop-blur lg:hidden"
+           className="fixed inset-x-0 bottom-0 z-30 bg-gradient-to-r from-[#1f3a30] to-[#2f5749] text-white shadow-[0_-8px_24px_-12px_rgba(31,58,48,0.5)] lg:hidden"
            style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
         <ul className="mx-auto flex max-w-3xl justify-between px-1">
           {vociHub.map(({ id, icon: Icon, label, testid }) => {
@@ -663,8 +663,8 @@ export default function AccountPage() {
             return (
               <li key={id} className="min-w-0 flex-1">
                 <button type="button" onClick={() => vaiA(id)} aria-current={attiva ? 'true' : undefined} data-testid={`barra-${testid}`}
-                        className={`flex w-full flex-col items-center gap-0.5 px-1 pb-1.5 pt-2 text-[10px] font-medium leading-none ${attiva ? 'text-[#2f5749]' : 'text-gray-500'}`}>
-                  <span className={`flex h-7 w-7 items-center justify-center rounded-full transition ${attiva ? 'bg-[#2f5749]/12' : ''}`}><Icon className="h-4 w-4" aria-hidden /></span>
+                        className={`flex w-full flex-col items-center gap-0.5 px-1 pb-1.5 pt-2 text-[10px] font-medium leading-none transition ${attiva ? 'text-white' : 'text-white/60'}`}>
+                  <span className={`flex h-7 w-10 items-center justify-center rounded-full transition ${attiva ? 'bg-white/20 ring-1 ring-white/40' : ''}`}><Icon className="h-4 w-4" aria-hidden /></span>
                   <span className="truncate">{label}</span>
                 </button>
               </li>
