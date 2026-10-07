@@ -255,6 +255,20 @@ export function CheckoutSuccessPage() {
         {/* Consolidamento prodotti (6/10) — il file digitale e' GIA' nel suo
             account appena l'ordine e' confermato: dirlo qui, con la porta
             giusta, senza aspettare l'email. Solo se c'e' una riga digitale. */}
+        {/* AC4 (7/10/2026) — il corso e' GIA' nell'account appena l'ordine
+            e' confermato: la porta e' «I miei corsi». Solo con una riga corso. */}
+        {isConfirmed && (status?.item_types || []).includes('course') && (
+          <div className="mt-5 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-left space-y-2"
+               data-testid="checkout-corso-pronto">
+            <p className="text-sm text-gray-800">
+              <span className="font-semibold">Il tuo corso è pronto.</span>{' '}
+              Lo segui da «I miei corsi», nel tuo account Aurya, da qualunque telefono: riprendi da dove eri, lezione dopo lezione. Il link ti arriva anche per email.
+            </p>
+            <Link to="/account" className="block w-full text-center rounded-full bg-primary text-white px-5 py-2.5 text-sm font-bold hover:opacity-90">
+              Vai ai miei corsi
+            </Link>
+          </div>
+        )}
         {isConfirmed && (status?.item_types || []).includes('digital') && (
           <div className="mt-5 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-left space-y-2"
                data-testid="checkout-file-pronto">

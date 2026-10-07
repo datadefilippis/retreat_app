@@ -4686,13 +4686,30 @@ async def get_prodotto_landing(org_slug: str, slug: str):
     )
 
 
+async def _modulo_spento(org_id: str, flag: str) -> bool:
+    """AC4 (7/10/2026) — l'interruttore per org della regia (prodotti_spento /
+    accademia_spento) spegne anche il PUBBLICO: niente card sul profilo,
+    landing e anteprime 404, ordine rifiutato. Un operatore tagliato fuori
+    non deve continuare a vendere. Lettura in cache (feature_flag_service)."""
+    from services import feature_flag_service
+    try:
+        return await feature_flag_service.is_enabled(org_id, flag)
+    except Exception:  # noqa: BLE001 — in dubbio il pubblico resta aperto
+        return False
+
+
 async def _operator_corsi(org_id: str) -> list:
     """AC3 (7/10/2026) — i CORSI pubblicati di un'org per la sezione «Corsi»
     del profilo: card con copertina, prezzo, lezioni e durata; «Scopri di
     più» → /corso/{org}/{slug}, «Compra» in pagina con l'account Aurya.
-    Si lista solo se il corso esiste e ha almeno una lezione pronta."""
+    Si lista solo se il corso esiste e ha almeno una lezione pronta.
+    Lista vuota (→ profilo senza sezione, landing e anteprime 404) se la
+    regia ha spento l'Accademia per questa org (AC4)."""
     from database import products_collection, courses_collection
     from routers.accademia import _lezione_pronta
+    from services.feature_flag_service import FLAG_ACCADEMIA_SPENTO
+    if await _modulo_spento(org_id, FLAG_ACCADEMIA_SPENTO):
+        return []
     prods = await products_collection.find(
         {"organization_id": org_id, "item_type": "course", "is_published": True, "is_active": True,
          "transaction_mode": {"$in": [None, "direct"]}},
@@ -4820,8 +4837,12 @@ async def _operator_prodotti(org_id: str) -> list:
     """P1 (6/10/2026) — i PRODOTTI pubblicati di un'org (fisici e digitali)
     per la sezione «Prodotti» del profilo: card con tipo, prezzo, foto;
     l'acquisto avviene in pagina (InlineProdottoCheckout) con l'account
-    Aurya. Un digitale senza file non si lista (non sarebbe consegnabile)."""
+    Aurya. Un digitale senza file non si lista (non sarebbe consegnabile).
+    Lista vuota se la regia ha spento i Prodotti per questa org (AC4)."""
     from database import products_collection
+    from services.feature_flag_service import FLAG_PRODOTTI_SPENTO
+    if await _modulo_spento(org_id, FLAG_PRODOTTI_SPENTO):
+        return []
     rows = await products_collection.find(
         {"organization_id": org_id, "item_type": {"$in": ["digital", "physical"]},
          "is_published": True, "is_active": True},

@@ -18,6 +18,8 @@ import { Link, useParams } from 'react-router-dom';
 import { ArrowLeft, Check, Share2, ShieldCheck, Play, FileText, Film, Clock, Infinity as InfinityIcon, SearchX, GraduationCap } from 'lucide-react';
 import { toast } from 'sonner';
 import { storefrontAPI } from '../../api/storefront';
+import { corsiAPI } from '../../api/corsi';
+import { PLATFORM_TOKEN_KEY } from '../../api/platformClient';
 import { fmtEuro } from '../../api/prodotti';
 import { fmtDurata } from '../../api/accademia';
 import useSeoMeta from './lib/useSeoMeta';
@@ -65,6 +67,7 @@ export default function CorsoLandingPage() {
   const [stato, setStato] = useState('loading');
   const [compra, setCompra] = useState(false);
   const [anteprima, setAnteprima] = useState(null);     // 'trailer' | lessonId | null
+  const [iscrizione, setIscrizione] = useState(null);   // AC4: lo segui gia'? → «Vai al corso»
   const acquistaRef = useRef(null);
   const heroRef = useRef(null);
 
@@ -79,6 +82,20 @@ export default function CorsoLandingPage() {
 
   const c = data?.corso;
   const org = data?.org;
+  // AC4 (7/10/2026): con l'account Aurya riconosciuto, se il corso e' gia' tuo
+  // (attivo o completato) la pagina non ti fa ricomprare: ti porta al player.
+  useEffect(() => {
+    let tk = null;
+    try { tk = localStorage.getItem(PLATFORM_TOKEN_KEY); } catch { /* private mode */ }
+    if (!tk || !c?.course_id) { setIscrizione(null); return undefined; }
+    let vivo = true;
+    corsiAPI.getMyCourses().then(res => {
+      if (!vivo) return;
+      const mia = (res.data?.corsi || []).find(r => r.corso?.id === c.course_id && ['attivo', 'completato'].includes(r.iscrizione?.stato));
+      setIscrizione(mia ? mia.iscrizione : null);
+    }).catch(() => { if (vivo) setIscrizione(null); });
+    return () => { vivo = false; };
+  }, [c?.course_id]);
   useSeoMeta({
     title: c ? `${c.name} · ${org?.name || ''} | Aurya` : 'Corso | Aurya',
     description: c?.description || c?.long_description?.slice(0, 160) || undefined,
@@ -162,14 +179,26 @@ export default function CorsoLandingPage() {
               <span className="text-3xl font-bold text-[#2f5749]" data-testid="corso-landing-prezzo">{fmtEuro(c.price)}</span>
             </div>
             <div className="mt-5 hidden gap-2 sm:flex">
+              {iscrizione ? (
+                <Link to={`/account/corsi/${iscrizione.id}`} data-testid="corso-landing-vai"
+                  className="inline-flex min-h-[46px] items-center justify-center rounded-full bg-[#2f5749] px-7 text-sm font-semibold text-white shadow-[0_8px_20px_-10px_rgba(47,87,73,0.7)] transition hover:bg-[#27493d]">
+                  <Play className="mr-1.5 h-4 w-4 fill-current" aria-hidden /> {iscrizione.stato === 'completato' ? 'Rivedi il corso' : 'Vai al corso'}
+                </Link>
+              ) : (
               <button type="button" onClick={apriAcquisto} disabled={compra} data-testid="corso-landing-compra"
                 className="inline-flex min-h-[46px] items-center justify-center rounded-full bg-[#2f5749] px-7 text-sm font-semibold text-white shadow-[0_8px_20px_-10px_rgba(47,87,73,0.7)] transition hover:bg-[#27493d] disabled:opacity-50">
                 {compra ? <><Check className="mr-1.5 h-4 w-4" aria-hidden /> Qui sotto</> : 'Compra il corso'}
               </button>
+              )}
               <button type="button" onClick={condividi} className="inline-flex min-h-[46px] items-center gap-2 rounded-full border border-gray-200 bg-white px-5 text-sm font-medium text-gray-800 hover:bg-gray-50" data-testid="corso-landing-condividi">
                 <Share2 className="h-4 w-4" aria-hidden /> Condividi
               </button>
             </div>
+            {iscrizione && (
+              <p className="mt-4 rounded-xl bg-emerald-50 px-4 py-2.5 text-sm text-emerald-900" data-testid="corso-landing-gia-tuo">
+                Questo corso è già tuo: lo trovi in «I miei corsi», nel tuo account Aurya.
+              </p>
+            )}
             <ul className="mt-6 space-y-2.5 rounded-2xl border border-gray-200 bg-white p-4 text-sm text-gray-700" data-testid="corso-landing-come">
               <li className="flex gap-2.5"><Check className="mt-0.5 h-4 w-4 flex-none text-[#2f5749]" aria-hidden /><span>Lo segui dal tuo account Aurya, da qualunque telefono: riprendi da dove eri, lezione dopo lezione.</span></li>
               {anteprime.length > 0 && <li className="flex gap-2.5"><Play className="mt-0.5 h-4 w-4 flex-none text-[#2f5749]" aria-hidden /><span>{anteprime.length === 1 ? 'Una lezione' : `${anteprime.length} lezioni`} si guard{anteprime.length === 1 ? 'a' : 'ano'} gratis, qui sotto, prima di decidere.</span></li>}
@@ -261,7 +290,9 @@ export default function CorsoLandingPage() {
             <div className="min-w-0"><p className="truncate text-xs text-gray-500">{c.name}</p><p className="text-lg font-bold text-[#2f5749]">{fmtEuro(c.price)}</p></div>
             <div className="flex gap-2">
               <button type="button" onClick={condividi} aria-label="Condividi" className="flex h-11 w-11 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-700"><Share2 className="h-4 w-4" aria-hidden /></button>
-              <button type="button" onClick={apriAcquisto} className="min-h-[44px] rounded-full bg-[#2f5749] px-6 text-sm font-semibold text-white">Compra</button>
+              {iscrizione
+                ? <Link to={`/account/corsi/${iscrizione.id}`} className="inline-flex min-h-[44px] items-center rounded-full bg-[#2f5749] px-6 text-sm font-semibold text-white">{iscrizione.stato === 'completato' ? 'Rivedi' : 'Vai al corso'}</Link>
+                : <button type="button" onClick={apriAcquisto} className="min-h-[44px] rounded-full bg-[#2f5749] px-6 text-sm font-semibold text-white">Compra</button>}
             </div>
           </div>
         </div>

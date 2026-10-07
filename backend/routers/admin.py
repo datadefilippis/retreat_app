@@ -131,6 +131,7 @@ def _org_summary(doc: dict, *, profile_published: bool = False,
         n_servizi=regia.get("n_servizi"),
         bio_len=regia.get("bio_len", len((pp.get("bio") or "").strip())),
         email_verificata=regia.get("email_verificata"),
+        strumenti=regia.get("strumenti"),
         id=doc["id"],
         name=doc["name"],
         industry=doc.get("industry"),
@@ -159,6 +160,61 @@ def _org_summary(doc: dict, *, profile_published: bool = False,
         created_at=_dt(created),
         updated_at=_dt(doc.get("updated_at") or created),
     )
+
+
+async def _strumenti_batch(org_ids: list, docs: list) -> dict:
+    """AC4 (7/10/2026) — per ogni org della pagina: prodotti (n, online),
+    accademia (corsi, online, studenti, video_gb) e lo stato dei due
+    interruttori (feature_flags.prodotti_spento / accademia_spento).
+    Tre aggregazioni sulla pagina intera; errori → specchietto vuoto,
+    mai la lista giu'."""
+    from database import products_collection, issued_course_accesses_collection
+    from services.feature_flag_service import FLAG_PRODOTTI_SPENTO, FLAG_ACCADEMIA_SPENTO
+    out: dict = {}
+    for d in docs:
+        flags = d.get("feature_flags") if isinstance(d.get("feature_flags"), dict) else {}
+        usati = 0
+        for lib in ((d.get("integrations") or {}).get("bunny_libraries") or []):
+            usati += int(((lib or {}).get("quota") or {}).get("video_bytes") or 0)
+        out[d["id"]] = {
+            "prodotti": {"n": 0, "online": 0},
+            "accademia": {"corsi": 0, "online": 0, "studenti": 0,
+                          "video_gb": round(usati / 1024 ** 3, 2)},
+            "prodotti_spento": bool(flags.get(FLAG_PRODOTTI_SPENTO)),
+            "accademia_spento": bool(flags.get(FLAG_ACCADEMIA_SPENTO)),
+        }
+    if not org_ids:
+        return out
+    try:
+        async for r in products_collection.aggregate([
+                {"$match": {"organization_id": {"$in": org_ids}, "is_active": {"$ne": False},
+                            "item_type": {"$in": ["physical", "digital"]}}},
+                {"$group": {"_id": {"org": "$organization_id", "pub": "$is_published"}, "n": {"$sum": 1}}}]):
+            s = out.get(r["_id"]["org"])
+            if s:
+                s["prodotti"]["n"] += r["n"]
+                if r["_id"].get("pub"):
+                    s["prodotti"]["online"] += r["n"]
+        # il pubblicato di un corso vive sul PRODOTTO gemello (item_type course),
+        # il corso stesso ha solo is_active: si contano i prodotti
+        async for r in products_collection.aggregate([
+                {"$match": {"organization_id": {"$in": org_ids}, "is_active": {"$ne": False},
+                            "item_type": "course"}},
+                {"$group": {"_id": {"org": "$organization_id", "pub": "$is_published"}, "n": {"$sum": 1}}}]):
+            s = out.get(r["_id"]["org"])
+            if s:
+                s["accademia"]["corsi"] += r["n"]
+                if r["_id"].get("pub"):
+                    s["accademia"]["online"] += r["n"]
+        async for r in issued_course_accesses_collection.aggregate([
+                {"$match": {"organization_id": {"$in": org_ids}, "revoked_at": None}},
+                {"$group": {"_id": "$organization_id", "n": {"$sum": 1}}}]):
+            s = out.get(r["_id"])
+            if s:
+                s["accademia"]["studenti"] = r["n"]
+    except Exception as exc:  # noqa: BLE001 — lo specchietto non butta giu' la lista
+        logger.warning("regia strumenti: conteggi non letti: %s", exc)
+    return out
 
 
 def _provenienza_breve_sicura(p) -> dict | None:
@@ -298,6 +354,9 @@ async def list_organizations(
             if u.get("role") == "admin":
                 email_titolare[oid] = u.get("email")
                 email_verificata[oid] = bool(u.get("email_verified"))
+    # AC4 (7/10/2026) — lo specchietto Strumenti: tre query batch sulla
+    # pagina (prodotti, corsi, studenti), mai per riga
+    strumenti = await _strumenti_batch(org_ids, docs)
     # SA1 — lo stato del profilo con la STESSA verita' delle sequenze
     # (services/stato_profilo → stato_operatore), in parallelo
     stati = await _aio.gather(*(stato_profilo(d) for d in docs))
@@ -319,7 +378,8 @@ async def list_organizations(
             profile_published=(d["id"] in pubblicate),
             admin_email=email_titolare.get(d["id"]),
             profile_slug=slug_pubblico.get(d["id"]),
-            regia={**st, "email_verificata": email_verificata.get(d["id"])},
+            regia={**st, "email_verificata": email_verificata.get(d["id"]),
+                   "strumenti": strumenti.get(d["id"])},
         ) for d, st in righe[skip:skip + limit]],
         total=total,
         skip=skip,

@@ -299,6 +299,25 @@ const OrganizationsTab = () => {
     } catch { toast.error('Operazione non riuscita'); }
   };
 
+  // AC4 (7/10/2026) — gli interruttori dei moduli Prodotti e Accademia:
+  // il flag «spento» chiude le API del modulo per quell'org (403
+  // module_not_active) senza toccare piano e dati; si riaccende da qui.
+  const handleToggleModulo = async (org, modulo) => {
+    const flag = `${modulo}_spento`;
+    const spento = !!org.strumenti?.[flag];
+    const key = `${org.id}_${flag}`;
+    setAction(key, true);
+    try {
+      await adminAPI.setFeatureFlag(org.id, flag, !spento);
+      toast.success(spento
+        ? `${modulo === 'prodotti' ? 'Prodotti' : 'Accademia'} riaccesa per "${org.name}"`
+        : `${modulo === 'prodotti' ? 'Prodotti' : 'Accademia'} spenta per "${org.name}"`);
+      fetchOrgs();
+    } catch (err) {
+      toast.error(err.response?.data?.detail || 'Interruttore non aggiornato');
+    } finally { setAction(key, false); }
+  };
+
   // BD (10/9/2026, founder) — «In evidenza» e «Fondatore» dal pannello.
   // Fondatore gira in tre stati: calcolato (primi 20) → forzato → escluso.
   const handleToggleFeatured = async (org) => {
@@ -758,6 +777,7 @@ const OrganizationsTab = () => {
                   <TableRow>
                     <TableHead>{t('adminRegia.colChi', { defaultValue: 'Chi' })}</TableHead>
                     <TableHead>{t('adminRegia.colProfilo', { defaultValue: 'Profilo' })}</TableHead>
+                    <TableHead>Strumenti</TableHead>
                     <TableHead>Piano</TableHead>
                     <TableHead>Stato</TableHead>
                     <TableHead>Creata</TableHead>
@@ -860,6 +880,37 @@ const OrganizationsTab = () => {
                         {motivi.length > 0 && (
                           <div className="text-[10px] text-amber-700 mt-0.5">{motivi.join(' · ')}</div>
                         )}
+                      </TableCell>
+                      {/* AC4 (7/10/2026) — lo specchietto Strumenti: prodotti e
+                          accademia in riga, con l'interruttore per org */}
+                      <TableCell data-testid="org-strumenti" className="min-w-[230px]">
+                        {org.strumenti ? (
+                          <div className="space-y-1 text-[11px] leading-tight whitespace-nowrap">
+                            <div className="flex items-center gap-1.5">
+                              <button type="button" onClick={() => handleToggleModulo(org, 'prodotti')}
+                                disabled={actionLoading[`${org.id}_prodotti_spento`]}
+                                data-testid="org-toggle-prodotti"
+                                title={org.strumenti.prodotti_spento ? 'Prodotti SPENTI per questa org: clic per riaccendere' : 'Prodotti accesi: clic per spegnere (le API del modulo rispondono 403)'}
+                                className={`rounded-full px-2 py-0.5 font-medium ${org.strumenti.prodotti_spento ? 'bg-red-100 text-red-800' : 'bg-emerald-50 text-emerald-800'}`}>
+                                {org.strumenti.prodotti_spento ? 'Prodotti: spenti' : 'Prodotti'}
+                              </button>
+                              <span className="text-muted-foreground">{org.strumenti.prodotti?.online ?? 0}/{org.strumenti.prodotti?.n ?? 0} online</span>
+                            </div>
+                            <div className="flex items-center gap-1.5">
+                              <button type="button" onClick={() => handleToggleModulo(org, 'accademia')}
+                                disabled={actionLoading[`${org.id}_accademia_spento`]}
+                                data-testid="org-toggle-accademia"
+                                title={org.strumenti.accademia_spento ? 'Accademia SPENTA per questa org: clic per riaccendere' : 'Accademia accesa: clic per spegnere (le API del modulo rispondono 403)'}
+                                className={`rounded-full px-2 py-0.5 font-medium ${org.strumenti.accademia_spento ? 'bg-red-100 text-red-800' : 'bg-emerald-50 text-emerald-800'}`}>
+                                {org.strumenti.accademia_spento ? 'Accademia: spenta' : 'Accademia'}
+                              </button>
+                              <span className="text-muted-foreground">
+                                {org.strumenti.accademia?.online ?? 0}/{org.strumenti.accademia?.corsi ?? 0} corsi · {org.strumenti.accademia?.studenti ?? 0} studenti
+                                {org.strumenti.accademia?.video_gb > 0 ? ` · ${org.strumenti.accademia.video_gb} GB` : ''}
+                              </span>
+                            </div>
+                          </div>
+                        ) : <span className="text-xs text-muted-foreground">—</span>}
                       </TableCell>
                       <TableCell><PlanBadge plan={org.commercial_plan_slug || org.plan} /></TableCell>
                       <TableCell><StatusBadge isActive={org.is_active} /></TableCell>

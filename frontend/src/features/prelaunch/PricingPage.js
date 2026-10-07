@@ -57,7 +57,7 @@ const GRATIS = [
   ['Un link solo per Instagram',
    'La tua pagina /@nome raccoglie servizi, eventi, ritiri, recensioni e la tua storia. Puoi metterla nella bio di Instagram e condividerla dove vuoi.'],
   ['Prodotti dal tuo profilo',
-   'Guide, audio, libri, kit: li vendi dalla tua pagina, chi compra usa l’account Aurya e tu incassi con Stripe. Qui tratteniamo il 15%: è l’unica commissione di Aurya, e copre consegna, download protetti e l’account del cliente.'],
+   'Guide, audio, libri, kit e corsi online: li vendi dalla tua pagina, chi compra usa l’account Aurya e tu incassi con Stripe. Qui tratteniamo il 15%: è l’unica commissione di Aurya, e copre consegna, download protetti, i video dei corsi e l’account del cliente.'],
 ];
 
 /* Il Pro: le quattro cose in piu' (founder 13-14/9) e i ritiri in evidenza.
@@ -70,7 +70,7 @@ const PRO = [
   ['I tuoi eventi sui social di Aurya', 'Possiamo raccontare i tuoi eventi e ritiri sui nostri canali, con la tua foto e il link alla tua pagina.'],
   ['L’intervista e i reel', 'Una conversazione con noi, una pagina nel Magazine e contenuti che raccontano il tuo lavoro.'],
   ['I tuoi ritiri in evidenza', 'I tuoi ritiri possono essere messi in evidenza nella sezione Ritiri ed esperienze.'],
-  ['Prodotti senza commissioni', 'Sui prodotti che vendi dal profilo il Pro azzera il 15%: resta solo il costo di Stripe.'],
+  ['Prodotti senza commissioni', 'Sui prodotti e sui corsi online che vendi dal profilo il Pro azzera il 15%: resta solo il costo di Stripe.'],
 ];
 
 /* Chi entra nel 2026 (patto, 14/9): i vantaggi del Pro senza Sound, gratis. */
@@ -119,7 +119,7 @@ export default function PricingPage() {
   /* founder 14/9: quattro punti, ognuno un titolo e una riga, senza ripetizioni */
   const verita = [
     [t('pricing.p1t', { defaultValue: 'Aurya non prende commissioni su ritiri e servizi.' }),
-     t('pricing.p1b', { defaultValue: 'Quello che incassi da ritiri, eventi e servizi è tuo, sempre. Solo sui prodotti venduti dal tuo profilo tratteniamo il 15% nel Gratis, zero col Pro, più i costi Stripe.' })],
+     t('pricing.p1b', { defaultValue: 'Quello che incassi da ritiri, eventi e servizi è tuo, sempre. Solo sui prodotti e sui corsi online venduti dal tuo profilo tratteniamo il 15% nel Gratis, zero col Pro, più i costi Stripe.' })],
     [t('pricing.p2t', { defaultValue: 'Il piano base è gratuito per sempre.' }),
      t('pricing.p2b', { defaultValue: 'Profilo, servizi, prenotazioni, calendario, clienti, recensioni, eventi e ritiri con caparra e pagina link sono inclusi senza abbonamento.' })],
     [t('pricing.p3t', { defaultValue: 'Fino al 31 dicembre 2026 non paghi nulla.' }),
@@ -139,7 +139,7 @@ export default function PricingPage() {
             {t('pricing.lede3', { defaultValue: 'Gratis per sempre, senza commissioni su ritiri e servizi.' })}
           </Lede>
           <p className="mt-3 text-base leading-relaxed text-foreground/80" data-testid="pricing-sub">
-            {t('pricing.sub', { defaultValue: 'Il piano base è gratuito per sempre. Aurya non prende commissioni su ritiri, eventi e servizi; sui prodotti venduti dal profilo il 15%, zero col Pro.' })}
+            {t('pricing.sub', { defaultValue: 'Il piano base è gratuito per sempre. Aurya non prende commissioni su ritiri, eventi e servizi; sui prodotti e sui corsi venduti dal profilo il 15%, zero col Pro.' })}
           </p>
         </div>
 

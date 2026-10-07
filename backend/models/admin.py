@@ -68,6 +68,11 @@ class OrgSummary(BaseModel):
     telefono_pubblico: Optional[bool] = None
     stato_profilo: Optional[str] = None
     n_servizi: Optional[int] = None
+    # AC4 (7/10/2026) — lo specchietto STRUMENTI della regia: prodotti
+    # (n, online), accademia (corsi, online, studenti, video_gb) e i due
+    # interruttori per org (prodotti_spento / accademia_spento, i kill
+    # switch di module_access). Solo aggiunto, opzionale.
+    strumenti: Optional[dict] = None
     bio_len: Optional[int] = None
     email_verificata: Optional[bool] = None
     # MP4 (5/10/2026) — la provenienza della registrazione, in breve

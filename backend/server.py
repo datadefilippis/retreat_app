@@ -1290,7 +1290,10 @@ app.add_middleware(
     allow_origins=_cors_origins,
     allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     # X-Fqz-Unlock: prova di sblocco della vetrina meditazioni (FQ3)
-    allow_headers=["Content-Type", "Authorization", "X-Fqz-Unlock"],
+    # X-Aurya-Account: l'account Aurya nel checkout pubblico (P0 prodotti,
+    # AC4 corsi) — in prod e' same-origin, ma in dev (3000→8000) senza
+    # questa voce il preflight dell'ordine rispondeva 400
+    allow_headers=["Content-Type", "Authorization", "X-Fqz-Unlock", "X-Aurya-Account"],
 )
 
 # ── Middleware order rationale (LIFO ⇒ last-added runs first) ────────────

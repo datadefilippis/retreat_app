@@ -61,6 +61,11 @@ export const adminAPI = {
   setBadges: (orgId, payload) =>
     api.put(`/admin/organizations/${orgId}/badges`, payload).then((r) => r.data),
 
+  // AC4 (7/10/2026) — gli interruttori per org dei moduli (prodotti_spento,
+  // accademia_spento): PUT /admin/feature-flags/{org}
+  setFeatureFlag: (orgId, flagName, value) =>
+    api.put(`/admin/feature-flags/${orgId}`, { flag_name: flagName, value }).then((r) => r.data),
+
   // RO (30/8) — il lucchetto della directory (exclude_from_listings, XL1)
   setDirectoryListed: (orgId, listed) =>
     api.put(`/admin/organizations/${orgId}/directory`, { listed }).then((r) => r.data),

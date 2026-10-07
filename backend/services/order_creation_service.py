@@ -147,6 +147,19 @@ async def submit_order_from_storefront(
             detail=f"Products not found or not published: {', '.join(invalid[:3])}",
         )
 
+    # AC4 (7/10/2026) — gli interruttori della regia (prodotti_spento /
+    # accademia_spento) chiudono anche la vendita: la pagina pubblica non
+    # mostra piu' le righe, e un ordine costruito a mano viene rifiutato.
+    from services import feature_flag_service as _ff
+    tipi_nel_carrello = {valid_products[item.product_id].get("item_type") for item in body.items}
+    for tipi, flag in (({"digital", "physical"}, _ff.FLAG_PRODOTTI_SPENTO), ({"course"}, _ff.FLAG_ACCADEMIA_SPENTO)):
+        if tipi & tipi_nel_carrello and await _ff.is_enabled(org_id, flag):
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail={"error": "modulo_spento",
+                        "message": "Questa vendita non è disponibile al momento: riprova più tardi."},
+            )
+
     # Release 4 (Courses) Step 4 — orders containing a video course require
     # an authenticated customer account. The enrollment is nominative and
     # fulfilled through the customer portal player; guest emission would

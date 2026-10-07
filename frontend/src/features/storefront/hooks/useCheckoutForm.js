@@ -276,12 +276,17 @@ export default function useCheckoutForm({
   // modal surfaces the inline login/signup form and disables the
   // "continue as guest" path.
   const requiresCustomerAccount = useMemo(() => {
+    // AC4 (7/10/2026): con l'account Aurya riconosciuto l'iscrizione al corso
+    // vive su quell'account (platform_account_id, AC0): nessun secondo
+    // account legacy con password da creare. Il blocco resta per il solo
+    // carrello legacy senza account Aurya.
+    if (platformLoggedIn) return false;
     const prods = catalog?.products || [];
     return selectedItems.some(it => {
       const p = prods.find(pp => pp.id === it.product_id);
       return p?.item_type === 'course';
     });
-  }, [selectedItems, catalog]);
+  }, [selectedItems, catalog, platformLoggedIn]);
 
   // Release 4 (Courses) — when the cart contains a course AND the customer
   // is not yet authenticated, force the "crea un account" branch on.
