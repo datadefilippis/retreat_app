@@ -144,6 +144,43 @@ export default function AccountPage() {
     navigate('/');
   };
 
+  // RF-bis — quale sezione e' in vista (per la barra in basso): su scroll,
+  // la sezione col bordo alto piu' vicino sotto la testata
+  const [sezioneAttiva, setSezioneAttiva] = useState('esperienze');
+  useEffect(() => {
+    const ids = ['esperienze', 'corsi', 'file', 'guide', 'meditazioni', 'professionista', 'impostazioni'];
+    let ticket = null;
+    const guarda = () => {
+      if (ticket) return;
+      ticket = requestAnimationFrame(() => {
+        ticket = null;
+        const soglia = 120;
+        // la sezione piu' in basso fra quelle gia' passate sotto la testata:
+        // per posizione nel DOM, non per ordine della lista (le meditazioni
+        // stanno prima delle esperienze)
+        let scelta = null;
+        let migliore = -Infinity;
+        ids.forEach((id) => {
+          const el = document.getElementById(id);
+          if (!el) return;
+          const top = el.getBoundingClientRect().top - soglia;
+          if (top <= 0 && top > migliore) { migliore = top; scelta = id; }
+        });
+        if (!scelta) scelta = 'meditazioni';
+        setSezioneAttiva((prev) => (prev === scelta ? prev : scelta));
+      });
+    };
+    window.addEventListener('scroll', guarda, { passive: true });
+    guarda();
+    return () => { window.removeEventListener('scroll', guarda); if (ticket) cancelAnimationFrame(ticket); };
+  }, []);
+  const vaiA = (id) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    setSezioneAttiva(id);
+  };
+
   // CP1 — «rimanda la conferma»: e' una nuova iscrizione con la stessa
   // email, che il flusso pubblico traduce in un nuovo token + email.
   const resendLetter = async () => {
@@ -307,9 +344,21 @@ export default function AccountPage() {
     );
   };
 
+  // RF-bis (8/10/2026, founder): le voci dell'hub, UNA lista per le tessere
+  // in testa e per la barra fissa in basso su telefono (dopo il salto alla
+  // sezione le tessere sono lontane: la barra resta sotto il pollice)
+  const vociHub = [
+    { id: 'esperienze', icon: Calendar, label: 'Esperienze', stato: upcoming.length ? `${upcoming.length} in programma` : (past.length ? `${past.length} passat${past.length === 1 ? 'a' : 'e'}` : 'Nessuna ancora'), testid: 'hub-esperienze' },
+    { id: 'corsi', icon: GraduationCap, label: 'Corsi', stato: corsi === null ? '…' : corsi.length ? `${corsi.length} cors${corsi.length === 1 ? 'o' : 'i'}` : 'Nessuno ancora', testid: 'hub-corsi' },
+    { id: 'file', icon: FileDown, label: 'File', stato: files === null ? '…' : files.length ? `${files.length} file` : 'Nessuno ancora', testid: 'hub-file' },
+    { id: 'guide', icon: BookOpen, label: 'Guide', stato: me.newsletter_subscriber ? 'Sbloccate' : me.newsletter_state === 'pending' ? 'Manca un clic' : 'Da sbloccare', testid: 'hub-guide' },
+    { id: 'meditazioni', icon: Sparkles, label: 'Meditazioni', stato: 'I tuoi preferiti', testid: 'hub-meditazioni' },
+    { id: me.operator_linked ? 'professionista' : 'impostazioni', icon: me.operator_linked ? Briefcase : UserCircle, label: me.operator_linked ? 'Gestionale' : 'Account', stato: me.operator_linked ? 'Il tuo spazio pro' : 'Password e dati', testid: 'hub-account' },
+  ];
+
   return (
     <MarketplaceShell>
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 pb-24 lg:pb-0">
       <header className="bg-gradient-sidebar text-white">
         <div className="max-w-3xl mx-auto px-4 py-6 flex items-center justify-between">
           <div>
@@ -331,15 +380,8 @@ export default function AccountPage() {
           tocco porta alla sezione, senza scorrere alla cieca. */}
       <nav aria-label="Il tuo spazio" className="max-w-3xl mx-auto px-4 -mt-0.5 pt-4" data-testid="account-hub">
         <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-6">
-          {[
-            { href: '#esperienze', icon: Calendar, label: 'Esperienze', stato: upcoming.length ? `${upcoming.length} in programma` : (past.length ? `${past.length} passat${past.length === 1 ? 'a' : 'e'}` : 'Nessuna ancora'), testid: 'hub-esperienze' },
-            { href: '#corsi', icon: GraduationCap, label: 'Corsi', stato: corsi === null ? '…' : corsi.length ? `${corsi.length} cors${corsi.length === 1 ? 'o' : 'i'}` : 'Nessuno ancora', testid: 'hub-corsi' },
-            { href: '#file', icon: FileDown, label: 'File', stato: files === null ? '…' : files.length ? `${files.length} file` : 'Nessuno ancora', testid: 'hub-file' },
-            { href: '#guide', icon: BookOpen, label: 'Guide', stato: me.newsletter_subscriber ? 'Sbloccate' : me.newsletter_state === 'pending' ? 'Manca un clic' : 'Da sbloccare', testid: 'hub-guide' },
-            { href: '#meditazioni', icon: Sparkles, label: 'Meditazioni', stato: 'I tuoi preferiti', testid: 'hub-meditazioni' },
-            { href: me.operator_linked ? '#professionista' : '#impostazioni', icon: me.operator_linked ? Briefcase : UserCircle, label: me.operator_linked ? 'Gestionale' : 'Account', stato: me.operator_linked ? 'Il tuo spazio pro' : 'Password e dati', testid: 'hub-account' },
-          ].map(({ href, icon: Icon, label, stato, testid }) => (
-            <a key={href} href={href} data-testid={testid}
+          {vociHub.map(({ id, icon: Icon, label, stato, testid }) => (
+            <a key={id} href={`#${id}`} data-testid={testid} onClick={(e) => { e.preventDefault(); vaiA(id); }}
                className="group rounded-2xl border border-gray-200 bg-white p-3 transition hover:border-[#376254]/50 hover:shadow-sm">
               <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#2f5749]/10 text-[#2f5749]"><Icon className="h-4 w-4" aria-hidden /></span>
               <span className="mt-2 block text-sm font-semibold text-gray-900">{label}</span>
@@ -609,6 +651,27 @@ export default function AccountPage() {
             diritti GDPR ora hanno una superficie. */}
         <AccountSettingsSection me={me} authHeaders={authHeaders} onLogout={logout} t={t} />
       </main>
+
+      {/* RF-bis — la barra fissa in basso su telefono: le stesse voci delle
+          tessere, la sezione in vista evidenziata; sparisce da desktop */}
+      <nav aria-label="Sezioni del tuo account" data-testid="account-barra"
+           className="fixed inset-x-0 bottom-0 z-30 border-t border-gray-200 bg-white/95 backdrop-blur lg:hidden"
+           style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
+        <ul className="mx-auto flex max-w-3xl justify-between px-1">
+          {vociHub.map(({ id, icon: Icon, label, testid }) => {
+            const attiva = sezioneAttiva === id;
+            return (
+              <li key={id} className="min-w-0 flex-1">
+                <button type="button" onClick={() => vaiA(id)} aria-current={attiva ? 'true' : undefined} data-testid={`barra-${testid}`}
+                        className={`flex w-full flex-col items-center gap-0.5 px-1 pb-1.5 pt-2 text-[10px] font-medium leading-none ${attiva ? 'text-[#2f5749]' : 'text-gray-500'}`}>
+                  <span className={`flex h-7 w-7 items-center justify-center rounded-full transition ${attiva ? 'bg-[#2f5749]/12' : ''}`}><Icon className="h-4 w-4" aria-hidden /></span>
+                  <span className="truncate">{label}</span>
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      </nav>
     </div>
     </MarketplaceShell>
   );
