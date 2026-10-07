@@ -52,6 +52,9 @@ export default function LessonPlayer({
   onProgressUpdate,
   onAccessRevoked,
   onLessonEnded,
+  // AC2 (7/10/2026): il client e' una prop, cosi' il player dell'account
+  // Aurya (api/corsi.js) riusa questo componente senza toccare il legacy
+  api = customerPortalAPI,
 }) {
   const { t } = useTranslation('customer_portal');
   const [playUrl, setPlayUrl] = useState(null);
@@ -77,7 +80,7 @@ export default function LessonPlayer({
     setLoading(true);
     setError(null);
     try {
-      const { data } = await customerPortalAPI.getPlayUrl(enrollmentId, lesson.id);
+      const { data } = await api.getPlayUrl(enrollmentId, lesson.id);
       setPlayUrl(data.play_url);
       setExpiresAt(data.expires_at ? new Date(data.expires_at) : null);
       setWatermarkText(data.watermark_text || null);
@@ -206,7 +209,7 @@ export default function LessonPlayer({
       const elapsed = Math.floor((Date.now() - (startedAtRef.current || Date.now())) / 1000);
       const total = baselineWatchedRef.current + elapsed;
       try {
-        const { data } = await customerPortalAPI.sendProgress(enrollmentId, {
+        const { data } = await api.sendProgress(enrollmentId, {
           lesson_id: lesson.id,
           watched_seconds: total,
           completed: false,

@@ -1638,7 +1638,7 @@ async def _render_courses_section(order: dict, org_id: str, locale: str) -> str:
     IssuedCourseAccess with:
       - cover image + course title + instructor (when available)
       - access policy line ("a vita" / "valido fino al <date>")
-      - CTA "Vai al corso" → /account/courses/:enrollment_id
+      - CTA "Vai al corso" → /account/corsi/:enrollment_id (AC2, account Aurya)
 
     Returns "" when the order has no course enrollments. Stashed rows
     from confirm_order are preferred; otherwise we fetch by order_id.
@@ -1750,7 +1750,7 @@ async def _render_courses_section(order: dict, org_id: str, locale: str) -> str:
             # keeps the slug-resolution logic in one place.
             enrollment_id = enr.get("id") or ""
             player_url = await _build_customer_account_url(
-                order, org_id, f"/account/courses/{enrollment_id}",
+                order, org_id, f"/account/corsi/{enrollment_id}",   # AC2: il player dell'account Aurya
             )
 
             cover_img = (
@@ -1982,6 +1982,10 @@ async def notify_customer_order_confirmed(order: dict, org_id: str) -> None:
         if pagato and tipi and tipi <= {"digital"}:
             corpo = _t("order_confirmed_body_digital", locale, store_name=store_name)
             cta_label = _t("order_confirmed_cta_files", locale)
+        elif pagato and tipi and tipi <= {"course"}:
+            # AC2 (7/10/2026): «Il tuo corso e' pronto» → I miei corsi nell'account Aurya
+            corpo = _t("order_confirmed_body_corso", locale, store_name=store_name)
+            cta_label = _t("order_confirmed_cta_corsi", locale)
         elif pagato and "physical" in tipi and ff_mode == "shipping":
             corpo = _t("order_confirmed_body_shipping", locale, store_name=store_name)
             cta_label = _t("order_confirmed_cta", locale)

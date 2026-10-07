@@ -73,6 +73,7 @@ import { accademiaAperta } from "./features/accademia/stato";
 const AccademiaPage = lazy(() => import("./features/accademia/AccademiaPage"));
 const CorsoWizard = lazy(() => import("./features/accademia/CorsoWizard"));
 const CorsoPage = lazy(() => import("./features/accademia/CorsoPage"));
+const CorsoStudentePage = lazy(() => import("./features/account/CorsoStudentePage"));   // AC2: il player dello studente
 const AccademiaGate = ({ children }) => {
   const { user } = useAuth();
   return accademiaAperta(user) ? children : <Navigate to="/strumenti" replace />;
@@ -740,6 +741,8 @@ function AppRoutes() {
       <Route path="/account/verifica" element={<AccountVerifyEmailPage />} />
       <Route path="/account/nuova-password" element={<AccountResetPasswordPage />} />
       <Route path="/account" element={<AccountPage />} />
+      {/* AC2 (7/10/2026) — il corso dello studente, con l'account Aurya */}
+      <Route path="/account/corsi/:enrollment_id" element={<CorsoStudentePage />} />
       {/* Onda 14: public booking landing — service appointment details + .ics */}
       <Route path="/b/:token" element={<BookingLandingPage />} />
       {/* Onda 16: public reservation landing (rental range + slot) */}

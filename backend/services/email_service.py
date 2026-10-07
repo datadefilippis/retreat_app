@@ -271,6 +271,9 @@ EMAIL_TRANSLATIONS = {
         "order_confirmed_body_shipping": "Il pagamento è andato a buon fine. {store_name} prepara la spedizione e ti scrive quando parte.",
         "order_confirmed_body_pickup": "Il pagamento è andato a buon fine. {store_name} ti aspetta per il ritiro: vi accordate per email o telefono.",
         "order_confirmed_cta_files": "Vai ai miei file",
+        # AC2 (7/10/2026) — il corso online comprato con l'account Aurya
+        "order_confirmed_body_corso": "Il pagamento è andato a buon fine e il tuo corso è pronto. Lo trovi in «I miei corsi», nel tuo account Aurya: riprendi da dove eri, da qualunque telefono, lezione dopo lezione.",
+        "order_confirmed_cta_corsi": "Vai ai miei corsi",
         "order_merchant_subject": "Nuova richiesta — {customer_name}",
         "order_merchant_body": "Una nuova richiesta è arrivata dal catalogo pubblico.",
         "order_merchant_customer": "Cliente: <strong>{customer_name}</strong> ({customer_email})",

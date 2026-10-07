@@ -756,6 +756,8 @@ from routers import webhooks_bunny as webhooks_bunny_router    # AC1 (7/10/2026)
 app.include_router(webhooks_bunny_router.router, prefix="/api")  # /api/webhooks/bunny
 from routers import accademia as accademia_router              # AC1 (7/10/2026)
 app.include_router(accademia_router.router, prefix="/api")     # /api/accademia
+from routers import platform_corsi as platform_corsi_router    # AC2 (7/10/2026)
+app.include_router(platform_corsi_router.router, prefix="/api")  # /api/platform/me/corsi
 app.include_router(catalog_router.router, prefix="/api")     # /api/catalog/* (P11)
 app.include_router(tickets_router.router, prefix="/api")     # /api/tickets/* (E5)
 app.include_router(purchase_records.router, prefix="/api")   # /api/purchase-records

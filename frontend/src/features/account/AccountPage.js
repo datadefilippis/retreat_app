@@ -110,6 +110,8 @@ export default function AccountPage() {
   // P1 (6/10/2026) — «I miei file»: i download dei prodotti digitali
   // comprati con questo account (best-effort: un errore qui non tocca il resto)
   const [files, setFiles] = useState(null);
+  // AC2 (7/10/2026) — «I miei corsi»: le iscrizioni dell'account, su tutti gli operatori
+  const [corsi, setCorsi] = useState(null);
   useEffect(() => {
     const headers = authHeaders();
     if (!headers) return;
@@ -117,6 +119,9 @@ export default function AccountPage() {
     platformApi.get('/platform/me/file', { headers })
       .then(res => { if (mounted) setFiles(res.data?.file || []); })
       .catch(() => { if (mounted) setFiles([]); });
+    platformApi.get('/platform/me/corsi', { headers })
+      .then(res => { if (mounted) setCorsi(res.data?.corsi || []); })
+      .catch(() => { if (mounted) setCorsi([]); });
     return () => { mounted = false; };
   }, [authHeaders]);
 
@@ -381,6 +386,42 @@ export default function AccountPage() {
         {/* AP2 — Guide e materiale: le guide riservate del Magazine per
             gli iscritti confermati alla lettera; per gli altri, l'invito
             a iscriversi (/newsletter). */}
+        {/* AC2 (7/10/2026) — I miei corsi: card con progresso e «Continua» */}
+        {Array.isArray(corsi) && corsi.length > 0 && (
+          <section className="mb-8" data-testid="account-corsi">
+            <h2 className="text-sm font-semibold text-gray-900 mb-2">I miei corsi</h2>
+            <div className="grid gap-3 sm:grid-cols-2">
+              {corsi.map(({ iscrizione, corso, operatore, progress_stats, prossima_lezione }) => {
+                const terminato = iscrizione.stato === 'scaduto' || iscrizione.stato === 'revocato';
+                const pct = progress_stats?.percentage || 0;
+                return (
+                  <div key={iscrizione.id} className={`overflow-hidden rounded-2xl border border-gray-200 bg-white ${terminato ? 'opacity-70' : ''}`} data-testid="account-corso">
+                    <div className="h-28 bg-gradient-to-br from-[#eef3ef] to-[#dfe8e2]">
+                      {corso.cover_image_url && <img src={corso.cover_image_url} alt="" loading="lazy" className="h-full w-full object-cover" />}
+                    </div>
+                    <div className="p-4">
+                      <p className="font-semibold leading-snug text-gray-900">{corso.title}</p>
+                      <p className="mt-0.5 text-xs text-gray-500">{operatore?.name}{corso.lezioni_count ? ` · ${corso.lezioni_count} lezion${corso.lezioni_count === 1 ? 'e' : 'i'}` : ''}</p>
+                      <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-gray-100"><div className="h-full bg-[#2f5749] transition-all" style={{ width: `${pct}%` }} /></div>
+                      <div className="mt-2 flex items-center justify-between gap-3">
+                        <span className="text-xs text-gray-500">
+                          {iscrizione.stato === 'completato' ? 'Completato' : terminato ? (iscrizione.stato === 'scaduto' ? 'Accesso scaduto' : 'Accesso terminato') : `${progress_stats?.lessons_completed || 0}/${progress_stats?.total_lessons || 0} lezioni`}
+                        </span>
+                        {!terminato && (
+                          <Link to={`/account/corsi/${iscrizione.id}${prossima_lezione ? `#lesson-${prossima_lezione.id}` : ''}`}
+                                className="rounded-full bg-[#2f5749] px-4 py-1.5 text-sm font-semibold text-white" data-testid="account-corso-continua">
+                            {pct === 0 ? 'Comincia' : pct >= 100 ? 'Rivedi' : 'Continua'}
+                          </Link>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+        )}
+
         {/* P1 (6/10/2026) — I miei file: i prodotti digitali comprati */}
         {Array.isArray(files) && files.length > 0 && (
           <section className="mb-8" data-testid="account-file">
