@@ -9,8 +9,9 @@ import { ArrowLeft, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { AppLayout, Header } from '../../components/Layout';
 import { accademiaAPI, fmtDurata } from '../../api/accademia';
-import { Bottone, Campo, Ragioni, Scheda, SceltaImmagine, campo } from '../prodotti/ui';
+import { Bottone, Campo, LinkPagina, Ragioni, Scheda, SceltaImmagine, campo } from '../prodotti/ui';
 import LezioniEditor from './LezioniEditor';
+import TrailerEditor from './TrailerEditor';
 
 const STATO_STUDENTE = { attivo: 'In corso', completato: 'Completato', scaduto: 'Scaduto', revocato: 'Revocato' };
 
@@ -121,6 +122,15 @@ export default function CorsoPage() {
 
         <Scheda title="Le lezioni" sub={`${c.lezioni_pronte}/${c.lezioni_count} pronte${c.durata_totale_seconds ? ` · ${fmtDurata(c.durata_totale_seconds)}` : ''}. I moduli sono facoltativi.`} data-testid="corso-lezioni">
           <LezioniEditor corso={c} ricarica={load} />
+        </Scheda>
+
+        <Scheda title="Il video di presentazione" sub="Uno o due minuti, lo vedono tutti dalla pagina del corso prima di comprare. Facoltativo ma convince." data-testid="corso-trailer">
+          <TrailerEditor corso={c} ricarica={load} />
+        </Scheda>
+
+        <Scheda title="Condividi" data-testid="corso-condividi">
+          <LinkPagina orgSlug={c.public_slug} slug={c.slug} online={c.is_published} prefisso="corso" cosa="corso" />
+          <p className="mt-3 text-xs text-gray-500">Le lezioni segnate come «anteprima gratuita» si guardano dalla pagina senza comprare: una o due bastano per far capire di cosa si tratta.</p>
         </Scheda>
 
         <Scheda title="Studenti" sub="Chi ha comprato il corso e a che punto è." data-testid="corso-studenti">

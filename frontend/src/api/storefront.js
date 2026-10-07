@@ -64,6 +64,11 @@ export const storefrontAPI = {
   // DP (6/10/2026): la pagina di un prodotto fisico o digitale del profilo
   getProdottoLanding: (orgSlug, slug) =>
     customerApi.get(`/api/public/prodotto/${orgSlug}/${slug}`),
+  // AC3 (7/10/2026): la pagina di un corso e le anteprime gratuite (trailer o lezione)
+  getCorsoLanding: (orgSlug, slug) =>
+    customerApi.get(`/api/public/corso/${orgSlug}/${slug}`),
+  anteprimaCorsoPlayUrl: (orgSlug, slug, lessonId) =>
+    customerApi.post(`/api/public/corso/${orgSlug}/${slug}/anteprima/${lessonId}/play-url`),
 
   // Onda 13: full landing page payload for a generic product (primarily services).
   getProductLanding: (orgSlug, productSlug, lang) =>

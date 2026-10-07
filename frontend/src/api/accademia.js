@@ -32,6 +32,10 @@ export const accademiaAPI = {
   videoPrepara: (id, lid, { filename, size_bytes }) => api.post(`/accademia/${id}/lezioni/${lid}/video`, { filename, size_bytes }),
   videoStato: (id, lid) => api.get(`/accademia/${id}/lezioni/${lid}/video`),
   videoTogli: (id, lid) => api.delete(`/accademia/${id}/lezioni/${lid}/video`),
+  // il video di presentazione (trailer): stesso ciclo delle lezioni
+  trailerPrepara: (id, { filename, size_bytes }) => api.post(`/accademia/${id}/trailer`, { filename, size_bytes }),
+  trailerStato: (id) => api.get(`/accademia/${id}/trailer`),
+  trailerTogli: (id) => api.delete(`/accademia/${id}/trailer`),
   // gli studenti
   studenti: (id) => api.get(`/accademia/${id}/studenti`),
   revoca: (id, eid, motivo) => api.post(`/accademia/${id}/studenti/${eid}/revoca`, { motivo }),

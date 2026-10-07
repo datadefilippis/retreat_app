@@ -2045,6 +2045,49 @@ async def _meta_prodotto(org_slug: str, product_slug: str) -> Optional[dict]:
     }
 
 
+async def _meta_corso(org_slug: str, course_slug: str) -> Optional[dict]:
+    """AC3 (7/10/2026) — la pagina di un corso online: /corso/{org}/{slug}.
+    JSON-LD Course (provider = l'operatore) + Offer."""
+    from database import products_collection, organizations_collection, courses_collection
+    from services import seo_schema as sx
+    base = _base_url()
+    org = await organizations_collection.find_one(
+        {"public_slug": org_slug, "is_active": {"$ne": False}, "deactivated_at": None, "is_sample": {"$ne": True}},
+        {"_id": 0, "id": 1, "name": 1, "store_settings.display_name": 1, "public_profile.cover_url": 1, "public_profile.portrait_url": 1})
+    if not org:
+        return None
+    prod = await products_collection.find_one(
+        {"organization_id": org["id"], "slug": course_slug, "is_published": True, "is_active": True, "item_type": "course"},
+        {"_id": 0, "name": 1, "description": 1, "image_url": 1, "unit_price": 1, "metadata.course_id": 1})
+    if not prod:
+        return None
+    corso = await courses_collection.find_one({"id": (prod.get("metadata") or {}).get("course_id")},
+                                              {"_id": 0, "title": 1, "description": 1, "long_description": 1, "cover_image_url": 1, "instructor_name": 1}) or {}
+    org_name = (org.get("store_settings") or {}).get("display_name") or org.get("name") or ""
+    titolo = corso.get("title") or prod["name"]
+    canonical = f"{base}/corso/{org_slug}/{course_slug}"
+    pp = org.get("public_profile") or {}
+    image = _abs_image(corso.get("cover_image_url") or prod.get("image_url") or pp.get("cover_url") or pp.get("portrait_url"))
+    desc = (corso.get("description") or prod.get("description") or (corso.get("long_description") or ""))[:300]
+    if len(desc) < 60:
+        pezzi = [f"{titolo}: corso online di {org_name}." if org_name else f"{titolo}: corso online."]
+        if prod.get("unit_price") is not None:
+            try:
+                pezzi.append(f"{int(float(prod['unit_price']))} €, lo segui dal tuo account Aurya, lezione dopo lezione.")
+            except (TypeError, ValueError):
+                pass
+        desc = (desc + " " if desc else "") + " ".join(pezzi)
+    jsonld = {"@context": "https://schema.org", "@type": "Course", "name": titolo, "description": desc, "image": [image], "url": canonical,
+              "provider": {"@type": "Organization", "name": org_name, "url": f"{base}/o/{org_slug}"} if org_name else None}
+    jsonld = {k: v for k, v in jsonld.items() if v is not None}
+    if prod.get("unit_price") is not None:
+        jsonld["offers"] = {"@type": "Offer", "price": prod["unit_price"], "priceCurrency": "EUR",
+                            "availability": "https://schema.org/InStock", "url": canonical, "category": "Paid"}
+    crumbs = sx.breadcrumb([("Aurya", f"{base}/"), (org_name or "Operatore", f"{base}/o/{org_slug}"), (titolo, canonical)])
+    return {"title": f"{titolo} · {org_name} | Aurya" if org_name else f"{titolo} | Aurya", "description": desc,
+            "canonical": canonical, "image": image, "jsonld": [jsonld, crumbs] if crumbs else jsonld, "hreflang": None}
+
+
 async def _meta_destination(place_slug: Optional[str] = None) -> dict:
     from services import seo_schema as sx, seo_listing as sl
     base = _base_url()
@@ -2674,7 +2717,7 @@ async def _meta_store(slug: str) -> Optional[dict]:
 
 # ── Routing ──────────────────────────────────────────────────────────────────
 
-_PRODUCT_KINDS = ("p", "ph", "dg", "co", "r")
+_PRODUCT_KINDS = ("p", "ph", "dg", "r")   # AC3: /co dismesso → /corso
 
 # RT5 — path noindex quando il marketplace e' spento (prelaunch_mode):
 # solo il transazionale. /operatori NON c'e': in fase rete e' la landing
@@ -2775,6 +2818,8 @@ async def resolve_meta(path: str) -> Optional[dict]:
         return await _meta_product(head, parts[1], parts[2])
     if head == "prodotto" and len(parts) >= 3:      # DP (6/10/2026): la pagina del prodotto
         return await _meta_prodotto(parts[1], parts[2])
+    if head == "corso" and len(parts) >= 3:         # AC3 (7/10/2026): la pagina del corso
+        return await _meta_corso(parts[1], parts[2])
     if head == "operatori":
         # SEO-B (14/9 sera): /operatori/{disciplina|regione}[/{regione}]
         if len(parts) > 3:

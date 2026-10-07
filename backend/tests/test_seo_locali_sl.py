@@ -154,7 +154,7 @@ class TestClient:
 
     def test_bundle_iniziale_snello(self):
         app = (FE / "App.js").read_text()
-        for nome in ("StorefrontPage", "AccountPage", "ProductLandingPage", "CourseLandingPage", "CustomerCoursePlayerPage"):
+        for nome in ("StorefrontPage", "AccountPage", "ProductLandingPage", "CorsoLandingPage", "CorsoStudentePage"):
             assert f'const {nome} = lazy(' in app, f"{nome} deve essere lazy (SEO-E)"
         oss = (FE / "observability" / "index.js").read_text()
         assert 'import(/* webpackChunkName: "osservabilita" */ "./sentry")' in oss

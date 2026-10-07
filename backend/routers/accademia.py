@@ -210,6 +210,15 @@ def _firmatore(org: Optional[dict]):
     return firma
 
 
+def _riga_video(v: Optional[dict], firma=None) -> Optional[dict]:
+    """Il video (di una lezione o il trailer) come lo legge il gestionale."""
+    if not v:
+        return None
+    return {"guid": v.get("guid"), "stato": v.get("stato"), "size_bytes": v.get("size_bytes"),
+            "thumbnail_url": (firma(v) if firma else v.get("thumbnail_url")), "duration_seconds": v.get("duration_seconds"),
+            "uploaded_at": v.get("uploaded_at")}
+
+
 def _riga_lezione(l: dict, firma=None) -> dict:
     v = l.get("video") or {}
     return {
@@ -245,6 +254,7 @@ async def _riga(course_doc: dict, prodotto: dict, pre: Dict[str, Any], studenti:
                     "lezioni": [_riga_lezione(l, firma) for l in sorted(m.get("lessons") or [], key=lambda x: x.get("order", 0))]}
                    for m in sorted(course_doc.get("modules") or [], key=lambda x: x.get("order", 0))],
         "studenti": studenti,
+        "trailer": _riga_video(course_doc.get("trailer"), firma),
         "ragioni_pubblicazione": _ragioni_pubblicazione(course_doc, prodotto, pre),
         "public_slug": public_slug,
         "bunny_attivo": gestito.attivo(),
@@ -804,6 +814,81 @@ async def togli_video(course_id: str, lesson_id: str, current_user: dict = Depen
     m, l = _trova_lezione(doc, lesson_id)
     await _cancella_video_bunny(org_id, l)
     return await _risposta(await _salva_moduli(doc, org_id), org_id)
+
+
+# ── il video di presentazione (trailer) ─────────────────────────────────
+# AC3 (7/10/2026): lo vedono tutti dalla pagina del corso. Stesso ciclo delle
+# lezioni video (quota, libreria, collezione del corso, TUS, webhook).
+
+@router.post("/{course_id}/trailer")
+async def nuovo_trailer(course_id: str, body: VideoBody, current_user: dict = Depends(get_verified_user), _=Depends(_gate)):
+    from database import courses_collection
+    from services.bunny import gestito
+    from services.bunny.client import BunnyClient
+    org_id = current_user["organization_id"]
+    if not gestito.attivo():
+        raise HTTPException(status_code=503, detail={"code": "bunny_non_configurato", "message": "Il caricamento video non è ancora attivo su questo ambiente."})
+    doc = await _mio_corso(course_id, org_id)
+    quota = await _quota_video(org_id)
+    gia = int(((doc.get("trailer") or {}).get("size_bytes")) or 0)
+    if quota.get("max_bytes") and quota["usati_bytes"] - gia + body.size_bytes > quota["max_bytes"]:
+        raise HTTPException(status_code=409, detail={"code": "quota_video",
+                            "message": f"Il tuo piano comprende {quota['max_gb']} GB di video: con questo file li superi (usati {quota['usati_gb']} GB)."})
+    try:
+        lib = await gestito.assicura_libreria(org_id)
+    except RuntimeError:
+        raise HTTPException(status_code=503, detail={"code": "bunny_non_configurato", "message": "Caricamento video non attivo."})
+    finto = {"video": doc.get("trailer")}
+    await _cancella_video_bunny(org_id, finto)          # un trailer per corso
+    collezione = await _collezione_del_corso(doc, org_id, lib)
+    async with BunnyClient(lib["api_key"]) as c:
+        creato = await c.create_video(str(lib["library_id"]), "00 · Presentazione", collection_id=collezione)
+    guid = creato.get("guid")
+    if not guid:
+        raise HTTPException(status_code=502, detail="Bunny non ha creato il video.")
+    now = datetime.now(timezone.utc).isoformat()
+    trailer = {"guid": guid, "library_id": lib["id"], "bunny_library_id": str(lib["library_id"]), "stato": "caricamento",
+               "duration_seconds": 0, "size_bytes": int(body.size_bytes), "thumbnail_url": None, "uploaded_at": now, "updated_at": now}
+    await courses_collection.update_one({"id": course_id, "organization_id": org_id}, {"$set": {"trailer": trailer, "updated_at": now}})
+    await gestito.aggiorna_quota(org_id, lib["id"], int(body.size_bytes), 1)
+    return gestito.credenziali_tus(lib, guid)
+
+
+@router.get("/{course_id}/trailer")
+async def stato_trailer(course_id: str, current_user: dict = Depends(get_verified_user), _=Depends(_gate)):
+    from database import organizations_collection
+    from services.bunny import gestito
+    from services.bunny.client import BunnyClient
+    from routers.webhooks_bunny import applica_evento
+    org_id = current_user["organization_id"]
+    doc = await _mio_corso(course_id, org_id)
+    v = doc.get("trailer") or {}
+    if v.get("guid") and v.get("stato") in ("caricamento", "codifica") and gestito.attivo():
+        org = await organizations_collection.find_one({"id": org_id}, {"_id": 0, "integrations": 1})
+        lib = next((x for x in ((org or {}).get("integrations") or {}).get("bunny_libraries") or [] if x.get("id") == v.get("library_id")), None)
+        if lib:
+            try:
+                async with BunnyClient(lib["api_key"]) as c:
+                    remoto = await c.get_video(str(lib["library_id"]), v["guid"])
+                stato = gestito.stato_da_oggetto_video(remoto.get("status"))
+                if stato != v.get("stato"):
+                    await applica_evento(org_id, lib, v["guid"], stato)
+                    doc = await _mio_corso(course_id, org_id)
+            except Exception as exc:  # noqa: BLE001
+                logger.info("accademia: stato trailer non riletto: %s", exc)
+    return {"trailer": _riga_video(doc.get("trailer"), await _firma_org(org_id))}
+
+
+@router.delete("/{course_id}/trailer")
+async def togli_trailer(course_id: str, current_user: dict = Depends(get_verified_user), _=Depends(_gate)):
+    from database import courses_collection
+    org_id = current_user["organization_id"]
+    doc = await _mio_corso(course_id, org_id)
+    finto = {"video": doc.get("trailer")}
+    await _cancella_video_bunny(org_id, finto)
+    await courses_collection.update_one({"id": course_id, "organization_id": org_id},
+                                        {"$set": {"trailer": None, "updated_at": datetime.now(timezone.utc).isoformat()}})
+    return await _risposta(await _mio_corso(course_id, org_id), org_id)
 
 
 # ── gli studenti ─────────────────────────────────────────────────────────

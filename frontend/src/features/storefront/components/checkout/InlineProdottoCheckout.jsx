@@ -121,9 +121,11 @@ export default function InlineProdottoCheckout({ orgSlug, row, onClose }) {
       <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-center space-y-2" data-testid="inline-prodotto-success">
         <p className="font-semibold text-gray-900">{t('storefront:submitted.orderReceived')}</p>
         <p className="text-sm text-gray-700">
-          {row.item_type === 'digital'
-            ? 'Appena il pagamento è confermato, il file è nel tuo account Aurya, in «I miei file», e ti arriva anche per email.'
-            : 'Appena il pagamento è confermato, chi vende prepara la spedizione e ti scrive.'}
+          {row.item_type === 'course'
+            ? 'Appena il pagamento è confermato, il corso è nel tuo account Aurya, in «I miei corsi», e ti arriva anche per email.'
+            : row.item_type === 'digital'
+              ? 'Appena il pagamento è confermato, il file è nel tuo account Aurya, in «I miei file», e ti arriva anche per email.'
+              : 'Appena il pagamento è confermato, chi vende prepara la spedizione e ti scrive.'}
         </p>
         <Link to="/account" className="inline-block text-sm underline text-[#376254]">Vai al mio account</Link>
         <GrazieCerchio email={checkout.form?.email} className="mt-2" />

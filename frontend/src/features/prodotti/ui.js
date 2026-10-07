@@ -127,16 +127,16 @@ export function AnteprimaProdotto({ prodotto, riga, testid }) {
   );
 }
 
-export function urlPagina(orgSlug, slug) {
+export function urlPagina(orgSlug, slug, prefisso = 'prodotto') {
   if (!orgSlug || !slug) return null;
   const origin = typeof window !== 'undefined' ? window.location.origin : 'https://aurya.life';
-  return `${origin}/prodotto/${orgSlug}/${slug}`;
+  return `${origin}/${prefisso}/${orgSlug}/${slug}`;
 }
 
-/** il link della pagina del prodotto, da copiare e condividere */
-export function LinkPagina({ orgSlug, slug, online }) {
+/** il link della pagina (prodotto o corso), da copiare e condividere */
+export function LinkPagina({ orgSlug, slug, online, prefisso = 'prodotto', cosa = 'prodotto' }) {
   const [copiato, setCopiato] = useState(false);
-  const url = urlPagina(orgSlug, slug);
+  const url = urlPagina(orgSlug, slug, prefisso);
   if (!url) return null;
   const copia = async () => {
     try { await navigator.clipboard.writeText(url); setCopiato(true); toast.success('Link copiato.'); setTimeout(() => setCopiato(false), 2000); }
@@ -144,9 +144,9 @@ export function LinkPagina({ orgSlug, slug, online }) {
   };
   return (
     <div data-testid="prodotto-link-pagina">
-      <p className="text-[13px] font-medium text-gray-800">La pagina del prodotto</p>
+      <p className="text-[13px] font-medium text-gray-800">La pagina del {cosa}</p>
       <p className="mt-0.5 text-xs text-gray-500">
-        {online ? 'Condividila dove vuoi: chi la apre legge il racconto e compra da lì.' : 'Si apre quando il prodotto è online.'}
+        {online ? 'Condividila dove vuoi: chi la apre legge il racconto e compra da lì.' : `Si apre quando il ${cosa} è online.`}
       </p>
       <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-center">
         <code className="min-w-0 flex-1 truncate rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-xs text-gray-700">{url}</code>

@@ -24,7 +24,7 @@ LANDING_FILES = [
     "ReservationLandingPage.js",  # rental   (/r)
     "PhysicalLandingPage.js",     # fisici   (/ph)
     "DigitalLandingPage.js",      # digitali (/dg)
-    "CourseLandingPage.js",       # corsi    (/co)
+    "CorsoLandingPage.js",        # corsi    (/corso, AC3)
     "TicketLandingPage.js",       # biglietto (/t)
     "BookingLandingPage.js",      # prenotazione (/b)
     "StorefrontPage.js",          # vetrina  (/s)

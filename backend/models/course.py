@@ -213,6 +213,9 @@ class Course(CourseBase):
     id: str = Field(default_factory=generate_id)
     organization_id: str
     modules: List[CourseModule] = Field(default_factory=list)
+    # AC3 (7/10/2026) — il VIDEO DI PRESENTAZIONE (1-2 minuti, lo vedono
+    # tutti dalla pagina del corso): stesso ciclo delle lezioni video
+    trailer: Optional[VideoLezione] = None
     created_at: datetime = Field(default_factory=utc_now)
     updated_at: datetime = Field(default_factory=utc_now)
 

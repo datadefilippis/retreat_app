@@ -297,7 +297,7 @@ async def build_retreats() -> str:
 # DP (6/10/2026): fisici e digitali hanno la pagina nuova /prodotto/ (le
 # landing legacy /ph e /dg restano raggiungibili ma non in sitemap)
 _PRODUCT_PREFIX = {"service": "p", "physical": "prodotto", "digital": "prodotto",
-                   "course": "co", "rental": "r"}
+                   "course": "corso", "rental": "r"}   # AC3: /co dismesso → /corso
 
 
 async def build_products() -> str:

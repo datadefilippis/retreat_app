@@ -30,8 +30,8 @@ async def applica_evento(org_id: str, lib: dict, video_guid: str, stato: str) ->
     from database import courses_collection
     from services.bunny import gestito
     corso = await courses_collection.find_one(
-        {"organization_id": org_id, "modules.lessons.video.guid": video_guid},
-        {"_id": 0, "id": 1, "modules": 1})
+        {"organization_id": org_id, "$or": [{"modules.lessons.video.guid": video_guid}, {"trailer.guid": video_guid}]},
+        {"_id": 0, "id": 1, "modules": 1, "trailer": 1})
     if not corso:
         return {"esito": "video_non_nostro"}
     dettagli = {}
@@ -50,6 +50,20 @@ async def applica_evento(org_id: str, lib: dict, video_guid: str, stato: str) ->
     now = datetime.now(timezone.utc).isoformat()
     toccata = None
     delta_bytes = 0
+    # AC3 — il trailer del corso
+    tr = corso.get("trailer") or {}
+    if tr.get("guid") == video_guid:
+        prima = int(tr.get("size_bytes") or 0)
+        tr["stato"] = stato
+        tr["updated_at"] = now
+        if dettagli:
+            tr.update({k: v for k, v in dettagli.items() if v is not None})
+            delta_bytes = int(tr.get("size_bytes") or 0) - prima
+        await courses_collection.update_one({"id": corso["id"], "organization_id": org_id},
+                                            {"$set": {"trailer": tr, "updated_at": now}})
+        if delta_bytes:
+            await gestito.aggiorna_quota(org_id, lib.get("id"), delta_bytes, 0)
+        return {"esito": "aggiornata", "trailer": True, "stato": stato}
     for m in corso.get("modules") or []:
         for l in m.get("lessons") or []:
             vid = l.get("video") or {}

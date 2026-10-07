@@ -294,9 +294,8 @@ export const Sidebar = () => {
     // /courses was reachable only via deep-link or the TypePicker on
     // the products page — the cognitive overhead the unification
     // addresses.
-    entityNav.push({
-      nameKey: 'nav.courses', href: '/courses', icon: BookMarked, end: true,
-    });
+    // AC3 (7/10/2026): la voce «Corsi» legacy e' dismessa: i corsi vivono in
+    // Strumenti → Accademia (/accademia)
   }
 
   // Customers: only with customers_light module

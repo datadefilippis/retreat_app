@@ -88,8 +88,7 @@ const PhysicalDashboardPage = lazy(() => import("./features/physicals/PhysicalDa
 const DigitalWizard = lazy(() => import("./features/digitals/DigitalWizard"));
 const DigitalDashboardPage = lazy(() => import("./features/digitals/DigitalDashboardPage"));
 // Release 4 (Courses) Step 2 — admin UI for video courses
-const CoursesPage = lazy(() => import("./features/courses/CoursesPage"));
-const CourseEditor = lazy(() => import("./features/courses/CourseEditor"));
+// AC3 (7/10/2026): l'editor corsi legacy (/courses) e' dismesso → /accademia
 const ReservationsDashboard = lazy(() => import("./features/reservations/ReservationsDashboard"));
 const ReservationDashboardPage = lazy(() => import("./features/reservations/ReservationDashboardPage"));
 const ServiceDashboardPage = lazy(() => import("./features/services/ServiceDashboardPage"));
@@ -147,10 +146,10 @@ const BookingLandingPage = lazy(() => import("./features/storefront/BookingLandi
 const ReservationConfirmationPage = lazy(() => import("./features/storefront/ReservationConfirmationPage"));   // SEO-E: fuori dal bundle iniziale
 const ProductLandingPage = lazy(() => import("./features/storefront/ProductLandingPage"));   // SEO-E: fuori dal bundle iniziale
 const ProdottoLandingPage = lazy(() => import("./features/storefront/ProdottoLandingPage"));   // DP (6/10): la pagina del prodotto
+const CorsoLandingPage = lazy(() => import("./features/storefront/CorsoLandingPage"));         // AC3 (7/10): la pagina del corso
 const ReservationLandingPage = lazy(() => import("./features/storefront/ReservationLandingPage"));   // SEO-E: fuori dal bundle iniziale
 const PhysicalLandingPage = lazy(() => import("./features/storefront/PhysicalLandingPage"));   // SEO-E: fuori dal bundle iniziale
 const DigitalLandingPage = lazy(() => import("./features/storefront/DigitalLandingPage"));   // SEO-E: fuori dal bundle iniziale
-const CourseLandingPage = lazy(() => import("./features/storefront/CourseLandingPage"));   // SEO-E: fuori dal bundle iniziale
 // Step 4 of the language-system refactor: wraps every public storefront
 // surface with StoreMetaProvider + locale sync so the i18n resolver has
 // the merchant's allowed-languages list available on first render.
@@ -201,7 +200,8 @@ const StrumentiPage = lazy(() => import("./pages/StrumentiPage"));
 
 // Customer Identity Foundation (v9.0)
 import { CustomerAuthProvider } from "./context/CustomerAuthContext";
-import CustomerProtectedRoute from "./features/customer-portal/CustomerProtectedRoute";
+// AC3 (7/10/2026): CustomerProtectedRoute e CustomerLayout non servono piu' qui
+// (il player legacy e' dismesso); i file restano per il portale clienti legacy.
 // Auth pages — Phase 5 of the customer area refactor moved each one
 // into a dedicated file under customer-portal/auth/. The shared
 // AuthShell + useStoreInfo helpers live alongside.
@@ -219,14 +219,14 @@ import CustomerVerifyEmailPage from "./features/customer-portal/auth/VerifyEmail
 // imports are intentionally NOT re-added here — their routes are now
 // served by the new pages/* below. The old files stay in the codebase
 // for the auth re-exports above (until Phase 6 turns them into a shim).
-import CustomerLayout from "./features/customer-portal/layout/CustomerLayout";
 import { caricaDiscipline } from './lib/disciplines';   // DV3: registro vivo delle discipline
 // PS4 — del portale clienti legacy restano SOLO i corsi (il player e
 // il suo indice): le email "Vai al corso" gia' spedite puntano a
 // /account/courses/<enrollment_id> e il player usa il JWT customer.
 // Ordini e profilo legacy sono rediretti all'account Aurya (/account).
-const CustomerCoursesIndexPage = lazy(() => import("./features/customer-portal/pages/CoursesIndexPage"));   // SEO-E: fuori dal bundle iniziale
-const CustomerCoursePlayerPage = lazy(() => import("./features/customer-portal/pages/CoursePlayerPage"));   // SEO-E: fuori dal bundle iniziale
+// AC3 (7/10/2026): il player legacy (/account/courses) e' dismesso → /account/corsi
+const RedirectCorsoLegacy = () => { const { enrollment_id } = useParams(); return <Navigate to={`/account/corsi/${enrollment_id}`} replace />; };
+const RedirectCoLegacy = () => { const { org_slug, product_slug } = useParams(); return <Navigate to={`/corso/${org_slug}/${product_slug}`} replace />; };
 
 // Protected Route Component
 //
@@ -759,9 +759,11 @@ function AppRoutes() {
       } />
       <Route path="/d/:access_token" element={<DownloadLandingPage />} />
       {/* Release 4 (Courses) — public landing for video courses */}
-      <Route path="/co/:org_slug/:product_slug" element={
-        <PublicStorefrontShell><CourseLandingPage /></PublicStorefrontShell>
+      {/* AC3 (7/10/2026): la pagina del corso; /co legacy rimanda */}
+      <Route path="/corso/:org_slug/:slug" element={
+        <PublicStorefrontShell showFloatingSwitcher={false}><CorsoLandingPage /></PublicStorefrontShell>
       } />
+      <Route path="/co/:org_slug/:product_slug" element={<RedirectCoLegacy />} />
       {/* Onda 16 Fase 5: post-confirmation reservation landing (token-based) */}
       <Route path="/rsv/:token" element={<ReservationConfirmationPage />} />
       {/* Customer Portal legacy — PS4: UN SOLO login utente.
@@ -799,10 +801,8 @@ function AppRoutes() {
           Gated dal JWT customer (CustomerProtectedRoute). Il doppio
           /account che viveva qui (redirect morto a /account/orders,
           oscurato dalla rotta Aurya sopra) e' stato potato in PS4. */}
-      <Route element={<CustomerProtectedRoute><CustomerLayout /></CustomerProtectedRoute>}>
-        <Route path="/account/courses" element={<CustomerCoursesIndexPage />} />
-        <Route path="/account/courses/:enrollment_id" element={<CustomerCoursePlayerPage />} />
-      </Route>
+      <Route path="/account/courses" element={<Navigate to="/account" replace />} />
+      <Route path="/account/courses/:enrollment_id" element={<RedirectCorsoLegacy />} />
       {/* ID-bis (20/8) — il vecchio link di registrazione condiviso con
           gli operatori porta alla registrazione NUOVA: la landing
           professionisti con il form incorporato (RD-bis). */}
@@ -951,18 +951,9 @@ function AppRoutes() {
         element={<ProtectedRoute><DigitalDashboardPage /></ProtectedRoute>}
       />
       {/* Release 4 (Courses) — admin CRUD for video courses */}
-      <Route
-        path="/courses"
-        element={<ProtectedRoute><CoursesPage /></ProtectedRoute>}
-      />
-      <Route
-        path="/courses/new"
-        element={<ProtectedRoute><CourseEditor /></ProtectedRoute>}
-      />
-      <Route
-        path="/courses/:course_id"
-        element={<ProtectedRoute><CourseEditor /></ProtectedRoute>}
-      />
+      <Route path="/courses" element={<Navigate to="/accademia" replace />} />
+      <Route path="/courses/new" element={<Navigate to="/accademia/nuovo" replace />} />
+      <Route path="/courses/:course_id" element={<Navigate to="/accademia" replace />} />
       {/* Onda 16 Fase 5 — Admin reservations dashboard (list di IssuedReservation) */}
       <Route
         path="/reservations"

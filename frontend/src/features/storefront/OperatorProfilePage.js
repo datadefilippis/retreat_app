@@ -13,7 +13,7 @@ import React, { useEffect, useState } from 'react';
 import { Esito } from '../../lib/esito';   // FL1: il risultato si vede dove hai cliccato
 import { useParams, useLocation, Link, Link as RouterLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ArrowRight, Flower2, Play, Package } from 'lucide-react';
+import { ArrowRight, Flower2, Play, Package, GraduationCap } from 'lucide-react';
 import api from '../../api/client';
 import useSeoMeta from './lib/useSeoMeta';
 import useTrackView from './lib/useTrackView';
@@ -781,6 +781,52 @@ export default function OperatorProfilePage() {
                       {aperto && (
                         <div className="border-t border-gray-100 bg-gray-50/60 px-4 py-4" data-testid="prodotto-inline">
                           <InlineProdottoCheckout orgSlug={org_slug} row={pr} onClose={() => setExpandedProdotto(null)} />
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </section>
+          )}
+
+          {/* AC3 (7/10/2026) — I CORSI del profilo: card della misura dei ritiri,
+              «Scopri di più» → /corso/{org}/{slug}, «Compra» in pagina (account Aurya) */}
+          {Array.isArray(data.corsi) && data.corsi.length > 0 && (
+            <section id="corsi" className="mt-8 scroll-mt-20" data-testid="profile-corsi">
+              <h2 className="profile-h2 font-heading text-xl font-bold text-foreground mb-3 flex items-center gap-2.5 before:content-[''] before:h-5 before:w-1 before:rounded-full before:bg-[#c9b37e]">
+                Corsi online
+              </h2>
+              <div className="grid gap-4 sm:grid-cols-2">
+                {data.corsi.map((cr) => {
+                  const aperto = expandedProdotto === cr.product_id;
+                  const pagina = `/corso/${org_slug}/${cr.slug || cr.product_id}`;
+                  return (
+                    <div key={cr.product_id} id={`corso-${cr.slug || cr.product_id}`}
+                         className={`flex flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white transition hover:shadow-md ${aperto ? 'sm:col-span-2' : ''}`}
+                         data-testid="corso-card">
+                      <Link to={pagina} className="block h-36 overflow-hidden bg-gradient-to-br from-[#eef3ef] to-[#dfe8e2]" aria-label={`Scopri ${cr.name}`}>
+                        {cr.image_url
+                          ? <img src={cr.image_url} alt="" loading="lazy" className="h-full w-full object-cover transition duration-500 hover:scale-[1.03]" />
+                          : <span className="flex h-full w-full items-center justify-center text-[#376254]/30"><GraduationCap className="h-8 w-8" aria-hidden /></span>}
+                      </Link>
+                      <div className="flex flex-1 flex-col p-3">
+                        <Link to={pagina} className="font-semibold leading-snug text-gray-900 line-clamp-2 hover:underline">{cr.name}</Link>
+                        <p className="mt-0.5 text-sm text-gray-600">{cr.lezioni_count} lezion{cr.lezioni_count === 1 ? 'e' : 'i'}{cr.durata_totale_seconds ? ` · ${Math.max(1, Math.round(cr.durata_totale_seconds / 60))} min` : ''}{cr.access_policy === 'expiring' ? ` · ${cr.access_expiry_days} giorni` : ' · per sempre'}</p>
+                        <div className="mt-auto flex items-center justify-between gap-2 pt-2">
+                          <span className="font-bold text-gray-900">{cr.price != null ? new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'EUR', minimumFractionDigits: Number.isInteger(Number(cr.price)) ? 0 : 2, maximumFractionDigits: 2 }).format(Number(cr.price)) : ''}</span>
+                          <div className="flex items-center gap-2">
+                            <Link to={pagina} data-testid="corso-info" className="inline-flex min-h-[34px] items-center rounded-full border border-gray-200 bg-white px-3 text-xs font-medium text-gray-700 hover:bg-gray-50">Scopri di più</Link>
+                            <button type="button" data-testid="corso-cta" aria-expanded={aperto} onClick={() => setExpandedProdotto(aperto ? null : cr.product_id)}
+                                    className={`inline-flex min-h-[34px] items-center rounded-full px-3.5 text-xs font-semibold ${aperto ? 'border border-gray-300 bg-white text-gray-700' : 'bg-[#2f5749] text-white hover:opacity-90'}`}>
+                              {aperto ? t('landings:operator.inlineClose', { defaultValue: 'Chiudi' }) : 'Compra'}
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                      {aperto && (
+                        <div className="border-t border-gray-100 bg-gray-50/60 px-4 py-4" data-testid="corso-inline">
+                          <InlineProdottoCheckout orgSlug={org_slug} row={{ product_id: cr.product_id, item_type: 'course', slug: cr.slug }} onClose={() => setExpandedProdotto(null)} />
                         </div>
                       )}
                     </div>

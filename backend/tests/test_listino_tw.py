@@ -645,8 +645,11 @@ class TestPotaturaTW3:
         flag — con legacyCommerce true torna tutto."""
         layout = (FRONTEND_SRC / "components" / "Layout.js").read_text()
         assert "&& legacyCommerce" in layout
-        for legacy_href in ("'/stores'", "'/products'", "'/courses'"):
+        # AC3 (7/10/2026): la voce «Corsi» legacy (/courses) e' dismessa per
+        # sempre — i corsi vivono in Strumenti → Accademia
+        for legacy_href in ("'/stores'", "'/products'"):
             assert legacy_href in layout
+        assert "href: '/courses'" not in layout
 
     def test_storefront_redirects_to_profile(self):
         """I6: /s/ vetrina non muore, redirige al profilo /o/."""
@@ -3395,8 +3398,10 @@ class TestPotaturaPs4:
                 f"{p}: attesa redirect all'account Aurya"
         # strutturali del player corsi legacy: restano vive
         assert 'path="/account/login" element={<RedirectPreservingQuery to="/accedi" />}' in app
-        assert "CustomerCoursePlayerPage" in app \
-            and 'path="/account/courses/:enrollment_id"' in app
+        # AC3 (7/10/2026): il player legacy e' dismesso, il link delle vecchie
+        # email rimanda al player Aurya (/account/corsi/:enrollment_id)
+        assert 'path="/account/courses/:enrollment_id" element={<RedirectCorsoLegacy />}' in app \
+            and 'path="/account/corsi/:enrollment_id"' in app
         assert 'path="/account/forgot-password"' in app \
             and 'path="/account/reset-password"' in app \
             and 'path="/account/verify-email"' in app

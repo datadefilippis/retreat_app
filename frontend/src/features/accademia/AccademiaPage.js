@@ -11,7 +11,7 @@ import { toast } from 'sonner';
 import { AppLayout, Header } from '../../components/Layout';
 import { accademiaAPI, fmtDurata } from '../../api/accademia';
 import { fmtEuro } from '../../api/prodotti';
-import { Bottone, Scheda, Vignetta } from '../prodotti/ui';
+import { Bottone, Scheda, Vignetta, urlPagina } from '../prodotti/ui';
 
 function Prerequisito({ ok, label, hint, to, testid }) {
   return (
@@ -44,6 +44,11 @@ export default function AccademiaPage() {
   const corsi = data?.corsi || [];
   const quota = data?.quota_video;
 
+  const copiaLink = async (c) => {
+    const url = urlPagina(data?.public_slug, c.slug, 'corso');
+    if (!url) return;
+    try { await navigator.clipboard.writeText(url); toast.success('Link della pagina copiato.'); } catch { toast.error('Non sono riuscito a copiare il link.'); }
+  };
   const togli = async (c) => {
     if (!window.confirm(`Togliere «${c.title}» dal catalogo? Chi l'ha già comprato continua a seguirlo.`)) return;
     try { await accademiaAPI.elimina(c.id); toast.success('Corso tolto.'); load(); }
@@ -118,6 +123,9 @@ export default function AccademiaPage() {
                 </div>
                 <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-gray-100 pt-3">
                   <Link to={`/accademia/${c.id}`} className="inline-flex min-h-[36px] items-center rounded-full border border-gray-200 px-4 text-xs font-medium text-gray-800 hover:bg-gray-50">Modifica</Link>
+                  {c.is_published && c.slug && (
+                    <button type="button" onClick={() => copiaLink(c)} className="inline-flex min-h-[36px] items-center rounded-full border border-gray-200 px-4 text-xs font-medium text-gray-800 hover:bg-gray-50" data-testid={`corso-${c.id}-link`}>Copia link</button>
+                  )}
                   {!c.is_published && c.ragioni_pubblicazione?.length > 0 && <span className="text-xs text-amber-800">{c.ragioni_pubblicazione[0]}</span>}
                   <button type="button" onClick={() => togli(c)} className="ml-auto min-h-[36px] px-2 text-xs text-gray-400 hover:text-red-700">Togli</button>
                 </div>

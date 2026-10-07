@@ -54,12 +54,14 @@ class TestIx1LePorteChiuse:
 
     def test_il_registro_dichiara_le_radici_e_i_rimandi(self):
         # DP (6/10/2026): /prodotto/{org}/{slug}, la pagina dei prodotti del profilo
-        assert set(REGISTRO["solo_con_slug"]) == {"co", "dg", "e", "frequenze", "l", "o", "p", "ph", "r", "s", "prodotto"}
+        # AC3 (7/10/2026): /corso/{org}/{slug}; /co dismesso (rimando)
+        assert set(REGISTRO["solo_con_slug"]) == {"dg", "e", "frequenze", "l", "o", "p", "ph", "r", "s", "prodotto", "corso"}
         # RB7 (10/9/2026): /come-funziona (guscio vuoto in fase rete) e' un 301 come /ritiri
         # RE (10/9/2026 sera): /ritiri ed /esplora-ritiri rimandano al calendario /esperienze
         # SEO-A (14/9/2026 sera): /magazine rispondeva 200 noindex «Aurya» → 301 /blog
         assert REGISTRO["rimandi"] == {"index.html": "/", "ritiri": "/esperienze", "come-funziona": "/manifesto", "magazine": "/blog"}
-        assert REGISTRO["rimandi_prefisso"] == {"esplora-operatori": "/operatori", "esplora-ritiri": "/esperienze"}
+        assert REGISTRO["rimandi_prefisso"] == {"esplora-operatori": "/operatori", "esplora-ritiri": "/esperienze",
+                                                "co": "/corso$1", "courses": "/accademia"}   # AC3: il legacy dei corsi rimanda
         for seg in REGISTRO["solo_con_slug"]:
             assert seg in REGISTRO["pubblica"], f"{seg} deve restare pubblica (con slug)"
 
@@ -74,7 +76,7 @@ class TestIx1LePorteChiuse:
         assert "location ~ ^/ritiri/?$ { return 301 /esperienze; }" in blocco   # RE (10/9)
         assert "location ~ ^/esplora\\-ritiri(/.*)?$ { return 301 /esperienze; }" in blocco
         assert "location ~ ^/esplora\\-operatori(/.*)?$ { return 301 /operatori; }" in blocco
-        radici = "location ~ ^/(co|dg|e|frequenze|l|o|p|ph|prodotto|r|s)/?$ {"   # DP: + prodotto
+        radici = "location ~ ^/(corso|dg|e|frequenze|l|o|p|ph|prodotto|r|s)/?$ {"   # DP: + prodotto; AC3: co → corso
         assert radici in blocco
         # PRIMA della location del renderer: fra le regex vince la prima
         assert blocco.index(radici) < blocco.index("Le pagine che hanno (o devono avere) meta server-side")

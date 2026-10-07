@@ -32,8 +32,8 @@
     "blog",
     "cerca-ritiro",
     "chi-siamo",
-    "co",
     "come-funziona",
+    "corso",
     "costi",
     "destinazioni",
     "dg",
@@ -60,6 +60,8 @@
   ],
   "servizio": [
     "accedi",
+    "co",
+    "courses",
     "account",
     "ascolta",
     "b",
@@ -88,7 +90,6 @@
     "admin",
     "calendar",
     "coupons",
-    "courses",
     "customers",
     "dashboard",
     "data-integrity",
@@ -127,10 +128,11 @@
     "solo_con_slug/rimandi": "IX1 (5/9/2026, Search Console: 34 duplicate): le radici dei prefissi con slug (/e, /p, /o...) rispondevano 200 con una shell vuota identica e indicizzabile; ora nginx le manda al 404 del renderer. /index.html, /ritiri ed /esplora-operatori erano doppioni della home e della directory: ora sono 301 veri.",
     "struttura/strutture": "SR fase 0 (8/9/2026): i segmenti /struttura (area della struttura, app noindex) e /strutture (directory pubblica) sono PRENOTATI per la fase 1 ma NON stanno nel registro finche' App.js non ha le rotte: la guardia 'non inventa rotte' vieta le porte aperte su stanze vuote, e oggi l'ignoto fa 404, che e' giusto. In fase 1: rotte in App.js + qui + rigenera nginx.",
     "come-funziona": "RB7 (10/9/2026): come /ritiri — resta classificata (App.js ha ancora il gate LC2, che nella SPA manda al Manifesto) ma per nginx e' un 301 vero verso /manifesto: il renderer rispondeva 200 con zero testo, una pagina vuota indicizzabile.",
-    "magazine": "SEO-A (14/9/2026 sera): rispondeva 200 noindex col titolo «Aurya»; per nginx e' un 301 vero verso /blog (la SPA continua a rimandare)."
+    "magazine": "SEO-A (14/9/2026 sera): rispondeva 200 noindex col titolo «Aurya»; per nginx e' un 301 vero verso /blog (la SPA continua a rimandare).",
+    "co/courses": "AC3 (7/10/2026): il corso legacy (/co/{org}/{slug}) e l'editor legacy (/courses) sono RIMANDI alla pagina del corso (/corso) e all'Accademia (/accademia): servizio per la SPA, 301 di prefisso per nginx."
   },
   "solo_con_slug": [
-    "co",
+    "corso",
     "dg",
     "e",
     "frequenze",
@@ -150,6 +152,8 @@
   },
   "rimandi_prefisso": {
     "esplora-operatori": "/operatori",
-    "esplora-ritiri": "/esperienze"
+    "esplora-ritiri": "/esperienze",
+    "co": "/corso$1",
+    "courses": "/accademia"
   }
 }

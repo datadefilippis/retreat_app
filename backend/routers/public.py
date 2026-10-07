@@ -4686,6 +4686,136 @@ async def get_prodotto_landing(org_slug: str, slug: str):
     )
 
 
+async def _operator_corsi(org_id: str) -> list:
+    """AC3 (7/10/2026) — i CORSI pubblicati di un'org per la sezione «Corsi»
+    del profilo: card con copertina, prezzo, lezioni e durata; «Scopri di
+    più» → /corso/{org}/{slug}, «Compra» in pagina con l'account Aurya.
+    Si lista solo se il corso esiste e ha almeno una lezione pronta."""
+    from database import products_collection, courses_collection
+    from routers.accademia import _lezione_pronta
+    prods = await products_collection.find(
+        {"organization_id": org_id, "item_type": "course", "is_published": True, "is_active": True,
+         "transaction_mode": {"$in": [None, "direct"]}},
+        {"_id": 0, "id": 1, "name": 1, "slug": 1, "unit_price": 1, "image_url": 1, "description": 1,
+         "metadata.course_id": 1, "created_at": 1}).sort("created_at", -1).to_list(100)
+    ids = [p.get("metadata", {}).get("course_id") for p in prods if p.get("metadata", {}).get("course_id")]
+    corsi = {c["id"]: c async for c in courses_collection.find(
+        {"id": {"$in": ids}, "organization_id": org_id, "is_active": {"$ne": False}}, {"_id": 0})}
+    out = []
+    for p in prods:
+        c = corsi.get((p.get("metadata") or {}).get("course_id"))
+        if not c:
+            continue
+        lezioni = [l for m in (c.get("modules") or []) for l in (m.get("lessons") or [])]
+        pronte = [l for l in lezioni if _lezione_pronta(l)]
+        if not pronte:
+            continue
+        out.append({
+            "product_id": p["id"], "course_id": c["id"], "name": c.get("title") or p.get("name"), "slug": p.get("slug"),
+            "item_type": "course", "price": p.get("unit_price"),
+            "image_url": c.get("cover_image_url") or p.get("image_url"),
+            "description": c.get("description") or p.get("description"),
+            "lezioni_count": len(lezioni),
+            "durata_totale_seconds": sum(int(l.get("duration_seconds") or 0) for l in lezioni),
+            "access_policy": c.get("access_policy") or "lifetime",
+            "access_expiry_days": c.get("access_expiry_days"),
+            "instructor_name": c.get("instructor_name"),
+            "has_trailer": (c.get("trailer") or {}).get("stato") == "pronto",
+        })
+    return out
+
+
+class PublicCorsoLanding(BaseModel):
+    """AC3 (7/10/2026) — la PAGINA di un corso: /corso/{org_slug}/{slug}.
+    Come /prodotto: dal public_slug, mai dallo store. Programma senza GUID."""
+    org: Dict[str, Any]
+    corso: Dict[str, Any]
+    altri: List[Dict[str, Any]] = []
+    currency: str = "EUR"
+
+
+async def _org_pubblica(org_slug: str) -> dict:
+    from database import organizations_collection
+    org = await organizations_collection.find_one(
+        {"public_slug": org_slug, "is_active": {"$ne": False}, "deactivated_at": None},
+        {"_id": 0, "id": 1, "name": 1, "public_slug": 1, "public_profile": 1,
+         "store_settings.display_name": 1, "reviews_stats": 1, "is_sample": 1, "integrations.bunny_libraries": 1})
+    if not org or org.get("is_sample"):
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Pagina non trovata")
+    from services.store_guard import org_has_public_home
+    if not await org_has_public_home(org["id"]):
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Pagina non trovata")
+    return org
+
+
+@router.get("/corso/{org_slug}/{slug}", response_model=PublicCorsoLanding)
+async def get_corso_landing(org_slug: str, slug: str):
+    from database import courses_collection
+    from routers.accademia import _lezione_pronta, _firmatore
+    org = await _org_pubblica(org_slug)
+    righe = await _operator_corsi(org["id"])
+    riga = next((r for r in righe if r.get("slug") == slug), None)
+    if not riga:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Corso non trovato")
+    c = await courses_collection.find_one({"id": riga["course_id"]}, {"_id": 0})
+    firma = _firmatore(org)
+    pp = org.get("public_profile") or {}
+    moduli = []
+    for m in sorted(c.get("modules") or [], key=lambda x: x.get("order", 0)):
+        lez = []
+        for l in sorted(m.get("lessons") or [], key=lambda x: x.get("order", 0)):
+            v = l.get("video") or {}
+            lez.append({"id": l.get("id"), "title": l.get("title"), "tipo": l.get("tipo") or ("video" if v else "testo"),
+                        "duration_seconds": int(l.get("duration_seconds") or 0),
+                        "is_preview": bool(l.get("is_preview")) and _lezione_pronta(l),
+                        "pronta": _lezione_pronta(l), "description": l.get("description")})
+        moduli.append({"id": m.get("id"), "title": m.get("title"), "lezioni": lez})
+    tr = c.get("trailer") or {}
+    return PublicCorsoLanding(
+        org={"slug": org_slug, "name": (org.get("store_settings") or {}).get("display_name") or org.get("name") or "",
+             "portrait_url": pp.get("portrait_url"), "city": pp.get("city"), "region": pp.get("region"),
+             "verified": bool(pp.get("interview_published") and pp.get("interview_verified_at")),
+             "reviews_stats": org.get("reviews_stats")},
+        corso={**riga, "long_description": c.get("long_description"), "instructor_bio": c.get("instructor_bio"),
+               "moduli": moduli,
+               "trailer": ({"thumbnail_url": firma(tr), "duration_seconds": tr.get("duration_seconds")} if tr.get("stato") == "pronto" else None)},
+        altri=[{k: r.get(k) for k in ("product_id", "slug", "name", "price", "image_url", "lezioni_count")} for r in righe if r.get("slug") != slug][:4],
+        currency="EUR",
+    )
+
+
+@router.post("/corso/{org_slug}/{slug}/anteprima/{lesson_id}/play-url")
+@limiter.limit("30/minute")
+async def anteprima_corso_play_url(request: Request, org_slug: str, slug: str, lesson_id: str):
+    """L'anteprima gratuita: il trailer (`lesson_id` = «trailer») o una
+    lezione segnata come anteprima, riproducibile SENZA account. URL firmato
+    breve (1 ora), nessun watermark, limite per IP. Mai per le altre lezioni."""
+    from database import courses_collection
+    from routers.accademia import _lezione_pronta
+    from services.bunny import resolve_library_config
+    from services.bunny.signer import generate_signed_embed_url, validate_bunny_config
+    org = await _org_pubblica(org_slug)
+    righe = await _operator_corsi(org["id"])
+    riga = next((r for r in righe if r.get("slug") == slug), None)
+    if not riga:
+        raise HTTPException(status_code=404, detail="Corso non trovato")
+    c = await courses_collection.find_one({"id": riga["course_id"]}, {"_id": 0})
+    if lesson_id == "trailer":
+        v = c.get("trailer") or {}
+        if v.get("stato") != "pronto" or not v.get("guid"):
+            raise HTTPException(status_code=404, detail="Nessun video di presentazione")
+    else:
+        l = next((x for m in (c.get("modules") or []) for x in (m.get("lessons") or []) if x.get("id") == lesson_id), None)
+        if not l or not l.get("is_preview") or not _lezione_pronta(l) or (l.get("tipo") or "video") != "video":
+            raise HTTPException(status_code=404, detail="Questa lezione non è un'anteprima")
+        v = l.get("video") or {"guid": l.get("bunny_video_guid"), "library_id": l.get("bunny_library_id")}
+    cfg = resolve_library_config({"bunny_library_id": v.get("library_id"), "bunny_video_guid": v.get("guid")}, org)
+    if not validate_bunny_config(cfg):
+        raise HTTPException(status_code=503, detail="Servizio video non disponibile.")
+    firmato = generate_signed_embed_url(cfg, v["guid"], customer_email=None, ttl_seconds=3600)
+    return {"play_url": firmato.play_url, "expires_at": firmato.expires_at.isoformat()}
+
+
 async def _operator_prodotti(org_id: str) -> list:
     """P1 (6/10/2026) — i PRODOTTI pubblicati di un'org (fisici e digitali)
     per la sezione «Prodotti» del profilo: card con tipo, prezzo, foto;
@@ -4935,6 +5065,8 @@ async def public_operator_profile(org_slug: str, request: Request = None, lang: 
         "listino": await _operator_listino(org_id),
         # P1 (6/10/2026) — i prodotti del profilo (fisici e digitali)
         "prodotti": await _operator_prodotti(org_id),
+        # AC3 (7/10/2026) — i corsi online del profilo
+        "corsi": await _operator_corsi(org_id),
         # PR2 — rating denormalizzato (None finché non ci sono recensioni)
         "reviews_stats": org.get("reviews_stats"),
         "reviews_open": bool(org.get("reviews_open")),

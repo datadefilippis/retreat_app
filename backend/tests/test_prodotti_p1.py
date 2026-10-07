@@ -339,7 +339,7 @@ class TestDesignDP:
                   "export function AnteprimaProdotto", "export function LinkPagina", "export function SceltaImmagine",
                   "export function classePasso", "export function urlPagina"):
             assert n in ui, n
-        assert "/prodotto/${orgSlug}/${slug}" in ui
+        assert "/${prefisso}/${orgSlug}/${slug}" in ui and "prefisso = 'prodotto'" in ui   # AC3: lo stesso link serve i corsi
         # l'anteprima non ha l'etichetta di tipo
         ant = ui[ui.index("export function AnteprimaProdotto"):ui.index("export function urlPagina")]
         assert "Digitale" not in ant and "Fisico" not in ant
