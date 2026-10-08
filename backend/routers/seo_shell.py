@@ -1025,11 +1025,11 @@ def _sound_home_html() -> str:
     esperienze, le categorie della biblioteca e le porte (Lab, Studio)."""
     c = {k: _html.escape(v) for k, v in _SOUND_HOME_COPIA.items()}
     parti = ["<div><h1>Aurya Sound</h1>", f"<p>{c['sub']}</p>", f"<p>{c['parentela']}</p>",
-             "<h2>Le esperienze, gratuite</h2><ul>",
-             '<li><a href="/sound/calm">CALM</a> — sei minuti per creare uno spazio di calma</li>',
-             '<li><a href="/sound/ground">GROUND</a> — otto minuti per ritrovare il peso</li>',
-             '<li><a href="/sound/respiro">RESPIRO</a> — dieci minuti a sei respiri al minuto</li>',
-             "</ul>", f"<h2>{c['h2']}</h2>", f"<p>{c['lead']}</p>", "<ul>"]
+             # SN2: via le tre esperienze (ritirate); al loro posto la casa delle meditazioni
+             "<h2>Le meditazioni</h2>",
+             '<p>Le meditazioni composte dai professionisti della rete, con playlist e copertine: '
+             '<a href="/meditazioni">la casa delle meditazioni</a>.</p>',
+             f"<h2>{c['h2']}</h2>", f"<p>{c['lead']}</p>", "<ul>"]
     for cat, titles in _SOUND_CARDS.items():
         parti.append(f'<li><a href="/sound/esplora">{_html.escape(cat)}</a>: '
                      f'{_html.escape(", ".join(titles))}</li>')
@@ -1340,6 +1340,20 @@ async def _meta_sound(parts: list) -> Optional[dict]:
     # PUBBLICA: senza questo ramo il renderer non la conosce e chi
     # arriva da fuori prende un 404 (la trappola gia' pagata con
     # /sound/visual il 22/8).
+    # SN2 (8/10/2026, piano Aurya Sound, decisione 7) — CALM, GROUND e
+    # RESPIRO si RITIRANO: non sono meditazioni nate in Crea. In prod
+    # nginx risponde 301 verso /meditazioni (registro: rimandi); qui, per
+    # chi arriva al renderer direttamente, noindex con il rimando. Il
+    # corpo vecchio resta sotto, dismesso, finche' non si pota.
+    if sub in ("calm", "ground", "respiro"):
+        return {"title": "Le meditazioni di Aurya | Aurya Sound",
+                "description": "Questa esperienza si è ritirata: le meditazioni vivono nella loro casa.",
+                "noindex": True, "canonical": None, "hreflang": None,
+                "image": f"{base}/og-cover.jpg",
+                "content_html": ('<div><h1>Le meditazioni di Aurya</h1>'
+                                 '<p>Questa esperienza sonora si è ritirata. Le meditazioni, composte '
+                                 'dai professionisti della rete, vivono nella loro casa.</p>'
+                                 '<p><a href="/meditazioni">Vai alle meditazioni</a></p></div>')}
     if sub == "calm":
         canonical = f"{base}/sound/calm"
         return {**_SOUND_PAGES["calm"], "canonical": canonical,
@@ -2428,7 +2442,7 @@ async def _meta_frequenza(slug: str) -> Optional[dict]:
         {"slug": slug, "status": "published",
          "visibility": {"$ne": "private"}},
         {"_id": 0, "title": 1, "description": 1, "organization_id": 1,
-         "score": 1, "updated_at": 1})
+         "score": 1, "updated_at": 1, "cover_url": 1})
     if not t:
         return None
     minuti = int(round((t.get("score") or {}).get("duration_sec", 0) / 60))
@@ -2450,7 +2464,7 @@ async def _meta_frequenza(slug: str) -> Optional[dict]:
         "description": desc[:300],
         "canonical": canonical,
         "hreflang": {"it": canonical, "x-default": canonical},
-        "image": f"{base}/og-cover.jpg",
+        "image": _abs_image(t.get("cover_url")),   # SN2 — la card social con la copertina
         "content_html": (f"<div><h1>{_html.escape(titolo)}</h1>"
                          f"<p>{_html.escape(desc[:300])}</p>"
                          + (f"<p>Composta da {_html.escape(autore)}</p>"

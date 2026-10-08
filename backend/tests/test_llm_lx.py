@@ -107,7 +107,7 @@ class TestLx3LaCopiaVeraAiBot:
 class TestLx4IDatiStrutturati:
     @pytest.mark.parametrize("path,tipo", [("/chi-siamo", "AboutPage"), ("/manifesto", "Article"),
                                            ("/entra-nella-rete", "FAQPage"), ("/sound", "CollectionPage"),
-                                           ("/sound/calm", "CreativeWork"), ("/meditazioni", "CollectionPage")])
+                                           ("/meditazioni", "CollectionPage")])   # SN2: /sound/calm ritirata
     def test_il_tipo_giusto_per_pagina(self, path, tipo):
         r = _get(f"/__seo{path}")
         assert r.status_code == 200

@@ -21,7 +21,7 @@ import logging
 import uuid
 from typing import List, Optional
 
-from fastapi import APIRouter, Depends, File, HTTPException, Request, UploadFile, status
+from fastapi import APIRouter, BackgroundTasks, Depends, File, HTTPException, Query, Request, UploadFile, status
 from pydantic import BaseModel, Field
 
 from models.common import utc_now
@@ -104,7 +104,7 @@ async def _riga(p: dict) -> dict:
                        "cover_url": t.get("cover_url"), "accesso": t.get("accesso") or "cerchio",
                        "has_voce": bool(t.get("has_voce")), "plays_total": t.get("plays_total") or 0})
     out = {k: p.get(k) for k in ("id", "slug", "title", "description", "cover_url", "accesso", "in_vetrina",
-                                 "status", "published_at", "plays_total", "created_at", "updated_at")}
+                                 "status", "published_at", "plays_total", "created_at", "updated_at", "annuncio")}
     out["accesso"] = out.get("accesso") or "cerchio"
     out["tracce"] = tracce
     out["tracce_count"] = len(tracce)
@@ -229,6 +229,37 @@ async def pubblica(playlist_id: str, current_user: dict = Depends(require_sound_
         {"$set": {"status": "published", "slug": slug, "slug_precedenti": precedenti, "tracce": tracce,
                   "published_at": p.get("published_at") or now, "updated_at": now}})
     return await _riga(await _mia(playlist_id, org_id))
+
+
+@router.post("/{playlist_id}/annuncia")
+async def annuncia(playlist_id: str, sfondo: BackgroundTasks, a_secco: bool = Query(False),
+                   current_user: dict = Depends(require_sound_crea)):
+    """SN2 — l'annuncio al Cerchio: «nuova playlist», con il link diretto.
+    Solo la chiave 1, solo pubblicata, una volta sola; `a_secco=1` conta e
+    mostra l'anteprima senza spedire."""
+    from database import sound_playlists_collection
+    from services import annunci_sound
+    org_id = current_user["organization_id"]
+    if not current_user.get("_sound_composer"):
+        raise HTTPException(status_code=403, detail="L'annuncio al Cerchio è su invito, come le Meditazioni di Aurya.")
+    p = await _riga(await _mia(playlist_id, org_id))
+    if p.get("status") != "published" or not p.get("slug") or not p.get("tracce"):
+        raise HTTPException(status_code=409, detail="Si annuncia solo una playlist pubblicata con almeno una meditazione.")
+    testo = annunci_sound.testo_annuncio("playlist", p)
+    lista = await annunci_sound.destinatari()
+    esito = {"destinatari": len(lista), "oggetto": testo["oggetto"], "anteprima": testo["corpo"],
+             "gia_annunciata": (p.get("annuncio") or {}).get("at")}
+    if a_secco:
+        return esito
+    if p.get("annuncio"):
+        raise HTTPException(status_code=409, detail="Questa playlist è già stata annunciata al Cerchio.")
+    if not lista:
+        raise HTTPException(status_code=409, detail="Nessun destinatario nel Cerchio.")
+    if not await annunci_sound.prenota(sound_playlists_collection, playlist_id, len(lista)):
+        raise HTTPException(status_code=409, detail="Questa playlist è già stata annunciata al Cerchio.")
+    sfondo.add_task(annunci_sound.spedisci, "playlist", sound_playlists_collection, playlist_id,
+                    testo["oggetto"], testo["corpo"], testo["percorso"], lista)
+    return {**esito, "avviato": True}
 
 
 @router.post("/{playlist_id}/unpublish")

@@ -21,7 +21,8 @@
  * e' lo strumento con cui NOI progettiamo queste esperienze.
  */
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
+import { SOUND_CASA_NUOVA } from '../stato';
 import SoundTopbar from '../SoundTopbar';
 import { SafetyLine, useSafetyGate } from '../SafetyCurtain';
 import { esperienza } from '../content/esperienze';
@@ -35,7 +36,16 @@ const mmss = (s) => {
   return `${Math.floor(t / 60)}:${String(t % 60).padStart(2, '0')}`;
 };
 
+/* SN2 (8/10/2026, piano Aurya Sound, decisione 7) — CALM, GROUND e RESPIRO
+   si RITIRANO: non sono meditazioni nate in Crea. L'indirizzo rimanda alla
+   casa delle meditazioni (in prod nginx risponde 301 prima ancora della
+   SPA). La pagina resta sotto, dismessa, una release: poi si pota. */
 export default function EsperienzaPage({ id }) {
+  if (SOUND_CASA_NUOVA) return <Navigate to="/meditazioni" replace />;
+  return <EsperienzaPageDismessa id={id} />;
+}
+
+function EsperienzaPageDismessa({ id }) {
   const exp = esperienza(id);
   useEffect(() => {
     document.title = `${exp.titolo} — un'esperienza sonora | Aurya Sound`;

@@ -433,7 +433,60 @@ async def get_me(account: dict = Depends(get_current_platform_account)):
     # ID-bis (20/8) — /account mostra il cappello professionista se il
     # legame c'e': solo un booleano, mai dati dell'altro mondo.
     out["operator_linked"] = bool(account.get("operator_user_id"))
+    # SN2 (8/10/2026, piano Aurya Sound, decisione 2) — i campi del tuo
+    # spazio in Sound, PREDISPOSTI: preferenze (le tre domande, senza
+    # interfaccia), riprendi, recenti. Vuoti finche' nessuno li scrive.
+    out["sound_preferenze"] = account.get("sound_preferenze") or None
+    out["sound_riprendi"] = account.get("sound_riprendi") or None
+    out["sound_recenti"] = account.get("sound_recenti") or []
     return out
+
+
+_SOUND_OBIETTIVI = ("dormire", "meditare", "rilassare", "concentrare", "elaborare", "energizzare")
+_SOUND_DURATE = ("breve", "media", "lunga")
+_SOUND_MOMENTI = ("mattina", "pausa", "sera", "notte")
+
+
+class SoundSpazioUpdate(BaseModel):
+    """SN2 — le preferenze (obiettivo · durata · momento), «riprendi» e i
+    recenti: ogni campo facoltativo, ogni valore pulito o scartato."""
+    sound_preferenze: Optional[dict] = None
+    sound_riprendi: Optional[dict] = None
+    sound_recenti: Optional[list] = None
+
+
+@router.patch("/me/sound")
+async def update_me_sound(body: SoundSpazioUpdate,
+                          account: dict = Depends(get_current_platform_account)):
+    _flag_enabled()
+    from database import platform_accounts_collection
+    updates = {}
+    if body.sound_preferenze is not None:
+        p = body.sound_preferenze or {}
+        updates["sound_preferenze"] = {
+            "obiettivo": p.get("obiettivo") if p.get("obiettivo") in _SOUND_OBIETTIVI else None,
+            "durata": p.get("durata") if p.get("durata") in _SOUND_DURATE else None,
+            "momento": p.get("momento") if p.get("momento") in _SOUND_MOMENTI else None,
+        }
+    if body.sound_riprendi is not None:
+        r = body.sound_riprendi or {}
+        slug = str(r.get("slug") or "")[:120]
+        updates["sound_riprendi"] = ({"slug": slug, "secondo": max(0, int(r.get("secondo") or 0)),
+                                      "at": utc_now()} if slug else None)
+    if body.sound_recenti is not None:
+        visti, puliti = set(), []
+        for s in body.sound_recenti:
+            s = str(s or "")[:120]
+            if s and s not in visti:
+                visti.add(s)
+                puliti.append(s)
+        updates["sound_recenti"] = puliti[:20]
+    if updates:
+        await platform_accounts_collection.update_one({"id": account["id"]}, {"$set": updates})
+    fresh = {**account, **updates}
+    return {"sound_preferenze": fresh.get("sound_preferenze") or None,
+            "sound_riprendi": fresh.get("sound_riprendi") or None,
+            "sound_recenti": fresh.get("sound_recenti") or []}
 
 
 @router.patch("/me")

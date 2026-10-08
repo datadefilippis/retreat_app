@@ -58,8 +58,8 @@ class TestLaCasa:
             assert riga in src, riga
         # la card porta la provenienza al player (SN0: ?da=, ?playlist=)
         assert "const href = `/frequenze/${t.slug}?da=${da}${playlist ? `&playlist=${encodeURIComponent(playlist)}` : ''}`;" in src
-        # la vetrina: la traccia o la playlist in_vetrina, altrimenti la piu' recente
-        assert "tutte.find((t) => t.in_vetrina) || tutte[0]" in src and "playlists.find((p) => p.in_vetrina)" in src
+        # la vetrina: a rotazione fra le in_vetrina (SN2), altrimenti la piu' recente
+        assert "inVetrina[giorno % inVetrina.length]" in src and "tutte[0]" in src
         # le preferite chiedono l'account, mai l'email (stessa regola di prima)
         assert "if (!hasAccount) { setHeartAsk(true); return; }" in src
         # la barra in basso: cinque gesti

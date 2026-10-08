@@ -25,6 +25,43 @@ const chip = (on) => ({
 });
 const campo = { background: 'transparent', color: 'inherit', border: '1px solid var(--line)', borderRadius: 8, padding: '4px 8px', fontSize: 12 };
 
+/* SN2 (8/10/2026, piano §4.5) — L'ANNUNCIO AL CERCHIO: un bottone, una prova
+   a secco che dice a quante persone si scrive, la conferma, l'invio. Una
+   volta sola per contenuto: dopo, resta la riga «Annunciata il …». */
+const dataBreve = (iso) => { try { return new Date(iso).toLocaleDateString('it-IT', { day: 'numeric', month: 'long' }); } catch { return ''; } };
+export function AnnunciaCerchio({ annuncio, cosa = 'meditazione', aSecco, invia, onFatto }) {
+  const [occupato, setOccupato] = useState(false);
+  const [esito, setEsito] = useState('');
+  if (annuncio?.at) {
+    return (
+      <span style={{ fontSize: 12, color: 'var(--dimmer)' }} data-testid="fq-annunciata">
+        ✉ Annunciata al Cerchio il {dataBreve(annuncio.at)}{annuncio.stato === 'fatto' ? ` · ${annuncio.inviati} email` : ' · in corso'}
+      </span>
+    );
+  }
+  const vai = async () => {
+    setOccupato(true); setEsito('');
+    try {
+      const prova = (await aSecco()).data;
+      if (!prova.destinatari) { setEsito('Nessun destinatario nel Cerchio.'); return; }
+      if (!window.confirm(`Scrivo a ${prova.destinatari} ${prova.destinatari === 1 ? 'persona' : 'persone'} del Cerchio:\n«${prova.oggetto}»\n\nProcedo? Si fa una volta sola.`)) return;
+      await invia();
+      setEsito('Annuncio partito.');
+      await onFatto?.();
+    } catch (err) {
+      const d = err?.response?.data?.detail;
+      setEsito((typeof d === 'string' && d) || 'Annuncio non riuscito.');
+    } finally { setOccupato(false); }
+  };
+  return (
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+      <button type="button" style={chip(false)} disabled={occupato} data-testid="fq-annuncia" onClick={vai}
+        title={`Scrive al Cerchio che c'è una nuova ${cosa}, con il link che apre già sbloccato`}>✉ Annuncia al Cerchio</button>
+      {esito && <span style={{ fontSize: 12, color: 'var(--dimmer)' }}>{esito}</span>}
+    </span>
+  );
+}
+
 export function CampiCasa({ traccia, onCambio, composer }) {
   const [occupato, setOccupato] = useState(false);
   const [tags, setTags] = useState((traccia.tags || []).join(', '));
@@ -77,6 +114,10 @@ export function CampiCasa({ traccia, onCambio, composer }) {
           {composer && (
             <button type="button" style={chip(!!traccia.in_vetrina)} disabled={occupato} data-testid="fq-vetrina"
               onClick={() => salva({ in_vetrina: !traccia.in_vetrina })} aria-pressed={!!traccia.in_vetrina}>{traccia.in_vetrina ? '★ In vetrina' : 'In vetrina'}</button>
+          )}
+          {composer && (
+            <AnnunciaCerchio annuncio={traccia.annuncio} cosa="meditazione"
+              aSecco={() => frequenciesAPI.annuncia(traccia.id, true)} invia={() => frequenciesAPI.annuncia(traccia.id)} onFatto={onCambio} />
           )}
         </div>
       )}
@@ -191,6 +232,10 @@ export function PlaylistPannello({ tracce, composer }) {
                       : <span style={{ fontSize: 12, color: 'var(--dimmer)' }}>Pubblicazione su invito</span>
                   ) : (
                     <button type="button" className="add" onClick={() => azione(() => frequenciesAPI.playlists.unpublish(p.id), 'Playlist ritirata.')}>Ritira</button>
+                  )}
+                  {composer && p.status === 'published' && (
+                    <AnnunciaCerchio annuncio={p.annuncio} cosa="playlist"
+                      aSecco={() => frequenciesAPI.playlists.annuncia(p.id, true)} invia={() => frequenciesAPI.playlists.annuncia(p.id)} onFatto={carica} />
                   )}
                   <button type="button" className="live" onClick={() => setAperta(inModifica ? null : p.id)}>{inModifica ? 'Chiudi' : 'Modifica'}</button>
                   <button type="button" className="add" style={{ marginLeft: 'auto' }}

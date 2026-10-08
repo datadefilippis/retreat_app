@@ -161,8 +161,17 @@ export default function MeditazioniCasa() {
       return true;
     });
   }, [tutte, q, intent, durata, voce]);
-  const vetrina = tutte.find((t) => t.in_vetrina) || tutte[0] || null;
-  const playlistVetrina = playlists.find((p) => p.in_vetrina) || null;
+  /* SN2 — LA VETRINA A ROTAZIONE: fra tutto cio' che e' «in vetrina»
+     (meditazioni e playlist) ne esce una al giorno, la stessa per tutti,
+     senza sorteggi: il giorno decide. Senza nulla in vetrina, la piu' recente. */
+  const giorno = Math.floor(Date.now() / 86400000);
+  const inVetrina = [
+    ...playlists.filter((p) => p.in_vetrina).map((p) => ({ playlist: p })),
+    ...tutte.filter((t) => t.in_vetrina).map((t) => ({ traccia: t })),
+  ];
+  const scelta = inVetrina.length ? inVetrina[giorno % inVetrina.length] : (tutte[0] ? { traccia: tutte[0] } : null);
+  const vetrina = scelta?.traccia || null;
+  const playlistVetrina = scelta?.playlist || null;
   const brevi = tutte.filter((t) => (t.duration_sec || 0) <= 10 * 60).slice(0, 12);
   const novita = tutte.slice(0, 12);
   const piuAscoltate = [...tutte].filter((t) => t.plays_total > 0).sort((a, b) => b.plays_total - a.plays_total).slice(0, 12);

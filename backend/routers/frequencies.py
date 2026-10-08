@@ -17,7 +17,7 @@ from pathlib import Path
 from typing import Optional
 
 from fastapi import (
-    APIRouter, Body, Depends, File, Form, HTTPException, Query, Request,
+    APIRouter, BackgroundTasks, Body, Depends, File, Form, HTTPException, Query, Request,
     Response, UploadFile, status,
 )
 from pydantic import BaseModel
@@ -137,6 +137,7 @@ _LIST_PROJECTION = {
     "_id": 0, "id": 1, "title": 1, "intent": 1, "status": 1,
     "slug": 1, "plays_total": 1, "visibility": 1,
     "created_at": 1, "updated_at": 1,
+    "annuncio": 1,   # SN2 — quando e' stata annunciata al Cerchio
     # della ricetta, in lista, serve solo la durata
     "score.duration_sec": 1, "score.layers": 1,
     # SN0 — i campi della casa: copertina, accesso, momento, tag, vetrina, voce
@@ -903,6 +904,47 @@ async def ascolti_traccia(track_id: str, current_user: dict = Depends(require_so
     avvii = eventi.get("avvio", 0)
     return {"plays_total": t.get("plays_total") or 0, "eventi": eventi, "provenienze": provenienze,
             "completamento": (round(100 * eventi.get("fine", 0) / avvii) if avvii else None)}
+
+
+@router.post("/tracks/{track_id}/annuncia")
+async def annuncia_traccia(track_id: str, sfondo: BackgroundTasks, a_secco: bool = Query(False),
+                           current_user: dict = Depends(require_sound_crea)):
+    """SN2 — L'ANNUNCIO AL CERCHIO: «nuova meditazione», con il link che
+    apre gia' sbloccato. Solo la chiave 1 (le meditazioni pubbliche sono
+    sue), solo pubblicata e non riservata, UNA volta sola. `a_secco=1`
+    conta i destinatari e mostra l'anteprima senza spedire."""
+    from database import frequency_tracks_collection, organizations_collection
+    from services import annunci_sound
+    org_id = current_user["organization_id"]
+    if not current_user.get("_sound_composer"):
+        raise HTTPException(status_code=403, detail="L'annuncio al Cerchio è su invito, come le Meditazioni di Aurya.")
+    t = await frequency_tracks_collection.find_one(
+        {"id": track_id, "organization_id": org_id},
+        {"_id": 0, "id": 1, "slug": 1, "title": 1, "description": 1, "intent": 1, "cover_url": 1,
+         "score.duration_sec": 1, "duration_sec": 1, "guida_nome": 1, "status": 1, "visibility": 1, "annuncio": 1})
+    if not t:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Traccia non trovata.")
+    if t.get("status") != "published" or t.get("visibility") == "private" or not t.get("slug"):
+        raise HTTPException(status_code=409, detail="Si annuncia solo una meditazione pubblicata e non riservata.")
+    guida = t.get("guida_nome") or ""
+    if not guida:
+        org = await organizations_collection.find_one({"id": org_id}, {"_id": 0, "name": 1})
+        guida = (org or {}).get("name") or ""
+    testo = annunci_sound.testo_annuncio("traccia", t, guida)
+    lista = await annunci_sound.destinatari()
+    esito = {"destinatari": len(lista), "oggetto": testo["oggetto"], "anteprima": testo["corpo"],
+             "gia_annunciata": (t.get("annuncio") or {}).get("at")}
+    if a_secco:
+        return esito
+    if t.get("annuncio"):
+        raise HTTPException(status_code=409, detail="Questa meditazione è già stata annunciata al Cerchio.")
+    if not lista:
+        raise HTTPException(status_code=409, detail="Nessun destinatario nel Cerchio.")
+    if not await annunci_sound.prenota(frequency_tracks_collection, track_id, len(lista)):
+        raise HTTPException(status_code=409, detail="Questa meditazione è già stata annunciata al Cerchio.")
+    sfondo.add_task(annunci_sound.spedisci, "traccia", frequency_tracks_collection, track_id,
+                    testo["oggetto"], testo["corpo"], testo["percorso"], lista)
+    return {**esito, "avviato": True}
 
 
 @router.get("/favorites")

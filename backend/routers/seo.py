@@ -145,9 +145,9 @@ async def build_core() -> str:
               fromlist=["_biblioteca_seo"])._biblioteca_seo())],
         _url(f"{base}/sound/impara", priority="0.6"),
         _url(f"{base}/sound/impara/glossario", priority="0.4"),
-        _url(f"{base}/sound/calm", priority="0.7"),
-        _url(f"{base}/sound/ground", priority="0.7"),
-        _url(f"{base}/sound/respiro", priority="0.7"),
+        # SN2 (8/10/2026, decisione 7): CALM, GROUND e RESPIRO si ritirano
+        # (non sono meditazioni nate in Crea): fuori dalla sitemap, i loro
+        # URL rimandano a /meditazioni (registro: rimandi)
         _url(f"{base}/sound/lab", priority="0.5"),
         _url(f"{base}/sound/lab/banco", priority="0.4"),
         _url(f"{base}/sound/lab/orecchio", priority="0.4"),

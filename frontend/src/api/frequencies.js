@@ -44,6 +44,8 @@ export const frequenciesAPI = {
   registraAscolto: (slug, { evento, provenienza, playlist, secondo } = {}) =>
     api.post(`/frequencies/public/${slug}/ascolto`, { evento, provenienza, playlist, secondo }),
   ascolti: (trackId) => api.get(`/frequencies/tracks/${trackId}/ascolti`),
+  // SN2: l'annuncio al Cerchio («nuova meditazione»); a secco = conta e anteprima, senza spedire
+  annuncia: (trackId, aSecco = false) => api.post(`/frequencies/tracks/${trackId}/annuncia${aSecco ? '?a_secco=1' : ''}`),
   // SN0: la copertina della traccia
   uploadCover: (trackId, file) => {
     const fd = new FormData();
@@ -59,6 +61,7 @@ export const frequenciesAPI = {
     cover: (id, file) => { const fd = new FormData(); fd.append('file', file); return api.post(`/frequencies/playlists/${id}/copertina`, fd, { headers: { 'Content-Type': 'multipart/form-data' } }); },
     publish: (id) => api.post(`/frequencies/playlists/${id}/publish`),
     unpublish: (id) => api.post(`/frequencies/playlists/${id}/unpublish`),
+    annuncia: (id, aSecco = false) => api.post(`/frequencies/playlists/${id}/annuncia${aSecco ? '?a_secco=1' : ''}`),   // SN2
     remove: (id) => api.delete(`/frequencies/playlists/${id}`),
     pubbliche: (provaToken) => api.get('/frequencies/playlists', { headers: provaToken ? { 'X-Fqz-Unlock': provaToken } : {} }),
     pubblica: (slug, provaToken) => api.get(`/frequencies/playlists/${slug}`, { headers: provaToken ? { 'X-Fqz-Unlock': provaToken } : {} }),

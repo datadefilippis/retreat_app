@@ -59,7 +59,9 @@ class TestIx1LePorteChiuse:
         # RB7 (10/9/2026): /come-funziona (guscio vuoto in fase rete) e' un 301 come /ritiri
         # RE (10/9/2026 sera): /ritiri ed /esplora-ritiri rimandano al calendario /esperienze
         # SEO-A (14/9/2026 sera): /magazine rispondeva 200 noindex «Aurya» → 301 /blog
-        assert REGISTRO["rimandi"] == {"index.html": "/", "ritiri": "/esperienze", "come-funziona": "/manifesto", "magazine": "/blog"}
+        # SN2 (8/10/2026, Sound decisione 7): CALM, GROUND e RESPIRO si ritirano → 301 verso la casa delle meditazioni
+        assert REGISTRO["rimandi"] == {"index.html": "/", "ritiri": "/esperienze", "come-funziona": "/manifesto", "magazine": "/blog",
+                                       "sound/calm": "/meditazioni", "sound/ground": "/meditazioni", "sound/respiro": "/meditazioni"}
         assert REGISTRO["rimandi_prefisso"] == {"esplora-operatori": "/operatori", "esplora-ritiri": "/esperienze",
                                                 "co": "/corso$1", "courses": "/accademia"}   # AC3: il legacy dei corsi rimanda
         for seg in REGISTRO["solo_con_slug"]:

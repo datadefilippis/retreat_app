@@ -130,7 +130,8 @@
     "struttura/strutture": "SR fase 0 (8/9/2026): i segmenti /struttura (area della struttura, app noindex) e /strutture (directory pubblica) sono PRENOTATI per la fase 1 ma NON stanno nel registro finche' App.js non ha le rotte: la guardia 'non inventa rotte' vieta le porte aperte su stanze vuote, e oggi l'ignoto fa 404, che e' giusto. In fase 1: rotte in App.js + qui + rigenera nginx.",
     "come-funziona": "RB7 (10/9/2026): come /ritiri — resta classificata (App.js ha ancora il gate LC2, che nella SPA manda al Manifesto) ma per nginx e' un 301 vero verso /manifesto: il renderer rispondeva 200 con zero testo, una pagina vuota indicizzabile.",
     "magazine": "SEO-A (14/9/2026 sera): rispondeva 200 noindex col titolo «Aurya»; per nginx e' un 301 vero verso /blog (la SPA continua a rimandare).",
-    "co/courses": "AC3 (7/10/2026): il corso legacy (/co/{org}/{slug}) e l'editor legacy (/courses) sono RIMANDI alla pagina del corso (/corso) e all'Accademia (/accademia): servizio per la SPA, 301 di prefisso per nginx."
+    "co/courses": "AC3 (7/10/2026): il corso legacy (/co/{org}/{slug}) e l'editor legacy (/courses) sono RIMANDI alla pagina del corso (/corso) e all'Accademia (/accademia): servizio per la SPA, 301 di prefisso per nginx.",
+    "sound/calm, sound/ground, sound/respiro": "SN2 (8/10/2026, piano Aurya Sound, decisione 7): le tre esperienze si RITIRANO (non sono meditazioni nate in Crea). Per nginx sono 301 esatti verso /meditazioni; nella SPA la pagina rimanda (Navigate) dietro il flag SOUND_CASA_NUOVA; la shell risponde noindex con il rimando; fuori dalla sitemap. Il codice resta una release come dismesso, poi si pota."
   },
   "solo_con_slug": [
     "corso",
@@ -149,7 +150,10 @@
     "index.html": "/",
     "ritiri": "/esperienze",
     "come-funziona": "/manifesto",
-    "magazine": "/blog"
+    "magazine": "/blog",
+    "sound/calm": "/meditazioni",
+    "sound/ground": "/meditazioni",
+    "sound/respiro": "/meditazioni"
   },
   "rimandi_prefisso": {
     "esplora-operatori": "/operatori",

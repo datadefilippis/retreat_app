@@ -1590,7 +1590,8 @@ class TestPrivilegioDelComporre:
         # nessun endpoint del comporre lo usa direttamente
         assert src.count("Depends(get_current_user))") == 2
         # SN0 (8/10/2026): +3 (copertina POST/DELETE, conteggi degli ascolti)
-        assert src.count("Depends(require_sound_crea))") == 15
+        # SN2 (8/10/2026): +1 (l'annuncio al Cerchio)
+        assert src.count("Depends(require_sound_crea))") == 16
         assert src.count("Depends(require_sound_composer))") == 0
         # la decisione vive in un posto solo
         assert "from services.studio_access import" in src

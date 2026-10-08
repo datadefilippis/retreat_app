@@ -269,18 +269,16 @@ class TestLaPorta:
         import sys
         sys.path.insert(0, str(BACKEND_DIR))
         from routers import seo_shell as shell
+        # SN2 (8/10/2026, decisione 7): CALM si e' RITIRATA — la shell risponde
+        # noindex con il rimando alla casa delle meditazioni (nginx: 301)
         meta = await shell.resolve_meta("/sound/calm")
         assert meta is not None, "la shell non conosce /sound/calm: 404"
-        assert not meta.get("noindex")
-        assert meta["canonical"].endswith("/sound/calm")
-        corpo = meta.get("content_html", "").lower()
-        assert "calma" in corpo and "cuffie" in corpo
-        for bugia in ("terapia:", "cortisolo", "theta"):
-            assert bugia not in corpo
+        assert meta.get("noindex") and meta["canonical"] is None
+        assert 'href="/meditazioni"' in meta.get("content_html", "")
 
     def test_sitemap_e_landing(self):
         seo = (BACKEND_DIR / "routers" / "seo.py").read_text()
-        assert "/sound/calm" in seo
+        assert "/sound/calm" not in seo      # SN2: ritirata, fuori dalla sitemap
         landing = (FQ / "SoundLandingPage.js").read_text()
         assert 'data-testid="sld-esperienze"' in landing
         assert "ELENCO.map" in landing, \

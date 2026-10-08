@@ -42,6 +42,10 @@ const fmtMin = (s) => `${Math.round((s || 0) / 60)} minuti`;
 export default function CancelloLettera({
   slug, returnTo, durataSec = 0, variante = 'scuro',
   onSbloccato, children,
+  /* SN2 (8/10/2026, piano §4.2) — il cancello con la copertina e la playlist
+     in vista: si capisce COSA si sta sbloccando. Tutti facoltativi: la
+     landing non li passa e resta com'era. */
+  cover = null, titolo = '', playlist = null,
 }) {
   const [email, setEmail] = useState('');
   const [nome, setNome] = useState('');
@@ -95,6 +99,26 @@ export default function CancelloLettera({
 
   return (
     <div data-testid="cancello-lettera">
+      {(cover || titolo) && (
+        <div data-testid="cancello-copertina"
+          style={{ display: 'flex', gap: 14, alignItems: 'center', marginBottom: 14, textAlign: 'left' }}>
+          {cover && (
+            <img src={cover} alt="" width="84" height="84"
+              style={{ width: 84, height: 84, objectFit: 'cover', borderRadius: 12, flex: 'none' }} />
+          )}
+          <div style={{ minWidth: 0 }}>
+            <div style={{ fontSize: 11, letterSpacing: '.1em', textTransform: 'uppercase',
+                          color: chiaro ? '#8a7440' : ORO }}>Stai per sbloccare</div>
+            {titolo && <div style={{ fontSize: 17, fontWeight: 500, lineHeight: 1.2, marginTop: 2 }}>{titolo}</div>}
+            {playlist?.title && (
+              <div style={{ fontSize: 12.5, marginTop: 3, color: chiaro ? '#6b6b6b' : 'var(--dim)' }}>
+                Parte della playlist «{playlist.title}»
+                {playlist.tracce?.length ? ` · ${playlist.tracce.length} meditazioni` : ''}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
       {/* CN3 (3/9/2026, piano IL CERCHIO): il cancello parla di
           appartenenza, non di newsletter — «Il Cerchio» e' il nome, «la
           Lettera» una delle cose che ricevi. Dal 25/9 il testo e' del

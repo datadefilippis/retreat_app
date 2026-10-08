@@ -714,6 +714,7 @@ export default function PublicFrequencyPage() {
         <div className="gate">
           <div className="gatebox" style={{ maxWidth: 520 }}>
             <CancelloLettera slug={slug} durataSec={track?.score?.duration_sec}
+              cover={track?.cover_url} titolo={track?.title} playlist={playlist}
               onSbloccato={dopoSblocco}>
               <p style={{ fontSize: 12.5, color: 'var(--dim)', marginTop: 8 }}>
                 Oppure{' '}

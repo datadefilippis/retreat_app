@@ -206,7 +206,7 @@ class TestNelSistema:
         app = (FRONTEND_SRC / "App.js").read_text()
         assert 'path="/sound/respiro"' in app
         seo = (BACKEND_DIR / "routers" / "seo.py").read_text()
-        assert "/sound/respiro" in seo
+        assert "/sound/respiro" not in seo   # SN2: ritirata, fuori dalla sitemap
         shell = (BACKEND_DIR / "routers" / "seo_shell.py").read_text()
         assert '"respiro"' in shell and "_respiro_content_html" in shell
 

@@ -209,18 +209,15 @@ class TestLaPorta:
         import sys
         sys.path.insert(0, str(BACKEND_DIR))
         from routers import seo_shell as shell
+        # SN2 (8/10/2026, decisione 7): GROUND si e' RITIRATA — noindex col rimando
         meta = await shell.resolve_meta("/sound/ground")
         assert meta is not None, "la shell non conosce /sound/ground: 404"
-        assert not meta.get("noindex")
-        assert meta["canonical"].endswith("/sound/ground")
-        corpo = meta.get("content_html", "").lower()
-        assert "peso" in corpo and "cuffie" in corpo
-        for bugia in ("cortisolo", "theta", "guarisce"):
-            assert bugia not in corpo
+        assert meta.get("noindex") and meta["canonical"] is None
+        assert 'href="/meditazioni"' in meta.get("content_html", "")
 
     def test_sitemap_e_registro(self):
         seo = (BACKEND_DIR / "routers" / "seo.py").read_text()
-        assert "/sound/ground" in seo
+        assert "/sound/ground" not in seo    # SN2: ritirata, fuori dalla sitemap
         reg = _codice(REGISTRO)
         assert "ground: {" in reg and "costruisci: costruisciGround" in reg
         landing = (FQ / "SoundLandingPage.js").read_text()
