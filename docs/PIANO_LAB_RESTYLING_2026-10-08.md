@@ -197,7 +197,35 @@ ritorno, il cruscotto sticky delle Risonanze, la shell SEO del Lab.
 
 Totale **≈ 3,5 giorni**, LA5 dentro gli altri.
 
-## 6. Domande per il founder
+## 7. Stato: LOTTO LA FATTO in locale (8/10 sera, «rendi tutto user-friendly, anche popup»)
+- Flag `LAB_VESTITO_NUOVO` in `stato.js`; `?vestito=vecchio` mostra il Lab
+  di prima (telaio e Sala interi).
+- **LA0**: `Stanza.jsx` nelle stanze monta il selettore a tre e la riga delle
+  stanze (`lab-riga-stanze`, `lab-riga-<slug>`, «?» fuori dallo scorrimento);
+  la barra vecchia resta nel vecchio vestito (`StanzeSound` nel file, pin);
+  375 px senza sbordi.
+- **LA1**: foglio «?» (`lab-spiega-foglio`, apre da solo alla prima visita:
+  `fqz_lab_spiega_<slug>` in localStorage con try/catch; `lab-spiega-apri`,
+  `lab-spiega-vai`) con la testata di sempre (`lab-testata`, «Perché ti
+  interessa», «Cosa puoi fare qui»); didascalie ripiegabili per delega
+  (`.lab-didascalia.aperta`), aperte su desktop; coda in una riga.
+- **LA2/LA3**: il telaio prende l'ULTIMO figlio come letture (`lettureUltime`
+  in LabBanco, LabOrecchio, LabMeraviglie: l'ordine SORGENTI poi LETTURE del
+  pin resta); `lab-due-colonne` → due colonne su desktop (letture sticky),
+  striscia sticky in alto sul telefono (grid 3×100 %, snap). Meraviglie e
+  percorsi a card; Ritratto a passi numerati via CSS; Risonanze e Orecchio
+  con le card nuove.
+- **LA4**: Sala con `tono` e `sagoma` per carta, profili con «Vai» a pastiglia.
+- **LA5**: `lab/lab-vestito.css` sopra `lab.css` (intatto).
+- Misure sul telefono: Banco 4.576 → 2.942 px, Meraviglie 4.069 → 2.779,
+  Ritratto 2.114 → 1.358, Risonanze 2.238 → 1.601; desktop Banco 3.228 →
+  2.061 con generatore e oscilloscopio affiancati.
+- Guardia `tests/test_lab_la.py`; `test_sound_lab` (480 assert) verde.
+- Rimandi: la riga cuffie resta un riquadro (tre righe, compatto) perché il
+  componente `SafetyLine` non cambia; il «WAV dello sweep» nelle Risonanze
+  ha il layout di prima.
+
+## 6. Domande per il founder (risposte implicite nel «rendi tutto user-friendly, anche popup»: sì a tutte)
 1. **La spiegazione dietro «?»** (aperta da sola la prima volta, poi
    ripiegata), o sempre a vista com'è oggi?
 2. **Le letture accanto ai comandi** (due colonne su desktop, tela sticky
