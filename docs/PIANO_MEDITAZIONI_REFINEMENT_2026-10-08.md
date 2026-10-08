@@ -208,6 +208,13 @@ Totale **≈ 5,5 giorni**. MR4 prima di MR3 perché il lettore mostra la
 categoria; MR5 per ultimo perché disegna sopra tutto. Ogni lotto: commit,
 nessun deploy senza «go».
 
+## Stato (8/10/2026, sera)
+
+- **MR1 FATTO** in locale (`da73cd03`): copertine 1:1 1200 WebP all'upload (traccia e playlist), copertina generata alla pubblicazione se manca (tono + anello + titolo), script `copertine_sound_quadrate.py`, card quadrate. Nota per MR5: il badge «Presto nel Più» e il cuore coprono l'etichetta «Aurya Sound» delle copertine generate: si abbassa l'etichetta o si sposta il badge.
+- **MR2 FATTO** in locale (`c3d72ed0`): hook `usePreferite` + componente `Cuore`; cuore su card, vetrina, riprendi, playlist (card e pagina, righe), player; playlist salvate (stessa collezione, prefisso) nel tuo spazio e nell'account.
+- **MR4 FATTO** in locale (`f6f800c1`): registro `sound_categorie` con seme «Meditazioni guidate», Regia → Sound → Categorie, select in Crea e in Le mie tracce, obbligo per pubblicare in pubblico, filtri e righe della casa per categoria, `?categoria=`.
+- **MR3 in corso**; MR5 dopo; **MR6 (nuovo, richiesta del founder)**: la landing `/sound` esplicativa di prima si ripristina e si ottimizza al posto dell'hub a soli pulsanti.
+
 ## Decisioni del founder (8/10/2026, sera)
 
 1. **Copertine 1:1.**

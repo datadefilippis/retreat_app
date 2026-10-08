@@ -17,12 +17,26 @@ import { SogliaCerchio } from '../MeditazioniPage';
 import { INTENTI, fmtMin } from './MeditazioniCasa';
 import Cuore, { InvitoAccount } from './Cuore';
 import { usePreferite } from './preferite';
+import { SOUND_LETTORE_IN_CASA } from '../stato';
+import { LettoreProvider, useLettore } from './lettore';
+import { LettoreBarra, SchedaMeditazione } from './LettoreBarra';
 import '../frequenze.css';
 import '../meditazioni.css';
 import './casa.css';
 
+/* MR3 — la playlist suona nella sua barra: «Ascolta tutta» e ogni riga */
 export default function PlaylistPage() {
+  return (
+    <LettoreProvider>
+      <PlaylistPageDentro />
+    </LettoreProvider>
+  );
+}
+
+function PlaylistPageDentro() {
   const { slug } = useParams();
+  const L = useLettore();
+  const suona = SOUND_LETTORE_IN_CASA && L ? (t, pl) => L.avvia(t, { da: 'playlist', playlist: pl }) : null;
   const hasAccount = !!localStorage.getItem(PLATFORM_TOKEN_KEY);
   const [p, setP] = useState(null);
   const [stato, setStato] = useState('loading');   // loading | ok | locked | notfound
@@ -59,7 +73,7 @@ export default function PlaylistPage() {
 
   const prima = p.tracce[0];
   return (
-    <div className="fqz med casa" data-testid="casa-playlist">
+    <div className={`fqz med casa${L?.traccia ? ' con-lettore' : ''}`} data-testid="casa-playlist">
       <SoundTopbar firma="Meditazioni" qui="/meditazioni" />
       <main>
         <p style={{ margin: '6px 0 14px' }}><Link to="/meditazioni" style={{ color: 'var(--dimmer)', textDecoration: 'none', fontSize: 13 }}>← Le meditazioni</Link></p>
@@ -74,7 +88,9 @@ export default function PlaylistPage() {
             {p.description && <p style={{ color: 'var(--dim)', marginTop: 10, maxWidth: 560 }}>{p.description}</p>}
             {prima && (
               <p style={{ marginTop: 16 }}>
-                <Link to={`/frequenze/${prima.slug}?da=playlist&playlist=${encodeURIComponent(p.slug)}`} className="casa-cta" data-testid="casa-playlist-ascolta">▶ Ascolta tutta</Link>
+                {suona
+                  ? <button type="button" className="casa-cta" style={{ border: 0, cursor: 'pointer' }} data-testid="casa-playlist-ascolta" onClick={() => suona(prima, p)}>▶ Ascolta tutta</button>
+                  : <Link to={`/frequenze/${prima.slug}?da=playlist&playlist=${encodeURIComponent(p.slug)}`} className="casa-cta" data-testid="casa-playlist-ascolta">▶ Ascolta tutta</Link>}
               </p>
             )}
           </div>
@@ -86,7 +102,9 @@ export default function PlaylistPage() {
               <span className="pl-mini">{t.cover_url && <img src={t.cover_url} alt="" loading="lazy" />}</span>
               <span className="t"><b>{t.title}</b><span>{t.intent ? `${INTENTI[t.intent] || t.intent} · ` : ''}{fmtMin(t.duration_sec)}{t.has_voce ? ' · con la voce' : ''}{t.accesso === 'piu' ? ' · Più' : ''}</span></span>
               <Cuore variante="riga" on={pref.isFav(t.slug)} onClick={() => pref.toggle(t.slug)} titolo={t.title} testid="playlist-riga-cuore" />
-              <Link to={`/frequenze/${t.slug}?da=playlist&playlist=${encodeURIComponent(p.slug)}`} className="med-ascolta">Ascolta</Link>
+              {suona
+                ? <button type="button" className="med-ascolta" style={{ cursor: 'pointer' }} data-testid="playlist-riga-ascolta" onClick={() => suona(t, p)}>{L?.traccia?.slug === t.slug && L.playing ? '⏸ In ascolto' : 'Ascolta'}</button>
+                : <Link to={`/frequenze/${t.slug}?da=playlist&playlist=${encodeURIComponent(p.slug)}`} className="med-ascolta">Ascolta</Link>}
             </li>
           ))}
         </ol>
@@ -97,6 +115,9 @@ export default function PlaylistPage() {
       </footer>
       {safety && <SafetyCurtain mode="review" onClose={() => setSafety(false)} />}
       <InvitoAccount aperto={pref.chiediAccount} onChiudi={() => pref.setChiediAccount(false)} ritorno={`/meditazioni/playlist/${slug}`} />
+      <LettoreBarra />
+      <SchedaMeditazione />
+      {L?.curtain}
     </div>
   );
 }

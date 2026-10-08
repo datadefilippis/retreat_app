@@ -16,7 +16,9 @@ import { Link, useNavigate } from 'react-router-dom';
 import platformApi, { PLATFORM_TOKEN_KEY } from '../../../api/platformClient';
 import { frequenciesAPI } from '../../../api/frequencies';
 import { storefrontAPI } from '../../../api/storefront';
-import { SOUND_PIU_ATTIVO } from '../stato';
+import { SOUND_PIU_ATTIVO, SOUND_LETTORE_IN_CASA } from '../stato';
+import { LettoreProvider, useLettore } from './lettore';
+import { LettoreBarra, SchedaMeditazione } from './LettoreBarra';
 import { prova, migraVecchieChiavi } from '../../../lib/cerchio';
 import { SafetyCurtain, SafetyLine } from '../SafetyCurtain';
 import Cuore, { InvitoAccount } from './Cuore';
@@ -36,23 +38,31 @@ export const fmtMin = (s) => { const m = Math.round((s || 0) / 60); return m < 1
 export const fmtMinSec = (s) => { const t = Math.max(0, Math.round(s || 0)); return `${Math.floor(t / 60)}:${String(t % 60).padStart(2, '0')}`; };
 
 /** la card di una meditazione: copertina (o velo del tono), durata, titolo, chi guida.
-    MR2: il cuore c'e' SEMPRE (fav/onCuore arrivano dall'hook condiviso, o da chi la monta) */
-export function CardMeditazione({ t, da = 'casa', playlist = null, fav = false, onCuore = null }) {
+    MR2: il cuore c'e' SEMPRE (fav/onCuore arrivano dall'hook condiviso, o da chi la monta).
+    MR3: con il lettore in casa la copertina SUONA (onPlay) e il titolo apre il foglio (onApri);
+    senza (flag spento o chi la monta non li passa) la card porta alla pagina come prima. */
+export function CardMeditazione({ t, da = 'casa', playlist = null, fav = false, onCuore = null, onPlay = null, onApri = null }) {
   const href = `/frequenze/${t.slug}?da=${da}${playlist ? `&playlist=${encodeURIComponent(playlist)}` : ''}`;
+  const inCasa = SOUND_LETTORE_IN_CASA && !!onPlay;
+  const Cover = inCasa ? 'div' : Link;
+  const coverProps = inCasa ? { role: 'button', tabIndex: 0, onClick: () => onPlay(t), onKeyDown: (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onPlay(t); } } } : { to: href };
+  const Corpo = inCasa ? 'div' : Link;
+  const corpoProps = inCasa ? { role: 'button', tabIndex: 0, onClick: () => (onApri ? onApri(t) : onPlay(t)) } : { to: href };
   return (
     <div className={`mcard tono-${TONI[t.intent] || 'oro'}`} data-testid="casa-card">
-      <Link to={href} className="mcover" aria-label={`Ascolta ${t.title}`}>
+      <Cover className={`mcover${inCasa ? ' senza-link' : ''}`} aria-label={`Ascolta ${t.title}`} {...coverProps}>
         {t.cover_url && <img src={t.cover_url} alt="" loading="lazy" />}
         {t.accesso === 'piu' && <span className="mpiu" title={SOUND_PIU_ATTIVO ? 'Riservata al Più' : 'Presto nel Più: oggi la ascolti col Cerchio'}>{SOUND_PIU_ATTIVO ? 'PIÙ' : 'PRESTO NEL PIÙ'}</span>}
         <span className="mdurata">{fmtMin(t.duration_sec)}</span>
-      </Link>
+        {inCasa && <span className="mplay" aria-hidden="true" data-testid="casa-play"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg></span>}
+      </Cover>
       {onCuore && <Cuore on={fav} onClick={() => onCuore(t.slug)} titolo={t.title} testid="casa-cuore" />}
-      <Link to={href} className="mcorpo">
+      <Corpo className={`mcorpo${inCasa ? ' senza-link' : ''}`} {...corpoProps}>
         <h3>{t.title}</h3>
         <span className="mmeta">
           {t.intent ? `${INTENTI[t.intent] || t.intent} · ` : ''}{t.guida_nome || t.operator?.name}{t.has_voce ? ' · con la voce' : ''}
         </span>
-      </Link>
+      </Corpo>
     </div>
   );
 }
@@ -110,8 +120,21 @@ const ICONE = {
   impara: 'M4 5h7a3 3 0 0 1 3 3v12a2 2 0 0 0-2-2H4zM20 5h-7a3 3 0 0 0-3 3v12a2 2 0 0 1 2-2h8z',
 };
 
+/* MR3 — la casa vive dentro il suo lettore: card e vetrina suonano nella barra */
 export default function MeditazioniCasa() {
+  return (
+    <LettoreProvider>
+      <MeditazioniCasaDentro />
+    </LettoreProvider>
+  );
+}
+
+function MeditazioniCasaDentro() {
   const navigate = useNavigate();
+  const L = useLettore();
+  const suona = SOUND_LETTORE_IN_CASA && L ? (t, opz) => L.avvia(t, opz) : null;
+  const apri = SOUND_LETTORE_IN_CASA && L ? (t) => L.apriScheda(t) : null;
+  const propsCard = (da) => (suona ? { onPlay: (t) => suona(t, { da, playlist: null }), onApri: apri, da } : { da });
   const hasAccount = !!localStorage.getItem(PLATFORM_TOKEN_KEY);
   const [items, setItems] = useState(null);
   const [playlists, setPlaylists] = useState([]);
@@ -229,7 +252,7 @@ export default function MeditazioniCasa() {
   if (locked) return <SogliaCerchio teaserCount={teaserCount} onSbloccato={() => carica()} />;
 
   return (
-    <div className="fqz med casa" data-testid="casa-meditazioni">
+    <div className={`fqz med casa${L?.traccia ? ' con-lettore' : ''}`} data-testid="casa-meditazioni">
       <SoundTopbar firma="Meditazioni" qui="/meditazioni" />
       <header>
         <div>
@@ -266,7 +289,9 @@ export default function MeditazioniCasa() {
                     <div style={{ marginTop: 'auto', paddingTop: 10 }}>
                       {playlistVetrina
                         ? <Link to={`/meditazioni/playlist/${playlistVetrina.slug}`} className="casa-cta" data-testid="casa-oggi-ascolta">Apri la playlist</Link>
-                        : <Link to={`/frequenze/${vetrina.slug}?da=vetrina`} className="casa-cta" data-testid="casa-oggi-ascolta">▶ Ascolta</Link>}
+                        : suona
+                          ? <button type="button" className="casa-cta" style={{ border: 0, cursor: 'pointer' }} data-testid="casa-oggi-ascolta" onClick={() => suona(vetrina, { da: 'vetrina', playlist: null })}>▶ Ascolta</button>
+                          : <Link to={`/frequenze/${vetrina.slug}?da=vetrina`} className="casa-cta" data-testid="casa-oggi-ascolta">▶ Ascolta</Link>}
                     </div>
                   </div>
                 </div>
@@ -290,7 +315,7 @@ export default function MeditazioniCasa() {
 
             {cercando ? (
               <Riga id="risultati" titolo={`${filtrate.length} ${filtrate.length === 1 ? 'meditazione' : 'meditazioni'}`} griglia>
-                {filtrate.map((t) => <CardMeditazione key={t.slug} t={t} da="cerca" fav={favorites.includes(t.slug)} onCuore={toggleFavorite} />)}
+                {filtrate.map((t) => <CardMeditazione key={t.slug} t={t} {...propsCard('cerca')} fav={favorites.includes(t.slug)} onCuore={toggleFavorite} />)}
               </Riga>
             ) : (
               <>
@@ -307,7 +332,8 @@ export default function MeditazioniCasa() {
                     <p className="casa-sub">Dove eri rimasta o rimasto, cosa hai ascoltato, cosa hai salvato.</p>
                     {riprendi && (
                       <Link to={`/frequenze/${riprendi.t.slug}?da=riprendi&t=${riprendi.secondo}`} className={`oggi tono-${TONI[riprendi.t.intent] || 'oro'}`}
-                        style={{ textDecoration: 'none', color: 'inherit', marginBottom: 18 }} data-testid="casa-riprendi">
+                        style={{ textDecoration: 'none', color: 'inherit', marginBottom: 18 }} data-testid="casa-riprendi"
+                        onClick={(e) => { if (suona) { e.preventDefault(); suona(riprendi.t, { da: 'riprendi', playlist: null, da_secondo: riprendi.secondo }); } }}>
                         <div className="oggi-cover" style={{ minHeight: 120 }}>{riprendi.t.cover_url && <img src={riprendi.t.cover_url} alt="" />}
                           <Cuore on={favorites.includes(riprendi.t.slug)} onClick={() => toggleFavorite(riprendi.t.slug)} titolo={riprendi.t.title} testid="casa-riprendi-cuore" />
                         </div>
@@ -323,7 +349,7 @@ export default function MeditazioniCasa() {
                       <>
                         <h2 style={{ fontSize: 18, marginTop: 10 }}>Ascolti recenti</h2>
                         <div className="riga" data-testid="casa-recenti">
-                          {recenti.map((t) => <CardMeditazione key={t.slug} t={t} da="recenti" fav={favorites.includes(t.slug)} onCuore={toggleFavorite} />)}
+                          {recenti.map((t) => <CardMeditazione key={t.slug} t={t} {...propsCard('recenti')} fav={favorites.includes(t.slug)} onCuore={toggleFavorite} />)}
                         </div>
                       </>
                     )}
@@ -331,7 +357,7 @@ export default function MeditazioniCasa() {
                       <>
                         <h2 style={{ fontSize: 18, marginTop: 10 }} id="preferite">Le tue preferite</h2>
                         <div className="riga" data-testid="casa-preferite">
-                          {preferite.map((t) => <CardMeditazione key={t.slug} t={t} da="preferiti" fav onCuore={toggleFavorite} />)}
+                          {preferite.map((t) => <CardMeditazione key={t.slug} t={t} {...propsCard('preferiti')} fav onCuore={toggleFavorite} />)}
                         </div>
                       </>
                     )}
@@ -346,24 +372,24 @@ export default function MeditazioniCasa() {
                   </section>
                 )}
                 <Riga id="per-iniziare" titolo="Per iniziare" sub="Dieci minuti o meno.">
-                  {brevi.map((t) => <CardMeditazione key={t.slug} t={t} fav={favorites.includes(t.slug)} onCuore={toggleFavorite} />)}
+                  {brevi.map((t) => <CardMeditazione key={t.slug} t={t} {...propsCard('casa')} fav={favorites.includes(t.slug)} onCuore={toggleFavorite} />)}
                 </Riga>
                 <Riga id="novita" titolo="Novità">
-                  {novita.map((t) => <CardMeditazione key={t.slug} t={t} fav={favorites.includes(t.slug)} onCuore={toggleFavorite} />)}
+                  {novita.map((t) => <CardMeditazione key={t.slug} t={t} {...propsCard('casa')} fav={favorites.includes(t.slug)} onCuore={toggleFavorite} />)}
                 </Riga>
                 <Riga id="piu-ascoltate" titolo="Le più ascoltate">
-                  {piuAscoltate.map((t) => <CardMeditazione key={t.slug} t={t} fav={favorites.includes(t.slug)} onCuore={toggleFavorite} />)}
+                  {piuAscoltate.map((t) => <CardMeditazione key={t.slug} t={t} {...propsCard('casa')} fav={favorites.includes(t.slug)} onCuore={toggleFavorite} />)}
                 </Riga>
                 {categoriePresenti.map((c) => (
                   <Riga key={c.slug} id={`cat-${c.slug}`} titolo={c.label} sub={c.descrizione || undefined}>
-                    {tutte.filter((t) => t.categoria === c.slug).slice(0, 12).map((t) => <CardMeditazione key={t.slug} t={t} fav={favorites.includes(t.slug)} onCuore={toggleFavorite} />)}
+                    {tutte.filter((t) => t.categoria === c.slug).slice(0, 12).map((t) => <CardMeditazione key={t.slug} t={t} {...propsCard('casa')} fav={favorites.includes(t.slug)} onCuore={toggleFavorite} />)}
                   </Riga>
                 ))}
                 <Riga id="con-la-voce" titolo="Con la voce">
-                  {conVoce.map((t) => <CardMeditazione key={t.slug} t={t} fav={favorites.includes(t.slug)} onCuore={toggleFavorite} />)}
+                  {conVoce.map((t) => <CardMeditazione key={t.slug} t={t} {...propsCard('casa')} fav={favorites.includes(t.slug)} onCuore={toggleFavorite} />)}
                 </Riga>
                 <Riga id="solo-suono" titolo="Solo suono">
-                  {soloSuono.map((t) => <CardMeditazione key={t.slug} t={t} fav={favorites.includes(t.slug)} onCuore={toggleFavorite} />)}
+                  {soloSuono.map((t) => <CardMeditazione key={t.slug} t={t} {...propsCard('casa')} fav={favorites.includes(t.slug)} onCuore={toggleFavorite} />)}
                 </Riga>
               </>
             )}
@@ -387,6 +413,10 @@ export default function MeditazioniCasa() {
 
       {safety && <SafetyCurtain mode="review" onClose={() => setSafety(false)} />}
       <InvitoAccount aperto={heartAsk} onChiudi={() => setHeartAsk(false)} ritorno="/meditazioni" />
+      {/* MR3 — la barra, il foglio e il sipario vivono DENTRO il .fqz (gli stili sono scoped) */}
+      <LettoreBarra />
+      <SchedaMeditazione />
+      {L?.curtain}
     </div>
   );
 }

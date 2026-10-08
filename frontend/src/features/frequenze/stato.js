@@ -18,4 +18,8 @@ export const SOUND_PIU_ATTIVO = false;
    vede e non parte finche' le meditazioni non ci sono. Il server ha lo stesso
    interruttore nell'ambiente (SOUND_ANNUNCI_ATTIVI): spento, risponde 404. */
 export const SOUND_ANNUNCI_ATTIVI = false;
+/* SOUND_LETTORE_IN_CASA (MR3, 8/10/2026): l'ascolto parte dove sei — card e
+   righe suonano nella barra in basso, il titolo apre il foglio; a false le
+   card tornano a portare alla pagina della meditazione. */
+export const SOUND_LETTORE_IN_CASA = true;
 export const PIU_PREZZO = '39 € l\'anno';

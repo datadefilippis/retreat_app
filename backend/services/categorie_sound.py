@@ -58,7 +58,12 @@ async def ricarica() -> List[dict]:
 
 async def elenco(solo_attive: bool = True) -> List[dict]:
     if time.time() - _cache["al"] > _TTL or not _cache["voci"]:
-        await ricarica()
+        try:
+            await ricarica()
+        except Exception as exc:  # noqa: BLE001 — db non raggiungibile (o loop dei test chiuso): il seme basta
+            logger.warning("categorie_sound: registro non letto (%s): uso il seme", exc)
+            if not _cache["voci"]:
+                _cache["voci"] = [dict(SEME)]
     voci = _cache["voci"]
     return [c for c in voci if c.get("attiva", True)] if solo_attive else list(voci)
 

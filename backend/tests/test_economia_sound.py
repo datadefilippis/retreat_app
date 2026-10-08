@@ -88,7 +88,7 @@ class TestVetrinaCheScalaEs4:
             "la vetrina e' tornata a scandire l'intera collezione"
 
     def test_la_pubblicazione_materializza_i_numeri(self):
-        blocco = FREQ.split("def publish_track")[1][:3000]
+        blocco = FREQ.split("def publish_track")[1][:4500]   # MR4: la guardia della categoria sta prima
         assert '"layers_count": len(score.get("layers")' in blocco
         assert '"duration_sec": score.get("duration_sec")' in blocco
 

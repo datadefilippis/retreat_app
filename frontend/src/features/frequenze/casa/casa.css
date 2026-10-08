@@ -103,3 +103,43 @@
 .fqz .cuore-inline{width:38px;height:38px;vertical-align:middle;margin-left:10px}
 .fqz .cuore-inline svg{width:17px;height:17px}
 .fqz .cuore-riga{width:34px;height:34px;flex:none}
+
+/* ── MR3: il lettore in casa (barra fissa in basso) ── */
+.fqz .lettore{position:fixed;left:0;right:0;bottom:0;z-index:40;display:flex;align-items:center;gap:12px;padding:10px 12px calc(10px + env(safe-area-inset-bottom));background:rgba(12,22,24,.97);backdrop-filter:blur(14px);border-top:1px solid var(--line);box-shadow:0 -10px 30px rgba(0,0,0,.35)}
+@media(max-width:899px){.fqz.casa .lettore{bottom:58px;padding-bottom:10px}}
+.fqz .lettore-cover{width:52px;height:52px;border-radius:10px;overflow:hidden;flex:none;background:var(--line)}
+.fqz .lettore-cover img{width:100%;height:100%;object-fit:cover;display:block}
+.fqz .lettore-testo{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.fqz .lettore-titolo{all:unset;cursor:pointer;font-family:var(--serif);font-size:16px;color:var(--bone);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fqz .lettore-meta{font-size:11px;color:var(--dimmer);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fqz .lettore-testo .seekbar,.fqz .lettore-testo .fqz-seek{margin-top:4px}
+.fqz .lettore-gesti{display:flex;align-items:center;gap:6px;flex:none}
+.fqz .lettore-g{width:38px;height:38px;padding:0;min-height:0;border-radius:50%;border:1px solid var(--line);background:transparent;color:var(--bone);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:none}
+.fqz .lettore-g svg{width:18px;height:18px;fill:currentColor;stroke:currentColor;stroke-width:0}
+.fqz .lettore-g:disabled{opacity:.3}
+.fqz .lettore-play{width:46px;height:46px;background:linear-gradient(180deg,#D9C08A,#C9B37E);border-color:#D9C08A;color:#14211B}
+.fqz .lettore-play svg{width:20px;height:20px}
+.fqz .lettore-chiudi svg{fill:none;stroke-width:1.8}
+.fqz .lettore-spin{display:inline-block;animation:lettore-gira 1s linear infinite;font-size:18px}
+@keyframes lettore-gira{to{transform:rotate(360deg)}}
+@media(max-width:600px){.fqz .lettore-cuore{display:none}.fqz .lettore-testo .seekbar{display:none}}
+.fqz.casa.con-lettore{padding-bottom:190px}
+
+/* il tasto ▶ sulla card */
+.fqz.casa .mcard .mplay{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:52px;height:52px;padding:0;min-height:0;border-radius:50%;border:1px solid rgba(233,228,217,.35);background:rgba(12,22,24,.62);color:var(--bone);display:flex;align-items:center;justify-content:center;cursor:pointer;opacity:0;transition:opacity .15s,transform .15s;box-shadow:none}
+.fqz.casa .mcard .mplay svg{width:22px;height:22px;fill:currentColor;stroke:none}
+.fqz.casa .mcard:hover .mplay,.fqz.casa .mcard .mplay:focus-visible{opacity:1}
+@media(hover:none){.fqz.casa .mcard .mplay{opacity:1;width:44px;height:44px;left:auto;right:10px;top:auto;bottom:10px;transform:none}}
+.fqz.casa .mcard .mcover.senza-link{cursor:pointer}
+.fqz.casa .mcard .mcorpo.senza-link{cursor:pointer}
+
+/* il foglio di dettaglio */
+.fqz .gatebox.scheda{max-width:560px;padding:0;overflow:hidden;text-align:left}
+.fqz .scheda-cover{position:relative;aspect-ratio:1;max-height:46vh;background:var(--line)}
+.fqz .scheda-cover img{width:100%;height:100%;object-fit:cover;display:block}
+.fqz .scheda-corpo{padding:18px 20px 20px}
+.fqz .scheda-corpo h2{font-family:var(--serif);font-weight:400;font-size:24px;margin:6px 0 2px;color:var(--bone)}
+.fqz .scheda-meta{font-size:13px;color:var(--dimmer);margin:0 0 10px}
+.fqz .scheda-testo{font-size:14px;color:var(--dim);line-height:1.55;max-height:30vh;overflow:auto}
+.fqz .scheda-gesti{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:14px}
+.fqz .scheda-link{font-family:var(--mono);font-size:11px;letter-spacing:.06em;color:var(--water);text-decoration:none}
