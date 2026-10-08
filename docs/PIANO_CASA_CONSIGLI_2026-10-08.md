@@ -119,6 +119,66 @@ popolarità + novità), «Da scoprire» = tutto, griglia.
 - **A/B sui pesi**: due tabelle, metà persone l'una metà l'altra, si
   misura il completamento. Solo quando ci sono abbastanza persone.
 
+## 4b. La regia degli ascolti (system admin → Sound → «Ascolti»)
+Il founder (8/10 sera): «per ogni utente quali registrazioni ascolta,
+quante volte, quando, se la completa, per quanti minuti; uno score di chi
+segue di più; chi aggiunge ai preferiti: uno strumento completo per
+monitorare meditazioni, ascolti e preferenze».
+
+Gli eventi ci sono già (`sound_ascolti`: `account_id`, `slug`, `track_id`,
+`evento` play · quartile · fine, `secondo`, `at`, `provenienza`, `playlist`)
+più i preferiti (`frequency_favorites`) e il profilo (`sound_recenti`,
+`sound_riprendi`). La regia li **legge e riassume**: nessuna raccolta nuova,
+un indice in più (`account_id`, `at`).
+
+### Le quattro viste
+1. **Panoramica** (periodo: 7 · 30 · 90 giorni · tutto): ascolti, persone
+   attive, minuti ascoltati, completamento medio, nuovi ascoltatori,
+   preferiti aggiunti; un grafico a giorni e uno a fasce d'ora (quando si
+   ascolta).
+2. **Per meditazione**: tabella con ascolti, persone uniche, minuti,
+   completamento (fine ÷ play), punto medio di abbandono (il quartile in
+   cui si esce), preferiti, momento di punta, provenienza (casa, vetrina,
+   email, playlist, link riservato). Ordinabile; clic → la scheda con la
+   curva di abbandono ai quattro quarti e l'elenco delle persone.
+3. **Per persona**: tabella con nome ed email, primo e ultimo ascolto,
+   ascolti, minuti, completamenti, titoli diversi, preferite, fascia d'ora
+   abituale, e lo **score «seguito»** (0–100). Clic → la linea del tempo:
+   data e ora, meditazione, da dove, minuti, completata o no, con i
+   preferiti e il «riprendi» aperto.
+4. **Esporta CSV** di ogni tabella (per lavorarci fuori).
+
+### Lo score «seguito» (0–100), spiegato riga per riga
+`seguito = 30·frequenza + 20·costanza + 25·profondità + 15·ampiezza + 10·affetto`
+- **frequenza**: giorni con almeno un ascolto negli ultimi 30 (÷ 30, tetto 1 a 12 giorni);
+- **costanza**: settimane consecutive con un ascolto (÷ 8);
+- **profondità**: completamenti ÷ ascolti;
+- **ampiezza**: titoli diversi ÷ titoli in catalogo;
+- **affetto**: preferite e playlist salvate (÷ 5).
+La formula sta in `services/ascolti_regia.py` con un test che la pinza; i
+pesi si regolano a mano. Accanto allo score, le cinque componenti: lo
+score non è un numero magico, è una somma leggibile.
+
+### Backend
+`routers/admin_sound_ascolti.py` (solo system admin): `GET /admin/sound/
+ascolti/panoramica?periodo=`, `/meditazioni`, `/meditazioni/{slug}`,
+`/persone`, `/persone/{account_id}`, `/export.csv?vista=`. Aggregazioni
+sugli eventi (sono pochi: si calcolano a richiesta; se un giorno sono
+milioni, si materializza una volta al giorno). Una sessione = un `play`;
+i minuti = il `secondo` più alto raggiunto in quella sessione.
+
+### Privacy (va fatto insieme, non dopo)
+- Sono dati personali di comportamento: l'informativa (legal v2.5) li
+  nomina («ascolti e preferenze, per consigliarti e per capire cosa
+  funziona»), con conservazione **24 mesi** e cancellazione automatica.
+- **Esportazione e cancellazione** dell'account includono gli eventi
+  (`sound_ascolti`), i recenti, il riprendi e i preferiti (oggi il GDPR
+  della piattaforma copre il profilo: si estende).
+- Chi ascolta col Cerchio **senza account** resta anonimo: entra solo nei
+  totali per meditazione, mai in «Per persona».
+- Lo score serve alla regia e al motore dei consigli; non si mostra mai
+  alla persona né agli operatori.
+
 ## 5. Cosa NON cambia
 Il lettore in casa, le card, i cuori, le playlist, i percorsi, la soglia
 del Cerchio, i testid letti dai test (`casa-riprendi`, `casa-preferite`,
@@ -133,5 +193,7 @@ database: tre campi riassunti in `/platform/me`.
 | CS1 | filtri: via voce, durata un livello sotto e solo se serve, categorie solo popolate (test) | ½ |
 | CS2 | `/platform/me`: fascia d'ora abituale, durata media, completamenti per slug (dagli eventi, senza raccolte nuove) | ½ |
 | CS3 | guardie `tests/test_casa_consigli.py` con scenari: 1 titolo, 4 titoli, 12 titoli, persona nuova, persona abituale, notte | ½ |
+| CS4 | la regia degli ascolti: backend `admin_sound_ascolti` + `services/ascolti_regia.py` (score), sezione «Ascolti» in Regia → Sound (panoramica, per meditazione, per persona con linea del tempo, CSV), guardie | 1,5 |
+| CS5 | privacy: informativa v2.5, export e cancellazione account con gli ascolti, conservazione 24 mesi (job notturno), anonimato del Cerchio | ½ |
 
-Totale ≈ 2,5 giorni; nessun deploy senza «go».
+Totale ≈ 4,5 giorni; nessun deploy senza «go». Ordine: CS1 (filtri) → CS0 (motore) → CS2 → CS3 → CS4 → CS5 prima del deploy di CS4.
