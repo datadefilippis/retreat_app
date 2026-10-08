@@ -182,7 +182,12 @@ async def copertina(playlist_id: str, file: UploadFile = File(...), current_user
     data = await file.read()
     if not data or len(data) > COVER_MAX_BYTES:
         raise HTTPException(status_code=400, detail="Immagine vuota o oltre 5 MB.")
-    url = save_public_upload("playlists", f"{playlist_id}.{uuid.uuid4().hex[:8]}.{ext}", data, content_type=COVER_EXT[ext])
+    from services.copertine_sound import quadra      # MR1 — 1:1, 1200, WebP
+    try:
+        data, ext = quadra(data)
+    except Exception:  # noqa: BLE001
+        raise HTTPException(status_code=400, detail="Immagine non leggibile.")
+    url = save_public_upload("playlists", f"{playlist_id}.{uuid.uuid4().hex[:8]}.{ext}", data, content_type="image/webp")
     await sound_playlists_collection.update_one({"id": playlist_id, "organization_id": org_id},
                                                 {"$set": {"cover_url": url, "updated_at": utc_now()}})
     return {"cover_url": url}
@@ -224,10 +229,14 @@ async def pubblica(playlist_id: str, current_user: dict = Depends(require_sound_
             precedenti = list(dict.fromkeys(precedenti + [slug]))
         slug = await _slug_libero(p["title"], escludi_id=playlist_id)
     now = utc_now()
-    await sound_playlists_collection.update_one(
-        {"id": playlist_id, "organization_id": org_id},
-        {"$set": {"status": "published", "slug": slug, "slug_precedenti": precedenti, "tracce": tracce,
-                  "published_at": p.get("published_at") or now, "updated_at": now}})
+    campi = {"status": "published", "slug": slug, "slug_precedenti": precedenti, "tracce": tracce,
+             "published_at": p.get("published_at") or now, "updated_at": now}
+    if not p.get("cover_url"):   # MR1 — senza foto, la copertina generata (una volta, salvata)
+        from services.copertine_sound import salva_fallback_playlist
+        gen = salva_fallback_playlist(p, len(tracce))
+        if gen:
+            campi["cover_url"] = gen
+    await sound_playlists_collection.update_one({"id": playlist_id, "organization_id": org_id}, {"$set": campi})
     return await _riga(await _mia(playlist_id, org_id))
 
 

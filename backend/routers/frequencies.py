@@ -402,18 +402,26 @@ async def publish_track(track_id: str,
     # traccia solo per contarli. Si paga alla pubblicazione (rara), non
     # a ogni apertura della vetrina.
     score = track.get("score") or {}
+    campi = {"status": "published", "slug": slug,
+             "slug_precedenti": precedenti,
+             "visibility": visibility,
+             "published_at": utc_now(), "updated_at": utc_now(),
+             "layers_count": len(score.get("layers") or []),
+             "duration_sec": score.get("duration_sec"),
+             # SN0 — «con la voce» si decide qui, una volta
+             "has_voce": has_voce(score),
+             "accesso": clean_accesso(track.get("accesso"))}
+    # MR1 (8/10/2026) — senza foto, la copertina GENERATA (tono + titolo), una
+    # volta e salvata: cosi' card, email e card social la vedono uguale.
+    if not track.get("cover_url") and visibility != "private":
+        from services.copertine_sound import salva_fallback_traccia
+        gen = salva_fallback_traccia({**track, "id": track_id})
+        if gen:
+            campi["cover_url"] = gen
     await frequency_tracks_collection.update_one(
         {"id": track_id,
          "organization_id": current_user["organization_id"]},
-        {"$set": {"status": "published", "slug": slug,
-                  "slug_precedenti": precedenti,
-                  "visibility": visibility,
-                  "published_at": utc_now(), "updated_at": utc_now(),
-                  "layers_count": len(score.get("layers") or []),
-                  "duration_sec": score.get("duration_sec"),
-                  # SN0 — «con la voce» si decide qui, una volta
-                  "has_voce": has_voce(score),
-                  "accesso": clean_accesso(track.get("accesso"))}})
+        {"$set": campi})
     return {"id": track_id, "status": "published", "slug": slug,
             "visibility": visibility}
 
@@ -822,7 +830,13 @@ async def copertina_traccia(track_id: str, file: UploadFile = File(...),
     data = await file.read()
     if not data or len(data) > COVER_MAX_BYTES:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Immagine vuota o oltre 5 MB.")
-    url = save_public_upload("frequenze", f"{track_id}.{uuid.uuid4().hex[:8]}.{ext}", data, content_type=COVER_EXT[ext])
+    # MR1 (8/10/2026, founder: 1:1) — un formato solo: ritaglio al centro, 1200×1200, WebP
+    from services.copertine_sound import quadra
+    try:
+        data, ext = quadra(data)
+    except Exception:  # noqa: BLE001
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Immagine non leggibile.")
+    url = save_public_upload("frequenze", f"{track_id}.{uuid.uuid4().hex[:8]}.{ext}", data, content_type="image/webp")
     await frequency_tracks_collection.update_one({"id": track_id, "organization_id": org_id},
                                                  {"$set": {"cover_url": url, "updated_at": utc_now()}})
     return {"cover_url": url}

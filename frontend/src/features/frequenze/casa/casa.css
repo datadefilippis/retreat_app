@@ -35,7 +35,7 @@
 /* ── la card con la copertina ── */
 .fqz.casa .mcard{position:relative;display:flex;flex-direction:column;border:1px solid var(--line-soft);border-radius:14px;overflow:hidden;background:var(--panel);text-decoration:none;color:inherit;transition:transform .2s,border-color .2s}
 .fqz.casa .mcard:hover{transform:translateY(-2px);border-color:var(--line)}
-.fqz.casa .mcard .mcover{position:relative;aspect-ratio:4/3;background:linear-gradient(135deg,var(--tono-velo,rgba(127,201,176,.18)),rgba(12,22,24,.7))}
+.fqz.casa .mcard .mcover{position:relative;aspect-ratio:1;background:linear-gradient(135deg,var(--tono-velo,rgba(127,201,176,.18)),rgba(12,22,24,.7))}
 .fqz.casa .mcard .mcover img{width:100%;height:100%;object-fit:cover;display:block}
 .fqz.casa .mcard .mcover .mdurata{position:absolute;right:10px;bottom:10px;font-family:var(--mono);font-size:11px;padding:3px 8px;border-radius:999px;background:rgba(12,22,24,.72);color:var(--bone)}
 .fqz.casa .mcard .mcover .mpiu{position:absolute;left:10px;top:10px;font-family:var(--mono);font-size:10px;letter-spacing:.1em;padding:3px 8px;border-radius:999px;background:rgba(201,179,126,.9);color:#0C1618}
