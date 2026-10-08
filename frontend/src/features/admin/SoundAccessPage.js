@@ -15,6 +15,7 @@ import { Switch } from '../../components/ui/switch';
 import { Input } from '../../components/ui/input';
 import api from '../../api/client';
 import SoundCategorieSezione from './SoundCategorieSezione';   // MR4
+import SoundAscoltiSezione from './SoundAscoltiSezione';   // CS4: la regia degli ascolti
 
 const SoundAccessPage = () => {
   const [items, setItems] = useState(null);
@@ -146,6 +147,7 @@ const SoundAccessPage = () => {
         )}
       </div>
       <SoundCategorieSezione />
+      <SoundAscoltiSezione />
     </AppLayout>
   );
 };

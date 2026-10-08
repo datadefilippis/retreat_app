@@ -1007,12 +1007,28 @@ async def export_account_data(account: Dict[str, Any]) -> Dict[str, Any]:
          "created_at": 1, "confirmed_at": 1, "unsubscribed_at": 1,
          "preferences": 1, "profile": 1})
 
+    # CS5 (8/10/2026) — gli ASCOLTI delle meditazioni e le preferenze sono
+    # dati di comportamento della persona: escono con l'export, interi.
+    ascolti = await _db.sound_ascolti.find(
+        {"account_id": account["id"]},
+        {"_id": 0, "at": 1, "slug": 1, "evento": 1, "secondo": 1, "provenienza": 1, "playlist": 1},
+    ).sort("at", -1).to_list(5000)
+    preferite = [f.get("slug") async for f in _db.frequency_favorites.find(
+        {"platform_account_id": account["id"]}, {"_id": 0, "slug": 1})]
+
     return {
         "account": {k: account.get(k) for k in
                     ("id", "email", "name", "phone", "language",
                      "email_verified", "created_at", "last_login_at")},
         "orders": orders,
         "newsletter": newsletter,
+        "sound": {
+            "ascolti": ascolti,
+            "preferite": preferite,
+            "recenti": account.get("sound_recenti") or [],
+            "riprendi": account.get("sound_riprendi") or None,
+            "preferenze": account.get("sound_preferenze") or None,
+        },
         "exported_at": utc_now().isoformat(),
     }
 
@@ -1056,9 +1072,15 @@ async def delete_account(account: Dict[str, Any]) -> Dict[str, int]:
     from database import db as _db
     r_nl = await _db.aurya_subscribers.delete_one(
         {"email": (account.get("email") or "").lower()})
+    # CS5 — con l'account se ne vanno anche gli ascolti e i preferiti delle
+    # meditazioni (titolarita' Aurya, dati di comportamento della persona).
+    r_asc = await _db.sound_ascolti.delete_many({"account_id": aid})
+    r_pref = await _db.frequency_favorites.delete_many({"platform_account_id": aid})
 
     result = {"orders_unlinked": getattr(r_ord, "modified_count", 0),
               "customer_accounts_unlinked": getattr(r_cust, "modified_count", 0),
-              "newsletter_deleted": getattr(r_nl, "deleted_count", 0)}
+              "newsletter_deleted": getattr(r_nl, "deleted_count", 0),
+              "sound_ascolti_deleted": getattr(r_asc, "deleted_count", 0),
+              "sound_preferite_deleted": getattr(r_pref, "deleted_count", 0)}
     logger.info("platform_account %s CANCELLATO (GDPR): %s", aid, result)
     return result

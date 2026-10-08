@@ -142,6 +142,15 @@ async def lifespan(app: FastAPI):
         logging.warning("lifespan init_logging() failed: %s", _e)
 
     await create_indexes()
+    # CS5 (8/10/2026) — gli ascolti delle meditazioni si conservano 24 mesi:
+    # all'avvio si potano i piu' vecchi (idempotente, mai bloccante).
+    try:
+        from services.ascolti_regia import conserva as _conserva_ascolti
+        _via = await _conserva_ascolti()
+        if _via:
+            logging.info("ascolti: %s eventi oltre i 24 mesi cancellati", _via)
+    except Exception as _e:  # noqa: BLE001
+        logging.warning("conservazione ascolti saltata: %s", _e)
     # DV1 (2/10/2026) — il registro vivo delle discipline si applica all'avvio
     try:
         from services.discipline_vive import ricarica as _ricarica_discipline
@@ -779,6 +788,8 @@ app.include_router(admin_catalog_router.router, prefix="/api")  # /api/admin/cat
 app.include_router(admin_feature_flags_router.router, prefix="/api")  # /api/admin/feature-flags/* (Phase 0 Step 9)
 from routers import admin_sound_categorie as admin_sound_categorie_router   # noqa: E402
 app.include_router(admin_sound_categorie_router.router, prefix="/api")  # /api/admin/sound/categorie (MR4)
+from routers import admin_sound_ascolti as admin_sound_ascolti_router   # noqa: E402
+app.include_router(admin_sound_ascolti_router.router, prefix="/api")    # /api/admin/sound/ascolti (CS4, la regia degli ascolti)
 app.include_router(admin_sound_router.router, prefix="/api")  # /api/admin/sound/* (PC3: privilegio del comporre)
 app.include_router(admin_platform_router.router, prefix="/api")  # /api/admin/platform/* (SA2/SA3)
 app.include_router(admin_strutture_router.router, prefix="/api")  # /api/admin/strutture/* (SR, fase 0)

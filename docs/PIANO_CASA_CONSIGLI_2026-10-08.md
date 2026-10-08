@@ -179,6 +179,27 @@ i minuti = il `secondo` più alto raggiunto in quella sessione.
 - Lo score serve alla regia e al motore dei consigli; non si mostra mai
   alla persona né agli operatori.
 
+## 4c. Stato (8/10 sera, «procediamo»)
+- **CS0–CS3 FATTI** (commit `c6f47469`): `casa/consigli.js` (PESI, SOGLIE,
+  `punteggio`, `componiCasa`, `persona`), la casa dietro `CASA_CONSIGLI`
+  (sezioni col perché, «Le altre» = le residue, la mappa dietro «Tutte le
+  meditazioni · N», con un titolo solo una carta sola), filtri (categorie
+  popolate, durata un livello sotto solo se serve, via la voce),
+  `sound_abitudine` in `/platform/me` da `services/ascolti_regia.abitudine`
+  (fuso di Roma), indice `(account_id, at)`, guardie che girano sul JS vero.
+- **CS4 FATTO**: `routers/admin_sound_ascolti.py` (panoramica, meditazioni,
+  dettaglio con curva di abbandono, persone con score e cinque parti,
+  dettaglio con linea del tempo, CSV; solo system admin) +
+  `SoundAscoltiSezione.jsx` in Regia → Sound. Score pinzato
+  (`PESI_SEGUITO`, `TETTI_SEGUITO`). Verificato nel browser e dal vivo.
+- **CS5 FATTO in parte**: export dell'account con `sound` (ascolti,
+  preferite, recenti, riprendi), cancellazione che toglie ascolti e
+  preferiti, conservazione 24 mesi (`conserva()` all'avvio +
+  `scripts/ascolti_conservazione.py`), gli anonimi solo nei totali.
+  **DA DECIDERE col founder**: la riga nell'informativa (7-quater, 24 mesi)
+  cambia la versione legale (`CURRENT_VERSION_HASH`, hash dei testi) e
+  chiede un nuovo consenso a chi ha già accettato: non si fa senza il suo ok.
+
 ## 5. Cosa NON cambia
 Il lettore in casa, le card, i cuori, le playlist, i percorsi, la soglia
 del Cerchio, i testid letti dai test (`casa-riprendi`, `casa-preferite`,
