@@ -46,7 +46,9 @@ class TestCreaSoloAChiPuo:
 class TestNonPerdersi:
     def test_il_suono_dalla_casa_e_un_foglio(self):
         src = (FQ / "SoundTopbar.jsx").read_text()
-        assert "const inCasa = SOUND_CASA_NUOVA && qui === '/meditazioni';" in src
+        # ES0: il foglio si apre da ogni pagina scura (casa, esplora, fondamenta, Lab, scheda)
+        assert "const inCasa = SOUND_CASA_NUOVA && !!qui && (qui === '/meditazioni' || qui.startsWith('/sound'));" in src
+        assert "{portaCorrente(to) ? 'Sei qui' : d}" in src
         assert 'data-testid="fqz-nav-suono"' in src and 'data-testid="fqz-foglio-suono"' in src
         for porta in ("'/sound/esplora'", "'/sound/impara'", "'/sound/lab'"):
             assert porta in src, porta

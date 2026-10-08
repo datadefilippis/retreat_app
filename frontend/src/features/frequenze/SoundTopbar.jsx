@@ -16,6 +16,7 @@ import React, { useState } from 'react';
 import SoundAccountMenu from './SoundAccountMenu';
 import { SOUND_CASA_NUOVA } from './stato';
 import { cappelliAddosso } from '../../lib/cappelli';
+import './casa/foglio-suono.css';   // MR7/ES0 — il foglio «Il suono», ovunque
 
 /* SN1 (8/10, piano Aurya Sound §4.0) — LA PASSERELLA DELLA CASA: tre
    porte al massimo. Meditazioni (ascoltare) · Il suono (capire) · Crea
@@ -69,7 +70,13 @@ export default function SoundTopbar({ firma = 'Sound', qui = null,
   /* MR7 — dalla casa «Il suono» non porta fuori: apre un foglio con le tre
      porte (schede, fondamenta, Lab) e, in fondo, la pagina di Aurya Sound. */
   const [foglioSuono, setFoglioSuono] = useState(false);
-  const inCasa = SOUND_CASA_NUOVA && qui === '/meditazioni';
+  /* ES0 (8/10 sera, founder): il foglio si apre da OGNI pagina scura (casa,
+     esplora, fondamenta, Lab, scheda): «Il suono» non porta mai fuori. */
+  const inCasa = SOUND_CASA_NUOVA && !!qui && (qui === '/meditazioni' || qui.startsWith('/sound'));
+  let dove = qui || '';
+  try { dove = window.location.pathname || dove; } catch { /* ssr */ }
+  const portaCorrente = (to) => dove === to || dove.startsWith(to + '/');
+  const suonoCorrente = dove.startsWith('/sound');
   return (
     <div className="topbar">
       <a className="fqzbrand" href="/" onClick={(e) => guardia(e, '/')} data-testid="fqz-brand" title="Torna su Aurya">
@@ -81,7 +88,7 @@ export default function SoundTopbar({ firma = 'Sound', qui = null,
       </a>
       <nav className="tb-nav" data-testid="fqz-nav">
         {voci.map((v) => (inCasa && v.to === '/sound'
-          ? <button key={v.to} type="button" className="tb-voce" data-testid="fqz-nav-suono" onClick={() => setFoglioSuono(true)}>{v.label}</button>
+          ? <button key={v.to} type="button" className="tb-voce" data-testid="fqz-nav-suono" aria-current={suonoCorrente ? 'page' : undefined} onClick={() => setFoglioSuono(true)}>{v.label}</button>
           : <a key={v.to} href={v.to}
             onClick={(e) => guardia(e, v.to)}
             aria-current={qui === v.to ? 'page' : undefined}>{v.label}</a>
@@ -96,8 +103,8 @@ export default function SoundTopbar({ firma = 'Sound', qui = null,
               {[['/sound/esplora', 'Esplora le frequenze', 'Le schede: bande cerebrali, frequenze, metodi.'],
                 ['/sound/impara', 'Le fondamenta', 'Come funziona il suono, con parole semplici e un glossario.'],
                 ['/sound/lab', 'Il Lab', 'Cinque stanze per provare con le orecchie.']].map(([to, t, d]) => (
-                <a key={to} href={to} className="porta-suono" onClick={(e) => guardia(e, to)}>
-                  <b>{t}</b><span>{d}</span>
+                <a key={to} href={to} className={`porta-suono${portaCorrente(to) ? ' corrente' : ''}`} aria-current={portaCorrente(to) ? 'page' : undefined} onClick={(e) => guardia(e, to)}>
+                  <b>{t}</b><span>{portaCorrente(to) ? 'Sei qui' : d}</span>
                 </a>
               ))}
             </div>
