@@ -143,3 +143,68 @@
 .fqz .scheda-testo{font-size:14px;color:var(--dim);line-height:1.55;max-height:30vh;overflow:auto}
 .fqz .scheda-gesti{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:14px}
 .fqz .scheda-link{font-family:var(--mono);font-size:11px;letter-spacing:.06em;color:var(--water);text-decoration:none}
+
+
+/* ══ MR5 (8/10/2026): il design della casa, piu' moderno ══ */
+.fqz.casa{--raggio:20px}
+.fqz.casa .casa-testata{margin-bottom:14px}
+.fqz.casa .casa-testata h1{font-size:30px;line-height:1.1}
+@media(min-width:760px){.fqz.casa .casa-testata h1{font-size:40px}}
+.fqz.casa .casa-account{all:unset;cursor:pointer;font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--lamp);padding:8px 0}
+.fqz.casa .casa-testa-riga{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:12px}
+.fqz.casa .casa-testa-riga h2{margin:0}
+.fqz.casa .casa-testa-riga .casa-sub{margin:4px 0 0}
+.fqz.casa .casa-sezione h2{font-size:24px}
+@media(min-width:760px){.fqz.casa .casa-sezione h2{font-size:28px}}
+.fqz.casa .casa-tutte{all:unset;cursor:pointer;flex:none;font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--lamp);border-bottom:1px solid rgba(201,179,126,.4);padding-bottom:2px}
+.fqz.casa .casa-torna{all:unset;cursor:pointer;display:inline-block;margin-top:16px;font-size:13px;color:var(--dimmer)}
+.fqz.casa .casa-vuoto{margin-top:28px;padding:26px;border:1px dashed var(--line);border-radius:var(--raggio);color:var(--dim);display:flex;flex-direction:column;gap:10px;align-items:flex-start}
+
+/* la vetrina: a tutta larghezza su telefono, titolo sopra la foto */
+.fqz.casa .oggi.grande{border-radius:var(--raggio);border:0}
+@media(max-width:759px){
+  .fqz.casa .oggi.grande{display:block;position:relative}
+  .fqz.casa .oggi.grande .oggi-cover{aspect-ratio:4/5;min-height:0}
+  .fqz.casa .oggi.grande .oggi-corpo{position:absolute;inset:auto 0 0 0;padding:70px 18px 18px;background:linear-gradient(to top,rgba(12,22,24,.96) 35%,rgba(12,22,24,0))}
+  .fqz.casa .oggi.grande .oggi-corpo h3{font-size:30px}
+  .fqz.casa .oggi.grande .body{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+}
+@media(min-width:760px){.fqz.casa .oggi.grande{grid-template-columns:5fr 4fr;min-height:340px}.fqz.casa .oggi.grande .oggi-corpo{padding:28px 30px}.fqz.casa .oggi.grande .oggi-corpo h3{font-size:34px}}
+.fqz.casa .oggi .cuore-card{top:14px;right:14px}
+
+/* le card: piu' grandi, piu' morbide, due righe di titolo al massimo */
+.fqz.casa .riga > *{flex:0 0 min(72vw,260px)}
+.fqz.casa .mcard{border-radius:var(--raggio);box-shadow:0 10px 30px -18px rgba(0,0,0,.6);border-color:transparent}
+.fqz.casa .mcard:hover{box-shadow:0 18px 40px -16px rgba(0,0,0,.7)}
+.fqz.casa .mcard .mcorpo{padding:14px 16px 16px}
+.fqz.casa .mcard .mcorpo h3{font-size:18px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.fqz.casa .mcard .mcover .mdurata{bottom:12px;right:12px}
+.fqz.casa .mcard .mcover .mpiu{top:12px;left:12px}
+
+/* i filtri con il tono della categoria */
+.fqz.casa .filtro.tono-salvia.on{border-color:#7FC9B0;color:#7FC9B0}
+.fqz.casa .filtro.tono-viola.on{border-color:#B5A6DE;color:#B5A6DE}
+.fqz.casa .filtro.tono-acqua.on{border-color:#7EC1C7;color:#7EC1C7}
+.fqz.casa .filtro{padding:8px 14px;font-size:12px}
+
+/* la ricerca: inline da desktop, nel foglio su telefono */
+@media(max-width:899px){.fqz.casa .cerca-inline{display:none}}
+.fqz.casa .cerca-foglio{align-items:flex-end}
+.fqz.casa .cerca-foglio .gatebox{width:100%;max-width:none;border-radius:var(--raggio) var(--raggio) 0 0;text-align:left;padding:18px 18px calc(18px + env(safe-area-inset-bottom))}
+.fqz.casa .cerca-foglio .filtri{flex-wrap:wrap}
+
+/* la barra in basso, in vetro */
+.fqz.casa .casa-barra{background:rgba(12,22,24,.72);backdrop-filter:blur(18px) saturate(140%);-webkit-backdrop-filter:blur(18px) saturate(140%);border-top:1px solid rgba(233,228,217,.12)}
+.fqz.casa .casa-barra svg{width:22px;height:22px}
+.fqz.casa .casa-barra a,.fqz.casa .casa-barra button{font-size:9.5px;letter-spacing:.08em;gap:4px}
+
+/* lo scheletro */
+.fqz.casa .skel{background:linear-gradient(90deg,rgba(255,255,255,.04),rgba(255,255,255,.09),rgba(255,255,255,.04));background-size:200% 100%;animation:skel 1.4s ease-in-out infinite;border-radius:12px}
+.fqz.casa .skel-titolo{width:180px;height:22px;margin-bottom:14px}
+.fqz.casa .skel-riga{height:14px;width:80%;margin:6px 0}
+.fqz.casa .skel-riga.corta{width:50%}
+.fqz.casa .mcard.skel .mcover{background:transparent}
+@keyframes skel{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+/* il movimento, con rispetto */
+@media(prefers-reduced-motion:reduce){.fqz.casa *,.fqz .lettore,.fqz .cuore{transition:none!important;animation:none!important}.fqz.casa .riga{scroll-behavior:auto}}

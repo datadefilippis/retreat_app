@@ -99,17 +99,40 @@ export function CardPercorso({ c }) {
   );
 }
 
-function Riga({ id, titolo, sub, children, griglia = false }) {
+function Riga({ id, titolo, sub, children, griglia = false, onTutte = null, tutteN = 0 }) {
   const n = React.Children.count(children);
   if (!n) return null;
   return (
     <section className="casa-sezione" id={id} data-testid={`casa-riga-${id}`}>
-      <h2>{titolo}</h2>
-      {sub && <p className="casa-sub">{sub}</p>}
+      <div className="casa-testa-riga">
+        <div>
+          <h2>{titolo}</h2>
+          {sub && <p className="casa-sub">{sub}</p>}
+        </div>
+        {/* MR5 — «Vedi tutte» apre la griglia intera di questa riga */}
+        {onTutte && tutteN > n && <button type="button" className="casa-tutte" onClick={onTutte} data-testid={`casa-tutte-${id}`}>Vedi tutte · {tutteN}</button>}
+      </div>
       <div className={`riga${griglia ? ' griglia' : ''}`}>{children}</div>
     </section>
   );
 }
+
+/* MR5 — lo scheletro mentre il catalogo arriva: niente pagina vuota che salta */
+function Scheletro() {
+  return (
+    <div data-testid="casa-scheletro">
+      <div className="oggi skel" style={{ minHeight: 220, marginTop: 6 }} />
+      {[0, 1].map((r) => (
+        <section className="casa-sezione" key={r}>
+          <div className="skel skel-titolo" />
+          <div className="riga">{[0, 1, 2, 3].map((i) => <div key={i} className="mcard skel"><div className="mcover" /><div className="mcorpo"><div className="skel skel-riga" /><div className="skel skel-riga corta" /></div></div>)}</div>
+        </section>
+      ))}
+    </div>
+  );
+}
+
+const saluto = () => { const h = new Date().getHours(); return h < 6 ? 'Buonanotte' : h < 13 ? 'Buongiorno' : h < 18 ? 'Buon pomeriggio' : 'Buonasera'; };
 
 const Icona = ({ d }) => (<svg viewBox="0 0 24 24" aria-hidden="true"><path d={d} /></svg>);
 const ICONE = {
@@ -168,6 +191,9 @@ function MeditazioniCasaDentro() {
   const [durata, setDurata] = useState('');       // '' | 'breve' | 'media' | 'lunga'
   const [voce, setVoce] = useState('');           // '' | 'con' | 'senza'
   const [attiva, setAttiva] = useState('esplora');
+  /* MR5 — «Vedi tutte»: la griglia intera di una riga; e il foglio della ricerca su telefono */
+  const [vista, setVista] = useState(null);          // {titolo, items} | null
+  const [cercaAperta, setCercaAperta] = useState(false);
   const cercaRef = useRef(null);
 
   const carica = async () => {
@@ -194,12 +220,12 @@ function MeditazioniCasaDentro() {
   };
   /* SN3 — il tuo spazio: «riprendi da dove eri» e gli ascolti recenti vivono
      sull'account (la persistenza e' dell'account, decisione del piano) */
-  const [spazio, setSpazio] = useState({ riprendi: null, recenti: [] });
+  const [spazio, setSpazio] = useState({ riprendi: null, recenti: [], nome: '' });
   const caricaSpazio = async () => {
     if (!hasAccount) return;
     try {
       const me = (await platformApi.get('/platform/me')).data;
-      setSpazio({ riprendi: me.sound_riprendi || null, recenti: me.sound_recenti || [] });
+      setSpazio({ riprendi: me.sound_riprendi || null, recenti: me.sound_recenti || [], nome: (me.name || '').trim().split(' ')[0] });
     } catch { /* non bloccante */ }
   };
   useEffect(() => { migraVecchieChiavi().finally(() => { carica(); caricaSpazio(); }); }, []); // eslint-disable-line react-hooks/exhaustive-deps
@@ -254,27 +280,26 @@ function MeditazioniCasaDentro() {
   return (
     <div className={`fqz med casa${L?.traccia ? ' con-lettore' : ''}`} data-testid="casa-meditazioni">
       <SoundTopbar firma="Meditazioni" qui="/meditazioni" />
-      <header>
+      <header className="casa-testata">
         <div>
-          <h1>Le <em>meditazioni</em> di Aurya</h1>
-          <div className="sub">scegli, ascolta, riprendi quando vuoi</div>
+          {hasAccount && spazio.nome
+            ? <h1>{saluto()}, <em>{spazio.nome}</em></h1>
+            : <h1>Le <em>meditazioni</em> di Aurya</h1>}
+          <div className="sub">{hasAccount ? 'cosa ascoltiamo oggi?' : 'scegli, ascolta, riprendi quando vuoi'}</div>
         </div>
         {hasAccount && (
-          <button type="button" className="backcard" onClick={() => navigate('/account')}>
-            <span className="bc-ic">♥</span>
-            <span><span className="bc-t">Il tuo account</span><br /><span className="bc-s">preferite e corsi</span></span>
-          </button>
+          <button type="button" className="casa-account" onClick={() => navigate('/account')} data-testid="casa-account">Il tuo account →</button>
         )}
       </header>
       <main id="esplora">
-        {items === null ? null : tutte.length === 0 ? (
+        {items === null ? <Scheletro /> : tutte.length === 0 ? (
           <div className="emptycreate"><p>Ancora nessuna meditazione pubblicata: le prime stanno arrivando. Intanto puoi conoscere <Link to="/sound" style={{ color: 'var(--water)' }}>il suono</Link>.</p></div>
         ) : (
           <>
             {/* ── di oggi ── */}
             {!cercando && (playlistVetrina || vetrina) && (
               <section className="casa-sezione" style={{ marginTop: 6 }} data-testid="casa-oggi">
-                <div className={`oggi tono-${TONI[vetrina?.intent] || 'oro'}`}>
+                <div className={`oggi grande tono-${TONI[vetrina?.intent] || 'oro'}`}>
                   <div className="oggi-cover">{(playlistVetrina?.cover_url || vetrina?.cover_url) && <img src={playlistVetrina?.cover_url || vetrina.cover_url} alt="" />}
                     {playlistVetrina
                       ? <Cuore on={pref.isFavPlaylist(playlistVetrina.slug)} onClick={() => pref.togglePlaylist(playlistVetrina.slug)} titolo={playlistVetrina.title} testid="casa-oggi-cuore" />
@@ -298,24 +323,59 @@ function MeditazioniCasaDentro() {
               </section>
             )}
 
-            {/* ── cerca e filtri ── */}
-            <div className="cerca" id="cerca" data-testid="casa-cerca">
-              <input ref={cercaRef} type="search" value={q} placeholder="Cerca una meditazione, un tema, chi la guida" aria-label="Cerca" onChange={(e) => setQ(e.target.value)} />
-            </div>
-            <div className="filtri" data-testid="casa-filtri">
-              <button type="button" className={`filtro${!intent ? ' on' : ''}`} onClick={() => setIntent('')}>Tutte</button>
-              {categoriePresenti.map((c) => <button key={c.slug} type="button" className={`filtro${intent === c.slug ? ' on' : ''}`} data-testid={`casa-filtro-${c.slug}`} onClick={() => setIntent(intent === c.slug ? '' : c.slug)}>{c.label}</button>)}
-              <span style={{ width: 8 }} />
-              {[['breve', '≤ 10 min'], ['media', '10–20 min'], ['lunga', '20+ min']].map(([v, l]) => (
-                <button key={v} type="button" className={`filtro${durata === v ? ' on' : ''}`} onClick={() => setDurata(durata === v ? '' : v)}>{l}</button>))}
-              <span style={{ width: 8 }} />
-              {[['con', 'Con la voce'], ['senza', 'Solo suono']].map(([v, l]) => (
-                <button key={v} type="button" className={`filtro${voce === v ? ' on' : ''}`} onClick={() => setVoce(voce === v ? '' : v)}>{l}</button>))}
-            </div>
+            {/* ── cerca e filtri: inline da desktop, in un foglio su telefono (MR5) ── */}
+            {(() => {
+              const filtriUI = (
+                <>
+                  <div className="cerca" id="cerca" data-testid="casa-cerca">
+                    <input ref={cercaRef} type="search" value={q} placeholder="Cerca una meditazione, un tema, chi la guida" aria-label="Cerca" onChange={(e) => setQ(e.target.value)} />
+                  </div>
+                  <div className="filtri" data-testid="casa-filtri">
+                    <button type="button" className={`filtro${!intent ? ' on' : ''}`} onClick={() => setIntent('')}>Tutte</button>
+                    {categoriePresenti.map((c) => <button key={c.slug} type="button" className={`filtro tono-${c.tono || 'oro'}${intent === c.slug ? ' on' : ''}`} data-testid={`casa-filtro-${c.slug}`} onClick={() => setIntent(intent === c.slug ? '' : c.slug)}>{c.label}</button>)}
+                    <span style={{ width: 8 }} />
+                    {[['breve', '≤ 10 min'], ['media', '10–20 min'], ['lunga', '20+ min']].map(([v, l]) => (
+                      <button key={v} type="button" className={`filtro${durata === v ? ' on' : ''}`} onClick={() => setDurata(durata === v ? '' : v)}>{l}</button>))}
+                    <span style={{ width: 8 }} />
+                    {[['con', 'Con la voce'], ['senza', 'Solo suono']].map(([v, l]) => (
+                      <button key={v} type="button" className={`filtro${voce === v ? ' on' : ''}`} onClick={() => setVoce(voce === v ? '' : v)}>{l}</button>))}
+                  </div>
+                </>
+              );
+              return (
+                <>
+                  <div className="cerca-inline">{filtriUI}</div>
+                  {cercaAperta && (
+                    <div className="gate cerca-foglio" onClick={() => setCercaAperta(false)} data-testid="casa-cerca-foglio">
+                      <div className="gatebox" onClick={(e) => e.stopPropagation()}>
+                        <div className="casa-testa-riga"><h2 style={{ margin: 0 }}>Cerca</h2><button type="button" className="casa-tutte" onClick={() => setCercaAperta(false)}>Chiudi</button></div>
+                        {filtriUI}
+                        <p className="casa-sub" style={{ marginTop: 10 }}>{cercando ? `${filtrate.length} ${filtrate.length === 1 ? 'meditazione' : 'meditazioni'}` : 'Scrivi, o scegli una categoria.'}</p>
+                        {cercando && <button type="button" className="casa-cta" style={{ border: 0, cursor: 'pointer' }} onClick={() => setCercaAperta(false)}>Vedi i risultati</button>}
+                      </div>
+                    </div>
+                  )}
+                </>
+              );
+            })()}
 
+            {(vista || cercando) && (
+              <button type="button" className="casa-torna" data-testid="casa-torna" onClick={() => { setVista(null); setQ(''); setIntent(''); setDurata(''); setVoce(''); }}>← Tutte le meditazioni</button>
+            )}
             {cercando ? (
-              <Riga id="risultati" titolo={`${filtrate.length} ${filtrate.length === 1 ? 'meditazione' : 'meditazioni'}`} griglia>
-                {filtrate.map((t) => <CardMeditazione key={t.slug} t={t} {...propsCard('cerca')} fav={favorites.includes(t.slug)} onCuore={toggleFavorite} />)}
+              filtrate.length ? (
+                <Riga id="risultati" titolo={`${filtrate.length} ${filtrate.length === 1 ? 'meditazione' : 'meditazioni'}`} griglia>
+                  {filtrate.map((t) => <CardMeditazione key={t.slug} t={t} {...propsCard('cerca')} fav={favorites.includes(t.slug)} onCuore={toggleFavorite} />)}
+                </Riga>
+              ) : (
+                <div className="casa-vuoto" data-testid="casa-vuoto">
+                  <p>Nessuna meditazione per questa ricerca.</p>
+                  <button type="button" className="casa-tutte" onClick={() => { setQ(''); setIntent(''); setDurata(''); setVoce(''); }}>Togli i filtri</button>
+                </div>
+              )
+            ) : vista ? (
+              <Riga id="vista" titolo={vista.titolo} griglia>
+                {vista.items.map((t) => <CardMeditazione key={t.slug} t={t} {...propsCard('vista')} fav={favorites.includes(t.slug)} onCuore={toggleFavorite} />)}
               </Riga>
             ) : (
               <>
@@ -371,24 +431,24 @@ function MeditazioniCasaDentro() {
                     )}
                   </section>
                 )}
-                <Riga id="per-iniziare" titolo="Per iniziare" sub="Dieci minuti o meno.">
+                <Riga id="per-iniziare" titolo="Per iniziare" sub="Dieci minuti o meno." tutteN={tutte.filter((t) => (t.duration_sec || 0) <= 10 * 60).length} onTutte={() => setVista({ titolo: 'Per iniziare', items: tutte.filter((t) => (t.duration_sec || 0) <= 10 * 60) })}>
                   {brevi.map((t) => <CardMeditazione key={t.slug} t={t} {...propsCard('casa')} fav={favorites.includes(t.slug)} onCuore={toggleFavorite} />)}
                 </Riga>
-                <Riga id="novita" titolo="Novità">
+                <Riga id="novita" titolo="Novità" tutteN={tutte.length} onTutte={() => setVista({ titolo: 'Novità', items: tutte })}>
                   {novita.map((t) => <CardMeditazione key={t.slug} t={t} {...propsCard('casa')} fav={favorites.includes(t.slug)} onCuore={toggleFavorite} />)}
                 </Riga>
-                <Riga id="piu-ascoltate" titolo="Le più ascoltate">
+                <Riga id="piu-ascoltate" titolo="Le più ascoltate" tutteN={tutte.filter((t) => t.plays_total > 0).length} onTutte={() => setVista({ titolo: 'Le più ascoltate', items: [...tutte].filter((t) => t.plays_total > 0).sort((a, b) => b.plays_total - a.plays_total) })}>
                   {piuAscoltate.map((t) => <CardMeditazione key={t.slug} t={t} {...propsCard('casa')} fav={favorites.includes(t.slug)} onCuore={toggleFavorite} />)}
                 </Riga>
                 {categoriePresenti.map((c) => (
-                  <Riga key={c.slug} id={`cat-${c.slug}`} titolo={c.label} sub={c.descrizione || undefined}>
+                  <Riga key={c.slug} id={`cat-${c.slug}`} titolo={c.label} sub={c.descrizione || undefined} tutteN={tutte.filter((t) => t.categoria === c.slug).length} onTutte={() => setIntent(c.slug)}>
                     {tutte.filter((t) => t.categoria === c.slug).slice(0, 12).map((t) => <CardMeditazione key={t.slug} t={t} {...propsCard('casa')} fav={favorites.includes(t.slug)} onCuore={toggleFavorite} />)}
                   </Riga>
                 ))}
-                <Riga id="con-la-voce" titolo="Con la voce">
+                <Riga id="con-la-voce" titolo="Con la voce" tutteN={tutte.filter((t) => t.has_voce).length} onTutte={() => setVoce('con')}>
                   {conVoce.map((t) => <CardMeditazione key={t.slug} t={t} {...propsCard('casa')} fav={favorites.includes(t.slug)} onCuore={toggleFavorite} />)}
                 </Riga>
-                <Riga id="solo-suono" titolo="Solo suono">
+                <Riga id="solo-suono" titolo="Solo suono" tutteN={tutte.filter((t) => !t.has_voce).length} onTutte={() => setVoce('senza')}>
                   {soloSuono.map((t) => <CardMeditazione key={t.slug} t={t} {...propsCard('casa')} fav={favorites.includes(t.slug)} onCuore={toggleFavorite} />)}
                 </Riga>
               </>
@@ -403,9 +463,9 @@ function MeditazioniCasaDentro() {
 
       {/* ── la barra in basso, solo telefono ── */}
       <nav className="casa-barra" aria-label="Le meditazioni" data-testid="casa-barra">
-        <button type="button" className={attiva === 'esplora' ? 'on' : ''} onClick={() => { setAttiva('esplora'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}><Icona d={ICONE.esplora} />Esplora</button>
+        <button type="button" className={attiva === 'esplora' ? 'on' : ''} onClick={() => { setAttiva('esplora'); setVista(null); setQ(''); setIntent(''); setDurata(''); setVoce(''); window.scrollTo({ top: 0, behavior: 'smooth' }); }}><Icona d={ICONE.esplora} />Esplora</button>
         <button type="button" className={attiva === 'playlist' ? 'on' : ''} onClick={() => vaiA('playlist')}><Icona d={ICONE.playlist} />Playlist</button>
-        <button type="button" className={attiva === 'cerca' ? 'on' : ''} onClick={() => { vaiA('cerca'); setTimeout(() => cercaRef.current?.focus(), 400); }}><Icona d={ICONE.cerca} />Cerca</button>
+        <button type="button" className={attiva === 'cerca' ? 'on' : ''} data-testid="casa-barra-cerca" onClick={() => { setAttiva('cerca'); setCercaAperta(true); }}><Icona d={ICONE.cerca} />Cerca</button>
         <button type="button" className={attiva === 'tuo-spazio' ? 'on' : ''} data-testid="casa-barra-tuoi"
           onClick={() => (hasAccount ? vaiA('tuo-spazio') : setHeartAsk(true))}><Icona d={ICONE.preferite} />I tuoi</button>
         <a href="/sound/impara"><Icona d={ICONE.impara} />Impara</a>
