@@ -49,6 +49,11 @@ class TestRotte:
     def test_la_sezione_e_in_regia(self):
         page = (FRONTEND / "features" / "admin" / "SoundAccessPage.js").read_text()
         assert "<SoundAscoltiSezione />" in page
+        # 8/10 sera (founder): tre sotto-pagine commutabili come il Cerchio
+        assert "import AdminPageShell from './AdminPageShell';" in page
+        for tab in ("{ value: 'compositori', label: 'Compositori'", "{ value: 'categorie', label: 'Categorie meditazioni'", "{ value: 'ascolti', label: 'Gli ascolti'"):
+            assert tab in page, tab
+        assert 'tabs={TABS} testid="admin-sound"' in page
         sez = (FRONTEND / "features" / "admin" / "SoundAscoltiSezione.jsx").read_text()
         for tid in ("admin-sound-ascolti", "admin-ascolti-periodo", "admin-ascolti-meditazioni", "admin-ascolti-persone", "admin-ascolti-dettaglio", "admin-ascolti-linea"):
             assert f'"{tid}"' in sez, tid
