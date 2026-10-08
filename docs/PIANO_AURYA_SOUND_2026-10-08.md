@@ -25,6 +25,17 @@ Cosa cambia per chi ascolta: una **casa delle meditazioni** che si esplora come 
 
 ---
 
+## 1-bis. La promessa: consolidare, non rifare
+
+Oggi comporre e ascoltare funzionano bene. Il piano **non tocca** il motore (synth, ponte, veglia, continuo, anello, render), il cancello del Cerchio, Crea Studio, le tracce riservate, il Lab, Professional, il player dei corsi. Le novità sono **dati e vetrina**: campi nuovi sulle tracce, una collezione nuova per le playlist, pagine nuove sopra le stesse API.
+
+Come si garantisce, onda per onda:
+- ogni campo nuovo è **facoltativo con un default** (una traccia senza copertina ha il fallback, senza `accesso` è «cerchio», senza playlist resta nel catalogo come oggi): nessuna migrazione che riscriva le tracce esistenti;
+- le pagine nuove nascono **accanto** alle vecchie dietro un flag (`SOUND_CASA_NUOVA`) e si scambiano solo quando la prova dal vivo è passata; `/frequenze/:slug` resta lo stesso URL con lo stesso cancello;
+- i test di casa (motore, cancello, Crea, condivisioni, Lab, esperienze, parità frontend/backend dei cataloghi) restano la suite di regressione; ogni onda aggiunge i suoi;
+- prova dal vivo prima del deploy su: una meditazione pubblicata, una riservata con link, un corso con lezione Suono, Calm/Ground/Respiro, il Lab, su telefono e desktop;
+- deploy a onde brevi, mai tutto insieme, solo su «deploy».
+
 ## 2. Dove siamo (fatti dal codice, 8/10/2026)
 
 Il prodotto ha un **motore eccellente** e una **vetrina primordiale**.
@@ -76,6 +87,25 @@ Fonti: [Insight Timer review 2026](https://www.choosingtherapy.com/insight-timer
 
 ## 4. L'architettura dell'esperienza
 
+### 4.0 Prima di aggiungere: togliere. La mappa di Sound, prima e dopo
+
+Oggi chi arriva su Sound trova **dodici porte sullo stesso piano**: la landing `/sound`, Esplora (36 schede di frequenze), Impara e il glossario, cinque stanze del Lab più i percorsi del Lab, tre esperienze, le Meditazioni, Visual, Professional, Studio, Crea, Le mie tracce, Pro. Sono due prodotti e un atelier mescolati: **chi vuole meditare** e **chi vuole capire il suono**, più **chi compone**. La confusione nasce da lì, non dal numero di funzioni.
+
+**Dopo: tre porte, con la gerarchia giusta.**
+
+| Porta | Per chi | Cosa contiene | Dove sta nel menu |
+|---|---|---|---|
+| **Meditazioni** (la casa, §4.1) | chi vuole ascoltare | catalogo, playlist, Di oggi, Esperienze guidate (Calm, Ground, Respiro entrano qui come card «Esperienza», non più tre pagine a parte), il tuo spazio | voce principale, barra in basso su telefono |
+| **Il suono** (`/sound`, la landing di sistema ridotta a un hub) | chi vuole capire | tre riquadri: Esplora le frequenze (le schede), Impara (fondamenta e glossario), Il Lab (le cinque stanze). Visual diventa uno strumento dentro il player (Aurya Mode), non una porta | seconda voce, sottovoce |
+| **Crea** | chi compone (privilegio) | Crea, Le mie tracce, Playlist, Ascolti; Professional e Studio restano pagine di vendita raggiungibili dal gestionale, non dal pubblico | solo per chi ha la chiave, dall'omino dell'account |
+
+Regole di semplificazione:
+- **una passerella sola**: Meditazioni · Il suono (· Crea per chi può). Via la doppia navigazione (passerella + stanze); le stanze diventano la navigazione interna dell'hub «Il suono».
+- **una sola home**: `/sound` non è più «la landing» con hero e vetrina duplicata rispetto a `/meditazioni`; la vetrina vive in Meditazioni; `/sound` racconta il suono e rimanda.
+- **una parola per cosa**: Meditazione, Playlist, Percorso, Esperienza (le tre integrate), Scheda (le frequenze), Stanza (il Lab).
+- **Crea in due livelli**: sopra il compositore attuale (che non cambia) nasce **«Crea in tre gesti»**: titolo e intento → scegli una base e, se vuoi, registra la voce → durata e pubblica. Sotto, «Avanzato» apre tutto quello che c'è oggi (livelli, fasi, spazi, visual). Il wizard scrive una ricetta standard dai protocolli che già esistono (`CATALOGO_CORE`): nessun motore nuovo, solo un ingresso più basso.
+- **le informazioni al posto giusto**: avvisi (cuffie, memoria, controindicazioni) una volta sola, nel momento in cui servono, mai sulla pagina del catalogo.
+
 ### 4.1 La casa delle meditazioni (`/meditazioni`, ridisegnata come un'app)
 
 Dall'alto in basso, su telefono e desktop:
@@ -98,6 +128,7 @@ Copertina, titolo, racconto breve, durata totale, numero di meditazioni, «Ascol
 - **Copertina** per ogni traccia (immagine tua, compressa in browser come le foto dei prodotti) con un fallback generato (gradiente per intento + titolo), così niente resta «vuoto».
 - **Durata e voce** si leggono dalla ricetta; **momento** e **tag** (facoltativi) si scelgono.
 - **Playlist**: nuova scheda in «Le mie tracce»: titolo, racconto, copertina, ordine con le frecce (come le lezioni), visibilità (Cerchio · Più) e «In vetrina».
+- **Gratuita o Più: un interruttore per traccia e per playlist.** In «Le mie tracce» ogni riga ha il chip dell'accesso: **Cerchio** (default: gratuita per chi è nel Cerchio) oppure **Più** (per gli abbonati). Si cambia con un clic, vale subito: la pagina della meditazione mostra il badge e il cancello giusto. Finché l'abbonamento non è acceso (flag `SOUND_PIU_ATTIVO`), il chip «Più» si può impostare ma la meditazione resta ascoltabile col Cerchio e mostra «Presto nel Più»: così prepari il catalogo prima del lancio senza nascondere nulla. Una playlist «Più» può contenere tracce gratuite (l'assaggio è la playlist stessa); una traccia «Più» dentro una playlist gratuita si vede, con il badge, e si ascolta per 90 s.
 - **In vetrina / Della settimana**: due interruttori, non più una costante nel codice.
 - **Ascolti**: per traccia e playlist, avvii, completamenti, da dove (home, playlist, condivisione, corso).
 
@@ -129,6 +160,21 @@ Copertina, titolo, racconto breve, durata totale, numero di meditazioni, «Ascol
 
 ---
 
+### 5.2 L'abbonamento Più: la meccanica completa (quando si accende)
+
+Vive **sull'account Aurya** (lo stesso dei corsi, dei file, delle prenotazioni), **non** sull'org e **non** sul Cerchio: l'email del Cerchio resta la chiave del gratuito, l'account è la chiave di tutto ciò che si paga o si conserva. Si riusano gli stessi binari del billing degli operatori (`routers/billing.py`: Stripe Checkout in modalità abbonamento, Customer Portal, webhook, sweep di riconciliazione), scritti una seconda volta per l'account piattaforma e non per l'organizzazione.
+
+1. **Catalogo Stripe**: un prodotto «Aurya Sound Più» sull'account Stripe di Aurya (non Connect: è Aurya che vende), due prezzi: annuale 39 € e, se vorrai, mensile 4,99 €; IVA gestita da Stripe Tax; ricevute e fatture da Stripe.
+2. **Checkout**: da una meditazione o playlist «Più», o dalla pagina `/meditazioni/piu`, il pulsante «Abbonati» → se non hai l'account, la porta unica `/accedi` (email + codice, come per i corsi) → `POST /platform/me/piu/checkout` crea la Checkout Session (modalità `subscription`, `customer` = il cliente Stripe dell'account, creato alla prima volta e salvato in `stripe_customer_id` dell'account) → Stripe → ritorno su `/account#sound` con «Benvenuto nel Più».
+3. **Verità**: i webhook `checkout.session.completed`, `customer.subscription.updated/deleted`, `invoice.paid`, `invoice.payment_failed` scrivono sull'account `piu = {status, stripe_subscription_id, current_period_end, cancel_at_period_end}`; come per i prodotti, il ritorno dal checkout fa anche una **verifica immediata** (non si aspetta il webhook) e uno **sweep** notturno riconcilia gli scaduti.
+4. **Il cancello**: `_has_catalog_access` impara una seconda domanda: per i contenuti «Più» serve `account.piu.status in (active, trialing, past_due entro il periodo)`; per il resto basta il Cerchio. Un solo punto di decisione, come oggi.
+5. **Gestione dall'account** (`/account` → sezione «Aurya Sound Più»): stato, prossimo rinnovo, importo, «Cambia carta» e «Disdici» → aprono il **Customer Portal di Stripe** (`POST /platform/me/piu/portal`), dove la persona disdice da sola; la disdetta vale a fine periodo (`cancel_at_period_end`), il contenuto resta fino alla scadenza, poi torna il Cerchio senza perdere preferiti, riprendi e storico. Email: conferma, rinnovo, pagamento fallito (grace di 7 giorni), disdetta ricevuta.
+6. **Regia**: nella tab Utenti del system admin la colonna «Più» (stato, dal, scade), il conteggio degli abbonati e le entrate del mese; un interruttore per regalare il Più a un account (`piu_omaggio_until`) per prove e ambasciatori.
+7. **Termini e /costi**: una voce nuova nei Termini per il cliente finale (il Più è un servizio di Aurya, 14 giorni di recesso sul digitale con l'eccezione dell'avvio immediato), `/costi` resta per i professionisti; la pagina `/meditazioni/piu` dice il prezzo. Il bump dei Termini si fa all'accensione, come per l'Accademia.
+8. **Nell'app degli store** (§8): l'abbonamento si compra con StoreKit/Play Billing (commissione 15–30%), e un webhook dei negozi scrive lo stesso campo `piu` sull'account: un solo stato, due casse. Sul web resta Stripe.
+
+Scalabile perché: lo stato vive in un campo solo, letto da un solo cancello; Stripe tiene la verità del denaro; il portale toglie il supporto manuale; l'omaggio e la regia sono già nel disegno; la stessa meccanica, domani, serve per un secondo abbonamento (es. l'Accademia) senza riscrivere nulla.
+
 ## 6. Modello dati (additivo, nessuna migrazione distruttiva)
 
 **`frequency_tracks`** (+campi):
@@ -138,7 +184,7 @@ Copertina, titolo, racconto breve, durata totale, numero di meditazioni, «Ascol
 **`sound_playlists`** (nuova): {id, organization_id, title, slug, slug_precedenti[], description, cover_url, intent?, tracce[] (slug ordinati), accesso (`cerchio`|`piu`), in_vetrina, status (`draft`|`published`), published_at, plays_total}.
 - Regole: solo tracce **pubbliche e dell'org** (stessa guardia di `_traccia_mia`); una playlist pubblica richiede la chiave 1 (`sound_composer`), come le tracce pubbliche; una traccia può stare in più playlist; la playlist esce dal catalogo se resta senza tracce pubblicate.
 
-**Account** (+campi): `sound_preferenze` {obiettivo, durata, momento}, `sound_riprendi` {slug, secondo}, `sound_recenti[]` (ultime 20), e in futuro `sound_piu_until`.
+**Account** (+campi): `sound_preferenze` {obiettivo, durata, momento}, `sound_riprendi` {slug, secondo}, `sound_recenti[]` (ultime 20), `stripe_customer_id`, e `piu` {status, stripe_subscription_id, current_period_end, cancel_at_period_end, omaggio_until} (vuoto finché il Più non si accende).
 
 **Registro rotte**: `meditazioni/playlist/:slug` (pubblica), meta nella shell (CollectionPage), sitemap.
 
@@ -150,14 +196,14 @@ Ogni onda: isolata, dietro flag dove tocca il pubblico, con guardie nei test, ze
 
 | Onda | Cosa | Giorni |
 |---|---|---|
-| **SN0 Fondamenta** | campi nuovi su tracce e account; collezione playlist + API CRUD (lista, crea, ordina, pubblica, ritira, copertina); eventi di ascolto; parole ufficiali (Meditazione · Playlist · Percorso) nel lessico e nei testi | 2 |
-| **SN1 La casa** | `/meditazioni` ridisegnata (Di oggi, righe, ricerca e filtri, barra in basso su telefono), pagina playlist, pagina della meditazione con playlist e «prossima da sola», copertine con fallback generato, card social | 3 |
+| **SN0 Fondamenta e mappa** | campi nuovi su tracce e account (tutti facoltativi, default = oggi); collezione playlist + API (lista, crea, ordina, pubblica, ritira, copertina); il chip **Cerchio/Più** per traccia e playlist (senza cancello finché il Più è spento); eventi di ascolto; le parole ufficiali; la **mappa a tre porte** decisa e scritta (quali URL restano, quali rimandano) | 2 |
+| **SN1 La casa e la passerella** | `/meditazioni` ridisegnata (Di oggi, righe, ricerca e filtri, barra in basso su telefono), le tre esperienze come card dentro la casa, pagina playlist, pagina della meditazione con playlist e «prossima da sola», copertine con fallback generato, card social; **la passerella unica** (Meditazioni · Il suono · Crea) e `/sound` ridotto a hub del suono, dietro flag e con i vecchi URL che rimandano | 3,5 |
 | **SN2 Il rito e l'aggancio** | Meditazione della settimana aperta a tutti (rotazione dalla vetrina), le tre domande con «Scelte per te», cancello con la copertina, email del Cerchio «nuova meditazione / nuova playlist», `/sound` home che pesca dalla vetrina | 2 |
-| **SN3 Il tuo spazio** | riprendi da dove eri, ascolti recenti, preferiti nella casa, «I tuoi» nella barra; lato tuo la dashboard «Ascolti» in Crea | 2 |
-| **SN4 La cassa pronta** | riga «Percorsi» in Sound (corsi con lezioni Suono), badge e campo `accesso` Più con l'invito spento dietro flag, `/costi` e note per i Termini preparate, non applicate | 1,5 |
+| **SN3 Il tuo spazio e Crea in tre gesti** | riprendi da dove eri, ascolti recenti, preferiti nella casa, «I tuoi» nella barra; lato tuo la dashboard «Ascolti» in Crea e **«Crea in tre gesti»** sopra il compositore attuale (che resta intatto come «Avanzato») | 3 |
+| **SN4 La cassa pronta** | riga «Percorsi» in Sound (corsi con lezioni Suono); il badge Più e l'invito spento dietro flag; l'ossatura dell'abbonamento già scritta e provata in test Stripe (prodotto, checkout, webhook, portale, sezione nell'account, colonna in regia) ma **spenta** (`SOUND_PIU_ATTIVO=false`); testi di `/costi`, `/meditazioni/piu` e la voce dei Termini preparati, non applicati | 3 |
 | **SN5 L'app** | passo 1: PWA installabile (manifest, service worker per il guscio, icona 512 vera, colore tema): da Android e desktop si installa in un tocco, su iPhone con le istruzioni; passo 2: guscio Capacitor con audio nativo e Media Session per l'ascolto a schermo bloccato di master e playlist, pubblicazione sugli store | 1 + 6–8 |
 
-Totale fino a SN4: **~10,5 giorni**. SN5 è una decisione a parte (§8).
+Totale fino a SN4: **~13,5 giorni**. SN5 è una decisione a parte (§8). L'accensione del Più, quando vorrai, è un giorno: flag, bump dei Termini, prezzo vero in Stripe, annuncio al Cerchio.
 
 **Cosa NON si fa** in questo lotto: nessun cambio al motore, a Crea Studio, al Lab, a Professional; nessun paywall acceso; nessuna cassa nuova; nessuna notifica push; nessun gioco a punti (streak aggressivi, badge): il rito di Aurya è la Meditazione della settimana, non la pressione.
 
@@ -183,6 +229,9 @@ Totale fino a SN4: **~10,5 giorni**. SN5 è una decisione a parte (§8).
 4. **Copertine**: foto tue per ogni meditazione, o va bene il fallback generato per partire? (Consiglio: fallback subito, foto quando hai tempo.)
 5. **Più**: confermi 39 €/anno come ancora, con un mensile 4,99 € opzionale, da accendere nel 2027? Serve solo per scrivere i testi di `/costi` e preparare l'interruttore.
 6. **App**: dopo SN4 partiamo con la PWA (passo 1) e rimandiamo il guscio nativo a quando ci saranno almeno 20–30 meditazioni pubblicate e i primi numeri? (Consiglio: sì.)
+7. **La mappa a tre porte** (§4.0): confermi che Calm, Ground e Respiro entrano nella casa delle meditazioni come «Esperienze» e che `/sound` diventa l'hub del suono (schede, fondamenta, Lab)? I vecchi URL continueranno a rispondere con un rimando.
+8. **Crea in tre gesti** (§4.0): lo vuoi in questo lotto (SN3) o dopo? Non tocca il compositore attuale.
+9. **Il Più si compra anche a mese** (4,99 €) o solo l'anno (39 €)? (Consiglio: solo l'anno all'inizio: meno disdette, meno supporto.)
 
 Con le risposte parto da SN0.
 
