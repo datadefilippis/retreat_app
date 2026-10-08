@@ -58,6 +58,9 @@ import { SafetyButton, SafetyLine, useSafetyGate } from './SafetyCurtain';
 import './frequenze.css';
 import SoundTopbar from './SoundTopbar';
 import StanzeSound from './StanzeSound';
+
+/* CR0 — la biblioteca del compositore (vista explore di questa pagina) */
+const LIBRERIA = '/sound/libreria';
 import TriggerStudio from './TriggerStudio';
 import CondivisioniTraccia from './pro/Condivisioni';
 import SeekBar from './SeekBar';
@@ -248,8 +251,13 @@ export default function FrequenzePage() {
      sessione in costruzione e l'audio sopravvivono alla navigazione. */
   const location = useLocation();
   const qs = useMemo(() => new URLSearchParams(location.search), [location.search]);
-  const VIEW_PATH = { explore: 'esplora', create: 'crea', impara: 'impara', mine: 'tracce' };
-  const PATH_VIEW = { esplora: 'explore', crea: 'create', impara: 'impara', tracce: 'mine' };
+  /* CR0 (8/10 sera) — dopo il lotto ES, /sound/esplora e' la biblioteca
+     PUBBLICA (esplora/BibliotecaPage). La biblioteca del COMPOSITORE
+     (frequenze con «+ sessione», basi, upload, guide) vive qui dentro
+     su /sound/libreria: e' la vista `explore` di sempre, con un nome
+     suo. Il segmento sconosciuto cade ancora su explore, come prima. */
+  const VIEW_PATH = { explore: 'libreria', create: 'crea', impara: 'impara', mine: 'tracce' };
+  const PATH_VIEW = { esplora: 'explore', libreria: 'explore', crea: 'create', impara: 'impara', tracce: 'mine' };
   /* LN — ogni vista ha il suo URL, quindi ogni categoria ha il suo
      slug. Una categoria senza slug NON si apre: il clic scrive
      `?categoria=` vuoto e la tab torna alla prima (successo con «Ritmi
@@ -271,18 +279,18 @@ export default function FrequenzePage() {
     : (SLUG_CAT[qs.get('categoria')] || SOUND_KEYS[0]);
 
   const setView = (v) => navigate(`/sound/${VIEW_PATH[v]}`);
-  const setWorld = (w) => navigate(w === 'sound' ? '/sound/esplora?mondo=suoni' : '/sound/esplora', { replace: true });
+  const setWorld = (w) => navigate(w === 'sound' ? `${LIBRERIA}?mondo=suoni` : LIBRERIA, { replace: true });
   const setSoundCat = (c) => navigate(
-    c ? `/sound/esplora?mondo=suoni&categoria=${c.toLowerCase()}`
-      : '/sound/esplora?mondo=suoni', { replace: true });
+    c ? `${LIBRERIA}?mondo=suoni&categoria=${c.toLowerCase()}`
+      : `${LIBRERIA}?mondo=suoni`, { replace: true });
   const setCurTab = (k) => {
     if (view === 'impara') navigate(k === 'Glossario' ? '/sound/impara/glossario' : '/sound/impara', { replace: true });
-    else navigate(`/sound/esplora?categoria=${CAT_SLUG[k] || ''}`, { replace: true });
+    else navigate(`${LIBRERIA}?categoria=${CAT_SLUG[k] || ''}`, { replace: true });
   };
 
   // /sound nudo → forma canonica (replace: il back non deve vederlo)
   useEffect(() => {
-    if (!seg[1]) navigate('/sound/esplora', { replace: true });
+    if (!seg[1]) navigate(LIBRERIA, { replace: true });
   }, [seg, navigate]);
 
   // ogni pagina col suo nome anche nella scheda del browser
@@ -1690,7 +1698,7 @@ export default function FrequenzePage() {
   // dalla Guida si torna sempre alla biblioteca — mai a Crea.
   // Un solo navigate (push): cambio di vista vero, il back torna alla Guida.
   const goExplore = (cat) => {
-    navigate(`/sound/esplora?categoria=${CAT_SLUG[cat] || ''}`);
+    navigate(`${LIBRERIA}?categoria=${CAT_SLUG[cat] || ''}`);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -2253,7 +2261,7 @@ export default function FrequenzePage() {
         {/* NV3, LA BARRA UNICA delle stanze (StanzeSound): Esplora ·
             Lab · Impara per tutti, Crea · Le mie tracce con le
             chiavi. Condivisa col Lab: un solo posto dove orientarsi. */}
-        <StanzeSound creaBadge={layers.length}
+        <StanzeSound creaBadge={layers.length} libreria={canCompose}
           primaDiUscire={chiediUscita}
           attiva={{ explore: 'esplora', create: 'crea',
                     impara: 'impara', mine: 'tracce' }[view]} />
@@ -2888,6 +2896,26 @@ export default function FrequenzePage() {
               </div>
             )}
 
+            {/* CR0 (8/10 sera, founder: «in Crea ho bisogno di un facile
+                accesso a suoni e tracce, altrimenti non posso fare mix»):
+                le fonti a un tocco. La sessione in costruzione sopravvive
+                al cambio di vista (stesso componente), e il piede «Vai a
+                Crea» riporta qui. In CR3 diventano il banco del mix. */}
+            <div className="protrow fontirow" data-testid="fq-fonti">
+              <span className="tag">Aggiungi alla sessione</span>
+              <div style={{ display: 'flex', gap: 7, flexWrap: 'wrap' }}>
+                <button type="button" className="prot" data-testid="fq-fonti-frequenze"
+                  title="Le 36 schede: ▶ per sentirle, «+ sessione» per portarle qui"
+                  onClick={() => navigate(LIBRERIA)}>〰 Frequenze</button>
+                <button type="button" className="prot" data-testid="fq-fonti-suoni"
+                  title="Le basi della libreria: tappeti, ambient, respiri, campane"
+                  onClick={() => navigate(`${LIBRERIA}?mondo=suoni`)}>♫ Suoni</button>
+                <button type="button" className="prot" data-testid="fq-fonti-voce"
+                  title="Registra la tua voce, qui sotto"
+                  onClick={() => document.querySelector('[data-testid="fqz-voicedesk"]')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}>🎙 La tua voce</button>
+              </div>
+            </div>
+
             <div className="protrow createprot">
               <span className="tag">Parti da un protocollo pronto</span>
               <div style={{ display: 'flex', gap: 7, flexWrap: 'wrap' }}>
@@ -3025,7 +3053,7 @@ export default function FrequenzePage() {
               </div>
             ) : (
               <div className="emptycreate" style={{ marginTop: 18 }}>
-                <p>La tua sessione è vuota. Torna a <b>Esplora</b> per scegliere le frequenze, oppure parti da un <b>protocollo pronto</b> qui sopra.</p>
+                <p>La tua sessione è vuota. Aggiungi <b>frequenze</b> o <b>suoni</b> dalla libreria, registra la <b>tua voce</b>, oppure parti da un <b>protocollo pronto</b> qui sopra.</p>
               </div>
             )}
             <p className="note">

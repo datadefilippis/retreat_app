@@ -25,8 +25,14 @@ const STANZE = [
   ['impara', 'Impara', '/sound/impara'],
 ];
 
+/* CR0 (8/10 sera) — per chi compone la prima stanza e' la LIBRERIA
+   (/sound/libreria: frequenze con «+ sessione», basi, guide), non la
+   biblioteca pubblica. Stesso id `esplora`, cosi' la vista explore
+   resta segnata come attiva. */
+const LIBRERIA = ['esplora', 'Libreria', '/sound/libreria'];
+
 export default function StanzeSound({ attiva, creaBadge = 0,
-  primaDiUscire = null }) {
+  primaDiUscire = null, libreria = false }) {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
   const chiavi = user
@@ -35,7 +41,7 @@ export default function StanzeSound({ attiva, creaBadge = 0,
        && localStorage.getItem('aurya_sound_crea') === '1');
 
   const voci = chiavi
-    ? [...STANZE,
+    ? [...(libreria ? [LIBRERIA, ...STANZE.slice(1)] : STANZE),
        ['crea', 'Crea', '/sound/crea'],
        ['tracce', 'Le mie tracce', '/sound/tracce']]
     : STANZE;

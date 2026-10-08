@@ -1333,7 +1333,7 @@ async def _meta_sound(parts: list) -> Optional[dict]:
             "image": f"{base}/og-cover.jpg",
             "content_html": _studio_content_html(),
         }
-    if sub in ("crea", "tracce", "visual", "pro"):
+    if sub in ("crea", "tracce", "libreria", "visual", "pro"):   # CR0: la libreria del compositore e' workspace
         meta = {**_SOUND_PAGES[None], "noindex": True}
         return {**meta, "canonical": None, "hreflang": None}
     # LAB (25/8) — a differenza di crea/tracce/visual e' una pagina
