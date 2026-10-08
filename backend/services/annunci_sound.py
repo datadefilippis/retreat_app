@@ -23,6 +23,15 @@ logger = logging.getLogger("aurya.annunci_sound")
 _MAX_DESTINATARI = 5000
 
 
+def attivo() -> bool:
+    """L'INTERRUTTORE (founder 8/10/2026 sera: «non voglio mandare email
+    automatiche al Cerchio prima di aver creato le meditazioni»). Spento
+    di default: l'annuncio non parte da nessuna porta, nemmeno a mano. Si
+    accende con SOUND_ANNUNCI_ATTIVI=1 nell'ambiente, letto a ogni chiamata."""
+    import os
+    return (os.getenv("SOUND_ANNUNCI_ATTIVI") or "").strip().lower() in ("1", "true", "on", "si", "sì", "yes")
+
+
 def _fmt_min(sec) -> str:
     m = int(round((sec or 0) / 60))
     return f"{m} minut{'o' if m == 1 else 'i'}" if m else ""

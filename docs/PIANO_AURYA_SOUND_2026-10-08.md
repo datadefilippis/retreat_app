@@ -285,5 +285,7 @@ Totale fino a SN4: **~11 giorni**. L'accensione del Più, quando vorrai, è un g
 - **Il giorno dell'accensione**: `docs/SOUND_PIU_ACCENSIONE_2026-10-08.md` (Stripe, ambiente, flag, cancello da costruire, testi di /costi e /meditazioni/piu, clausola Termini v2.14, comunicazione, omaggi).
 - guardie: `tests/test_sound_sn4.py`.
 
+**Gli annunci al Cerchio sono SPENTI (founder, 8/10 sera: «non voglio mandare email automatiche al Cerchio prima di aver creato le meditazioni»).** Verificato: l'annuncio non era mai automatico (solo il bottone con prova a secco e conferma), pubblicare una traccia o una playlist non manda nulla, nessuno sweep lo chiama. In più ora c'è l'interruttore `SOUND_ANNUNCI_ATTIVI`, spento di default: il server risponde 404 su entrambe le porte prima di qualsiasi altra cosa, il bottone in Crea non si vede (`stato.js`). Quando le meditazioni ci saranno: `SOUND_ANNUNCI_ATTIVI=1` nell'ambiente + `true` in `stato.js`. Le email che il Cerchio già manda da settimane restano quelle di prima e non riguardano le meditazioni nuove: il benvenuto (uno, nei primi due giorni, nelle tre varianti ritiri/meditazioni/altro), il promemoria a chi non ha confermato, la sospensione a 90 giorni (senza email).
+
 **Il lotto SN0–SN4 è completo in locale.** Prossimo: il giro di deploy su «go» (vedi memoria `deploy-due-server`: build locale prima, pipefail, `docker restart ms-backend` dopo il frontend, nginx rigenerato per i rimandi) e poi SN5 (l'app) quando il founder lo deciderà.
 

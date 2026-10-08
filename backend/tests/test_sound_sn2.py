@@ -30,6 +30,30 @@ class TestAnnuncioAlCerchio:
         assert p["oggetto"] == "Nuova playlist nel Cerchio: Sere" and p["percorso"] == "/meditazioni/playlist/sere?da=email"
         assert "3 meditazioni · 15 minuti" in p["corpo"]
 
+    def test_interruttore_spento(self, monkeypatch):
+        """Founder (8/10 sera): nessuna email al Cerchio finche' le meditazioni
+        non ci sono. Spento di default, su entrambe le porte e nel bottone."""
+        from services import annunci_sound
+        monkeypatch.delenv("SOUND_ANNUNCI_ATTIVI", raising=False)
+        assert annunci_sound.attivo() is False
+        monkeypatch.setenv("SOUND_ANNUNCI_ATTIVI", "1")
+        assert annunci_sound.attivo() is True
+        for f, porta in (("frequencies.py", '@router.post("/tracks/{track_id}/annuncia")'),
+                         ("sound_playlists.py", '@router.post("/{playlist_id}/annuncia")')):
+            corpo = (BACKEND / "routers" / f).read_text().split(porta)[1].split("\n@router")[0]
+            assert "if not annunci_sound.attivo():" in corpo, f
+            # l'interruttore viene PRIMA di ogni altra cosa (prima della prova a secco)
+            assert corpo.index("annunci_sound.attivo()") < corpo.index("if a_secco:"), f
+        flag = (FQ / "stato.js").read_text()
+        assert "export const SOUND_ANNUNCI_ATTIVI = false;" in flag
+        ui = (FQ / "CasaCampi.jsx").read_text()
+        assert "if (!SOUND_ANNUNCI_ATTIVI && !annuncio?.at) return null;" in ui
+        # nessun automatismo: l'annuncio parte solo dalle due porte a mano
+        import subprocess
+        out = subprocess.run(["grep", "-rln", "--include=*.py", "annunci_sound", str(BACKEND / "services"), str(BACKEND / "routers")],
+                             capture_output=True, text=True).stdout.split()
+        assert sorted(Path(x).name for x in out) == ["annunci_sound.py", "frequencies.py", "sound_playlists.py"]
+
     def test_endpoint_traccia(self):
         src = (BACKEND / "routers" / "frequencies.py").read_text()
         corpo = src.split('@router.post("/tracks/{track_id}/annuncia")')[1].split("\n@router")[0]

@@ -14,4 +14,8 @@
  */
 export const SOUND_CASA_NUOVA = true;
 export const SOUND_PIU_ATTIVO = false;
+/* SOUND_ANNUNCI_ATTIVI (founder 8/10/2026 sera): «Annuncia al Cerchio» non si
+   vede e non parte finche' le meditazioni non ci sono. Il server ha lo stesso
+   interruttore nell'ambiente (SOUND_ANNUNCI_ATTIVI): spento, risponde 404. */
+export const SOUND_ANNUNCI_ATTIVI = false;
 export const PIU_PREZZO = '39 € l\'anno';

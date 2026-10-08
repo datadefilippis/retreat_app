@@ -14,6 +14,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { frequenciesAPI } from '../../api/frequencies';
 import { compressImage } from '../../lib/compressImage';
+import { SOUND_ANNUNCI_ATTIVI } from './stato';
 
 export const MOMENTI = [['mattina', 'Mattina'], ['pausa', 'Pausa'], ['sera', 'Sera'], ['notte', 'Notte']];
 const COPERTINA_ACCEPT = '.jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp';
@@ -32,6 +33,9 @@ const dataBreve = (iso) => { try { return new Date(iso).toLocaleDateString('it-I
 export function AnnunciaCerchio({ annuncio, cosa = 'meditazione', aSecco, invia, onFatto }) {
   const [occupato, setOccupato] = useState(false);
   const [esito, setEsito] = useState('');
+  /* spento (founder 8/10): niente bottone finche' le meditazioni non ci sono;
+     resta solo la memoria di un annuncio gia' fatto, se c'e' */
+  if (!SOUND_ANNUNCI_ATTIVI && !annuncio?.at) return null;
   if (annuncio?.at) {
     return (
       <span style={{ fontSize: 12, color: 'var(--dimmer)' }} data-testid="fq-annunciata">

@@ -915,6 +915,8 @@ async def annuncia_traccia(track_id: str, sfondo: BackgroundTasks, a_secco: bool
     conta i destinatari e mostra l'anteprima senza spedire."""
     from database import frequency_tracks_collection, organizations_collection
     from services import annunci_sound
+    if not annunci_sound.attivo():
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Gli annunci al Cerchio sono spenti.")
     org_id = current_user["organization_id"]
     if not current_user.get("_sound_composer"):
         raise HTTPException(status_code=403, detail="L'annuncio al Cerchio è su invito, come le Meditazioni di Aurya.")
