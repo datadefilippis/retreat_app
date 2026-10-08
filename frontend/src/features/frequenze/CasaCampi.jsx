@@ -121,6 +121,47 @@ export function CampiCasa({ traccia, onCambio, composer }) {
           )}
         </div>
       )}
+      {pubblica && <AscoltiTraccia traccia={traccia} />}
+    </div>
+  );
+}
+
+/* SN3 (8/10/2026, piano §4.4) — LA DASHBOARD «ASCOLTI» per traccia: avvii,
+   quanti arrivano in fondo, da dove si entra. Si apre a richiesta: un
+   numero in piu' sulla riga, non una pagina in piu'. */
+const PROVENIENZE = {
+  diretto: 'link diretto', casa: 'la casa', cerca: 'la ricerca', vetrina: 'di oggi', playlist: 'una playlist',
+  preferiti: 'le preferite', recenti: 'i recenti', riprendi: 'riprendi', email: "l'email del Cerchio",
+  anteprima: "l'anteprima", corso: 'un corso', condivisione: 'una condivisione', altro: 'altro',
+};
+export function AscoltiTraccia({ traccia }) {
+  const [dati, setDati] = useState(null);
+  const [aperto, setAperto] = useState(false);
+  const apri = async () => {
+    setAperto((v) => !v);
+    if (dati) return;
+    try { setDati((await frequenciesAPI.ascolti(traccia.id)).data); } catch { setDati({ errore: true }); }
+  };
+  return (
+    <div style={{ marginTop: 8 }} data-testid="fq-ascolti">
+      <button type="button" style={chip(aperto)} onClick={apri} data-testid="fq-ascolti-apri">
+        {aperto ? '▾' : '▸'} Ascolti{traccia.plays_total ? ` · ${traccia.plays_total}` : ''}
+      </button>
+      {aperto && (
+        <div style={{ fontSize: 12, color: 'var(--dim)', marginTop: 6, display: 'flex', flexWrap: 'wrap', gap: '4px 14px' }}>
+          {!dati ? <span>…</span> : dati.errore ? <span>Non riesco a leggere gli ascolti.</span> : (
+            <>
+              <span><b style={{ color: 'var(--bone)' }}>{dati.eventi?.avvio || 0}</b> avvii</span>
+              <span><b style={{ color: 'var(--bone)' }}>{dati.eventi?.q50 || 0}</b> a metà</span>
+              <span><b style={{ color: 'var(--bone)' }}>{dati.eventi?.fine || 0}</b> fino in fondo{dati.completamento != null ? ` (${dati.completamento}%)` : ''}</span>
+              {Object.entries(dati.provenienze || {}).sort((a, b) => b[1] - a[1]).map(([k, n]) => (
+                <span key={k}>da {PROVENIENZE[k] || k}: <b style={{ color: 'var(--bone)' }}>{n}</b></span>
+              ))}
+              {!dati.eventi?.avvio && <span>Ancora nessun ascolto misurato (si conta dall'8 ottobre).</span>}
+            </>
+          )}
+        </div>
+      )}
     </div>
   );
 }

@@ -271,5 +271,11 @@ Totale fino a SN4: **~11 giorni**. L'accensione del Più, quando vorrai, è un g
 - **Ritiro di CALM, GROUND e RESPIRO** (decisione 7): registro `rimandi` → nginx 301 esatti verso `/meditazioni` (nginx.conf rigenerato), shell noindex con il rimando, fuori dalla sitemap, via dalla home del suono per i crawler, SPA `Navigate` dietro il flag (le rotte in App.js restano letterali, dismesse). I pin dei test delle tre esperienze aggiornati alla nuova verità; il loro codice resta una release, poi si pota.
 - guardie: `tests/test_sound_sn2.py`; pin `require_sound_crea` = 16.
 
-**Prossimo: SN3 Il tuo spazio** (riprendi da dove eri, ascolti recenti, preferiti nella casa, «I tuoi» nella barra; la dashboard «Ascolti» in Crea).
+**SN3 Il tuo spazio IMPLEMENTATO in locale (8/10/2026, sera).** La persistenza è dell'account: senza account non si salva nulla.
+- **Il player salva il punto**: `POST /platform/me/sound/ascolto` {slug, secondo?, fine?}: al via la meditazione entra nei recenti (senza doppi, venti al massimo), ogni quindici secondi di ascolto si salva il secondo per «riprendi», alla fine «riprendi» si spegne (solo se era di quella traccia). Con `?t=secondo` il tasto dice «▶ Riprendi» e parte da lì (mai dagli ultimi cinque secondi).
+- **La sezione «Il tuo spazio»** nella casa (con account, solo se ha qualcosa da dire): la card «Riprendi da dove eri» (copertina, titolo, 0:42 di 2 min), la riga «Ascolti recenti» (solo le meditazioni ancora in catalogo), la riga «Le tue preferite». Nella barra «Preferite» diventa **«I tuoi»**; senza account apre l'invito a creare l'account (preferite, recenti e riprendi su ogni telefono).
+- **La dashboard «Ascolti» in Crea**: su ogni traccia pubblicata un bottone «▸ Ascolti · N» apre avvii, a metà, fino in fondo (%), e da dove si entra (la casa, la ricerca, di oggi, una playlist, le preferite, i recenti, riprendi, l'email del Cerchio…). Dati da `GET /tracks/{id}/ascolti` (SN0); si conta dall'8 ottobre.
+- guardie: `tests/test_sound_sn3.py`; pin SN1 («I tuoi», `tuo-spazio`) e SN2 (il no-UI vale per le preferenze) aggiornati.
+
+**Prossimo: SN4 La cassa pronta** (riga «Percorsi» in Sound con i corsi che hanno lezioni Suono; il badge Più e l'invito spenti dietro flag; l'ossatura dell'abbonamento scritta e provata in test Stripe ma spenta, `SOUND_PIU_ATTIVO=false`; testi di /costi, /meditazioni/piu e dei Termini preparati, non applicati).
 

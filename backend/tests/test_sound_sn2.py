@@ -99,9 +99,10 @@ class TestTuoSpazioPredisposto:
         me = src.split('@router.get("/me")')[1].split("\n@router")[0]
         for campo in ("sound_preferenze", "sound_riprendi", "sound_recenti"):
             assert f'out["{campo}"]' in me, campo
-        # nessuna interfaccia (decisione 2): nessun componente la usa ancora
+        # nessuna interfaccia delle PREFERENZE (decisione 2): nessun componente le tocca
+        # (riprendi e recenti sono di SN3 e passano da /me/sound/ascolto, non dalle preferenze)
         import subprocess
-        out = subprocess.run(["grep", "-rl", "me/sound", str(FRONTEND)], capture_output=True, text=True).stdout
+        out = subprocess.run(["grep", "-rl", "sound_preferenze", str(FRONTEND)], capture_output=True, text=True).stdout
         assert out.strip() == "", f"interfaccia delle preferenze costruita prima del tempo: {out}"
 
 

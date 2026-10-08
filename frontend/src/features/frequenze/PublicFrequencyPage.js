@@ -233,10 +233,33 @@ export default function PublicFrequencyPage() {
       provenienzaRef.current = { provenienza: q.get('da') || 'diretto', playlist: q.get('playlist') || null };
     } catch { provenienzaRef.current = { provenienza: 'diretto', playlist: null }; }
   }
+  /* SN3 (8/10) — IL TUO SPAZIO: con l'account, l'ascolto entra nei
+     recenti al via, il secondo si salva ogni quindici secondi per
+     «riprendi da dove eri», e alla fine «riprendi» si spegne. Senza
+     account non si salva nulla (la persistenza e' dell'account). */
+  const haAccount = !!localStorage.getItem('platform_token');
+  const segnaSpazio = (dati) => {
+    if (!haAccount) return;
+    platformApi.post('/platform/me/sound/ascolto', { slug, ...dati }).catch(() => { /* mai fermare il suono */ });
+  };
   const ascoltoEvento = (evento, secondo) => {
     frequenciesAPI.registraAscolto(slug, { evento, secondo: Math.floor(secondo || 0), ...provenienzaRef.current })
       .catch(() => { /* la misura non deve mai fermare il suono */ });
+    if (evento === 'avvio') segnaSpazio({ secondo: 0 });
+    if (evento === 'fine') segnaSpazio({ fine: true });
   };
+  const ultimoSalvatoRef = useRef(0);
+  useEffect(() => {
+    if (!playing || !haAccount) return;
+    if (elapsed - ultimoSalvatoRef.current >= 15) { ultimoSalvatoRef.current = elapsed; segnaSpazio({ secondo: Math.floor(elapsed) }); }
+  }, [elapsed, playing]);   // eslint-disable-line react-hooks/exhaustive-deps
+  /* ?t=secondo (dal «riprendi» della casa): il tasto dice «Riprendi» e parte da li' */
+  useEffect(() => {
+    if (!track) return;
+    const t = Number(new URLSearchParams(window.location.search).get('t') || 0);
+    const d = track.score?.duration_sec || 0;
+    if (t > 5 && t < d - 5) setElapsed(t);
+  }, [track]);
 
   /* SN1 (8/10) — «PARTE DI UNA PLAYLIST»: se si arriva con ?playlist=slug
      il player sa dov'e' (n di N), offre precedente/successiva e alla fine

@@ -54,7 +54,7 @@ class TestLaCasa:
         # le righe della casa
         for riga in ("casa-oggi", "casa-cerca", "casa-filtri", "casa-barra", "casa-card", "casa-playlist-card"):
             assert f'data-testid="{riga}"' in src or f"data-testid={{`{riga}" in src, riga
-        for riga in ('id="playlist"', 'id="per-iniziare"', 'id="novita"', 'id="piu-ascoltate"', 'id="con-la-voce"', 'id="solo-suono"', 'id="preferite"'):
+        for riga in ('id="playlist"', 'id="per-iniziare"', 'id="novita"', 'id="piu-ascoltate"', 'id="con-la-voce"', 'id="solo-suono"', 'id="tuo-spazio"'):
             assert riga in src, riga
         # la card porta la provenienza al player (SN0: ?da=, ?playlist=)
         assert "const href = `/frequenze/${t.slug}?da=${da}${playlist ? `&playlist=${encodeURIComponent(playlist)}` : ''}`;" in src
@@ -64,7 +64,7 @@ class TestLaCasa:
         assert "if (!hasAccount) { setHeartAsk(true); return; }" in src
         # la barra in basso: cinque gesti
         barra = src.split('data-testid="casa-barra"')[1].split("</nav>")[0]
-        for voce in ("Esplora", "Playlist", "Cerca", "Preferite", "Impara"):
+        for voce in ("Esplora", "Playlist", "Cerca", "I tuoi", "Impara"):   # SN3: «Preferite» → «I tuoi»
             assert voce in barra, voce
         # niente motore qui dentro
         assert "startPreview" not in src and "engine/" not in src

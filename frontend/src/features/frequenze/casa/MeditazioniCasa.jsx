@@ -30,6 +30,7 @@ export const INTENTI = {
 };
 export const TONI = { dormire: 'viola', elaborare: 'viola', meditare: 'salvia', concentrare: 'acqua', rilassare: 'oro', energizzare: 'oro' };
 export const fmtMin = (s) => { const m = Math.round((s || 0) / 60); return m < 1 ? `${Math.max(1, Math.round(s || 0))} s` : `${m} min`; };
+export const fmtMinSec = (s) => { const t = Math.max(0, Math.round(s || 0)); return `${Math.floor(t / 60)}:${String(t % 60).padStart(2, '0')}`; };
 
 const Cuore = () => (<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.2S5.6 16 3.2 12.4C1.1 9.3 2.7 5.4 6 5.4c2 0 3.1 1 4.2 2.5.7 1 .9 1 1.6 0C12.9 6.4 14 5.4 16 5.4c3.3 0 4.9 3.9 2.8 7C16.4 16 12 20.2 12 20.2z" /></svg>);
 
@@ -130,11 +131,21 @@ export default function MeditazioniCasa() {
       setLocked(true); setItems([]); setTeaserCount(detail?.tracks_count ?? 0);
     }
   };
+  /* SN3 — il tuo spazio: «riprendi da dove eri» e gli ascolti recenti vivono
+     sull'account (la persistenza e' dell'account, decisione del piano) */
+  const [spazio, setSpazio] = useState({ riprendi: null, recenti: [] });
+  const caricaSpazio = async () => {
+    if (!hasAccount) return;
+    try {
+      const me = (await platformApi.get('/platform/me')).data;
+      setSpazio({ riprendi: me.sound_riprendi || null, recenti: me.sound_recenti || [] });
+    } catch { /* non bloccante */ }
+  };
   const caricaPreferite = async () => {
     if (!hasAccount) return;
     try { setFavorites((await platformApi.get('/frequencies/favorites')).data.slugs || []); } catch { /* non bloccante */ }
   };
-  useEffect(() => { migraVecchieChiavi().finally(() => { carica(); caricaPreferite(); }); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { migraVecchieChiavi().finally(() => { carica(); caricaPreferite(); caricaSpazio(); }); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const toggleFavorite = async (slug) => {
     if (!hasAccount) { setHeartAsk(true); return; }
@@ -179,6 +190,10 @@ export default function MeditazioniCasa() {
   const soloSuono = tutte.filter((t) => !t.has_voce).slice(0, 12);
   const intentiPresenti = Object.keys(INTENTI).filter((i) => tutte.some((t) => t.intent === i));
   const preferite = tutte.filter((t) => favorites.includes(t.slug));
+  const perSlug = Object.fromEntries(tutte.map((t) => [t.slug, t]));
+  const recenti = (spazio.recenti || []).map((s) => perSlug[s]).filter(Boolean).slice(0, 12);
+  const riprendi = spazio.riprendi && perSlug[spazio.riprendi.slug] && spazio.riprendi.secondo > 5
+    ? { t: perSlug[spazio.riprendi.slug], secondo: spazio.riprendi.secondo } : null;
 
   const vaiA = (id) => { setAttiva(id); const el = document.getElementById(id); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); };
 
@@ -249,10 +264,40 @@ export default function MeditazioniCasa() {
                 <Riga id="playlist" titolo="Playlist" sub="Raccolte curate, da ascoltare in fila.">
                   {playlists.map((p) => <CardPlaylist key={p.id} p={p} />)}
                 </Riga>
-                {hasAccount && preferite.length > 0 && (
-                  <Riga id="preferite" titolo="Le tue preferite">
-                    {preferite.map((t) => <CardMeditazione key={t.slug} t={t} da="preferiti" fav onCuore={toggleFavorite} />)}
-                  </Riga>
+                {/* ── SN3: il tuo spazio (con l'account): riprendi · recenti · preferite ── */}
+                {hasAccount && (riprendi || recenti.length > 0 || preferite.length > 0) && (
+                  <section className="casa-sezione" id="tuo-spazio" data-testid="casa-tuo-spazio">
+                    <h2>Il tuo spazio</h2>
+                    <p className="casa-sub">Dove eri rimasta o rimasto, cosa hai ascoltato, cosa hai salvato.</p>
+                    {riprendi && (
+                      <Link to={`/frequenze/${riprendi.t.slug}?da=riprendi&t=${riprendi.secondo}`} className={`oggi tono-${TONI[riprendi.t.intent] || 'oro'}`}
+                        style={{ textDecoration: 'none', color: 'inherit', marginBottom: 18 }} data-testid="casa-riprendi">
+                        <div className="oggi-cover" style={{ minHeight: 120 }}>{riprendi.t.cover_url && <img src={riprendi.t.cover_url} alt="" />}</div>
+                        <div className="oggi-corpo">
+                          <span className="etichetta">Riprendi da dove eri</span>
+                          <h3>{riprendi.t.title}</h3>
+                          <span className="body">{fmtMinSec(riprendi.secondo)} di {fmtMin(riprendi.t.duration_sec)}{riprendi.t.guida_nome || riprendi.t.operator?.name ? ` · ${riprendi.t.guida_nome || riprendi.t.operator?.name}` : ''}</span>
+                          <div style={{ marginTop: 'auto', paddingTop: 10 }}><span className="casa-cta">▶ Riprendi</span></div>
+                        </div>
+                      </Link>
+                    )}
+                    {recenti.length > 0 && (
+                      <>
+                        <h2 style={{ fontSize: 18, marginTop: 10 }}>Ascolti recenti</h2>
+                        <div className="riga" data-testid="casa-recenti">
+                          {recenti.map((t) => <CardMeditazione key={t.slug} t={t} da="recenti" fav={favorites.includes(t.slug)} onCuore={toggleFavorite} />)}
+                        </div>
+                      </>
+                    )}
+                    {preferite.length > 0 && (
+                      <>
+                        <h2 style={{ fontSize: 18, marginTop: 10 }} id="preferite">Le tue preferite</h2>
+                        <div className="riga" data-testid="casa-preferite">
+                          {preferite.map((t) => <CardMeditazione key={t.slug} t={t} da="preferiti" fav onCuore={toggleFavorite} />)}
+                        </div>
+                      </>
+                    )}
+                  </section>
                 )}
                 <Riga id="per-iniziare" titolo="Per iniziare" sub="Dieci minuti o meno.">
                   {brevi.map((t) => <CardMeditazione key={t.slug} t={t} fav={favorites.includes(t.slug)} onCuore={toggleFavorite} />)}
@@ -289,7 +334,8 @@ export default function MeditazioniCasa() {
         <button type="button" className={attiva === 'esplora' ? 'on' : ''} onClick={() => { setAttiva('esplora'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}><Icona d={ICONE.esplora} />Esplora</button>
         <button type="button" className={attiva === 'playlist' ? 'on' : ''} onClick={() => vaiA('playlist')}><Icona d={ICONE.playlist} />Playlist</button>
         <button type="button" className={attiva === 'cerca' ? 'on' : ''} onClick={() => { vaiA('cerca'); setTimeout(() => cercaRef.current?.focus(), 400); }}><Icona d={ICONE.cerca} />Cerca</button>
-        <button type="button" className={attiva === 'preferite' ? 'on' : ''} onClick={() => (hasAccount ? vaiA('preferite') : setHeartAsk(true))}><Icona d={ICONE.preferite} />Preferite</button>
+        <button type="button" className={attiva === 'tuo-spazio' ? 'on' : ''} data-testid="casa-barra-tuoi"
+          onClick={() => (hasAccount ? vaiA('tuo-spazio') : setHeartAsk(true))}><Icona d={ICONE.preferite} />I tuoi</button>
         <a href="/sound/impara"><Icona d={ICONE.impara} />Impara</a>
       </nav>
 
@@ -297,8 +343,8 @@ export default function MeditazioniCasa() {
       {heartAsk && (
         <div className="gate" onClick={() => setHeartAsk(false)}>
           <div className="gatebox" style={{ maxWidth: 460 }} onClick={(e) => e.stopPropagation()}>
-            <h2>Le preferite vivono nel tuo account</h2>
-            <p>Per salvare una meditazione e ritrovarla su ogni telefono serve un account Aurya, gratuito: lo stesso di corsi e prenotazioni.</p>
+            <h2>Il tuo spazio vive nel tuo account</h2>
+            <p>Preferite, ascolti recenti e «riprendi da dove eri» si ritrovano su ogni telefono con un account Aurya, gratuito: lo stesso di corsi e prenotazioni.</p>
             <div className="gatefoot" style={{ gap: 8 }}>
               <button type="button" className="primary" onClick={() => { window.location.href = creaAccount(emailDellaProva() || '', '/meditazioni'); }}>Crea il tuo account</button>
               <button type="button" onClick={() => setHeartAsk(false)}>Non ora</button>

@@ -504,6 +504,35 @@ async def update_me(body: ProfileUpdate,
             ("id", "email", "name", "phone", "city", "language")}
 
 
+class SoundAscolto(BaseModel):
+    """SN3 — un ascolto dal player: al via entra nei recenti; ogni tanto il
+    secondo per «riprendi»; alla fine «riprendi» si spegne."""
+    slug: str = Field(..., max_length=120)
+    secondo: Optional[int] = None
+    fine: bool = False
+
+
+@router.post("/me/sound/ascolto")
+async def segna_ascolto_sound(body: SoundAscolto,
+                              account: dict = Depends(get_current_platform_account)):
+    _flag_enabled()
+    from database import platform_accounts_collection
+    slug = body.slug.strip()
+    if not slug:
+        raise HTTPException(status_code=422, detail="slug mancante")
+    recenti = [s for s in (account.get("sound_recenti") or []) if s != slug]
+    recenti = [slug, *recenti][:20]
+    riprendi = account.get("sound_riprendi") or None
+    if body.fine:
+        if riprendi and riprendi.get("slug") == slug:
+            riprendi = None
+    elif body.secondo is not None:
+        riprendi = {"slug": slug, "secondo": max(0, int(body.secondo)), "at": utc_now()}
+    await platform_accounts_collection.update_one(
+        {"id": account["id"]}, {"$set": {"sound_recenti": recenti, "sound_riprendi": riprendi}})
+    return {"sound_recenti": recenti, "sound_riprendi": riprendi}
+
+
 class _PasswordChange(BaseModel):
     new_password: str
     current_password: Optional[str] = None
