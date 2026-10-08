@@ -199,17 +199,17 @@ function FoglioAltro({ k, aperto, onChiudi }) {
 
 /* ── la barra in basso: salva, pubblica, e lo stato che parla ── */
 function Piede({ k }) {
-  const [vivo, setVivo] = useState('');
-  useEffect(() => {
-    if (!k.status) { setVivo(''); return undefined; }
-    setVivo(k.status);
-    const t = setTimeout(() => setVivo(''), 7000);
-    return () => clearTimeout(t);
-  }, [k.status]);
+  /* lo stato resta a vista finche' non ne arriva un altro (com'era nella
+     barra di prima: un errore sui tempi non deve sparire da solo); un
+     tocco lo chiude. */
+  const [chiuso, setChiuso] = useState('');
+  useEffect(() => { setChiuso(''); }, [k.status]);
+  const vivo = k.status && chiuso !== k.status ? k.status : '';
   const vuota = !k.layers.length;
   return (
     <div className="cr-piede" data-testid="cr-piede">
-      <div className={`cr-stato${vivo ? ' su' : ''}`} data-testid="cr-stato" aria-live="polite">{vivo}</div>
+      <div className={`cr-stato${vivo ? ' su' : ''}`} data-testid="cr-stato" aria-live="polite"
+        title={vivo ? 'Tocca per chiudere' : undefined} onClick={() => setChiuso(k.status)}>{vivo}</div>
       <div className="cr-piede-gesti">
         <button type="button" data-testid="fq-save" className="cr-salva"
           disabled={k.saving || vuota} onClick={k.save}>
@@ -480,6 +480,11 @@ export default function CreaVista({ kit: k }) {
         <Banco k={k} aperto={banco} scheda={scheda} setScheda={setScheda} onChiudi={() => setBanco(false)} />
         <div className="cr-sessione" data-testid="cr-sessione">
           {k.layers.length > 0 ? k.lineaDelTempo : <Vuota onBanco={apriBanco} />}
+          <p className="cr-nota cr-nota-metodi" data-testid="cr-nota-metodi">
+            Il <b>binaurale</b> dà l'effetto solo in cuffia: dalle casse si sente comunque, ma resta un battimento fisico, non stimolazione binaurale. <b>Isocronico</b> e <b>monoaurale</b> portano il battito nel segnale: per grotta e aula usa questi.
+            Timbro <b>caldo</b> più tollerabile del puro sulle sessioni lunghe; il <b>soffio</b> nasconde l'entrainment in un rumore rosa.
+            {' '}Gradi: {Object.entries(GRADI).map(([g, x]) => `${g} ${x.label.toLowerCase()}`).join(' · ')}.
+          </p>
         </div>
       </div>
 

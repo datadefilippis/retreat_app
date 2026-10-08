@@ -70,6 +70,11 @@ class TestCreaVista:
                     "fq-crea-scena", "fq-studio-apri"):
             assert f'"{tid}"' in src, tid
         assert "export function SelettoreCrea" in src and "['fonti', 'Fonti', onFonti]" in src
+        # niente perso rispetto a prima (verifica del founder, 8/10 sera): la nota
+        # sui metodi e lo stato che resta finche' non ne arriva un altro
+        assert 'data-testid="cr-nota-metodi"' in src and "Il <b>binaurale</b>" in src
+        assert "const vivo = k.status && chiuso !== k.status ? k.status : '';" in src
+        assert 'data-testid="cr-traccia-link"' in (CR / "TracceVista.jsx").read_text()
 
     def test_il_banco_del_mix(self):
         src = (CR / "CreaVista.jsx").read_text()

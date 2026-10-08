@@ -80,6 +80,9 @@ export default function TracceVista({ kit: k }) {
                     {d.in_vetrina && ' · ★ in vetrina'}
                     {d.annuncio?.at && ' · ✉ annunciata'}
                   </div>
+                  {s === 'pubblica' && d.slug && (
+                    <a className="cr-card-link" href={`/frequenze/${d.slug}`} target="_blank" rel="noreferrer" data-testid="cr-traccia-link">/frequenze/{d.slug}</a>
+                  )}
                   <div className="cr-card-gesti">
                     {s === 'bozza' ? (
                       k.composer ? (
