@@ -1,6 +1,6 @@
 # Aurya Sound — da prodotto primordiale a luogo esperienziale che aggancia e monetizza
 
-**Data:** 8 ottobre 2026 · **Stato:** piano v3, decisioni 1-7 prese dal founder (§9), la 8 in attesa
+**Data:** 8 ottobre 2026 · **Stato:** piano v3, tutte le decisioni prese dal founder (§9): si parte da SN0 su «procedi»
 **Richiesta del founder:** «Userò Crea per fare meditazioni gratuite come aggancio per gli iscritti. La parte meditazioni deve diventare un luogo esperienziale e facile da navigare, con playlist, come le app di meditazione. In futuro meditazioni o playlist bloccate per chi ha un abbonamento. Le meditazioni si usano anche nei corsi. Un pacchetto di meditazioni: meglio Meditazioni o Corsi? Tutto facile da gestire per me e da esplorare per chi ascolta. Con ricerca di mercato. In futuro un'app Android e iOS.»
 
 ---
@@ -103,7 +103,7 @@ Regole di semplificazione:
 - **una passerella sola**: Meditazioni · Il suono (· Crea per chi può). Via la doppia navigazione (passerella + stanze); le stanze diventano la navigazione interna dell'hub «Il suono».
 - **una sola home**: `/sound` non è più «la landing» con hero e vetrina duplicata rispetto a `/meditazioni`; la vetrina vive in Meditazioni; `/sound` racconta il suono e rimanda.
 - **una parola per cosa**: Meditazione, Playlist, Percorso, Scheda (le frequenze), Stanza (il Lab).
-- **Crea in due livelli**: sopra il compositore attuale (che non cambia) nasce **«Crea in tre gesti»**: titolo e intento → scegli una base e, se vuoi, registra la voce → durata e pubblica. Sotto, «Avanzato» apre tutto quello che c'è oggi (livelli, fasi, spazi, visual). Il wizard scrive una ricetta standard dai protocolli che già esistono (`CATALOGO_CORE`): nessun motore nuovo, solo un ingresso più basso.
+- **Crea resta com'è** (decisione 8: «Crea in tre gesti», l'ingresso guidato sopra il compositore, si riprende più avanti).
 - **le informazioni al posto giusto**: avvisi (cuffie, memoria, controindicazioni) una volta sola, nel momento in cui servono, mai sulla pagina del catalogo.
 
 ### 4.1 La casa delle meditazioni (`/meditazioni`, ridisegnata come un'app)
@@ -199,11 +199,11 @@ Ogni onda: isolata, dietro flag dove tocca il pubblico, con guardie nei test, ze
 | **SN0 Fondamenta e mappa** | campi nuovi su tracce e account (tutti facoltativi, default = oggi); collezione playlist + API (lista, crea, ordina, pubblica, ritira, copertina); il chip **Cerchio/Più** per traccia e playlist (senza cancello finché il Più è spento); eventi di ascolto; le parole ufficiali; la **mappa a tre porte** decisa e scritta (quali URL restano, quali rimandano) | 2 |
 | **SN1 La casa e la passerella** | `/meditazioni` ridisegnata (Di oggi, righe, ricerca e filtri, barra in basso su telefono), le tre esperienze come card dentro la casa, pagina playlist, pagina della meditazione con playlist e «prossima da sola», copertine con fallback generato, card social; **la passerella unica** (Meditazioni · Il suono · Crea) e `/sound` ridotto a hub del suono, dietro flag e con i vecchi URL che rimandano | 3,5 |
 | **SN2 L'aggancio** | la vetrina a rotazione (intera solo col Cerchio), il cancello con la copertina e la playlist in vista, le card social, l'email del Cerchio «nuova meditazione / nuova playlist»; i campi delle preferenze predisposti senza interfaccia; il ritiro di Calm, Ground e Respiro con i rimandi | 1,5 |
-| **SN3 Il tuo spazio e Crea in tre gesti** | riprendi da dove eri, ascolti recenti, preferiti nella casa, «I tuoi» nella barra; lato tuo la dashboard «Ascolti» in Crea e **«Crea in tre gesti»** sopra il compositore attuale (che resta intatto come «Avanzato») | 3 |
+| **SN3 Il tuo spazio** | riprendi da dove eri, ascolti recenti, preferiti nella casa, «I tuoi» nella barra; lato tuo la dashboard «Ascolti» in Crea («Crea in tre gesti» rimandato, decisione 8) | 2 |
 | **SN4 La cassa pronta** | riga «Percorsi» in Sound (corsi con lezioni Suono); il badge Più e l'invito spento dietro flag; l'ossatura dell'abbonamento già scritta e provata in test Stripe (prodotto, checkout, webhook, portale, sezione nell'account, colonna in regia) ma **spenta** (`SOUND_PIU_ATTIVO=false`); testi di `/costi`, `/meditazioni/piu` e la voce dei Termini preparati, non applicati | 3 |
 | **SN5 L'app** (più in là, decisione 6) | predisposizione dentro SN0–SN4: ogni meditazione e playlist ha il master pronto, i metadati per la Media Session, l'icona 512 vera e il colore tema; passo 1 PWA installabile e passo 2 guscio Capacitor con audio nativo si fanno quando lo deciderai | — |
 
-Totale fino a SN4: **~13 giorni** (SN3 senza «Crea in tre gesti» = ~11). L'accensione del Più, quando vorrai, è un giorno: flag, bump dei Termini, prezzo vero in Stripe, annuncio al Cerchio.
+Totale fino a SN4: **~11 giorni**. L'accensione del Più, quando vorrai, è un giorno: flag, bump dei Termini, prezzo vero in Stripe, annuncio al Cerchio.
 
 **Cosa NON si fa** in questo lotto: nessun cambio al motore, a Crea Studio, al Lab, a Professional; nessun paywall acceso; nessuna cassa nuova; nessuna notifica push; nessun gioco a punti (streak aggressivi, badge): il rito di Aurya è la Meditazione della settimana, non la pressione.
 
@@ -230,7 +230,7 @@ Totale fino a SN4: **~13 giorni** (SN3 senza «Crea in tre gesti» = ~11). L'acc
 5. **Più**: 39 €/anno, solo annuale.
 6. **App**: si predispone (master, metadati, icona, colore), si costruisce più in là.
 7. **Calm, Ground e Respiro si ritirano**: non sono meditazioni create con Crea. Rimandi a `/meditazioni`, fuori da `/sound`, shell, sitemap e llms.txt; codice dismesso per una release, poi potato.
-8. **«Crea in tre gesti»**: in attesa (spiegazione data in chat l'8/10).
+8. **«Crea in tre gesti»**: rimandato, si riprende più avanti. Il compositore resta com'è.
 
 ## 10. Appendice: le guardie di coerenza
 
