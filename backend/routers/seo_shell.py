@@ -504,10 +504,11 @@ _BRAND_PAGES = {
     },
     # RT5 (piano sito-rete) — le pagine della fase rete.
     "manifesto": {
-        "title": "Il manifesto di Aurya | La rete del benessere olistico in Italia",
-        "description": ("Da dove nasce Aurya, cosa vogliamo costruire e chi "
-                        "siamo. La rete degli operatori olistici in Italia, "
-                        "raccontata con onestà."),
+        # MF3 (8/10/2026): le stesse parole della pagina
+        "title": "Il manifesto di Aurya | Il benessere non ha una sola strada",
+        "description": ("Perché esiste Aurya, come vediamo il benessere, la rete "
+                        "che stiamo costruendo e i principi da cui non ci "
+                        "allontaneremo. Il manifesto, scritto dai fondatori."),
         "image": "/media/aurya-hero-poster.jpg",
     },
     # OF3 — la cadenza dichiarata era in tre versioni diverse (qui

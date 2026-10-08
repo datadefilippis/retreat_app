@@ -6322,13 +6322,16 @@ class TestManifestoSw1:
     # nuove. La guardia segue il DISPOSITIVO: testid in ordine, titolo
     # di sezione dalla chiave giusta.
 
+    # MF3 (8/10/2026): il manifesto riscritto dal founder («Il benessere non
+    # ha una sola strada»): dodici blocchi, «Una rete che cresce» PRIMA dei
+    # principi, i principi sono sei.
     _MOVIMENTI = (
         ("mf-open", "manifesto.heroTitle"),
         ("mf-why", "manifesto.whyTitle"),
         ("mf-believe", "manifesto.believeTitle"),
         ("mf-how", "manifesto.howTitle"),
-        ("mf-principles", "manifesto.principlesTitle"),
         ("mf-building", "manifesto.buildingTitle"),
+        ("mf-principles", "manifesto.principlesTitle"),
         # SR4 (3/9/2026): «Se sei un professionista» (mf-pro) e' uscito —
         # la porta vive nella firma, una volta sola
         ("mf-follow", "manifesto.followTitle"),
@@ -6355,15 +6358,17 @@ class TestManifestoSw1:
         intorno = src[max(0, i_h1 - 200):i_h1 + 300]
         assert 'size="manifesto"' in intorno, \
             "l'apertura usa la misura 'manifesto' del kit (frase sola)"
-        assert "Ogni percorso di benessere inizia da una domanda." \
-            in intorno, "l'h1 e' la domanda del manifesto"
+        assert "TESTI.heroTitle" in intorno, "l'h1 e' la frase madre del manifesto"
+        assert "Il benessere non ha una sola strada." in src
 
     def test_sw1_mondo_constatazione_mai_lamento(self):
         """Il problema si constata, non si attacca: nessun concorrente
         nominato, niente gergo da piattaforme."""
         copy = self._copy()
+        # MF3: «la fiducia non nasce da un algoritmo» e' del founder: via
+        # 'algoritm' dalle vietate
         for vietata in ("Treatwell", "Fresha", "Mindbody", "social",
-                        "algoritm", "ciarlatan"):
+                        "ciarlatan"):
             assert vietata not in copy, \
                 f"il manifesto constata, non attacca: via '{vietata}'"
 
@@ -6386,13 +6391,13 @@ class TestManifestoSw1:
         spiega. La guardia difende che restino cinque e pieni."""
         src = self._page()
         it = self._manifesto("it")
-        for n in range(1, 6):
+        for n in range(1, 7):      # MF3: sei principi
             assert it.get(f"p{n}Title") and it.get(f"p{n}Body"), \
                 f"principio {n} incompleto (manifesto.p{n}Title/Body)"
             assert f"manifesto.p{n}Title" in src, \
                 f"la pagina non monta il principio {n}"
-        assert "manifesto.principlesIntro" in src, \
-            "manca l'introduzione dei principi"
+        assert "manifesto.principlesIntro" not in src, \
+            "MF3: i principi non hanno un'introduzione (testo del founder)"
 
     def test_sw1_ancora_verde_una_sola_ed_e_il_movimento_4(self):
         """Una sola ancora tonale, e sta sui principi: e' li' che il
@@ -6442,8 +6447,8 @@ class TestManifestoSw1:
 
     def test_sw1_seo(self):
         src = self._page()
-        assert ("Il manifesto di Aurya | Ogni percorso di benessere "
-                "inizia da una domanda") in src
+        assert ("Il manifesto di Aurya | Il benessere non ha una sola "
+                "strada") in src
         assert "canonicalPath: '/manifesto'" in src
         # LC8 — solo italiano (fallbackLng='it')
         it = self._manifesto("it")
@@ -6467,7 +6472,7 @@ class TestManifestoSw1:
         2/8). Il principio 1 del founder ('Le persone vengono prima
         delle piattaforme.') e' un contrasto voluto, non un uso della
         parola: si esenta la frase esatta."""
-        eccezione = "prima delle piattaforme"
+        eccezione = "prima della piattaforma"      # MF3: il principio 1 del founder
         copy = (self._copy().replace("MarketplaceShell", "")
                 .replace(eccezione, ""))
         for vietata in self._VIETATE:
@@ -6499,12 +6504,13 @@ class TestManifestoSw1:
 
     def test_sw1_niente_trattini_lunghi(self):
         import re
-        # nel copy inline (i defaultValue, apici singoli o doppi)...
-        defaults = re.findall(r"defaultValue:\s*(?:'([^']*)'|\"([^\"]*)\")",
-                              self._page())
-        valori = [a or b for a, b in defaults]
+        # MF3 (8/10/2026): il copy inline vive nel dizionario TESTI della
+        # pagina (una fonte sola per pagina, locale e corpus dei bot)
+        src = self._page()
+        blocco = src[src.index("export const TESTI = {"):src.index("};", src.index("export const TESTI = {"))]
+        valori = [v for v in re.findall(r'":\s*"((?:[^"\\]|\\.)*)"', blocco)]
         assert len(valori) >= 20, \
-            f"i defaultValue del Manifesto sono {len(valori)}, attesi almeno 20"
+            f"i testi del Manifesto sono {len(valori)}, attesi almeno 20"
         for val in valori:
             assert "—" not in val and "–" not in val, \
                 f"trattino lungo nel copy del Manifesto: {val[:40]}"

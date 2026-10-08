@@ -144,22 +144,32 @@ def corpo_chi_siamo() -> str:
 
 
 def corpo_manifesto() -> str:
+    """MF3 (8/10/2026): il manifesto del founder, dodici blocchi, stesse
+    chiavi della pagina (locales/it/landings.json → manifesto.*)."""
     s = _copia("landings").get("manifesto") or {}
     if not s:
         return ""
     return "".join([
         f"<h1>{_t(s, 'heroTitle')}</h1>",
-        _ul(s, "q1", "q2", "q3"),
-        _h2(s, "whyTitle"), _p(s, "whyP1", "whyP2"), _p(s, "whyPivot1", "whyPivot2"),
-        _p(s, "whyClose1", "whyClose2"),
-        _h2(s, "believeTitle"), _p(s, "believeLead1", "believeLead2"),
-        _p(s, "believeP1", "believeP2"), _p(s, "bandLine1", "bandLine2"),
-        _h2(s, "howTitle"), _p(s, "howP1", "howP2", "howP3", "howP4"),
-        _p(s, "howClose1", "howClose2"),
-        _h2(s, "principlesTitle"), _p(s, "principlesIntro"), _coppie(s, "p", 5),
-        _h2(s, "buildingTitle"), _p(s, "buildingLead"),
-        _ul(s, "buildingStep1", "buildingStep2", "buildingStep3"),
-        _p(s, "buildingClose1", "buildingClose2"),
+        _p(s, "hero1"), _ul(s, "hero2", "hero3", "hero4", "hero5"),
+        _p(s, "intro1", "intro2", "intro3"), _p(s, "intro4", "intro5"),
+        _h2(s, "whyTitle"), _p(s, "why1", "why2"), _ul(s, "why3", "why4", "why5"),
+        _p(s, "why6", "why7"), _p(s, "why8", "why9"),
+        _h2(s, "believeTitle"), _p(s, "scoprire1", "scoprire2", "scoprire3"), _p(s, "scoprire4", "scoprire5", "scoprire6"),
+        _h2(s, "reteTitle"), _p(s, "rete1", "rete2", "rete3"), _p(s, "rete4", "rete5", "rete6"), _p(s, "bandLine1", "bandLine2"),
+        _h2(s, "howTitle"), _p(s, "modo1", "modo2", "modo3"),
+        _p(s, "modo4", "modo5", "modo6", "modo7", "modo8"), _p(s, "howClose1", "howClose2"),
+        _h2(s, "conoscenzaTitle"), _p(s, "conoscenza1", "conoscenza2", "conoscenza3"),
+        _p(s, "conoscenza4", "conoscenza5", "conoscenza6"),
+        _h2(s, "accompagnaTitle"), _p(s, "accompagna1", "accompagna2"), _p(s, "accompagna3", "accompagna4", "accompagna5"),
+        _p(s, "accompagnaClose1", "accompagnaClose2"),
+        _h2(s, "visioneTitle"), _p(s, "visione1", "visione2", "visione3"), _p(s, "visioneClose", "visione4", "visione5"),
+        _h2(s, "buildingTitle"), _p(s, "buildingLead"), _ul(s, "building1", "building2", "building3", "building4"),
+        _p(s, "building5"), _ul(s, "buildingStep1", "buildingStep2", "buildingStep3", "buildingStep4", "buildingStep5"),
+        _p(s, "building6", "building7"), _p(s, "buildingClose1", "buildingClose2", "buildingClose3"),
+        _h2(s, "principlesTitle"), _coppie(s, "p", 6),
+        _h2(s, "portaleTitle"), _p(s, "portale1", "portale2"),
+        _ul(s, "portale3", "portale4", "portale5", "portale6", "portale7"), _p(s, "portaleClose", "portale8", "portale9"),
         _h2(s, "followTitle"), _p(s, "followP1", "followP2", "followP3"),
         _p(s, "signature"),
     ])
