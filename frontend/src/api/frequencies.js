@@ -27,6 +27,7 @@ export const frequenciesAPI = {
       ...(provaToken ? { headers: { 'X-Fqz-Unlock': provaToken } } : {}) }),
   unpublish: (trackId) => api.post(`/frequencies/tracks/${trackId}/unpublish`),
   getPublic: (slug) => api.get(`/frequencies/public/${slug}`),
+  vetrinaPubblica: () => api.get('/frequencies/public/vetrina'),   // MR6 — la meditazione in vetrina del giorno (landing)
 
   // TR3 — le CONDIVISIONI: un link per contatto, revocabile a persona
   createShare: (trackId, contactId) => api.post(

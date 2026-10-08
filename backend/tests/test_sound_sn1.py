@@ -33,7 +33,7 @@ class TestFlagEPagineAccanto:
 
     def test_sound_wrapper(self):
         src = (FQ / "SoundHomePage.jsx").read_text()
-        assert "return SOUND_CASA_NUOVA ? <SoundHubPage /> : <SoundHomePageVecchia />;" in src
+        assert "return SOUND_HUB_SEMPLICE && SOUND_CASA_NUOVA ? <SoundHubPage /> : <SoundHomePageVecchia />;" in src   # MR6: la landing torna
         assert "function SoundHomePageVecchia()" in src
         # la rotta resta il letterale che gli altri test pretendono
         app = (FRONTEND / "App.js").read_text()

@@ -22,4 +22,10 @@ export const SOUND_ANNUNCI_ATTIVI = false;
    righe suonano nella barra in basso, il titolo apre il foglio; a false le
    card tornano a portare alla pagina della meditazione. */
 export const SOUND_LETTORE_IN_CASA = true;
+/* VISUAL_PUBBLICO_ATTIVO (MR3, founder decisione 3): al pubblico niente Visual
+   sulla pagina della meditazione (c'e' la copertina); chi compone lo vede. */
+export const VISUAL_PUBBLICO_ATTIVO = false;
 export const PIU_PREZZO = '39 € l\'anno';
+/* SOUND_HUB_SEMPLICE (MR6): a true /sound e' l'hub di pulsanti di SN1; a false
+   (founder 8/10 sera) la landing esplicativa, ottimizzata. */
+export const SOUND_HUB_SEMPLICE = false;

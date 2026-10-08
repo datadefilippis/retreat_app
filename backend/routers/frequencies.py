@@ -626,6 +626,27 @@ async def unpublish_track(track_id: str,
     return {"id": track_id, "status": "draft"}
 
 
+@router.get("/public/vetrina")
+async def vetrina_del_giorno():
+    """MR6 (8/10/2026) — la MEDITAZIONE IN VETRINA per la landing /sound: fra le
+    pubbliche segnate «in vetrina» con l'anteprima, una al giorno (la stessa
+    regola della casa); senza nessuna in vetrina, la piu' recente con
+    anteprima. Risponde solo lo slug: il payload e' quello di /public/{slug}.
+    Sta PRIMA di /public/{slug}: «vetrina» non e' uno slug."""
+    from database import frequency_tracks_collection
+    import time as _t
+    base = solo_pubbliche({"status": "published", "anteprima_url": {"$nin": [None, ""]}})
+    scelte = [t async for t in frequency_tracks_collection.find(
+        {**base, "in_vetrina": True}, {"_id": 0, "slug": 1}).sort("published_at", -1).limit(30)]
+    if not scelte:
+        scelte = [t async for t in frequency_tracks_collection.find(
+            base, {"_id": 0, "slug": 1}).sort("published_at", -1).limit(1)]
+    if not scelte:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Nessuna meditazione in vetrina.")
+    giorno = int(_t.time() // 86400)
+    return {"slug": scelte[giorno % len(scelte)]["slug"]}
+
+
 @router.get("/public/{slug}")
 async def public_track(slug: str):
     """Payload del player pubblico: ricetta + chi l'ha composta."""

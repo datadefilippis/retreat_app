@@ -14,7 +14,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { frequenciesAPI } from '../../api/frequencies';
 import platformApi from '../../api/platformClient';
-import { SOUND_PIU_ATTIVO } from './stato';
+import { SOUND_PIU_ATTIVO, VISUAL_PUBBLICO_ATTIVO } from './stato';
 import Cuore, { InvitoAccount } from './casa/Cuore';   // MR2 — il cuore anche qui
 import { usePreferite } from './casa/preferite';
 import { startPreview } from './engine/synth';
@@ -707,13 +707,17 @@ export default function PublicFrequencyPage() {
               Restare opt-in e' voluto (disegnare consuma: AV1), ma la
               scelta dev'essere disponibile QUANDO viene voglia, cioe'
               mentre il suono suona. */}
-          <div className="continuo-riga">
-            <button type="button" className="readmore"
-              data-testid="fqp-guarda"
-              onClick={() => setGuarda((v) => !v)}>
-              {guarda ? 'Nascondi Aurya Mode' : '✦ Guarda il suono'}
-            </button>
-          </div>
+          {/* MR3 (8/10/2026, founder, decisione 3): al pubblico niente Visual —
+              c'e' la copertina. Il toggle resta per chi compone (token operatore). */}
+          {VISUAL_PUBBLICO_ATTIVO || localStorage.getItem('token') ? (
+            <div className="continuo-riga">
+              <button type="button" className="readmore"
+                data-testid="fqp-guarda"
+                onClick={() => setGuarda((v) => !v)}>
+                {guarda ? 'Nascondi Aurya Mode' : '✦ Guarda il suono'}
+              </button>
+            </div>
+          ) : null}
           {contErrore && (
             <div className="continuo-riga" data-testid="fqp-continuo-errore"
               style={{ color: 'var(--alert)' }}>{contErrore}</div>

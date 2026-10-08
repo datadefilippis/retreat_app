@@ -39,7 +39,7 @@ import { frequenciesAPI } from '../../api/frequencies';
 import CancelloLettera from './CancelloLettera';
 import { prova } from '../../lib/cerchio';
 import MarketplaceShell from '../storefront/components/MarketplaceShell';
-import { SOUND_CASA_NUOVA } from './stato';
+import { SOUND_CASA_NUOVA, SOUND_HUB_SEMPLICE } from './stato';
 import SoundHubPage from './casa/SoundHubPage';
 import {
   DisplayTitle, Lede, PhotoBand, PhotoOpener, Section,
@@ -85,11 +85,8 @@ const PORTE = [
    saranno piu' meditazioni, qui nascera' il flag «in vetrina». */
 const VETRINA_SLUG = 'meditazione-mondo-nuovo-onde-delta';
 
-/* la materia prima: complete e gratuite, la radice del linguaggio */
-const ASSAGGI = [
-  ['CALM', '/sound/calm', '6 minuti per rallentare'],
-  ['GROUND', '/sound/ground', '8 minuti per toccare terra'],
-];
+/* MR6 (8/10/2026): CALM e GROUND si sono ritirate (decisione 7) — niente
+   piu' assaggi «nudi»: dopo la meditazione in vetrina, la casa. */
 
 const fmtMin = (s) => `${Math.round((s || 0) / 60)} minuti`;
 
@@ -187,11 +184,13 @@ function AnteprimaMeditazione({ track, ctaMeditazioni }) {
   );
 }
 
-/* SN1 (8/10, piano Aurya Sound §4.0) — /sound diventa l'HUB del suono
-   (casa/SoundHubPage): la landing vecchia resta qui sotto dietro il
-   flag, intatta, finche' la casa nuova non e' in prod. */
+/* SN1 aveva ridotto /sound a un hub di pulsanti (casa/SoundHubPage).
+   MR6 (8/10 sera, founder): «la landing aveva il suo perche': spiegava bene
+   e con design figo tutto Aurya Sound» — la landing TORNA, ottimizzata
+   (via le esperienze ritirate, la vetrina del giorno, il rimando alla casa).
+   L'hub resta dietro SOUND_HUB_SEMPLICE, spento. */
 export default function SoundHomePage() {
-  return SOUND_CASA_NUOVA ? <SoundHubPage /> : <SoundHomePageVecchia />;
+  return SOUND_HUB_SEMPLICE && SOUND_CASA_NUOVA ? <SoundHubPage /> : <SoundHomePageVecchia />;
 }
 
 function SoundHomePageVecchia() {
@@ -207,8 +206,12 @@ function SoundHomePageVecchia() {
   const [quante, setQuante] = useState(0);
   useEffect(() => {
     let vivo = true;
-    frequenciesAPI.getPublic(VETRINA_SLUG)
-      .then((r) => { if (vivo && r.data?.anteprima_url) setVetrina(r.data); })
+    /* MR6 — la vetrina del giorno (le «in vetrina» di Crea, a rotazione);
+       il vecchio slug resta come ripiego per gli ambienti senza vetrina */
+    frequenciesAPI.vetrinaPubblica()
+      .then((r) => frequenciesAPI.getPublic(r.data?.slug || VETRINA_SLUG))
+      .catch(() => frequenciesAPI.getPublic(VETRINA_SLUG))
+      .then((r) => { if (vivo && r?.data?.anteprima_url) setVetrina(r.data); })
       .catch(() => { /* niente vetrina: la pagina vive lo stesso */ });
     frequenciesAPI.getCatalog(prova())
       .then((r) => { if (vivo) setQuante((r.data?.items || []).length); })
@@ -346,18 +349,15 @@ function SoundHomePageVecchia() {
             </Bottone>
           </div>
           <div className="mt-10 max-w-3xl border-t pt-7"
-            style={{ borderColor: '#e8e0ce' }}>
+            style={{ borderColor: '#e8e0ce' }} data-testid="sh-casa-rimando">
             <p className="text-base text-muted-foreground">
-              E se vuoi sentire da dove nasce questo linguaggio, il
-              fenomeno nudo, senza voce, due esperienze complete e
-              gratuite:
+              Nella casa delle meditazioni trovi tutte le meditazioni
+              composte per il Cerchio, le playlist da ascoltare in fila,
+              le tue preferite e il punto dove eri rimasta o rimasto.
+              Si ascolta lì, senza cambiare pagina.
             </p>
             <div className="mt-4 flex flex-wrap gap-x-8 gap-y-3">
-              {ASSAGGI.map(([nome, to, sotto]) => (
-                <Richiamo key={nome} to={to}>
-                  {nome} <span className="text-muted-foreground">· {sotto}</span>
-                </Richiamo>
-              ))}
+              <Richiamo to="/meditazioni">Entra nella casa delle meditazioni</Richiamo>
             </div>
           </div>
         </Section>
@@ -495,7 +495,6 @@ function SoundHomePageVecchia() {
                 <Link to="/sound/esplora" className="hover:text-foreground">Biblioteca</Link> ·{' '}
                 <Link to="/sound/impara" className="hover:text-foreground">Impara</Link> ·{' '}
                 <Link to="/sound/lab" className="hover:text-foreground">Lab</Link> ·{' '}
-                <Link to="/sound/calm" className="hover:text-foreground">Esperienze</Link> ·{' '}
                 <Link to="/meditazioni" className="hover:text-foreground">Meditazioni</Link>
               </p>
             </div>
