@@ -4740,6 +4740,8 @@ async def _operator_corsi(org_id: str) -> list:
             "has_trailer": (c.get("trailer") or {}).get("stato") == "pronto",
             "categoria": c.get("categoria"),
             "anteprime": sum(1 for l in pronte if l.get("is_preview") and (l.get("tipo") or "video") == "video"),
+            # SN4 (8/10/2026, Aurya Sound): i PERCORSI = corsi con lezioni Suono (meditazioni dentro)
+            "suono_count": sum(1 for l in pronte if l.get("tipo") == "suono"),
         })
     return out
 
@@ -4753,7 +4755,7 @@ class PublicCorsiDirectory(BaseModel):
 
 @router.get("/corsi", response_model=PublicCorsiDirectory)
 async def directory_corsi(categoria: Optional[str] = None, q: Optional[str] = None,
-                          ordina: str = "recenti", anteprima: bool = False):
+                          ordina: str = "recenti", anteprima: bool = False, suono: bool = False):
     """RF (8/10/2026) — tutti i corsi online pubblicati dei professionisti con
     la pagina online (org non campione, Accademia non spenta, almeno una
     lezione pronta), con i filtri: categoria (famiglia delle discipline),
@@ -4793,6 +4795,8 @@ async def directory_corsi(categoria: Optional[str] = None, q: Optional[str] = No
         righe = [r for r in righe if r.get("categoria") == categoria]
     if anteprima:
         righe = [r for r in righe if r.get("has_trailer") or r.get("anteprime")]
+    if suono:   # SN4 — solo i Percorsi: corsi con almeno una lezione Suono
+        righe = [r for r in righe if r.get("suono_count")]
     if q and q.strip():
         qq = q.strip().lower()
         righe = [r for r in righe if qq in (r.get("name") or "").lower() or qq in (r.get("description") or "").lower()

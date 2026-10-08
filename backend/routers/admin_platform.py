@@ -750,7 +750,8 @@ async def platform_user_detail(
 
     _ACCOUNT_SAFE = {"_id": 0, "id": 1, "email": 1, "name": 1, "phone": 1,
                      "language": 1, "email_verified": 1, "is_active": 1,
-                     "created_at": 1, "last_login_at": 1, "aurya_legal": 1}
+                     "created_at": 1, "last_login_at": 1, "aurya_legal": 1,
+                     "piu": 1, "stripe_customer_id": 1}   # SN4 — lo stato del Più in regia
 
     account = None
     if account_id:

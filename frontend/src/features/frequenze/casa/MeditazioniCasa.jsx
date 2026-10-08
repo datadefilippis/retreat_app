@@ -15,6 +15,8 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import platformApi, { PLATFORM_TOKEN_KEY } from '../../../api/platformClient';
 import { frequenciesAPI } from '../../../api/frequencies';
+import { storefrontAPI } from '../../../api/storefront';
+import { SOUND_PIU_ATTIVO } from '../stato';
 import { prova, emailDellaProva, migraVecchieChiavi } from '../../../lib/cerchio';
 import { creaAccount } from '../../../utils/authLinks';
 import { SafetyCurtain, SafetyLine } from '../SafetyCurtain';
@@ -41,7 +43,7 @@ export function CardMeditazione({ t, da = 'casa', playlist = null, fav = false, 
     <div className={`mcard tono-${TONI[t.intent] || 'oro'}`} data-testid="casa-card">
       <Link to={href} className="mcover" aria-label={`Ascolta ${t.title}`}>
         {t.cover_url && <img src={t.cover_url} alt="" loading="lazy" />}
-        {t.accesso === 'piu' && <span className="mpiu">PIÙ</span>}
+        {t.accesso === 'piu' && <span className="mpiu" title={SOUND_PIU_ATTIVO ? 'Riservata al Più' : 'Presto nel Più: oggi la ascolti col Cerchio'}>{SOUND_PIU_ATTIVO ? 'PIÙ' : 'PRESTO NEL PIÙ'}</span>}
         <span className="mdurata">{fmtMin(t.duration_sec)}</span>
       </Link>
       {onCuore && (
@@ -71,6 +73,24 @@ export function CardPlaylist({ p }) {
   );
 }
 
+/* SN4 — la card di un Percorso (corso con lezioni Suono): porta alla pagina del corso */
+export function CardPercorso({ c }) {
+  const prezzo = c.price != null ? `${Number(c.price).toFixed(0)} €` : '';
+  return (
+    <a href={c.url} className="mcard tono-oro" data-testid="casa-percorso-card">
+      <span className="mcover">
+        {c.image_url && <img src={c.image_url} alt="" loading="lazy" />}
+        <span className="mpiu" style={{ background: 'rgba(47,87,73,.92)', color: '#fff' }}>PERCORSO</span>
+        {prezzo && <span className="mdurata">{prezzo}</span>}
+      </span>
+      <span className="mcorpo">
+        <h3>{c.name}</h3>
+        <span className="mmeta">{c.suono_count} {c.suono_count === 1 ? 'meditazione' : 'meditazioni'} · {c.lezioni_count} lezioni · {c.org?.name}</span>
+      </span>
+    </a>
+  );
+}
+
 function Riga({ id, titolo, sub, children, griglia = false }) {
   const n = React.Children.count(children);
   if (!n) return null;
@@ -97,6 +117,12 @@ export default function MeditazioniCasa() {
   const hasAccount = !!localStorage.getItem(PLATFORM_TOKEN_KEY);
   const [items, setItems] = useState(null);
   const [playlists, setPlaylists] = useState([]);
+  /* SN4 — i PERCORSI: i corsi dell'Accademia con lezioni Suono (una sola
+     cassa: si comprano nel corso, mai qui). Pubblici, senza cancello. */
+  const [percorsi, setPercorsi] = useState([]);
+  useEffect(() => {
+    storefrontAPI.getCorsiDirectory({ suono: 1 }).then((r) => setPercorsi(r.data?.corsi || [])).catch(() => setPercorsi([]));
+  }, []);
   const [locked, setLocked] = useState(false);
   const [teaserCount, setTeaserCount] = useState(0);
   const [favorites, setFavorites] = useState([]);
@@ -156,7 +182,7 @@ export default function MeditazioniCasa() {
   };
 
   // ── le righe, dal catalogo ──
-  const tutte = items || [];
+  const tutte = useMemo(() => items || [], [items]);
   const cercando = !!(q.trim() || intent || durata || voce);
   const filtrate = useMemo(() => {
     const qq = q.trim().toLowerCase();
@@ -261,6 +287,9 @@ export default function MeditazioniCasa() {
               </Riga>
             ) : (
               <>
+                <Riga id="percorsi" titolo="Percorsi" sub="Corsi con le meditazioni dentro: si comprano nell'Accademia, si ascoltano qui.">
+                  {percorsi.map((c) => <CardPercorso key={c.product_id} c={c} />)}
+                </Riga>
                 <Riga id="playlist" titolo="Playlist" sub="Raccolte curate, da ascoltare in fila.">
                   {playlists.map((p) => <CardPlaylist key={p.id} p={p} />)}
                 </Riga>

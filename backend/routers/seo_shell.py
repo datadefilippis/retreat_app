@@ -2365,6 +2365,24 @@ async def _meta_corsi(categoria: Optional[str] = None) -> dict:
     }
 
 
+def _meta_piu() -> dict:
+    """SN4 (8/10/2026) — la pagina del Più: noindex finche' l'abbonamento e'
+    spento (SOUND_PIU_ATTIVO), indicizzabile il giorno dell'accensione."""
+    from services.sound_piu import attivo, PREZZO_EUR_ANNO
+    base = _base_url()
+    canonical = f"{base}/meditazioni/piu"
+    desc = (f"Aurya Più: tutte le meditazioni e le playlist riservate, {PREZZO_EUR_ANNO} € l'anno, "
+            "solo annuale, si disdice quando vuoi. Il Cerchio resta gratuito.")
+    meta = {"title": "Aurya Più | Le meditazioni riservate", "description": desc,
+            "canonical": canonical, "hreflang": {"it": canonical, "x-default": canonical},
+            "image": f"{base}/og-cover.jpg",
+            "content_html": (f"<div><h1>Aurya Più</h1><p>{_html.escape(desc)}</p>"
+                             '<p><a href="/meditazioni">Le meditazioni</a></p></div>')}
+    if not attivo():
+        return {**meta, "noindex": True, "canonical": None, "hreflang": None}
+    return meta
+
+
 async def _meta_playlist(slug: str) -> Optional[dict]:
     """SN1 (8/10, piano Aurya Sound) — la PLAYLIST pubblica.
 
@@ -2989,6 +3007,8 @@ async def resolve_meta(path: str) -> Optional[dict]:
         return await _meta_frequenza(parts[1])
     if head == "meditazioni" and len(parts) == 3 and parts[1] == "playlist":   # SN1 — la playlist
         return await _meta_playlist(parts[2])
+    if head == "meditazioni" and len(parts) == 2 and parts[1] == "piu":   # SN4 — Aurya Più
+        return _meta_piu()
     # RS (26/8) — un segmento PUBBLICO senza un ramo qui sopra e' una
     # rotta che il registro conosce ma che nessuno ha ancora dotato di
     # meta: si serve la shell neutra (200), non un 404 — la pagina

@@ -14,6 +14,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { frequenciesAPI } from '../../api/frequencies';
 import platformApi from '../../api/platformClient';
+import { SOUND_PIU_ATTIVO } from './stato';
 import { startPreview } from './engine/synth';
 import { resolveAudioLayers, resolveVoiceLayers, resolveGuidaLayers } from './engine/assets';
 import { avvisoCuffieScore } from './engine/altoparlante';
@@ -596,6 +597,16 @@ export default function PublicFrequencyPage() {
         <section className="bib">
           {track.intent && <div className="learn-kicker">{INTENTS[track.intent] || track.intent}</div>}
           <h2 style={{ fontSize: 27 }}>{track.title}</h2>
+          {/* SN4 — il badge del Più: finché l'abbonamento è spento è un'etichetta
+              («Presto nel Più», si ascolta col Cerchio); acceso, rimanda alla
+              pagina del Più. Nessun cancello qui: lo decide l'accensione. */}
+          {track.accesso === 'piu' && (
+            <p data-testid="fqp-piu" style={{ fontFamily: 'var(--mono)', fontSize: 11, letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--lamp)', margin: '0 0 10px' }}>
+              {SOUND_PIU_ATTIVO
+                ? <>Riservata al Più · <Link to="/meditazioni/piu" style={{ color: 'var(--lamp)' }}>cos'è</Link></>
+                : 'Presto nel Più · oggi la ascolti col Cerchio'}
+            </p>
+          )}
           {track.operator?.name && (
             <p>composta da{' '}
               {track.operator.slug ? (

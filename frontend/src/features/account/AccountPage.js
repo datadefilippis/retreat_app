@@ -17,6 +17,7 @@ import platformApi, { PLATFORM_TOKEN_KEY } from '../../api/platformClient';
 // FQ3 — sezione preferiti meditazioni: componente isolato del modulo
 // Frequenze, si carica da solo e sparisce se vuoto
 import AccountFavorites from '../frequenze/AccountFavorites';
+import PiuAccount from '../frequenze/casa/PiuAccount';   // SN4 — Aurya Più (si vede solo se acceso o se l'account ne ha traccia)
 import useSeoMeta from '../storefront/lib/useSeoMeta';
 import MarketplaceShell from '../storefront/components/MarketplaceShell';
 import { useSiteConfig } from '../../context/SiteConfigContext';
@@ -399,7 +400,7 @@ export default function AccountPage() {
           </section>
         )}
 
-        <div id="meditazioni" className="scroll-mt-24"><AccountFavorites /></div>
+        <div id="meditazioni" className="scroll-mt-24"><AccountFavorites /><PiuAccount /></div>
 
         <section id="esperienze" className="scroll-mt-24" data-testid="account-esperienze">
           <h2 className="text-sm font-semibold text-gray-900 mb-2 flex items-center gap-2">
