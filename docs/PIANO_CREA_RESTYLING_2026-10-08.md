@@ -238,6 +238,45 @@ ricette salvate (le bozze di ieri si aprono e suonano uguali).
 
 Totale **≈ 6,5 giorni**, CR5 dentro gli altri.
 
+## 7. Stato (8/10 sera, «procediamo»)
+- **CR0 FATTO** (commit `75bd0a9d`): `/sound/libreria` (+ `?mondo=suoni`) è la
+  biblioteca del compositore; in Crea la riga «Aggiungi alla sessione»
+  (Frequenze · Suoni · La tua voce); la barra delle stanze dice «Libreria»
+  per chi compone; shell SEO noindex. Guardia `tests/test_crea_cr0.py`.
+- **CR1 + CR2 + CR3 FATTI** in locale (flag `SOUND_CREA_NUOVO`,
+  `?vestito=vecchio` mostra la vista di prima):
+  - `crea/CreaVista.jsx` + `crea/crea.css`: selettore Crea · Fonti · Le mie
+    tracce; barra a una riga (▶, scorrimento coi tempi, pill durata, «+»,
+    «⋯»), 64 px su desktop e due righe (114 px) sul telefono; riga del
+    riassunto (titolo · stanza · nasce/si spegne · categoria) che apre il
+    foglio «La sessione» (titolo, categoria, nasce/si spegne, stanza, Guarda
+    il suono, Esporta MP3, Svuota); foglio della durata con gli stessi
+    preset; piede fisso con Salva/Aggiorna, Pubblica/ritira e lo stato come
+    toast (7 s).
+  - la sessione subito sotto: i livelli come card ripiegabili (nome, volume,
+    muto e la lane a vista; tempo, suono, spazio, voce con un tocco: `aperti`
+    in `renderRow`, stessi handler), 114 px chiusi sul telefono; il vuoto
+    con quattro bottoni che aprono il banco.
+  - il **banco del mix**: colonna fissa 380 px su desktop (≥ 1024), foglio a
+    58 vh (o 90 vh) sul telefono; schede Frequenze (famiglie → schede, ▶ in
+    anteprima sopra la sessione via `toggleCard`, «+» via `addCardToSession`,
+    «ferma tutto / + tutte alla sessione»), Suoni (momento × timbro, ▶, «+»),
+    Voce (il leggio di sempre, `leggioVoce`), Respiro (le guide), Protocolli
+    (Carica, con la conferma di sempre), **Le tue tracce** («+ livelli»:
+    `aggiungiLivelliDa` porta i livelli della traccia nella sessione dal
+    punto in cui stai ascoltando; «Apri» la sostituisce). Ricerca comune.
+  - in `FrequenzePage`: `kit` (l'oggetto dei gesti), `lineaDelTempo` e
+    `leggioVoce` estratti una volta per i due vestiti, `aggiungiLivelliDa`,
+    `data-vestito="nuovo"` sulla radice (la testata e la riga cuffie non si
+    vedono nel nuovo; la pastiglia Controindicazioni e il sipario restano).
+  - Verificato a 375 px e 1240 px: protocollo → ▶ → banco (anteprima e «+»
+    mentre suona) → suoni → tracce «+ livelli» → «⋯» → durata → Salva
+    abilitato. Guardia `tests/test_crea_cr1.py`.
+  - Rimandi: l'upload delle basi della Regia resta nella libreria
+    (`/sound/libreria?mondo=suoni`), non nel banco; il «?» della linea del
+    tempo (helpstrip) è nascosto, tornerà come foglio in CR5.
+- **CR4** (Le mie tracce) e **CR6** (potatura): da fare.
+
 ## 6. Domande per il founder
 1. **CR0 subito**? È il buco lasciato da ES (solo in locale): mezz'ora.
 2. **Il banco del mix** (CR3): colonna fissa su desktop, foglio a mezza

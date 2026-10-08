@@ -58,6 +58,8 @@ import { SafetyButton, SafetyLine, useSafetyGate } from './SafetyCurtain';
 import './frequenze.css';
 import SoundTopbar from './SoundTopbar';
 import StanzeSound from './StanzeSound';
+import { SOUND_CREA_NUOVO } from './stato';
+import CreaVista, { SelettoreCrea } from './crea/CreaVista';   // CR1-CR3: il vestito nuovo
 
 /* CR0 — la biblioteca del compositore (vista explore di questa pagina) */
 const LIBRERIA = '/sound/libreria';
@@ -266,6 +268,11 @@ export default function FrequenzePage() {
   const seg = location.pathname.split('/').filter(Boolean);   // ['sound','crea',...]
   const view = PATH_VIEW[seg[1]] || 'explore';
   const world = view === 'explore' && qs.get('mondo') === 'suoni' ? 'sound' : 'freq';
+  /* CR1 (8/10 sera) — il vestito nuovo di Crea e Le mie tracce vive in
+     crea/CreaVista.jsx e riceve da qui l'oggetto dei gesti (`kit`): stato,
+     funzioni e contratto delle ricette restano QUI. ?vestito=vecchio
+     mostra la vista di prima finche' il founder non da' l'ok. */
+  const nuovo = SOUND_CREA_NUOVO && qs.get('vestito') !== 'vecchio' && (view === 'create' || view === 'mine');
   /* NV4 — il timbro e' un filtro come il momento: null = Tutti.
      L'upload resta ancorato a una categoria vera (la prima, se il
      filtro e' su Tutti): una base senza categoria non esiste. */
@@ -791,6 +798,7 @@ export default function FrequenzePage() {
    * deve toccare due posti per la stessa cosa. */
   const [trimOpen, setTrimOpen] = useState(null);   // id spezzone aperto
   // barra di ascolto su telefono: titolo/durata/dissolvenze dietro un tocco
+  const [aperti, setAperti] = useState({});   // CR2: i livelli ripiegati nel vestito nuovo
   const [setupOpen, setSetupOpen] = useState(false);
   /* VP (24/8) — il modo di pulizia: si sceglie una volta, vale
      ovunque quel take sia usato (anteprima, sessione, master). Il
@@ -1117,6 +1125,25 @@ export default function FrequenzePage() {
     } catch (e) {
       setStatus(e?.response?.data?.detail || 'Errore nel salvataggio');
     } finally { setSaving(false); }
+  };
+  /* CR3 (8/10 sera, founder) — LE TUE TRACCE COME FONTE: i livelli di
+     una traccia gia' fatta entrano nella sessione corrente (dal punto in
+     cui stai ascoltando), per riusare un'apertura, un tappeto, una
+     chiusura dentro un mix nuovo. Solo client: la ricetta e' gia' salvata. */
+  const aggiungiLivelliDa = async (d) => {
+    try {
+      const sc = (await frequenciesAPI.get(d.id)).data?.score || {};
+      const ls = sc.layers || [];
+      if (!ls.length) { setStatus(`«${d.title}» non ha livelli da aggiungere`); return; }
+      const offset = playing ? Math.max(0, Math.min(elapsed, duration - 1)) : 0;
+      const tetto = durataAuto ? DURATA_MAX_SEC : duration;
+      setLayers((prev) => [...prev, ...ls.map((l) => ({
+        ...l, id: ++_uid, name: `${l.name || 'livello'} · ${d.title || 'traccia'}`,
+        start: Math.min(tetto - 0.5, (l.start || 0) + offset),
+        end: Math.min(tetto, (l.end || sc.duration_sec || duration) + offset),
+      }))]);
+      setStatus(`${ls.length} ${ls.length === 1 ? 'livello' : 'livelli'} di «${d.title}» nella sessione${offset ? ` da ${fmt(offset)}` : ''}`);
+    } catch { setStatus('Non sono riuscito a leggere quella traccia'); }
   };
   const openDraft = async (id, nav = true) => {
     stopSession();
@@ -1717,13 +1744,26 @@ export default function FrequenzePage() {
   };
 
   const renderRow = (l) => (
-    <div key={l.id} className={`row${l.mute ? ' muted' : ''}`}>
+    <div key={l.id} className={`row${l.mute ? ' muted' : ''}${nuovo && !aperti[l.id] ? ' chiusa' : ''}`}>
       <div className="meta">
         <div className="top">
+          {/* CR2 — nel vestito nuovo il livello e' una card ripiegabile:
+              nome, volume e muto sempre a vista, il resto con un tocco.
+              Stessi comandi, stessi handler: cambia solo cosa si vede. */}
+          {nuovo && (
+            <button type="button" className="ghost riga-apri" data-testid={`cr-riga-apri-${l.id}`}
+              aria-expanded={!!aperti[l.id]} title={aperti[l.id] ? 'Chiudi i comandi' : 'Apri i comandi'}
+              onClick={() => setAperti((a) => ({ ...a, [l.id]: !a[l.id] }))}>{aperti[l.id] ? '▾' : '▸'}</button>
+          )}
           <input className="name" type="text" value={l.name}
             onChange={(e) => patchLayer(l.id, { name: e.target.value })} />
           <button type="button" className="ghost" onClick={() => removeLayer(l.id)}>×</button>
         </div>
+        {nuovo && !aperti[l.id] && (
+          <div className="riga-riassunto" data-testid={`cr-riga-riassunto-${l.id}`}>
+            {layerLabel(l)} · {fmt(l.start)} → {fmt(l.end)}
+          </div>
+        )}
         <div className="ctrls">
           <span className="lbl" title="Volume di questo livello nel mix">volume</span>
           <input className="sl vol" type="range" min="0" max="1" step="0.01" value={l.gain}
@@ -2239,8 +2279,147 @@ export default function FrequenzePage() {
                       </React.Fragment>
   );
 
+  /* la linea del tempo e il leggio della voce: UNA volta, per i due vestiti */
+  const lineaDelTempo = (
+              <div className="score" style={{ display: 'block' }}>
+                <div className="helpstrip">
+                  <b>Linea del tempo.</b> Ogni riga è un livello. Trascina la sua barra o scrivi «entra a / esce a» per decidere quando parte e finisce. <b>Battito da → a</b> è la discesa (valori uguali = frequenza ferma), la <b>curva</b> ne è la forma, la <b>portante</b> è il tono che la trasporta.
+                </div>
+                <div className="ruler" title="Tocca o trascina per ascoltare da questo punto"
+                  style={{ cursor: 'pointer', touchAction: 'none' }}
+                  onPointerDown={(e) => {
+                    try { e.currentTarget.setPointerCapture(e.pointerId); } catch { /* tap */ }
+                  }}
+                  onPointerUp={(e) => {
+                    /* TS2 — commit al RILASCIO: un solo riavvio del
+                       motore per gesto, che sia tap o trascinamento. */
+                    const r = e.currentTarget.getBoundingClientRect();
+                    seekTo(Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)) * duration);
+                  }}>
+                  {Array.from({ length: Math.floor(duration / gstep) + 1 }, (_, i) => (
+                    <div key={i} className="tick" style={{ left: `${((i * gstep) / duration) * 100}%` }}>
+                      <span>{fmt(i * gstep)}</span>
+                    </div>
+                  ))}
+                </div>
+                <div className="phases" title="Clicca per aggiungere una fase"
+                  onClick={(e) => {
+                    if (e.target !== e.currentTarget) return;
+                    const r = e.currentTarget.getBoundingClientRect();
+                    const t = ((e.clientX - r.left) / r.width) * duration;
+                    setPhases((ps) => [...ps, { t, name: 'fase' }].sort((a, b) => a.t - b.t));
+                  }}>
+                  {phases.map((p, i) => (
+                    <div key={i} className="phase" style={{ left: `${(p.t / duration) * 100}%` }}
+                      onPointerDown={(e) => {
+                        if (e.target.tagName === 'BUTTON') return;
+                        const lane = e.currentTarget.parentElement;
+                        dragX(e, lane, (dx) => {
+                          setPhases((ps) => ps.map((x, j) => j === i
+                            ? { ...x, t: Math.max(0, Math.min(duration, x.t + dx * duration)) } : x));
+                        });
+                      }}>
+                      <span onDoubleClick={() => {
+                        const name = window.prompt('Nome della fase', p.name);
+                        if (name) setPhases((ps) => ps.map((x, j) => j === i ? { ...x, name } : x));
+                      }}>{p.name}</span>
+                      <button type="button" title="Rimuovi"
+                        onClick={(e) => { e.stopPropagation(); setPhases((ps) => ps.filter((_, j) => j !== i)); }}>×</button>
+                    </div>
+                  ))}
+                </div>
+                <div>{layers.map(renderRow)}</div>
+              </div>
+  );
+  /* FV3, il leggio: la tua voce dentro la sessione */
+  const leggioVoce = (
+            <div className="voicedesk" data-testid="fqz-voicedesk">
+              <div className="vd-head">
+                <span className="tag">🎙 La tua voce</span>
+                <span className="vd-hint">
+                  Registra brevi spezzoni, tagliali qui una volta sola e piazzali dove servono. Cuffie se la sessione è in ascolto.
+                </span>
+                {recState === 'rec' ? (
+                  <button type="button" className="vd-rec on" onClick={stopRec}>
+                    ■ Ferma · {fmt(recSecs)}
+                  </button>
+                ) : (
+                  <button type="button" className="vd-rec" onClick={startRec}>
+                    ● REC
+                  </button>
+                )}
+              </div>
+              {(voiceClips.length > 0 || voiceSenza.length > 0) && (
+                <>
+                  <div className="vd-tryrow">
+                    <span className="lbl">prova gli spezzoni con</span>
+                    <select className="minisel" value={prevFx}
+                      title={(VOICE_PRESETS[prevFx] || {}).hint}
+                      onChange={(e) => setPrevFx(e.target.value)}>
+                      {Object.entries(VOICE_PRESETS).map(([k, p]) => (
+                        <option key={k} value={k}>{p.label}</option>
+                      ))}
+                    </select>
+                    <span className="vd-hint">{(VOICE_PRESETS[prevFx] || {}).hint}</span>
+                  </div>
+                  <div className="vd-clips">
+                    {voiceClips.map(rigaClip)}
+                  </div>
+                  {/* TM8, il ripiego dichiarato: registrazioni che
+                      nessuna sessione ha adottato (pre-regola, o di
+                      bozze mai salvate). Non si cancellano da sole:
+                      «+ sessione» le adotta, la × le elimina. */}
+                  {voiceSenza.length > 0 && (
+                    <div className="vd-senza" data-testid="fq-voice-senza">
+                      <button type="button" className="vd-senza-toggle"
+                        onClick={() => setSenzaAperto((v) => !v)}>
+                        {senzaAperto ? '▾' : '▸'} Spezzoni senza sessione ({voiceSenza.length})
+                      </button>
+                      {senzaAperto && (
+                        <>
+                          <span className="vd-hint">
+                            Registrazioni non legate a questa sessione. «+ sessione» le porta qui dentro; al Salva bozza restano con la traccia.
+                          </span>
+                          <div className="vd-clips">
+                            {voiceSenza.map(rigaClip)}
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  )}
+                  {hasVoiceLayers && (
+                    <label className="vd-duck">
+                      <input type="checkbox" checked={voiceDuck}
+                        onChange={(e) => setVoiceDuck(e.target.checked)} />
+                      Abbassa le basi sotto la voce (consigliato)
+                    </label>
+                  )}
+                </>
+              )}
+            </div>
+
+  );
+  /* CR1-CR3 — l'oggetto dei gesti per il vestito nuovo: stesse funzioni,
+     stessi handler, nessuno stato di sessione fuori da questo componente. */
+  const kit = {
+    navigate, fmt, layers, playing, preparing, elapsed, duration, seekTo, stopSession, playGuarded, resetSession,
+    guarda, setGuarda, lettoreRef, visual, setStudio,
+    durataAuto, durataFissaSec, fissaDurata, tornaDurataAuto, parseDurata,
+    title, setTitle, categoria, setCategoria, categorie, fadeIn, setFadeIn, fadeOut, setFadeOut,
+    stanza, setStanza, riavviaSeSuona, hasSpace,
+    status, esportando, esportaMp3, pesoStimatoMB,
+    esportaDalMaster: trackStatus === 'published' && !!firmaPubblicata && firmaPubblicata !== 'DA_CALCOLARE'
+      && firmaPubblicata === JSON.stringify(scorePayload()),
+    trackId, trackStatus, trackSlug, saving, save, publishTrack, unpublishTrack,
+    memoria: memoriaStimataMB(score, soundsById), avvisoCuffie: avvisoCuffieScore(score),
+    lineaDelTempo, leggioVoce, loadProtocol,
+    sounds, SOUND_MOMENTI, SOUND_CATS, toggleSoundPreview, previewingId, soundLoadingId, addSoundToSession, eClipBreve,
+    guard, toggleCard, liveCardsRef, liveKeys, addCardToSession, composeAllLive, stopAllCards,
+    drafts, openDraft, aggiungiLivelliDa,
+  };
+
   return (
-    <div className="fqz" data-testid="fqz-root">
+    <div className="fqz" data-testid="fqz-root" data-vestito={nuovo ? 'nuovo' : undefined}>
       {/* DN1/DN2/DN4, testata condivisa del mondo Sound: marchio della
           marca (che e' anche la via di casa), passerella e omino. Gli
           strumenti di QUESTA vista viaggiano come extra. */}
@@ -2253,6 +2432,7 @@ export default function FrequenzePage() {
             barra delle stanze, accanto a Crea. Le stanze in UNA barra
             sola era il punto dell'analisi BUSSOLA. */}
       </>} />
+      {!nuovo && (
       <header>
         <div>
           <h1>Aurya <em>Sound</em></h1>
@@ -2266,6 +2446,7 @@ export default function FrequenzePage() {
           attiva={{ explore: 'esplora', create: 'crea',
                     impara: 'impara', mine: 'tracce' }[view]} />
       </header>
+      )}
 
       <main>
         {/* SF, dove si ascolta, la riga sta a vista; nella Guida no:
@@ -2556,6 +2737,10 @@ export default function FrequenzePage() {
             lettura, invisibile a chi ha gia' le chiavi */}
         {(view === 'explore' || view === 'impara') && <TriggerStudio />}
 
+        {view === 'mine' && nuovo && (
+          <SelettoreCrea attiva="tracce" badge={layers.length} navigate={navigate}
+            onFonti={() => navigate('/sound/crea')} />
+        )}
         {view === 'mine' && (
           <section className="bib" data-testid="fq-mine">
             <h2>Le mie tracce</h2>
@@ -2670,7 +2855,9 @@ export default function FrequenzePage() {
             }} />
         )}
 
-        {view === 'create' && (
+        {view === 'create' && nuovo && <CreaVista kit={kit} />}
+
+        {view === 'create' && !nuovo && (
           <section>
             <div className="createbar">
               <button type="button" className={`cb-play${playing ? ' suona' : ''}`} data-testid="fq-play"
@@ -2929,71 +3116,7 @@ export default function FrequenzePage() {
               </div>
             </div>
 
-            {/* FV3, il leggio: la tua voce dentro la sessione */}
-            <div className="voicedesk" data-testid="fqz-voicedesk">
-              <div className="vd-head">
-                <span className="tag">🎙 La tua voce</span>
-                <span className="vd-hint">
-                  Registra brevi spezzoni, tagliali qui una volta sola e piazzali dove servono. Cuffie se la sessione è in ascolto.
-                </span>
-                {recState === 'rec' ? (
-                  <button type="button" className="vd-rec on" onClick={stopRec}>
-                    ■ Ferma · {fmt(recSecs)}
-                  </button>
-                ) : (
-                  <button type="button" className="vd-rec" onClick={startRec}>
-                    ● REC
-                  </button>
-                )}
-              </div>
-              {(voiceClips.length > 0 || voiceSenza.length > 0) && (
-                <>
-                  <div className="vd-tryrow">
-                    <span className="lbl">prova gli spezzoni con</span>
-                    <select className="minisel" value={prevFx}
-                      title={(VOICE_PRESETS[prevFx] || {}).hint}
-                      onChange={(e) => setPrevFx(e.target.value)}>
-                      {Object.entries(VOICE_PRESETS).map(([k, p]) => (
-                        <option key={k} value={k}>{p.label}</option>
-                      ))}
-                    </select>
-                    <span className="vd-hint">{(VOICE_PRESETS[prevFx] || {}).hint}</span>
-                  </div>
-                  <div className="vd-clips">
-                    {voiceClips.map(rigaClip)}
-                  </div>
-                  {/* TM8, il ripiego dichiarato: registrazioni che
-                      nessuna sessione ha adottato (pre-regola, o di
-                      bozze mai salvate). Non si cancellano da sole:
-                      «+ sessione» le adotta, la × le elimina. */}
-                  {voiceSenza.length > 0 && (
-                    <div className="vd-senza" data-testid="fq-voice-senza">
-                      <button type="button" className="vd-senza-toggle"
-                        onClick={() => setSenzaAperto((v) => !v)}>
-                        {senzaAperto ? '▾' : '▸'} Spezzoni senza sessione ({voiceSenza.length})
-                      </button>
-                      {senzaAperto && (
-                        <>
-                          <span className="vd-hint">
-                            Registrazioni non legate a questa sessione. «+ sessione» le porta qui dentro; al Salva bozza restano con la traccia.
-                          </span>
-                          <div className="vd-clips">
-                            {voiceSenza.map(rigaClip)}
-                          </div>
-                        </>
-                      )}
-                    </div>
-                  )}
-                  {hasVoiceLayers && (
-                    <label className="vd-duck">
-                      <input type="checkbox" checked={voiceDuck}
-                        onChange={(e) => setVoiceDuck(e.target.checked)} />
-                      Abbassa le basi sotto la voce (consigliato)
-                    </label>
-                  )}
-                </>
-              )}
-            </div>
+            {leggioVoce}
 
             <div className="legend" style={{ marginTop: 14 }}>
               <span className="la" title="Il fenomeno è ben documentato dalla ricerca scientifica."><b>A</b> Evidenza solida</span>
@@ -3001,57 +3124,7 @@ export default function FrequenzePage() {
               <span className="lc" title="L'associazione appartiene soprattutto alla tradizione o alla cultura, senza una dimostrazione fisiologica consolidata."><b>C</b> Tradizione e simbolismo</span>
             </div>
 
-            {layers.length > 0 ? (
-              <div className="score" style={{ display: 'block' }}>
-                <div className="helpstrip">
-                  <b>Linea del tempo.</b> Ogni riga è un livello. Trascina la sua barra o scrivi «entra a / esce a» per decidere quando parte e finisce. <b>Battito da → a</b> è la discesa (valori uguali = frequenza ferma), la <b>curva</b> ne è la forma, la <b>portante</b> è il tono che la trasporta.
-                </div>
-                <div className="ruler" title="Tocca o trascina per ascoltare da questo punto"
-                  style={{ cursor: 'pointer', touchAction: 'none' }}
-                  onPointerDown={(e) => {
-                    try { e.currentTarget.setPointerCapture(e.pointerId); } catch { /* tap */ }
-                  }}
-                  onPointerUp={(e) => {
-                    /* TS2 — commit al RILASCIO: un solo riavvio del
-                       motore per gesto, che sia tap o trascinamento. */
-                    const r = e.currentTarget.getBoundingClientRect();
-                    seekTo(Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)) * duration);
-                  }}>
-                  {Array.from({ length: Math.floor(duration / gstep) + 1 }, (_, i) => (
-                    <div key={i} className="tick" style={{ left: `${((i * gstep) / duration) * 100}%` }}>
-                      <span>{fmt(i * gstep)}</span>
-                    </div>
-                  ))}
-                </div>
-                <div className="phases" title="Clicca per aggiungere una fase"
-                  onClick={(e) => {
-                    if (e.target !== e.currentTarget) return;
-                    const r = e.currentTarget.getBoundingClientRect();
-                    const t = ((e.clientX - r.left) / r.width) * duration;
-                    setPhases((ps) => [...ps, { t, name: 'fase' }].sort((a, b) => a.t - b.t));
-                  }}>
-                  {phases.map((p, i) => (
-                    <div key={i} className="phase" style={{ left: `${(p.t / duration) * 100}%` }}
-                      onPointerDown={(e) => {
-                        if (e.target.tagName === 'BUTTON') return;
-                        const lane = e.currentTarget.parentElement;
-                        dragX(e, lane, (dx) => {
-                          setPhases((ps) => ps.map((x, j) => j === i
-                            ? { ...x, t: Math.max(0, Math.min(duration, x.t + dx * duration)) } : x));
-                        });
-                      }}>
-                      <span onDoubleClick={() => {
-                        const name = window.prompt('Nome della fase', p.name);
-                        if (name) setPhases((ps) => ps.map((x, j) => j === i ? { ...x, name } : x));
-                      }}>{p.name}</span>
-                      <button type="button" title="Rimuovi"
-                        onClick={(e) => { e.stopPropagation(); setPhases((ps) => ps.filter((_, j) => j !== i)); }}>×</button>
-                    </div>
-                  ))}
-                </div>
-                <div>{layers.map(renderRow)}</div>
-              </div>
-            ) : (
+            {layers.length > 0 ? lineaDelTempo : (
               <div className="emptycreate" style={{ marginTop: 18 }}>
                 <p>La tua sessione è vuota. Aggiungi <b>frequenze</b> o <b>suoni</b> dalla libreria, registra la <b>tua voce</b>, oppure parti da un <b>protocollo pronto</b> qui sopra.</p>
               </div>

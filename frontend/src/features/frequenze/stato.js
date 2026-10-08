@@ -33,3 +33,7 @@ export const SOUND_HUB_SEMPLICE = false;
    diventano pagine proprie (esplora/BibliotecaPage, esplora/FondamentaPage)
    con il selettore a tre; a false si torna alle viste dentro il compositore. */
 export const SOUND_ESPLORA_NUOVA = true;
+/* CR1-CR3 (8/10/2026 sera) — il vestito nuovo di Crea (crea/CreaVista.jsx):
+   barra a una riga, sessione al centro coi livelli ripiegabili, banco del
+   mix, salva/pubblica in basso. ?vestito=vecchio mostra la vista di prima. */
+export const SOUND_CREA_NUOVO = true;
