@@ -119,6 +119,10 @@
 .fqz[data-vestito="nuovo"] .cr-sessione .ctrls.r3{padding:6px 0 2px;border-top:1px dashed var(--line-soft);margin-top:4px}
 .fqz[data-vestito="nuovo"] .cr-sessione .ctrls.timerow{padding-top:4px}
 .fqz[data-vestito="nuovo"] .cr-sessione .minisel,.fqz[data-vestito="nuovo"] .cr-sessione .mini{border-radius:8px}
+/* i campi del tempo mostrano «0:00» intero (prima: 52 px con padding 12, il testo si tagliava) */
+.fqz[data-vestito="nuovo"] .cr-sessione input.mini{width:72px;padding:6px 8px;font-size:14px;text-align:center}
+.fqz[data-vestito="nuovo"] .cr-sessione input.mini.num{width:58px}
+.fqz[data-vestito="nuovo"] .cr-sessione .minisel{padding:6px 8px;font-size:13px}
 .fqz[data-vestito="nuovo"] .cr-vuoto{border:1px dashed var(--line);border-radius:18px;padding:26px 20px;text-align:center}
 .fqz[data-vestito="nuovo"] .cr-vuoto p{margin:0 0 14px;font-family:var(--serif);font-size:19px;color:var(--bone)}
 .fqz[data-vestito="nuovo"] .cr-vuoto div{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
