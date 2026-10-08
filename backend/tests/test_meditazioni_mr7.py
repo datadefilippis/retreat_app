@@ -54,6 +54,9 @@ class TestNonPerdersi:
             assert porta in src, porta
         # 8/10 sera (founder): dal foglio non si esce verso la landing: solo le meditazioni
         assert "La pagina di Aurya Sound" not in src
+        # dentro l'atelier (crea, tracce, libreria) si accende «Crea», non «Il suono»
+        assert "const suonoCorrente = dove.startsWith('/sound') && !inAtelier;" in src
+        assert "(v.to === '/sound/crea' && inAtelier)" in src
         assert 'data-testid="fqz-foglio-meditazioni"' in src and "href=\"/meditazioni\" className=\"porta-landing\"" in src
 
     def test_il_corso_torna_da_dove_si_viene(self):

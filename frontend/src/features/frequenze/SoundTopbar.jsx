@@ -76,7 +76,10 @@ export default function SoundTopbar({ firma = 'Sound', qui = null,
   let dove = qui || '';
   try { dove = window.location.pathname || dove; } catch { /* ssr */ }
   const portaCorrente = (to) => dove === to || dove.startsWith(to + '/');
-  const suonoCorrente = dove.startsWith('/sound');
+  /* 8/10 sera (founder): dentro Crea restava acceso «Il suono». Le pagine
+     dell'atelier (crea, tracce, libreria) accendono «Crea», non «Il suono». */
+  const inAtelier = /^\/sound\/(crea|tracce|libreria)(\/|$|\?)/.test(dove);
+  const suonoCorrente = dove.startsWith('/sound') && !inAtelier;
   return (
     <div className="topbar">
       <a className="fqzbrand" href="/" onClick={(e) => guardia(e, '/')} data-testid="fqz-brand" title="Torna su Aurya">
@@ -91,7 +94,7 @@ export default function SoundTopbar({ firma = 'Sound', qui = null,
           ? <button key={v.to} type="button" className="tb-voce" data-testid="fqz-nav-suono" aria-current={suonoCorrente ? 'page' : undefined} onClick={() => setFoglioSuono(true)}>{v.label}</button>
           : <a key={v.to} href={v.to}
             onClick={(e) => guardia(e, v.to)}
-            aria-current={qui === v.to ? 'page' : undefined}>{v.label}</a>
+            aria-current={qui === v.to || (v.to === '/sound/crea' && inAtelier) ? 'page' : undefined}>{v.label}</a>
         ))}
       </nav>
       {foglioSuono && (
