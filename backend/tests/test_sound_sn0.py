@@ -91,9 +91,10 @@ class TestFrontend:
             assert f'data-testid="{t}"' in casa, t
         # accesso e vetrina solo sulle pubbliche; la vetrina solo con la chiave 1
         assert "{pubblica && (" in casa and "{composer && (" in casa
-        pagina = (FRONTEND / "features" / "frequenze" / "FrequenzePage.js").read_text()
-        assert "<CampiCasa traccia={d} onCambio={loadDrafts} composer={!!user?.sound_composer} />" in pagina
-        assert "<PlaylistPannello tracce={drafts} composer={!!user?.sound_composer} />" in pagina
+        pagina = ((FRONTEND / "features" / "frequenze" / "FrequenzePage.js").read_text() + (FRONTEND / "features" / "frequenze" / "crea" / "CreaVista.jsx").read_text() + (FRONTEND / "features" / "frequenze" / "crea" / "TracceVista.jsx").read_text())
+        # CR4: i campi della casa vivono nel foglio «Modifica» di TracceVista, intatti
+        assert "<CampiCasa traccia={inModifica} onCambio={k.loadDrafts} composer={k.composer} />" in pagina
+        assert "<PlaylistPannello tracce={k.drafts} composer={k.composer} />" in pagina
         api = (FRONTEND / "api" / "frequencies.js").read_text()
         for m in ("registraAscolto", "uploadCover", "removeCover", "playlists: {", "pubbliche:", "ascolti:"):
             assert m in api, m

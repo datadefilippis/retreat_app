@@ -96,7 +96,7 @@ export default function SoundAscoltiSezione() {
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h2 className="text-base font-semibold text-gray-900">Gli ascolti</h2>
-          <p className="mt-1 text-sm text-gray-600">Chi ascolta cosa, quando, per quanto, se la finisce. Solo chi ha l'account entra in «Persone»; chi ascolta col Cerchio senza account conta solo nei totali.</p>
+          <p className="mt-1 text-sm text-gray-600">Chi ascolta cosa, quando, per quanto, se la finisce. Gli eventi partono dall'8 ottobre 2026; «di sempre» è il contatore del player, dal 24 agosto. Solo chi ha l'account entra in «Persone»; chi ascolta col Cerchio senza account conta nei totali come «dal Cerchio», senza nome.</p>
         </div>
         <div className="flex items-center gap-2">
           <select className="rounded border px-2 py-1 text-sm" value={periodo} onChange={(e) => setPeriodo(e.target.value)} data-testid="admin-ascolti-periodo">
@@ -114,7 +114,8 @@ export default function SoundAscoltiSezione() {
       {vista === 'panoramica' && pan && (
         <div className="mt-4 space-y-3" data-testid="admin-ascolti-panoramica">
           <div className="grid grid-cols-2 gap-2 md:grid-cols-4 lg:grid-cols-7">
-            <Numero etichetta="Ascolti" valore={pan.ascolti} nota={pan.ascolti_anonimi ? `${pan.ascolti_anonimi} senza account` : undefined} />
+            <Numero etichetta="Ascolti" valore={pan.ascolti} nota={pan.ascolti_anonimi ? `${pan.ascolti_anonimi} senza account${pan.ascolti_cerchio ? `, di cui ${pan.ascolti_cerchio} dal Cerchio` : ''}` : undefined} />
+            <Numero etichetta="Di sempre" valore={pan.ascolti_di_sempre} nota="il contatore del player, dal 24/8" />
             <Numero etichetta="Persone attive" valore={pan.persone} />
             <Numero etichetta="Nuovi ascoltatori" valore={pan.nuovi_ascoltatori} />
             <Numero etichetta="Minuti ascoltati" valore={Math.round(pan.minuti)} />
@@ -134,12 +135,13 @@ export default function SoundAscoltiSezione() {
           <div className="flex justify-end"><button type="button" className="text-xs underline text-gray-600" onClick={() => scarica('meditazioni')}>Esporta CSV</button></div>
           <div className="overflow-x-auto rounded-lg border bg-white mt-2">
             <table className="min-w-full text-sm">
-              <thead className="bg-gray-50"><Testa chiave="med" campi={[['titolo', 'Meditazione'], ['ascolti', 'Ascolti'], ['persone', 'Persone'], ['minuti', 'Minuti'], ['completamento', 'Completa'], ['abbandono_medio', 'Arriva a'], ['preferiti', 'Preferiti'], ['momento_punta', 'Momento']]} /></thead>
+              <thead className="bg-gray-50"><Testa chiave="med" campi={[['titolo', 'Meditazione'], ['ascolti', 'Ascolti'], ['ascolti_di_sempre', 'Di sempre'], ['persone', 'Persone'], ['minuti', 'Minuti'], ['completamento', 'Completa'], ['abbandono_medio', 'Arriva a'], ['preferiti', 'Preferiti'], ['momento_punta', 'Momento']]} /></thead>
               <tbody className="divide-y">
                 {medOrd.map((m) => (
                   <tr key={m.slug} className="hover:bg-gray-50 cursor-pointer" onClick={() => apriMed(m.slug)} data-testid={`admin-ascolti-med-${m.slug}`}>
                     <td className="py-2 pr-3"><div className="font-medium text-gray-900">{m.titolo}</div><div className="text-[11px] text-gray-500">{m.stato === 'published' ? (m.visibilita === 'private' ? 'riservata' : 'nelle Meditazioni') : 'bozza'}{m.categoria ? ` · ${m.categoria}` : ''}</div></td>
-                    <td className="py-2 pr-3">{m.ascolti}{m.anonimi ? <span className="text-[11px] text-gray-400"> (+{m.anonimi} anon.)</span> : null}</td>
+                    <td className="py-2 pr-3">{m.ascolti}{m.anonimi ? <span className="text-[11px] text-gray-400"> ({m.anonimi} senza account{m.cerchio ? `, ${m.cerchio} dal Cerchio` : ''})</span> : null}</td>
+                    <td className="py-2 pr-3" title="Il contatore del player, dal 24/8/2026">{m.ascolti_di_sempre}</td>
                     <td className="py-2 pr-3">{m.persone}</td>
                     <td className="py-2 pr-3">{m.minuti}</td>
                     <td className="py-2 pr-3">{pct(m.completamento)}</td>
@@ -148,7 +150,7 @@ export default function SoundAscoltiSezione() {
                     <td className="py-2 pr-3">{FASCE[m.momento_punta] || '—'}</td>
                   </tr>
                 ))}
-                {!medOrd.length && <tr><td className="py-3 text-gray-500" colSpan={8}>Nessun ascolto nel periodo.</td></tr>}
+                {!medOrd.length && <tr><td className="py-3 text-gray-500" colSpan={9}>Nessun ascolto nel periodo.</td></tr>}
               </tbody>
             </table>
           </div>

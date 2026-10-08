@@ -15,7 +15,6 @@ import SoundTopbar from '../SoundTopbar';
 import StanzeSound from '../StanzeSound';
 import SelettoreTre from '../esplora/SelettoreTre';   // ES5
 import { SOUND_ESPLORA_NUOVA } from '../stato';
-import { vestitoNuovo } from './Stanza';   // LA4
 import './lab-vestito.css';
 import '../esplora/esplora.css';
 import TriggerStudio from '../TriggerStudio';
@@ -64,12 +63,11 @@ const PROFILI = [
 ];
 
 export default function LabSala() {
-  const nuovo = vestitoNuovo();   // LA4: le carte col tono della stanza
   useEffect(() => {
     document.title = 'Aurya Sound Lab: il laboratorio del suono';
   }, []);
   return (
-    <div className={`fqz lab${nuovo ? ' vestito' : ''}`} data-testid="lab-page">
+    <div className="fqz lab vestito" data-testid="lab-page">
       <SoundTopbar firma="Lab" qui="/sound/lab" />
       <header>
         <div>
@@ -91,7 +89,7 @@ export default function LabSala() {
           {STANZE.map((s) => (
             <Link key={s.via} to={s.via} className={`lab-sala-carta tono-${s.tono}`}
               data-testid={`lab-carta-${s.via.split('/').pop()}`}>
-              {nuovo && <span className="lab-sala-sagoma" aria-hidden="true">{s.sagoma}</span>}
+              <span className="lab-sala-sagoma" aria-hidden="true">{s.sagoma}</span>
               <h2>{s.nome}</h2>
               <p className="lab-sala-domanda">{s.domanda}</p>
               <p className="lab-sala-cosa">{s.cosa}</p>

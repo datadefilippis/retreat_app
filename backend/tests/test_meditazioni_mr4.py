@@ -62,7 +62,7 @@ class TestTraccia:
 
 class TestCreaECasa:
     def test_crea(self):
-        src = (FQ / "FrequenzePage.js").read_text()
+        src = ((FQ / "FrequenzePage.js").read_text() + (FQ / "crea" / "CreaVista.jsx").read_text() + (FQ / "crea" / "TracceVista.jsx").read_text())
         assert 'data-testid="fq-categoria"' in src
         assert "frequenciesAPI.create({ title: name, score: scorePayload(), intent, categoria })" in src
         assert "frequenciesAPI.update(trackId, { title: name, score: scorePayload(), intent, categoria })" in src

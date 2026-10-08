@@ -10,7 +10,7 @@ from pathlib import Path
 
 RADICE = Path(__file__).resolve().parents[2]
 FQ_DIR = RADICE / "frontend" / "src" / "features" / "frequenze"
-PAGE = (FQ_DIR / "FrequenzePage.js").read_text(encoding="utf-8")
+PAGE = ((FQ_DIR / "FrequenzePage.js").read_text(encoding="utf-8") + (FQ_DIR / "crea" / "CreaVista.jsx").read_text(encoding="utf-8") + (FQ_DIR / "crea" / "TracceVista.jsx").read_text(encoding="utf-8"))
 SPAZIO = (FQ_DIR / "engine" / "spazio.js").read_text(encoding="utf-8")
 SYNTH = (FQ_DIR / "engine" / "synth.js").read_text(encoding="utf-8")
 RENDER = (FQ_DIR / "engine" / "render.js").read_text(encoding="utf-8")
@@ -26,7 +26,7 @@ class TestDurataLibera:
         assert "const [durataFissaSec, setDurataFissaSec] = useState(null);" in PAGE
         assert "setDurataFissaMin(" not in PAGE and "durataFissaMin ===" not in PAGE   # niente residui in minuti
         assert 'data-testid={`fq-durata-sec-${s}`}' in PAGE and "[10, 20, 30].map" in PAGE
-        assert "fissaDurata(parseDurata(e.currentTarget.value))" in PAGE
+        assert "fissaDurata(k.parseDurata(e.currentTarget.value))" in PAGE   # CR1: nel foglio della durata
         assert "mins > DURATA_MAX_MIN" in PAGE             # il tetto resta
 
     def test_parse_durata_come_lo_scrive_una_persona(self):
@@ -113,5 +113,6 @@ class TestRespiroConEffettoESpazio:
 class TestTelefono:
     def test_il_bottone_impostazioni_riassume(self):
         assert 'data-testid="fq-setup-riassunto"' in PAGE
-        blocco = PAGE.split('data-testid="fq-setup-riassunto"')[1][:300]
-        assert "STANZE[stanza]" in blocco and "fadeIn" in blocco and "fadeOut" in blocco
+        # CR1: il riassunto e' una const (`riassunto`) stampata nella riga sotto la barra
+        blocco = PAGE.split("const riassunto = ")[1][:300]
+        assert "STANZE[k.stanza]" in blocco and "fadeIn" in blocco and "fadeOut" in blocco

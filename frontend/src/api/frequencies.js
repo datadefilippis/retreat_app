@@ -42,8 +42,10 @@ export const frequenciesAPI = {
   registerPlay: (slug) => api.post(`/frequencies/public/${slug}/play`),
   // SN0 (8/10/2026, piano Aurya Sound): gli eventi di ascolto (avvio, quartili, fine)
   // con la provenienza; anonimi, un limite per IP lato server
-  registraAscolto: (slug, { evento, provenienza, playlist, secondo } = {}) =>
-    api.post(`/frequencies/public/${slug}/ascolto`, { evento, provenienza, playlist, secondo }),
+  registraAscolto: (slug, { evento, provenienza, playlist, secondo, provaToken } = {}) =>
+    api.post(`/frequencies/public/${slug}/ascolto`, { evento, provenienza, playlist, secondo },
+      /* CS: con la prova del Cerchio l'evento sa che e' un iscritto (nessuna email) */
+      provaToken ? { headers: { 'X-Fqz-Unlock': provaToken } } : undefined),
   ascolti: (trackId) => api.get(`/frequencies/tracks/${trackId}/ascolti`),
   categorie: () => api.get('/frequencies/categorie'),   // MR4 — il registro (attive)
   // SN2: l'annuncio al Cerchio («nuova meditazione»); a secco = conta e anteprima, senza spedire

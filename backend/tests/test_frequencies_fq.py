@@ -252,7 +252,7 @@ class TestDesignPrototipoFq05:
                     raise AssertionError(f"selettore non scopato: {part!r}")
 
     def test_pagina_standalone_col_ritorno(self):
-        src = (FQ_DIR / "FrequenzePage.js").read_text()
+        src = ((FQ_DIR / "FrequenzePage.js").read_text() + (FQ_DIR / "crea" / "CreaVista.jsx").read_text() + (FQ_DIR / "crea" / "TracceVista.jsx").read_text())
         assert "AppLayout" not in src, \
             "l'app Frequenze e' un prodotto a se': niente guscio gestionale"
         # DN8 (21/8): il ritorno al gestionale non e' piu' una carta
@@ -279,7 +279,7 @@ class TestSoloSuoniPiattaformaFq05b:
     def test_niente_upload_nel_compositore(self):
         """L'OPERATORE non carica audio. L'unico file input della pagina
         e' quello della regia piattaforma (FQ2), dietro isSystemAdmin."""
-        src = (FQ_DIR / "FrequenzePage.js").read_text()
+        src = ((FQ_DIR / "FrequenzePage.js").read_text() + (FQ_DIR / "crea" / "CreaVista.jsx").read_text() + (FQ_DIR / "crea" / "TracceVista.jsx").read_text())
         assert "uploadzone" not in src, "upload operatore tornato nel compositore"
         assert "decodeAudioData" not in src, \
             "la pagina decodifica file locali: l'upload deve restare fuori"
@@ -290,7 +290,7 @@ class TestSoloSuoniPiattaformaFq05b:
             "il file input dei suoni non e' dietro il gate system admin"
 
     def test_worldswitch_frequenze_suoni(self):
-        src = (FQ_DIR / "FrequenzePage.js").read_text()
+        src = ((FQ_DIR / "FrequenzePage.js").read_text() + (FQ_DIR / "crea" / "CreaVista.jsx").read_text() + (FQ_DIR / "crea" / "TracceVista.jsx").read_text())
         assert "fq-worldswitch" in src and "Suoni" in src
         assert "fq-soundsoon" in src, "manca il segnaposto della libreria"
         for cat in ("Ambient", "Droni", "Campane", "Natura", "Ritmi", "Voce"):
@@ -300,7 +300,7 @@ class TestSoloSuoniPiattaformaFq05b:
         """Il bug dello stop: creare il grafo audio dentro un updater
         React lo fa partire due volte in dev (updater rieseguiti) e una
         voce resta orfana a suonare. Gli handle vivono in un ref."""
-        src = (FQ_DIR / "FrequenzePage.js").read_text()
+        src = ((FQ_DIR / "FrequenzePage.js").read_text() + (FQ_DIR / "crea" / "CreaVista.jsx").read_text() + (FQ_DIR / "crea" / "TracceVista.jsx").read_text())
         assert "liveCardsRef" in src
         import re
         for m in re.finditer(r"set\w+\(\s*\((?:lc|ls|ps|x)\)?\s*=>", src):
@@ -317,7 +317,7 @@ class TestSoloSuoniPiattaformaFq05b:
         Misurato in browser: due click davano 48 oscillatori, il Ferma ne
         spegneva 24. Col token: 24 creati, 24 spenti."""
         import re
-        src = (FQ_DIR / "FrequenzePage.js").read_text()
+        src = ((FQ_DIR / "FrequenzePage.js").read_text() + (FQ_DIR / "crea" / "CreaVista.jsx").read_text() + (FQ_DIR / "crea" / "TracceVista.jsx").read_text())
         assert "playTokenRef" in src, "manca il token di sequenza dell'ascolto"
         stop_fn = src.split("const stopSession = () =>")[1][:400]
         assert "playTokenRef.current += 1" in stop_fn, \
@@ -424,7 +424,7 @@ class TestLibreriaSuoniFq2:
     def test_pagina_risolve_via_engine_non_da_file(self):
         """La pagina non decodifica mai audio direttamente: fetch+decode
         vivono in engine/assets.js (e l'upload resta solo admin)."""
-        src = (FQ_DIR / "FrequenzePage.js").read_text()
+        src = ((FQ_DIR / "FrequenzePage.js").read_text() + (FQ_DIR / "crea" / "CreaVista.jsx").read_text() + (FQ_DIR / "crea" / "TracceVista.jsx").read_text())
         assert "decodeAudioData" not in src
         assert "resolveAudioLayers" in src and "isSystemAdmin" in src
         assets = (FQ_DIR / "engine" / "assets.js").read_text()
@@ -817,7 +817,7 @@ class TestLeggioVoceFv3:
     def test_leggio_solo_registrazione(self):
         """La voce nasce dal microfono: getUserMedia + MediaRecorder,
         nessun nuovo input file (resta solo quello regia suoni FQ2)."""
-        src = (FQ_DIR / "FrequenzePage.js").read_text()
+        src = ((FQ_DIR / "FrequenzePage.js").read_text() + (FQ_DIR / "crea" / "CreaVista.jsx").read_text() + (FQ_DIR / "crea" / "TracceVista.jsx").read_text())
         assert "fqz-voicedesk" in src, "manca il pannello leggio"
         assert "getUserMedia" in src and "MediaRecorder" in src
         assert src.count('type="file"') == 1, \
@@ -827,7 +827,7 @@ class TestLeggioVoceFv3:
     def test_handle_registrazione_nei_ref(self):
         """MediaRecorder/stream/anteprime vivono in ref: mai side effect
         audio dentro gli updater React (lezione del bug stop)."""
-        src = (FQ_DIR / "FrequenzePage.js").read_text()
+        src = ((FQ_DIR / "FrequenzePage.js").read_text() + (FQ_DIR / "crea" / "CreaVista.jsx").read_text() + (FQ_DIR / "crea" / "TracceVista.jsx").read_text())
         for ref in ("recRef", "voicePrevRef"):
             assert ref in src, f"manca {ref}"
 
@@ -836,7 +836,7 @@ class TestLeggioVoceFv3:
         di effetto sulla riga. Il taglio NON sta piu' qui — vive sulla
         registrazione (FV6, feedback founder 19/8), e comunque mai in
         offset tecnici."""
-        src = (FQ_DIR / "FrequenzePage.js").read_text()
+        src = ((FQ_DIR / "FrequenzePage.js").read_text() + (FQ_DIR / "crea" / "CreaVista.jsx").read_text() + (FQ_DIR / "crea" / "TracceVista.jsx").read_text())
         assert "VOICE_PRESETS" in src and "fx_amount" in src
         assert '">salta<' not in src, "il vecchio campo «salta» confondeva"
         assert "setVoiceCutStart" not in src and "setVoiceCutEnd" not in src, \
@@ -845,7 +845,7 @@ class TestLeggioVoceFv3:
             "il taglio non e' nelle impostazioni della registrazione"
 
     def test_voce_e_duck_arrivano_a_motore_ed_export(self):
-        src = (FQ_DIR / "FrequenzePage.js").read_text()
+        src = ((FQ_DIR / "FrequenzePage.js").read_text() + (FQ_DIR / "crea" / "CreaVista.jsx").read_text() + (FQ_DIR / "crea" / "TracceVista.jsx").read_text())
         assert "resolveVoiceLayers" in src
         play = src.split("const playSession")[1].split("const seekTo")[0]
         assert "voiceLayers" in play and "voiceDuck" in play
@@ -880,7 +880,7 @@ class TestPuliziaVoceFv5:
         all'anteprima del leggio: mai al file, identica ovunque."""
         assets = (FQ_DIR / "engine" / "assets.js").read_text()
         assert "cleanVoiceBuffer" in assets
-        page = (FQ_DIR / "FrequenzePage.js").read_text()
+        page = ((FQ_DIR / "FrequenzePage.js").read_text() + (FQ_DIR / "crea" / "CreaVista.jsx").read_text() + (FQ_DIR / "crea" / "TracceVista.jsx").read_text())
         assert "cleanVoiceBuffer" in page, \
             "l'anteprima del leggio deve suonare come la sessione"
         fx = (FQ_DIR / "engine" / "voicefx.js").read_text()
@@ -1012,14 +1012,14 @@ class TestLinkPagineLn:
         """La rotta player e i link generati restano su /frequenze/<slug>."""
         app = (FRONTEND_SRC / "App.js").read_text()
         assert 'path="/frequenze/:slug"' in app
-        page = (FQ_DIR / "FrequenzePage.js").read_text()
+        page = ((FQ_DIR / "FrequenzePage.js").read_text() + (FQ_DIR / "crea" / "CreaVista.jsx").read_text() + (FQ_DIR / "crea" / "TracceVista.jsx").read_text())
         assert page.count("/frequenze/${") >= 2, \
             "publish e copia-link devono generare ancora origin/frequenze/<slug>"
 
     def test_viste_derivate_dall_url(self):
         """La vista non e' piu' useState: la verita' sta nell'URL,
         cosi' il refresh resta dove sei."""
-        page = (FQ_DIR / "FrequenzePage.js").read_text()
+        page = ((FQ_DIR / "FrequenzePage.js").read_text() + (FQ_DIR / "crea" / "CreaVista.jsx").read_text() + (FQ_DIR / "crea" / "TracceVista.jsx").read_text())
         assert "useState('explore')" not in page
         for path in ("esplora", "crea", "impara", "tracce"):
             assert f"{path}:" in page.replace("'", "").replace(" ", "") \
@@ -1030,7 +1030,7 @@ class TestLinkPagineLn:
     def test_bozza_nell_url(self):
         """/sound/crea?bozza=<id>: apertura, salvataggio e refresh
         parlano lo stesso link; la bozza eliminata esce dall'URL."""
-        page = (FQ_DIR / "FrequenzePage.js").read_text()
+        page = ((FQ_DIR / "FrequenzePage.js").read_text() + (FQ_DIR / "crea" / "CreaVista.jsx").read_text() + (FQ_DIR / "crea" / "TracceVista.jsx").read_text())
         assert "bozza=${t.id}" in page.replace("`", "")
         assert "qs.get('bozza')" in page
         blocco_open = page.split("const openDraft")[1][:900]
@@ -1051,7 +1051,7 @@ class TestLinkPagineLn:
     def test_history_onesta(self):
         """Cambio vista = push; cambio tab/mondo/categoria = replace.
         Il back non deve ripercorrere ogni tab cliccato."""
-        page = (FQ_DIR / "FrequenzePage.js").read_text()
+        page = ((FQ_DIR / "FrequenzePage.js").read_text() + (FQ_DIR / "crea" / "CreaVista.jsx").read_text() + (FQ_DIR / "crea" / "TracceVista.jsx").read_text())
         for setter in ("setWorld", "setSoundCat", "setCurTab"):
             blocco = page.split(f"const {setter} = ")[1][:300]
             assert "replace: true" in blocco, f"{setter} deve fare replace"
@@ -1073,7 +1073,7 @@ class TestSoundPubblicoSp:
         # comincia entrando (l'hub scuro e' /sound/esplora)
         assert 'path="/sound" element={<SoundHomePage />}' in app
         # il cancello vive dentro la pagina: crea/tracce → accedi?next=
-        page = (FQ_DIR / "FrequenzePage.js").read_text()
+        page = ((FQ_DIR / "FrequenzePage.js").read_text() + (FQ_DIR / "crea" / "CreaVista.jsx").read_text() + (FQ_DIR / "crea" / "TracceVista.jsx").read_text())
         blocco = page.split("const needsAuth =")[1][:900]
         assert "'create'" in page.split("const needsAuth =")[1][:80]
         assert "/accedi?next=" in blocco
@@ -1084,7 +1084,7 @@ class TestSoundPubblicoSp:
         """SP-bis (decisione founder 19/8): le frequenze si ascoltano
         tutti. Resta professionale COMPORRE — e chi ascolta, chiunque
         sia, deve prima leggere gli avvisi di sicurezza."""
-        page = (FQ_DIR / "FrequenzePage.js").read_text()
+        page = ((FQ_DIR / "FrequenzePage.js").read_text() + (FQ_DIR / "crea" / "CreaVista.jsx").read_text() + (FQ_DIR / "crea" / "TracceVista.jsx").read_text())
         # ancora sul PULSANTE, non sul primo `{entry.cfg && (` del file:
         # dal ciclo AT quel pattern compare prima anche per la riga di
         # metodo, e l'ancora generica prendeva il blocco sbagliato
@@ -1120,7 +1120,7 @@ class TestSoundPubblicoSp:
     def test_niente_chiamate_authed_per_anonimi(self):
         """Il visitatore non deve generare 401 (bozze/voce) ne' portare
         nel DOM gli URL delle basi audio (lista suoni)."""
-        page = (FQ_DIR / "FrequenzePage.js").read_text()
+        page = ((FQ_DIR / "FrequenzePage.js").read_text() + (FQ_DIR / "crea" / "CreaVista.jsx").read_text() + (FQ_DIR / "crea" / "TracceVista.jsx").read_text())
         for fn in ("loadDrafts", "loadSounds", "loadVoice"):
             assert f"if (canCompose) {fn}()" in page, \
                 f"{fn} deve caricare solo per chi compone"
@@ -1176,7 +1176,7 @@ class TestSoundPubblicoSp:
         quindi al reload l'operatore vedeva la biblioteca PUBBLICA (senza
         Ascolta) finche' la chiamata non tornava. Il token si legge
         subito e copre la finestra."""
-        page = (FQ_DIR / "FrequenzePage.js").read_text()
+        page = ((FQ_DIR / "FrequenzePage.js").read_text() + (FQ_DIR / "crea" / "CreaVista.jsx").read_text() + (FQ_DIR / "crea" / "TracceVista.jsx").read_text())
         # PC2 (24/8) evoluto con TR1 (27/8): canCompose = la porta a
         # DUE chiavi (sound_crea, derivata dal server); la finestra di
         # /auth/me la copre la CACHE del flag (chi l'aveva ieri non
@@ -1191,7 +1191,7 @@ class TestSoundPubblicoSp:
     def test_operatore_intatto(self):
         """Per chi compone il comportamento resta quello di oggi: i
         controlli esistono ancora tutti (solo condizionati)."""
-        page = (FQ_DIR / "FrequenzePage.js").read_text()
+        page = ((FQ_DIR / "FrequenzePage.js").read_text() + (FQ_DIR / "crea" / "CreaVista.jsx").read_text() + (FQ_DIR / "crea" / "TracceVista.jsx").read_text())
         for segno in ("'Ferma' : 'Ascolta'", "+ sessione", "Salva bozza"):
             assert segno in page, f"perso pezzo operatore: {segno}"
         # NV3: «Le mie tracce» (fqz-mine) vive nella barra unica delle
@@ -1267,7 +1267,7 @@ class TestSoundPubblicoSp:
                 f"{f}: manca il marchio che riporta al sito"
             assert 'data-testid="fqz-foot"' in src, \
                 f"{f}: manca il piede con le uscite"
-        page = (FQ_DIR / "FrequenzePage.js").read_text()
+        page = ((FQ_DIR / "FrequenzePage.js").read_text() + (FQ_DIR / "crea" / "CreaVista.jsx").read_text() + (FQ_DIR / "crea" / "TracceVista.jsx").read_text())
         piede = page.split('data-testid="fqz-foot"')[1][:500]
         for dove in ("/blog", "/newsletter", "/meditazioni"):
             assert dove in piede, f"uscita {dove} mancante nel piede"
@@ -1302,7 +1302,7 @@ class TestTaglioRegistrazioneFv6:
         assert '"trim_start"' in src and '"trim_end"' in src
 
     def test_riga_del_livello_come_gli_altri_suoni(self):
-        src = (FQ_DIR / "FrequenzePage.js").read_text()
+        src = ((FQ_DIR / "FrequenzePage.js").read_text() + (FQ_DIR / "crea" / "CreaVista.jsx").read_text() + (FQ_DIR / "crea" / "TracceVista.jsx").read_text())
         riga = src.split("const renderRow = ")[1].split("const renderLane")[0] \
             if "const renderLane" in src else src.split("const renderRow = ")[1][:6000]
         assert "✂" not in riga, "le forbici sono ancora nella riga del livello"
@@ -1312,7 +1312,7 @@ class TestTaglioRegistrazioneFv6:
             "il blocco tempo non e' piu' uno solo per tutti i tipi di suono"
 
     def test_taglio_nel_leggio_e_propagato(self):
-        src = (FQ_DIR / "FrequenzePage.js").read_text()
+        src = ((FQ_DIR / "FrequenzePage.js").read_text() + (FQ_DIR / "crea" / "CreaVista.jsx").read_text() + (FQ_DIR / "crea" / "TracceVista.jsx").read_text())
         assert "togli dall'inizio" in src and "togli dalla fine" in src, \
             "il taglio non vive nelle impostazioni della registrazione"
         salva = src.split("const saveVoiceTrim")[1][:1200]
@@ -1326,12 +1326,12 @@ class TestTaglioRegistrazioneFv6:
     def test_barra_ascolto_compatta_su_telefono(self):
         """I quattro campi (titolo/durata/apertura/chiusura) su telefono
         stanno dietro un tocco; salva e pubblica restano sempre a vista."""
-        src = (FQ_DIR / "FrequenzePage.js").read_text()
-        assert 'data-testid="fq-setup"' in src, "manca il tasto che apre i campi"
+        src = ((FQ_DIR / "FrequenzePage.js").read_text() + (FQ_DIR / "crea" / "CreaVista.jsx").read_text() + (FQ_DIR / "crea" / "TracceVista.jsx").read_text())
+        assert 'data-testid="cr-altro"' in src, "manca il tasto che apre i campi"   # CR1: «⋯»
         assert 'className="cb-collapse open"' not in src, \
             "il pannello e' di nuovo inchiodato aperto"
-        bar = src.split('<div className="createbar">')[1].split("</div>\n\n")[0]
-        assert bar.index('className="cb-export"') > bar.index("cb-collapse"), \
+        # CR1: i campi stanno nel foglio «⋯» (FoglioAltro); salva e pubblica nel piede fisso, sempre a vista
+        assert src.index('data-testid="fq-save"') > src.index('data-testid="cr-piede"'), \
             "salva/pubblica sono finiti dentro il pannello a scomparsa"
         css = (FQ_DIR / "frequenze.css").read_text()
         assert ".fqz .cb-opt{display:none}" in css, \
@@ -1350,7 +1350,7 @@ class TestLibreriaSuoniSl:
 
     def test_categorie_in_parita(self):
         from models.audio_asset import SOUND_CATEGORIES
-        src = (FQ_DIR / "FrequenzePage.js").read_text()
+        src = ((FQ_DIR / "FrequenzePage.js").read_text() + (FQ_DIR / "crea" / "CreaVista.jsx").read_text() + (FQ_DIR / "crea" / "TracceVista.jsx").read_text())
         riga = src.split("const SOUND_CATS = ")[1].split(";")[0]
         import re
         cats = re.findall(r"'([^']+)'", riga)
@@ -1362,7 +1362,7 @@ class TestLibreriaSuoniSl:
 
     def test_ogni_categoria_ha_la_sua_riga(self):
         from models.audio_asset import SOUND_CATEGORIES
-        src = (FQ_DIR / "FrequenzePage.js").read_text()
+        src = ((FQ_DIR / "FrequenzePage.js").read_text() + (FQ_DIR / "crea" / "CreaVista.jsx").read_text() + (FQ_DIR / "crea" / "TracceVista.jsx").read_text())
         blocco = src.split("const SOUND_HINT = {")[1].split("};")[0]
         for label in SOUND_CATEGORIES.values():
             assert f"{label}:" in blocco, f"manca l'orientamento per {label}"
@@ -1370,7 +1370,7 @@ class TestLibreriaSuoniSl:
             "la riga di orientamento non e' in pagina"
 
     def test_card_in_ordine(self):
-        src = (FQ_DIR / "FrequenzePage.js").read_text()
+        src = ((FQ_DIR / "FrequenzePage.js").read_text() + (FQ_DIR / "crea" / "CreaVista.jsx").read_text() + (FQ_DIR / "crea" / "TracceVista.jsx").read_text())
         blocco = src.split("const inCat = sounds")[1][:700]
         assert ".sort(" in blocco and "localeCompare" in blocco, \
             "le basi non hanno un ordine dichiarato"
@@ -1439,7 +1439,7 @@ class TestControindicazioniSf:
                     "il testo sta in content/safety.js")
 
     def test_niente_suono_prima_dell_avviso(self):
-        page = (FQ_DIR / "FrequenzePage.js").read_text()
+        page = ((FQ_DIR / "FrequenzePage.js").read_text() + (FQ_DIR / "crea" / "CreaVista.jsx").read_text() + (FQ_DIR / "crea" / "TracceVista.jsx").read_text())
         assert "const playGuarded = guard(playSession)" in page, \
             "la linea del tempo puo' partire senza passare dall'avviso"
         assert "playSession(t)" not in page, \
@@ -1452,14 +1452,14 @@ class TestControindicazioniSf:
 
     def test_il_sipario_non_e_piu_sulla_soglia(self):
         """Chi arriva per LEGGERE la Guida non trova un muro medico."""
-        page = (FQ_DIR / "FrequenzePage.js").read_text()
+        page = ((FQ_DIR / "FrequenzePage.js").read_text() + (FQ_DIR / "crea" / "CreaVista.jsx").read_text() + (FQ_DIR / "crea" / "TracceVista.jsx").read_text())
         assert "fqz_gate_ok" not in page, \
             "e' tornato il cancello alla prima visita, slegato dall'ascolto"
         assert "view !== 'impara' && <SafetyLine" in page, \
             "la riga va dove si ascolta, non sopra la Guida"
 
     def test_pulsante_e_riga_su_tutte_le_superfici(self):
-        head = (FQ_DIR / "FrequenzePage.js").read_text()
+        head = ((FQ_DIR / "FrequenzePage.js").read_text() + (FQ_DIR / "crea" / "CreaVista.jsx").read_text() + (FQ_DIR / "crea" / "TracceVista.jsx").read_text())
         assert "<SafetyButton onClick={openReview} />" in head, \
             "manca il pulsante «Controindicazioni» nella testata"
         for f in self.SUPERFICI:
@@ -1563,7 +1563,7 @@ class TestUnaSolaMappaCategorie:
             "la landing si e' ricostruita una mappa sua: e' il bug di prima"
 
     def test_la_biblioteca_non_tiene_una_copia(self):
-        pag = (FQ_DIR / "FrequenzePage.js").read_text()
+        pag = ((FQ_DIR / "FrequenzePage.js").read_text() + (FQ_DIR / "crea" / "CreaVista.jsx").read_text() + (FQ_DIR / "crea" / "TracceVista.jsx").read_text())
         assert "CAT_SLUG" in pag and "SLUG_CAT" in pag
         assert "const CAT_SLUG =" not in pag and "const SLUG_CAT =" not in pag, \
             "FrequenzePage si e' ricostruita gli slug: tornerebbero a divergere"
@@ -1647,7 +1647,7 @@ class TestPrivilegioDelComporre:
         vecchio cartello «su invito» la palesava. Ora chi non ha il
         privilegio viene accompagnato in silenzio a /sound; la
         concessione resta al system admin (/admin/sound, invariata)."""
-        page = (FQ_DIR / "FrequenzePage.js").read_text()
+        page = ((FQ_DIR / "FrequenzePage.js").read_text() + (FQ_DIR / "crea" / "CreaVista.jsx").read_text() + (FQ_DIR / "crea" / "TracceVista.jsx").read_text())
         assert "senzaInvito" in page
         blocco = page[page.find("needsAuth && senzaInvito"):]
         assert '<Navigate to="/sound" replace />' in blocco[:400]
@@ -1686,7 +1686,7 @@ class TestRefinementCrea:
     che partiva bassa, la base che non si poteva tagliare."""
 
     def _crea(self):
-        return (FQ_DIR / "FrequenzePage.js").read_text()
+        return ((FQ_DIR / "FrequenzePage.js").read_text() + (FQ_DIR / "crea" / "CreaVista.jsx").read_text() + (FQ_DIR / "crea" / "TracceVista.jsx").read_text())
 
     def test_il_campo_tempo_non_tradisce(self):
         """Era un input NON controllato con chiave sui secondi
@@ -1745,7 +1745,7 @@ class TestRefinementCrea:
         assert "const dk = 0.012;" in syn and "const dk = 0.12;" not in syn
         ren = (FQ_DIR / "engine" / "render.js").read_text()
         assert "Math.min(0.012, playLen / 4)" in ren
-        crea = (FQ_DIR / "FrequenzePage.js").read_text()
+        crea = ((FQ_DIR / "FrequenzePage.js").read_text() + (FQ_DIR / "crea" / "CreaVista.jsx").read_text() + (FQ_DIR / "crea" / "TracceVista.jsx").read_text())
         assert "const dkPrev = 0.012;" in crea      # anche l'anteprima
 
     def test_il_rumore_si_toglie_senza_abbassare_l_attacco(self):
@@ -1791,14 +1791,14 @@ class TestRefinementCrea:
         # la decisione e' misurata e RACCONTATA
         assert "const serveRipulire = rapporto > 0.01" in vfx
         assert "export let ultimaPulizia" in vfx
-        crea = (FQ_DIR / "FrequenzePage.js").read_text()
+        crea = ((FQ_DIR / "FrequenzePage.js").read_text() + (FQ_DIR / "crea" / "CreaVista.jsx").read_text() + (FQ_DIR / "crea" / "TracceVista.jsx").read_text())
         assert "era già pulita, nessun rumore da togliere" in crea
 
     def test_il_mixer_dice_il_modo_vero(self):
         """la riga del livello voce diceva «tua voce · pulita» FISSO,
         qualunque modo fosse scelto: il founder cambiava e vedeva
         sempre «pulita». Ora e' un selettore col valore vero."""
-        crea = (FQ_DIR / "FrequenzePage.js").read_text()
+        crea = ((FQ_DIR / "FrequenzePage.js").read_text() + (FQ_DIR / "crea" / "CreaVista.jsx").read_text() + (FQ_DIR / "crea" / "TracceVista.jsx").read_text())
         assert "🎙 tua voce · pulita" not in crea
         assert 'data-testid={`fq-clean-sel-${l.id}`}' in crea
         assert "value={CLEAN_ALIAS[voiceById[l.asset_id]?.clean_mode] || 'auto'}" in crea
@@ -1808,7 +1808,7 @@ class TestRefinementCrea:
         file per l'aula»). Deve usare la STESSA pipeline del master —
         una seconda pipeline diverge al primo cambio e l'operatore si
         ritrova un file che non somiglia a cio' che ha pubblicato."""
-        crea = (FQ_DIR / "FrequenzePage.js").read_text()
+        crea = ((FQ_DIR / "FrequenzePage.js").read_text() + (FQ_DIR / "crea" / "CreaVista.jsx").read_text() + (FQ_DIR / "crea" / "TracceVista.jsx").read_text())
         blocco = crea.split("const esportaMp3 = async ()")[1].split("};")[0]
         assert "renderPcm(score," in blocco and "sampleRate: 44100" in blocco
         assert "resolveAudioLayers" in blocco and "resolveVoiceLayers" in blocco
@@ -1841,7 +1841,7 @@ class TestRefinementCrea:
         significa aspettare minuti per riottenere byte identici. Ora
         se la sessione e' pubblicata E non e' cambiata dopo (firma
         dello score) si scarica quello; altrimenti si renderizza."""
-        crea = (FQ_DIR / "FrequenzePage.js").read_text()
+        crea = ((FQ_DIR / "FrequenzePage.js").read_text() + (FQ_DIR / "crea" / "CreaVista.jsx").read_text() + (FQ_DIR / "crea" / "TracceVista.jsx").read_text())
         blocco = crea.split("const esportaMp3 = async ()")[1].split("};")[0]
         assert "trackStatus === 'published' && trackSlug && firmaPubblicata === firmaOra" in blocco
         assert "masterPass(trackSlug)" in blocco
@@ -1902,7 +1902,7 @@ class TestMomentiDelViaggio:
     def test_i_due_vocabolari_sono_gemelli(self):
         import re
         from models.audio_asset import SOUND_MOMENTS
-        page = (FQ_DIR / "FrequenzePage.js").read_text()
+        page = ((FQ_DIR / "FrequenzePage.js").read_text() + (FQ_DIR / "crea" / "CreaVista.jsx").read_text() + (FQ_DIR / "crea" / "TracceVista.jsx").read_text())
         blocco = page.split("const SOUND_MOMENTI = [")[1].split("];")[0]
         chiavi_js = re.findall(r"\['(\w+)'", blocco)
         assert chiavi_js == list(SOUND_MOMENTS), \
@@ -1913,7 +1913,7 @@ class TestMomentiDelViaggio:
         assert '"moment": clean_moment(moment)' in src     # upload
         assert '"moment": 1,' in src                        # proiezione
         assert '"moments": SOUND_MOMENTS' in src            # lista
-        page = (FQ_DIR / "FrequenzePage.js").read_text()
+        page = ((FQ_DIR / "FrequenzePage.js").read_text() + (FQ_DIR / "crea" / "CreaVista.jsx").read_text() + (FQ_DIR / "crea" / "TracceVista.jsx").read_text())
         # NV4 (27/8, BUSSOLA): i due assi si COMBINANO in AND — mai
         # piu' filtri spenti; il caso vuoto ha il messaggio coi click
         # che allentano (fq-allenta-*). La regola vecchia («quando
@@ -1928,7 +1928,7 @@ class TestMomentiDelViaggio:
         visibile e usabile (il filtro «Tutti» è il default)."""
         from models.audio_asset import clean_moment
         assert clean_moment(None) is None and clean_moment("boh") is None
-        page = (FQ_DIR / "FrequenzePage.js").read_text()
+        page = ((FQ_DIR / "FrequenzePage.js").read_text() + (FQ_DIR / "crea" / "CreaVista.jsx").read_text() + (FQ_DIR / "crea" / "TracceVista.jsx").read_text())
         assert "const [momento, setMomento] = useState(null)" in page
 
     def test_gli_strumenti_di_import_esistono_e_sono_prudenti(self):

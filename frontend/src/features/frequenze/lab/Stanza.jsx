@@ -14,24 +14,21 @@
  * il piede. Una stanza non puo' dimenticarsi un pezzo di casa.
  *
  * LOTTO LA (8/10/2026 sera, founder: «rendi il Lab usabile, moderno,
- * immediato, multipiattaforma, anche con popup»): dietro LAB_VESTITO_NUOVO
- * il telaio veste il nuovo. Lo strumento in primo piano: «Perché ti
+ * immediato, multipiattaforma, anche con popup»): il telaio veste il nuovo. Lo strumento in primo piano: «Perché ti
  * interessa» e «Cosa puoi fare qui» stanno in un FOGLIO «?» che si apre da
  * solo alla prima visita della stanza (poi resta a un tocco); il selettore
  * a tre e la RIGA DELLE STANZE al posto della barra vecchia; le letture
  * ACCANTO ai comandi (`letture`: due colonne su desktop, striscia sticky
  * sul telefono); le didascalie si ripiegano con un tocco. Gli strumenti
- * non cambiano: stesso markup, stessi handler, stessi testid.
- * ?vestito=vecchio mostra il telaio di prima.
+ * non cambiano: stesso markup, stessi handler, stessi testid. Il telaio
+ * vecchio (barra delle stanze + testata a vista) e' stato potato l'8/10 sera.
  */
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import SoundTopbar from '../SoundTopbar';
 import InvitoSound from '../InvitoSound';
-import StanzeSound from '../StanzeSound';
 import SelettoreTre from '../esplora/SelettoreTre';
 import { SafetyCurtain, SafetyLine } from '../SafetyCurtain';
-import { LAB_VESTITO_NUOVO, SOUND_ESPLORA_NUOVA } from '../stato';
 import '../frequenze.css';
 import '../esplora/esplora.css';
 import './lab.css';
@@ -45,11 +42,6 @@ export const STANZE_RIGA = [
   ['risonanze', 'Risonanze'],
 ];
 
-export function vestitoNuovo() {
-  let vecchio = false;
-  try { vecchio = new URLSearchParams(window.location.search).get('vestito') === 'vecchio'; } catch { /* ssr */ }
-  return LAB_VESTITO_NUOVO && !vecchio;
-}
 
 /* la riga delle stanze: cinque pastiglie, la corrente accesa, e il «?» */
 export function RigaStanze({ slug, onSpiega }) {
@@ -79,7 +71,6 @@ export default function Stanza({
   lettureUltime = false, // LA2: l'ULTIMO figlio sono le letture, da mettere accanto ai comandi
   children,
 }) {
-  const nuovo = vestitoNuovo();
   /* i figli restano nell'ordine di sempre (SORGENTI poi LETTURE); il telaio
      separa l'ultimo e lo affianca */
   const figli = React.Children.toArray(children);
@@ -93,16 +84,14 @@ export default function Stanza({
   /* LA1 — alla PRIMA visita di ogni stanza il foglio si apre da solo; poi
      resta a un tocco. Storage in try/catch: mai bloccare il banco. */
   useEffect(() => {
-    if (!nuovo) return;
     try {
       const k = `fqz_lab_spiega_${slug}`;
       if (!localStorage.getItem(k)) { setSpiega(true); localStorage.setItem(k, '1'); }
     } catch { /* privato: il foglio resta a un tocco */ }
-  }, [slug, nuovo]);
+  }, [slug]);
   /* LA1 — le didascalie degli strumenti si ripiegano con un tocco: la
      delega vive qui, i componenti non cambiano. */
   const toccoDidascalia = (e) => {
-    if (!nuovo) return;
     const d = e.target.closest('.lab-didascalia');
     if (d && !e.target.closest('a, button, input, select')) d.classList.toggle('aperta');
   };
@@ -125,7 +114,7 @@ export default function Stanza({
   );
 
   return (
-    <div className={`fqz lab${nuovo ? ' vestito' : ''}`} data-testid={`lab-stanza-${slug}`}>
+    <div className="fqz lab vestito" data-testid={`lab-stanza-${slug}`}>
       <SoundTopbar firma="Lab" qui="/sound/lab" />
       <header>
         <div>
@@ -135,18 +124,12 @@ export default function Stanza({
           <h1>{titolo}</h1>
           <div className="sub" data-testid="lab-domanda">{domanda}</div>
         </div>
-        {!nuovo && <StanzeSound attiva="lab" />}
       </header>
       <main onClick={toccoDidascalia}>
-        {nuovo && (
-          <>
-            {SOUND_ESPLORA_NUOVA ? <SelettoreTre attiva="lab" /> : <StanzeSound attiva="lab" />}
-            <RigaStanze slug={slug} onSpiega={() => setSpiega(true)} />
-          </>
-        )}
-        {!nuovo && testata}
+        <SelettoreTre attiva="lab" />
+        <RigaStanze slug={slug} onSpiega={() => setSpiega(true)} />
 
-        {nuovo && letture ? (
+        {letture ? (
           <div className="lab-due-colonne" data-testid="lab-due-colonne">
             <div className="lab-col-comandi">{comandi}</div>
             <div className="lab-col-letture" data-testid="lab-col-letture">{letture}</div>
@@ -162,7 +145,7 @@ export default function Stanza({
         </div>
       </main>
       {safety && <SafetyCurtain mode="review" onClose={() => setSafety(false)} />}
-      {nuovo && spiega && (
+      {spiega && (
         <div className="gate lab-foglio" onClick={() => setSpiega(false)} data-testid="lab-spiega-foglio">
           <div className="gatebox" onClick={(e) => e.stopPropagation()}>
             <div className="lab-foglio-testa">

@@ -16,8 +16,7 @@ class TestTracce:
     def test_la_vista_e_dietro_il_flag(self):
         page = (FQ / "FrequenzePage.js").read_text()
         assert "{view === 'mine' && nuovo && <TracceVista kit={kit} />}" in page
-        assert "{view === 'mine' && !nuovo && (" in page                 # la vista vecchia resta intera
-        assert "<CampiCasa traccia={d} onCambio={loadDrafts} composer={!!user?.sound_composer} />" in page   # SN0
+        assert "{view === 'mine' && !nuovo && (" not in page              # la vista vecchia e' stata potata (8/10 sera)
         kit = page.split("const kit = {")[1].split("};")[0]
         for g in ("removeDraft", "confermaMeditazioni", "pubblicaDaLista", "unpublishById", "copyPublicLink",
                   "setCondividi", "loadDrafts", "composer: !!user?.sound_composer"):
@@ -46,7 +45,7 @@ class TestTracce:
 class TestPotaturaCr6:
     def test_la_libreria_del_compositore_veste_il_nuovo(self):
         page = (FQ / "FrequenzePage.js").read_text()
-        assert "&& (view === 'create' || view === 'mine' || (view === 'explore' && canCompose));" in page
+        assert "const nuovo = view === 'create' || view === 'mine' || (view === 'explore' && canCompose);" in page
         assert '<SelettoreCrea attiva="fonti" badge={layers.length} navigate={navigate} onFonti={() => {}} />' in page
         # la libreria tiene i suoi gesti da compositore (il pubblico non li vede)
         assert "view === 'explore' && canCompose && (" in page

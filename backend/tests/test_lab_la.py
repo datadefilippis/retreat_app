@@ -17,12 +17,10 @@ LAB = FQ / "lab"
 
 class TestTelaio:
     def test_flag_e_vestito_vecchio(self):
-        assert "export const LAB_VESTITO_NUOVO = true;" in (FQ / "stato.js").read_text()
+        # 8/10 sera: il telaio vecchio e' stato POTATO (ok del founder): un telaio solo
+        assert "LAB_VESTITO_NUOVO" not in (FQ / "stato.js").read_text()
         src = (LAB / "Stanza.jsx").read_text()
-        assert "get('vestito') === 'vecchio'" in src and "return LAB_VESTITO_NUOVO && !vecchio;" in src
-        assert "className={`fqz lab${nuovo ? ' vestito' : ''}`}" in src
-        # il telaio vecchio resta intero: barra delle stanze e testata a vista
-        assert "{!nuovo && <StanzeSound attiva=\"lab\" />}" in src and "{!nuovo && testata}" in src
+        assert 'className="fqz lab vestito"' in src and "StanzeSound" not in src and "vestitoNuovo" not in src
 
     def test_il_foglio_e_la_riga_delle_stanze(self):
         src = (LAB / "Stanza.jsx").read_text()
@@ -35,7 +33,7 @@ class TestTelaio:
         assert "const k = `fqz_lab_spiega_${slug}`;" in src and "catch { /* privato" in src
         # il testo di sempre resta (pin di LU3) e sta nel foglio
         assert "Perché ti interessa" in src and "Cosa puoi fare qui" in src and 'data-testid="lab-testata"' in src
-        assert "{SOUND_ESPLORA_NUOVA ? <SelettoreTre attiva=\"lab\" /> : <StanzeSound attiva=\"lab\" />}" in src
+        assert '<SelettoreTre attiva="lab" />' in src
 
     def test_le_letture_accanto_ai_comandi_senza_toccare_gli_strumenti(self):
         src = (LAB / "Stanza.jsx").read_text()
@@ -68,7 +66,7 @@ class TestVestito:
 
     def test_la_sala_con_le_carte_a_tono(self):
         src = (LAB / "LabSala.jsx").read_text()
-        assert "import { vestitoNuovo } from './Stanza';" in src
+        assert 'className="fqz lab vestito"' in src and "vestitoNuovo" not in src
         for tono in ("tono: 'salvia'", "tono: 'acqua'", "tono: 'oro'", "tono: 'viola'", "tono: 'sabbia'"):
             assert tono in src, tono
         assert "className={`lab-sala-carta tono-${s.tono}`}" in src

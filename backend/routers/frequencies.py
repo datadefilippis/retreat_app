@@ -944,13 +944,25 @@ async def registra_ascolto(request: Request, slug: str, payload: AscoltoPayload)
                 account_id = p.get("sub")
         except Exception:  # noqa: BLE001
             account_id = None
+    # CS (8/10/2026 sera, founder): chi ascolta col Cerchio SENZA account resta
+    # anonimo (nessuna email salvata), ma l'evento sa che e' un iscritto: la
+    # regia distingue «Cerchio senza account» da «anonimo».
+    cerchio = False
+    if not account_id:
+        unlock = request.headers.get("X-Fqz-Unlock", "")
+        if unlock:
+            try:
+                from core.subscriber_token import decode_subscriber_token
+                cerchio = bool(decode_subscriber_token(unlock).get("email"))
+            except Exception:  # noqa: BLE001
+                cerchio = False
     await sound_ascolti_collection.insert_one({
         "track_id": t["id"], "organization_id": t["organization_id"], "slug": slug,
         "evento": payload.evento,
         "provenienza": payload.provenienza if payload.provenienza in PROVENIENZE else "altro",
         "playlist": (payload.playlist or "")[:120] or None,
         "secondo": max(0, int(payload.secondo or 0)),
-        "account_id": account_id, "at": utc_now(),
+        "account_id": account_id, "cerchio": cerchio, "at": utc_now(),
     })
 
 

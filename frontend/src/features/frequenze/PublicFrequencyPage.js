@@ -246,7 +246,7 @@ export default function PublicFrequencyPage() {
     platformApi.post('/platform/me/sound/ascolto', { slug, ...dati }).catch(() => { /* mai fermare il suono */ });
   };
   const ascoltoEvento = (evento, secondo) => {
-    frequenciesAPI.registraAscolto(slug, { evento, secondo: Math.floor(secondo || 0), ...provenienzaRef.current })
+    frequenciesAPI.registraAscolto(slug, { evento, secondo: Math.floor(secondo || 0), ...provenienzaRef.current, provaToken: prova() })
       .catch(() => { /* la misura non deve mai fermare il suono */ });
     if (evento === 'avvio') segnaSpazio({ secondo: 0 });
     if (evento === 'fine') segnaSpazio({ fine: true });

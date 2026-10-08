@@ -20,7 +20,7 @@ from models.frequency_track import DURATION_MAX, clean_score
 
 BACKEND = Path(__file__).resolve().parents[1]
 FQ = BACKEND.parent / "frontend" / "src" / "features" / "frequenze"
-PAGE = (FQ / "FrequenzePage.js").read_text(encoding="utf-8")
+PAGE = ((FQ / "FrequenzePage.js").read_text(encoding="utf-8") + (FQ / "crea" / "CreaVista.jsx").read_text(encoding="utf-8") + (FQ / "crea" / "TracceVista.jsx").read_text(encoding="utf-8"))
 RENDER = (FQ / "engine" / "render.js").read_text(encoding="utf-8")
 CONTINUO = (FQ / "engine" / "continuo.js").read_text(encoding="utf-8")
 COMPILATORE = (FQ / "pro" / "compilatore.js").read_text(encoding="utf-8")

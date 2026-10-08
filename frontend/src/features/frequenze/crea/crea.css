@@ -1,7 +1,7 @@
 /* CREA, il vestito nuovo (lotto CR, 8/10/2026) — la grammatica della casa
    e di Esplora applicata all'atelier: lo strumento al centro, tutto il
    resto a portata. Scoped su .fqz[data-vestito="nuovo"]: il vestito
-   vecchio (?vestito=vecchio) non vede nulla di questo. */
+   vecchio e' stato potato l'8/10 sera. */
 
 .fqz[data-vestito="nuovo"]{padding-bottom:120px}
 .fqz[data-vestito="nuovo"] > main > .safetyline{display:none}  /* il sipario e la pastiglia bastano */

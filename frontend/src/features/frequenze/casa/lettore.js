@@ -55,7 +55,7 @@ export function LettoreProvider({ children }) {
   useEffect(() => () => butta(), [butta]);
 
   const evento = useCallback((slug, nome, secondo, playlistSlug, prov) => {
-    frequenciesAPI.registraAscolto(slug, { evento: nome, secondo: Math.floor(secondo || 0), provenienza: prov, playlist: playlistSlug || null })
+    frequenciesAPI.registraAscolto(slug, { evento: nome, secondo: Math.floor(secondo || 0), provenienza: prov, playlist: playlistSlug || null, provaToken: prova() })
       .catch(() => { /* la misura non ferma il suono */ });
     if (haAccount()) {
       if (nome === 'avvio') platformApi.post('/platform/me/sound/ascolto', { slug, secondo: 0 }).catch(() => {});

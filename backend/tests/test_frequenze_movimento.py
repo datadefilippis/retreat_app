@@ -78,7 +78,7 @@ class TestLeSchedeSiMuovonoOnda1:
         ferma = fn.split("const fermaIlTragitto")[1].split("};")[0]
         assert "cancelScheduledValues" in ferma and "setValueAtTime" in ferma, \
             "senza fissare il valore corrente il parametro salta"
-        page = PAGE.read_text()
+        page = (PAGE.read_text() + (FQ_DIR / "crea" / "CreaVista.jsx").read_text() + (FQ_DIR / "crea" / "TracceVista.jsx").read_text())
         # C4: setBeat ora converte i respiri/min, quindi l'ancora e'
         # la chiamata, non la firma esatta
         onchange = page.split("live.setBeat(")[1][:700]
@@ -92,7 +92,7 @@ class TestLeSchedeSiMuovonoOnda1:
             "`handles` non e' in scope nella scheda: ReferenceError"
 
     def test_la_scheda_dichiara_il_movimento(self):
-        page = PAGE.read_text()
+        page = (PAGE.read_text() + (FQ_DIR / "crea" / "CreaVista.jsx").read_text() + (FQ_DIR / "crea" / "TracceVista.jsx").read_text())
         assert 'data-testid="fq-card-sweep"' in page
         blocco = page.split('data-testid="fq-card-sweep"')[0][-600:]
         assert "live.sweepTo != null" in blocco, \
@@ -179,7 +179,7 @@ class TestLaMareaOnda2:
         assert "2.0" in riga, "sotto i 2 s non e' un movimento ma un vibrato"
 
     def test_la_marea_e_raggiungibile_dal_compositore(self):
-        page = PAGE.read_text()
+        page = (PAGE.read_text() + (FQ_DIR / "crea" / "CreaVista.jsx").read_text() + (FQ_DIR / "crea" / "TracceVista.jsx").read_text())
         assert "WAVE_PERIOD_SEC" in page, "il periodo non ha un default nell'editor"
         assert 'data-testid="fq-layer-period"' in page
         blocco = page.split('data-testid="fq-layer-period"')[0][-500:]
@@ -202,7 +202,7 @@ class TestRitmiDelCorpoOnda3:
         minimo = float(riga.split("=")[1].split(",")[0])
         assert minimo <= 0.05, \
             f"il battito minimo e' {minimo} Hz: i ritmi del respiro non entrano"
-        page = PAGE.read_text()
+        page = (PAGE.read_text() + (FQ_DIR / "crea" / "CreaVista.jsx").read_text() + (FQ_DIR / "crea" / "TracceVista.jsx").read_text())
         assert 'min="0.2"' not in page, \
             "l'editor blocca ancora i ritmi lenti che il modello accetta"
 
@@ -279,7 +279,7 @@ class TestTimbroOnda4:
             "il bordone non e' in tutte e due le anteprime (scheda e sessione)"
 
     def test_il_bordone_non_ha_battito_nell_editor(self):
-        page = PAGE.read_text()
+        page = (PAGE.read_text() + (FQ_DIR / "crea" / "CreaVista.jsx").read_text() + (FQ_DIR / "crea" / "TracceVista.jsx").read_text())
         assert "(l.method === 'tone' || l.method === 'drone')" in page, \
             "l'editor chiede un battito a un bordone, che non ne ha"
 
@@ -365,7 +365,7 @@ class TestDiscesaInfinitaOnda5:
     def test_la_discesa_non_ha_battito_ne_curva(self):
         """f0 qui e' «ottave al minuto», non un battito: chiedere un
         valore d'arrivo e una curva sarebbe chiedere il nulla."""
-        page = PAGE.read_text()
+        page = (PAGE.read_text() + (FQ_DIR / "crea" / "CreaVista.jsx").read_text() + (FQ_DIR / "crea" / "TracceVista.jsx").read_text())
         assert "'ottave/min'" in page, "l'etichetta mente sul significato di f0"
         assert "l.method !== 'shepard' && (" in page \
             or "&& l.method !== 'shepard'" in page, \
@@ -499,7 +499,7 @@ class TestAuditPreGoLive:
     def test_c4_nessun_campo_morto_sulle_schede_live(self):
         """Bordone, discesa e respiro mostravano un «battito» collegato
         a niente: un comando finto fa sembrare finto tutto il resto."""
-        page = PAGE.read_text()
+        page = (PAGE.read_text() + (FQ_DIR / "crea" / "CreaVista.jsx").read_text() + (FQ_DIR / "crea" / "TracceVista.jsx").read_text())
         assert "live.method !== 'shepard' && (" in page, \
             "la discesa mostra un campo che non comanda nulla"
         assert "'respiri/min'" in page and "v / 60" in page, \
@@ -512,7 +512,7 @@ class TestAuditPreGoLive:
             "il campo del respiro sulla scheda e' di nuovo un comando finto"
 
     def test_c5_il_muto_agisce_al_vivo_e_il_resto_e_dichiarato(self):
-        page = PAGE.read_text()
+        page = (PAGE.read_text() + (FQ_DIR / "crea" / "CreaVista.jsx").read_text() + (FQ_DIR / "crea" / "TracceVista.jsx").read_text())
         patch = page.split("const patchLayer")[1].split("};")[0]
         assert "patch.mute !== undefined" in patch, \
             "il muto cambia lo stato ma il livello continua a suonare"
@@ -520,7 +520,7 @@ class TestAuditPreGoLive:
             "nessuno dice quali modifiche agiscono subito e quali no"
 
     def test_c6_ogni_metodo_dice_se_serve_la_cuffia(self):
-        page = PAGE.read_text()
+        page = (PAGE.read_text() + (FQ_DIR / "crea" / "CreaVista.jsx").read_text() + (FQ_DIR / "crea" / "TracceVista.jsx").read_text())
         listen = page.split("const LISTEN = {")[1].split("};")[0]
         for m in ("bin", "iso", "mono", "bil", "noise", "tone",
                   "drone", "shepard", "breath"):

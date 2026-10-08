@@ -157,7 +157,7 @@ class TestVetrinaCheScalaEs4:
 FQ_DIR = ROOT / "frontend" / "src" / "features" / "frequenze"
 ASSETS = (FQ_DIR / "engine" / "assets.js").read_text()
 ANELLO = (FQ_DIR / "engine" / "anello.js").read_text()
-PAGE = (FQ_DIR / "FrequenzePage.js").read_text()
+PAGE = ((FQ_DIR / "FrequenzePage.js").read_text() + (FQ_DIR / "crea" / "CreaVista.jsx").read_text() + (FQ_DIR / "crea" / "TracceVista.jsx").read_text())
 
 
 class TestSpezzoneEs3:
@@ -254,7 +254,7 @@ class TestSpezzoneEs3:
         assert "export function memoriaStimataMB" in ASSETS
         assert 'data-testid="fq-stima-memoria"' in PAGE
         blocco = PAGE.split('data-testid="fq-stima-memoria"')[0][-500:]
-        assert "mb < 350) return null" in blocco, \
+        assert "mb < 350) return null" in blocco or "k.memoria.mb >= 350 && (" in blocco, \
             "un avviso che compare sempre non lo legge piu' nessuno"
 
     def test_la_stima_conosce_lo_spezzone(self):
@@ -357,7 +357,7 @@ class TestFinestraETetto30:
         formula e' cambiata col ciclo DU (durataFissaMin: null = AUTO,
         la durata segue le tracce) — la guardia protegge il TETTO, non
         una sintassi particolare."""
-        pagina = (FQ_DIR / "FrequenzePage.js").read_text()
+        pagina = ((FQ_DIR / "FrequenzePage.js").read_text() + (FQ_DIR / "crea" / "CreaVista.jsx").read_text() + (FQ_DIR / "crea" / "TracceVista.jsx").read_text())
         assert "const DURATA_MAX_MIN = 90;" in pagina
         assert 'max="90"' in pagina
         assert "Math.min(DURATA_MAX_SEC, Math.max(DURATA_MIN_SEC," in pagina   # DL 25/9: pavimento 3 s

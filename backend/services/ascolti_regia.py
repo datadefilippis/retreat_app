@@ -127,9 +127,12 @@ def _sessioni(eventi: list) -> list:
             per[k] = {"account_id": e.get("account_id"), "slug": e.get("slug") or "", "track_id": e.get("track_id"),
                       "giorno": loc.date().isoformat(), "at": e["at"], "fascia": fascia_ora(loc.hour),
                       "provenienza": e.get("provenienza") or "altro", "playlist": e.get("playlist"),
+                      "cerchio": bool(e.get("cerchio")),
                       "avvii": 0, "secondo": 0, "quartile": 0, "fine": False}
             ordine.append(k)
         s = per[k]
+        if e.get("cerchio"):
+            s["cerchio"] = True
         ev = e.get("evento")
         if ev == "avvio":
             s["avvii"] += 1
@@ -141,7 +144,7 @@ def _sessioni(eventi: list) -> list:
 
 
 async def _titoli() -> dict:
-    cur = db.frequency_tracks.find({}, {"_id": 0, "slug": 1, "title": 1, "status": 1, "visibility": 1, "categoria": 1, "score.duration_sec": 1})
+    cur = db.frequency_tracks.find({}, {"_id": 0, "slug": 1, "title": 1, "status": 1, "visibility": 1, "categoria": 1, "score.duration_sec": 1, "plays_total": 1})
     out = {}
     async for t in cur:
         out[t.get("slug")] = t
@@ -181,6 +184,9 @@ async def panoramica(periodo: str = "30") -> dict:
     preferiti = await db.frequency_favorites.count_documents(pref_q)
     return {
         "periodo": periodo, "ascolti": len(sess), "ascolti_anonimi": len(sess) - len(con_account),
+        "ascolti_cerchio": sum(1 for s in sess if not s["account_id"] and s["cerchio"]),
+        # il contatore storico del player (plays_total, dal 24/8/2026): gli eventi partono dall'8/10
+        "ascolti_di_sempre": sum((t.get("plays_total") or 0) for t in (await _titoli()).values()),
         "persone": len(persone), "nuovi_ascoltatori": nuovi, "minuti": round(minuti, 1),
         "completamento": round(completate / len(sess), 3) if sess else 0.0,
         "preferiti_aggiunti": preferiti,
@@ -200,6 +206,8 @@ def _riassunto_titolo(slug: str, sess: list, titoli: dict, preferiti: Counter) -
         "slug": slug, "titolo": t.get("title") or slug, "stato": t.get("status"), "visibilita": t.get("visibility"),
         "categoria": t.get("categoria"), "durata_sec": (t.get("score") or {}).get("duration_sec"),
         "ascolti": len(sess), "persone": len(persone), "anonimi": sum(1 for s in sess if not s["account_id"]),
+        "cerchio": sum(1 for s in sess if not s["account_id"] and s["cerchio"]),
+        "ascolti_di_sempre": t.get("plays_total") or 0,   # il contatore del player, dal 24/8/2026
         "minuti": round(sum(s["secondo"] for s in sess) / 60, 1),
         "completamento": round(fine / len(sess), 3) if sess else 0.0,
         "abbandono_medio": round(sum(quart) / len(quart)) if quart else 0,   # il quartile medio raggiunto (0–100)

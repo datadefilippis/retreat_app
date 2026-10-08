@@ -90,7 +90,7 @@ export default function TracceVista({ kit: k }) {
                           <button type="button" className="primo" data-testid="fq-pubblica-meditazioni"
                             onClick={() => k.confermaMeditazioni(d)}>Nelle Meditazioni</button>
                           <button type="button" data-testid="fq-pubblica-riservata"
-                            onClick={() => k.pubblicaDaLista(d.id, 'private')}>Riservata</button>
+                            onClick={() => k.pubblicaDaLista(d.id, 'private')}>Riservata ai clienti</button>
                         </>
                       ) : (
                         <button type="button" className="primo" data-testid="fq-pubblica-riservata"
@@ -105,7 +105,7 @@ export default function TracceVista({ kit: k }) {
                     ) : (
                       <>
                         <button type="button" className="primo" onClick={() => k.copyPublicLink(d.slug)}>Copia link</button>
-                        <button type="button" onClick={() => k.unpublishById(d.id)}>Ritira</button>
+                        <button type="button" onClick={() => k.unpublishById(d.id)}>Ritira dalle Meditazioni</button>
                       </>
                     )}
                     <span className="cr-card-spazio" />

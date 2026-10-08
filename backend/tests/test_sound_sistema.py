@@ -280,7 +280,10 @@ class TestBussolaNv:
         # condivisa: la montano la Sala del Lab e il telaio delle
         # stanze (ciclo LU: la pagina unica e' diventata una casa)
         assert "StanzeSound" in (FQ / "lab" / "LabSala.jsx").read_text()
-        assert "StanzeSound" in (FQ / "lab" / "Stanza.jsx").read_text()
+        # 8/10 sera (lotto LA, potatura): nelle STANZE la barra e' il selettore a
+        # tre + la riga delle stanze (Stanza.jsx), la Sala tiene StanzeSound dietro il flag
+        tela = (FQ / "lab" / "Stanza.jsx").read_text()
+        assert "<SelettoreTre attiva=\"lab\" />" in tela and "RigaStanze" in tela
         # e Crea/Tracce appaiono SOLO con le chiavi
         assert "sound_crea" in barra
 

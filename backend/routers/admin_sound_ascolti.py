@@ -62,7 +62,7 @@ async def export_csv(vista: str = Query("meditazioni"), periodo: str = Query("30
                  "preferite", "fascia_abituale", "giorni_attivi_30", "settimane_consecutive", "score"]
     else:
         righe = await R.per_meditazione(p)
-        campi = ["titolo", "slug", "stato", "categoria", "ascolti", "persone", "anonimi", "minuti", "completamento",
+        campi = ["titolo", "slug", "stato", "categoria", "ascolti", "persone", "anonimi", "cerchio", "ascolti_di_sempre", "minuti", "completamento",
                  "abbandono_medio", "preferiti", "momento_punta"]
     buf = io.StringIO()
     w = csv.DictWriter(buf, fieldnames=campi, extrasaction="ignore")

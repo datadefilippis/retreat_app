@@ -25,7 +25,7 @@ FQ = BACKEND.parent / "frontend" / "src" / "features" / "frequenze"
 SPAZIO = (FQ / "engine" / "spazio.js").read_text(encoding="utf-8")
 SYNTH = (FQ / "engine" / "synth.js").read_text(encoding="utf-8")
 RENDER = (FQ / "engine" / "render.js").read_text(encoding="utf-8")
-PAGE = (FQ / "FrequenzePage.js").read_text(encoding="utf-8")
+PAGE = ((FQ / "FrequenzePage.js").read_text(encoding="utf-8") + (FQ / "crea" / "CreaVista.jsx").read_text(encoding="utf-8") + (FQ / "crea" / "TracceVista.jsx").read_text(encoding="utf-8"))
 
 
 def _score(layers, **extra):

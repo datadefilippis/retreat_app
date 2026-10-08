@@ -31,7 +31,7 @@ FQ_DIR = FRONTEND_SRC / "features" / "frequenze"
 ALTO = (FQ_DIR / "engine" / "altoparlante.js").read_text()
 VEGLIA = (FQ_DIR / "engine" / "veglia.js").read_text()
 CONTINUO = (FQ_DIR / "engine" / "continuo.js").read_text()
-PAGE = (FQ_DIR / "FrequenzePage.js").read_text()
+PAGE = ((FQ_DIR / "FrequenzePage.js").read_text() + (FQ_DIR / "crea" / "CreaVista.jsx").read_text() + (FQ_DIR / "crea" / "TracceVista.jsx").read_text())
 PUB = (FQ_DIR / "PublicFrequencyPage.js").read_text()
 CSS = (FQ_DIR / "frequenze.css").read_text()
 
@@ -451,7 +451,7 @@ class TestToccoESuonoTs:
         """TS3 — il respiro visivo sul play (fermo per chi chiede meno
         movimento) e il playhead che resta anche in pausa."""
         pub = (FQ_DIR / "PublicFrequencyPage.js").read_text()
-        assert PAGE.count("cb-play${playing ? ' suona' : ''}") == 1
+        assert PAGE.count("cr-play${k.playing ? ' suona' : ''}") == 1   # CR1: il ▶ della barra nuova
         assert pub.count("cb-play${playing ? ' suona' : ''}") == 1
         assert "prefers-reduced-motion: no-preference" in \
             CSS.split("fqz-suona")[0][-200:], \
@@ -462,7 +462,7 @@ class TestToccoESuonoTs:
         """Mancava proprio dove il founder l'ha cercato."""
         assert 'data-testid="fq-crea-avviso-cuffie"' in PAGE
         blocco = PAGE.split('data-testid="fq-crea-avviso-cuffie"')[0][-400:]
-        assert "avvisoCuffieScore(score)" in blocco
+        assert "avvisoCuffieScore(score)" in blocco or "k.avvisoCuffie" in blocco   # CR1: nel kit
         assert "solo-telefono-block" in blocco
 
     def test_le_schede_attendono_il_resume(self):

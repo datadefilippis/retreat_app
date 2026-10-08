@@ -428,7 +428,7 @@ class TestScenaDellAutoreVc:
 
     TAB = (FQ_DIR / "visual" / "tabelle.js").read_text()
     STUDIO = (FQ_DIR / "visual" / "StudioScena.jsx").read_text()
-    CREA = (FQ_DIR / "FrequenzePage.js").read_text()
+    CREA = ((FQ_DIR / "FrequenzePage.js").read_text() + (FQ_DIR / "crea" / "CreaVista.jsx").read_text() + (FQ_DIR / "crea" / "TracceVista.jsx").read_text())
 
     # ── il contratto (VC1) ────────────────────────────────────────────
     def test_la_scena_si_valida_con_la_filosofia_listino(self):
@@ -734,7 +734,7 @@ class TestScenaDellAutoreVc:
         assert "const [durataFissaSec, setDurataFissaSec] = useState(null)" in self.CREA, \
             "il default deve essere AUTO (null), non un numero nascosto"
         assert 'data-testid="fq-durata"' in self.CREA          # la pill
-        assert 'data-testid="fq-foglio-durata"' in self.CREA   # il foglio
+        assert 'testid="fq-foglio-durata"' in self.CREA   # il foglio (CR1: Foglio con prop testid)
         assert "Il massimo è ${DURATA_MAX_MIN} minuti" in self.CREA   # il tetto spiegato (CI-F4: 90)
         assert "onDurationChange" not in self.CREA, \
             "e' tornato il commit per-cifra che apriva il popup sulla tastiera"
@@ -1582,7 +1582,7 @@ class TestIlMaster:
         publish e' immediato (link subito) e il master si genera
         dopo, con progresso; se fallisce la traccia RESTA pubblicata
         col percorso classico."""
-        crea = (FQ_DIR / "FrequenzePage.js").read_text()
+        crea = ((FQ_DIR / "FrequenzePage.js").read_text() + (FQ_DIR / "crea" / "CreaVista.jsx").read_text() + (FQ_DIR / "crea" / "TracceVista.jsx").read_text())
         # TM5 (27/8): il render vive in generaMaster (un forno solo,
         # usato anche pubblicando dalla lista) — l'ordine resta:
         # prima il publish, poi il forno.

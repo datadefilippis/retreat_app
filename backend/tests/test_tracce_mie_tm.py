@@ -33,15 +33,15 @@ def _senza_commenti(testo: str) -> str:
 
 
 def _pagina() -> str:
-    return _senza_commenti((FQ / "FrequenzePage.js").read_text())
+    return _senza_commenti(((FQ / "FrequenzePage.js").read_text() + (FQ / "crea" / "CreaVista.jsx").read_text() + (FQ / "crea" / "TracceVista.jsx").read_text()))
 
 
 def _blocco_mine(src: str) -> str:
     """La porzione della scheda «Le mie tracce» (dal map dei drafts
     alla chiusura delle cards)."""
-    a = src.find("drafts.map((d) => {")
+    a = src.find("lista.map((d) => {")          # CR4: TracceVista
     assert a > -1, "il map delle tracce non esiste piu'"
-    b = src.find("{condividi && (", a)
+    b = src.find("{k.condividi && (", a)
     assert b > -1
     return src[a:b]
 
@@ -60,8 +60,9 @@ class TestLessicoTm1:
 
     def test_02_lo_stato_in_scheda_parla(self):
         blocco = _blocco_mine(_pagina())
-        assert "Nelle Meditazioni · " in blocco and "ascolti" in blocco
-        assert "Riservata · " in blocco and "link attiv" in blocco
+        # CR4: lo stato e' una pastiglia (ETICHETTA) e la riga dei numeri parla
+        assert "ETICHETTA[s]" in blocco and "ascolti" in blocco
+        assert "link attiv" in blocco
         assert "shares_attivi" in blocco
 
     def test_03_conferma_esplicita_sul_pubblico(self):
@@ -101,9 +102,9 @@ class TestSchedaTm2:
 
     def test_05_elimina_fuori_dalla_riga(self):
         src = _pagina()
-        assert 'className="mine-del"' in src
+        assert 'data-testid="cr-traccia-elimina"' in src   # CR4: nel foglio «Modifica»
         blocco = _blocco_mine(src)
-        foot = blocco[blocco.find("mine-foot"):]
+        foot = blocco[blocco.find("cr-card-gesti"):]
         assert "removeDraft" not in foot, "l'elimina e' tornato tra i gesti"
 
     def test_06_il_conteggio_arriva_col_server(self):
@@ -138,12 +139,12 @@ class TestMuroUiTm3:
         src = _pagina()
         assert src.count("fq-pubblica-meditazioni") == 1
         blocco = _blocco_mine(src)
-        ramo1_a = blocco.find("user?.sound_composer ? (")
+        ramo1_a = blocco.find("k.composer ? (")
         assert ramo1_a > -1
         ramo1_b = blocco.find(") : (", ramo1_a)
         assert "fq-pubblica-meditazioni" in blocco[ramo1_a:ramo1_b]
         # il ramo chiave-2 (dopo l'else) non nomina mai le Meditazioni
-        ramo2 = blocco[ramo1_b:blocco.find(") : riservata", ramo1_b)]
+        ramo2 = blocco[ramo1_b:blocco.find(") : s === 'riservata'", ramo1_b)]   # CR4: statoDi(d)
         assert "Meditazioni" not in ramo2, \
             "la chiave 2 non deve mai leggere la parola Meditazioni"
 

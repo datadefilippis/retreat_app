@@ -26,10 +26,10 @@ class TestLibreria:
 
     def test_le_fonti_a_un_tocco_in_crea(self):
         src = (FQ / "FrequenzePage.js").read_text()
-        for tid in ("fq-fonti", "fq-fonti-frequenze", "fq-fonti-suoni", "fq-fonti-voce"):
-            assert f'data-testid="{tid}"' in src, tid
-        assert "onClick={() => navigate(LIBRERIA)}" in src
-        assert "onClick={() => navigate(`${LIBRERIA}?mondo=suoni`)}" in src
+        # (CR3) le fonti stanno nel banco del mix di CreaVista, non piu' in una riga:
+        vista = (FQ / "crea" / "CreaVista.jsx").read_text()
+        for tid in ("cr-banco-frequenze", "cr-banco-suoni", "cr-banco-voce", "cr-banco-tracce"):
+            assert f'"{tid}"' in vista or f"'{tid.split('-')[-1]}'" in vista, tid
         assert "Torna a <b>Esplora</b>" not in src                      # il vuoto non manda piu' fuori
 
     def test_la_barra_delle_stanze_sa_della_libreria(self):

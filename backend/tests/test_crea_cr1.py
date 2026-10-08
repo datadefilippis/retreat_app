@@ -17,12 +17,13 @@ CR = FQ / "crea"
 
 class TestVestito:
     def test_flag_e_vestito_vecchio(self):
-        assert "export const SOUND_CREA_NUOVO = true;" in (FQ / "stato.js").read_text()
+        # 8/10 sera: il vestito vecchio e' stato POTATO (ok del founder): niente flag, niente ?vestito=vecchio
+        assert "SOUND_CREA_NUOVO" not in (FQ / "stato.js").read_text()
         page = (FQ / "FrequenzePage.js").read_text()
-        assert "const nuovo = SOUND_CREA_NUOVO && qs.get('vestito') !== 'vecchio'\n    && (view === 'create' || view === 'mine' || (view === 'explore' && canCompose));" in page   # CR6: anche la libreria
+        assert "const nuovo = view === 'create' || view === 'mine' || (view === 'explore' && canCompose);" in page
         assert 'data-vestito={nuovo ? \'nuovo\' : undefined}' in page
         assert "{view === 'create' && nuovo && <CreaVista kit={kit} />}" in page
-        assert "{view === 'create' && !nuovo && (" in page               # la vista vecchia resta, intera
+        assert "{view === 'create' && !nuovo && (" not in page and 'className="createbar"' not in page
         assert "{!nuovo && (\n      <header>" in page                      # niente testata doppia nel nuovo
         assert "view !== 'impara' && <SafetyLine" in page                 # la riga resta nel file (il CSS la nasconde nel nuovo)
 
@@ -36,7 +37,7 @@ class TestVestito:
             assert g in kit, f"manca nel kit: {g}"
         # la linea del tempo e il leggio sono UNA volta sola, per i due vestiti
         assert "const lineaDelTempo = (" in page and "const leggioVoce = (" in page
-        assert "{layers.length > 0 ? lineaDelTempo : (" in page and "{leggioVoce}" in page
+        assert "lineaDelTempo, leggioVoce, loadProtocol," in page
         assert page.count('<div className="voicedesk" data-testid="fqz-voicedesk">') == 1
 
     def test_i_livelli_si_ripiegano(self):
@@ -60,8 +61,8 @@ class TestVestito:
 class TestCreaVista:
     def test_le_tre_zone(self):
         src = (CR / "CreaVista.jsx").read_text()
-        for tid in ("cr-sel", "cr-barra", "cr-play", "cr-seekbar", "cr-durata", "cr-aggiungi", "cr-altro",
-                    "cr-riassunto", "cr-sessione", "cr-vuoto", "cr-banco", "cr-cerca", "cr-piede", "cr-stato",
+        for tid in ("cr-sel", "cr-barra", "cr-play", "cr-seekbar", "fq-durata", "cr-aggiungi", "cr-altro",
+                    "fq-setup-riassunto", "cr-sessione", "cr-vuoto", "cr-banco", "cr-cerca", "cr-piede", "cr-stato",
                     "cr-foglio-altro", "fq-foglio-durata"):
             assert f'"{tid}"' in src, tid
         # i testid dei gesti che i test di ieri conoscono restano gli stessi

@@ -13,7 +13,7 @@
  * e dei valori di FrequenzePage (stesse funzioni, stessi handler, stesso
  * contratto delle ricette). Qui vive solo lo stato dell'interfaccia
  * (fogli aperti, scheda del banco, ricerca). Il vestito vecchio resta in
- * FrequenzePage dietro ?vestito=vecchio finché il founder non dà l'ok.
+ * FrequenzePage e' stato potato l'8/10 sera dopo l'ok del founder.
  */
 import React, { useEffect, useMemo, useState } from 'react';
 import SeekBar from '../SeekBar';
@@ -91,7 +91,7 @@ function Barra({ k, onAggiungi, onAltro, onDurata }) {
             onCommit={(t) => k.seekTo(t)} />
         )}
       </div>
-      <button type="button" className="cr-pill" data-testid="cr-durata" onClick={onDurata}
+      <button type="button" className="cr-pill" data-testid="fq-durata" onClick={onDurata}
         title={k.durataAuto ? 'Durata automatica: segue le tracce. Tocca per fissarla' : 'Durata fissata. Tocca per cambiarla'}>
         ⏱ {vuota && k.durataAuto ? 'auto' : k.fmt(k.duration)}
       </button>
@@ -155,11 +155,11 @@ function FoglioAltro({ k, aperto, onChiudi }) {
           </select>
         </label>
         <div className="cr-campi-riga">
-          <label title="All'inizio il suono nasce dal silenzio e sale piano per questi secondi">Nasce in (s)
+          <label title="All'inizio il suono nasce dal silenzio e sale piano per questi secondi">nasce in (s)
             <input type="number" value={k.fadeIn} min="0" max="120" step="1"
               onChange={(e) => k.setFadeIn(+e.target.value || 0)} />
           </label>
-          <label title="Alla fine il suono si spegne dolcemente negli ultimi secondi">Si spegne in (s)
+          <label title="Alla fine il suono si spegne dolcemente negli ultimi secondi">si spegne in (s)
             <input type="number" value={k.fadeOut} min="0" max="120" step="1"
               onChange={(e) => k.setFadeOut(+e.target.value || 0)} />
           </label>
@@ -449,7 +449,7 @@ export default function CreaVista({ kit: k }) {
     <section className={`cr${banco ? ' con-banco' : ''}`} data-testid="crea-vista">
       <SelettoreCrea attiva="crea" badge={k.layers.length} navigate={k.navigate} onFonti={() => apriBanco()} />
       <Barra k={k} onAggiungi={() => apriBanco()} onAltro={() => setAltro(true)} onDurata={() => setDurata(true)} />
-      <button type="button" className="cr-riassunto" data-testid="cr-riassunto" onClick={() => setAltro(true)}
+      <button type="button" className="cr-riassunto" data-testid="fq-setup-riassunto" onClick={() => setAltro(true)}
         title="Titolo, categoria, apertura e chiusura, stanza">
         <b>{k.title || 'Senza titolo'}</b> · {riassunto}
       </button>
