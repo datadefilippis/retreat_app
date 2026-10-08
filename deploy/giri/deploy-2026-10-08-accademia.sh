@@ -53,6 +53,9 @@ rsync -avz --delete \
 echo "== [2] build backend+frontend, recreate frontend poi backend, sotto nohup"
 $SSH "cat > /root/deploy-$GIRO.sh" <<'REMOTO'
 #!/bin/bash
+# LEZIONE 8/10/2026: senza pipefail `build | tail -1 && echo pronto` dice
+# «pronto» anche se il build e' fallito (l'esito e' di tail). Mai piu'.
+set -o pipefail
 cd /opt/aurya
 C="docker compose -f docker-compose.prod.yml --env-file .env.production"
 echo "== inizio $(date -u +%H:%M:%S)"

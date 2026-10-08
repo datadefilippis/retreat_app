@@ -29,7 +29,6 @@ export default function AudioPlayer({ src, titolo, copertina, onTime, onEnded, c
           <p className="text-[11px] font-semibold uppercase tracking-wider text-white/70">Lezione audio</p>
           <h3 className="truncate font-display text-xl">{titolo}</h3>
         </div>
-        {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
         <audio ref={ref} src={src || undefined} controls controlsList="nodownload" preload="metadata" className="w-full"
                onTimeUpdate={tempo} onEnded={() => onEnded?.()} data-testid="audio-element" />
       </div>
