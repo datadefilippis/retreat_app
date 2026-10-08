@@ -545,9 +545,16 @@ export default function FrequenzePage() {
     if (asset.guida === 'ciclo') { addGuidaToSession(asset); return; }
     const breve = eClipBreve(asset);
     const start = breve && playing ? Math.max(0, Math.min(elapsed, duration - 1)) : 0;
+    /* 8/10 sera (founder: «ho aggiunto una base di 6 minuti e la sessione
+       dura 1 minuto»): in durata AUTOMATICA la base detta la lunghezza. A
+       sessione vuota la sessione dura quanto la base; con altri livelli la
+       base arriva almeno fino alla fine della sessione, e se e' piu' lunga
+       la allunga (fino al tetto). In durata FISSA resta la durata scelta. */
+    const lungaFile = Math.max(1, asset.duration_sec || 0);
     const end = breve
-      ? Math.min(durataAuto ? DURATA_MAX_SEC : duration, start + Math.max(1, asset.duration_sec || 1))
-      : duration;
+      ? Math.min(durataAuto ? DURATA_MAX_SEC : duration, start + lungaFile)
+      : !durataAuto ? duration
+        : Math.min(DURATA_MAX_SEC, layers.length ? Math.max(duration, start + lungaFile) : start + lungaFile);
     setLayers((ls) => [...ls, {
       id: ++_uid, kind: 'audio', asset_id: asset.id,
       name: asset.title, start, end,
@@ -560,7 +567,9 @@ export default function FrequenzePage() {
     }]);
     setStatus(breve
       ? `«${asset.title}» sulla linea del tempo a ${fmt(start)}, una volta sola (niente loop)`
-      : `«${asset.title}» aggiunta alla sessione, vai a «Crea»`);
+      : durataAuto && !layers.length
+        ? `«${asset.title}» aggiunta: la sessione dura quanto la base, ${fmt(end)}`
+        : `«${asset.title}» aggiunta alla sessione${durataAuto && end > duration ? `, che ora dura ${fmt(end)}` : ''}`);
   };
 
   /* CI-F1 — LA GUIDA DEL RESPIRO entra dalla libreria come una base,

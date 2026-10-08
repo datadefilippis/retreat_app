@@ -52,3 +52,14 @@ class TestPotaturaCr6:
         assert "view === 'explore' && canCompose && (" in page
         # il trigger di Studio non compare a chi ha le chiavi (TriggerStudio si nasconde da solo)
         assert "if (user?.sound_crea) return null;" in (FQ / "TriggerStudio.jsx").read_text()
+
+
+class TestDurataSegueLaBase:
+    def test_la_base_detta_la_durata_in_auto(self):
+        """8/10 sera (founder): «ho aggiunto una base di 6 minuti e la
+        sessione dura 1 minuto». In AUTO la base detta la lunghezza."""
+        page = (FQ / "FrequenzePage.js").read_text()
+        corpo = page.split("const addSoundToSession = (asset) => {")[1].split("const parolaId")[0]
+        assert "const lungaFile = Math.max(1, asset.duration_sec || 0);" in corpo
+        assert ": !durataAuto ? duration" in corpo                                   # in FISSA resta la durata scelta
+        assert "Math.min(DURATA_MAX_SEC, layers.length ? Math.max(duration, start + lungaFile) : start + lungaFile)" in corpo
