@@ -532,7 +532,7 @@ class TestLiAuryaInTesta:
         import hashlib
         from core.legal_versions import (CURRENT_VERSION_TAG,
                                          CURRENT_VERSION_HASH)
-        assert CURRENT_VERSION_TAG == "v2.12"  # P1 prodotti 6/10: Termini, commissione solo sui prodotti  # MP1 5/10: cookie a due categorie, Meta Pixel
+        assert CURRENT_VERSION_TAG == "v2.13"  # P1 prodotti 6/10: Termini, commissione solo sui prodotti  # MP1 5/10: cookie a due categorie, Meta Pixel
         priv = (self.LEGAL_DIR / "privacy_it.md").read_text("utf-8")
         terms = (self.LEGAL_DIR / "terms_it.md").read_text("utf-8")
         atteso = hashlib.sha256(
@@ -2510,7 +2510,7 @@ class TestAccountApL:
             # sezioni nuove servite (marker per lingua)
             assert "2.3" in get_legal_document("privacy", lang)["content"]
 
-        assert CURRENT_VERSION_TAG == "v2.12"  # P1 prodotti 6/10: Termini, commissione solo sui prodotti  # MP1 5/10   # TR5: 9.1 nomina le composizioni audio
+        assert CURRENT_VERSION_TAG == "v2.13"  # P1 prodotti 6/10: Termini, commissione solo sui prodotti  # MP1 5/10   # TR5: 9.1 nomina le composizioni audio
         priv = (legal_dir / "privacy_it.md").read_text()
         terms = (legal_dir / "terms_it.md").read_text()
         digest = hashlib.sha256(

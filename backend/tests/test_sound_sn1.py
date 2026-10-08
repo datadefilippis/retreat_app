@@ -61,7 +61,7 @@ class TestLaCasa:
         # la vetrina: a rotazione fra le in_vetrina (SN2), altrimenti la piu' recente
         assert "inVetrina[giorno % inVetrina.length]" in src and "tutte[0]" in src
         # le preferite chiedono l'account, mai l'email (MR2: la regola vive nell'hook condiviso)
-        assert "if (!conto) { setChiediAccount(true); return; }" in (FQ / "casa" / "preferite.js").read_text()
+        assert "if (!conto) { ricordaInAttesa('slug', slug); setChiediAccount(true); return; }" in (FQ / "casa" / "preferite.js").read_text()   # 8/10 sera: in attesa + porta
         # la barra in basso: cinque gesti
         barra = src.split('data-testid="casa-barra"')[1].split("</nav>")[0]
         for voce in ("Esplora", "Playlist", "Cerca", "I tuoi", "Impara"):   # SN3: «Preferite» → «I tuoi»
@@ -71,7 +71,7 @@ class TestLaCasa:
 
     def test_css_barra_solo_telefono(self):
         css = (FQ / "casa" / "casa.css").read_text()
-        assert "@media(min-width:900px){.fqz.casa .casa-barra{display:none}}" in css
+        assert "@media(min-width:768px){.fqz.casa .casa-barra{display:none}}" in css
         assert ".fqz.casa .casa-barra{position:fixed;left:0;right:0;bottom:0" in css
         # il cuore nel bottone: senza il padding dei bottoni Sound il cuore spariva (2px)
         assert "padding:0;min-height:0" in css.split(".mcuore{")[1].split("}")[0]

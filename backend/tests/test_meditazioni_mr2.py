@@ -33,7 +33,8 @@ class TestUnCuore:
     def test_hook_e_componente(self):
         hook = (FQ / "casa" / "preferite.js").read_text()
         assert "export function usePreferite()" in hook and "const cache = {" in hook
-        assert "if (!conto) { setChiediAccount(true); return; }" in hook        # senza account: l'invito, mai l'email
+        # senza account: il cuore resta in attesa e si apre l'invito, mai l'email (8/10 sera)
+        assert "if (!conto) { ricordaInAttesa('slug', slug); setChiediAccount(true); return; }" in hook
         assert "if (era) set.add(slug); else set.delete(slug);   // si ritira" in hook   # ottimistico, si ritira
         cuore = (FQ / "casa" / "Cuore.jsx").read_text()
         assert "export default function Cuore({ on = false, onClick, variante = 'card'" in cuore

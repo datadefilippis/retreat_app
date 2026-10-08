@@ -27,6 +27,6 @@ class TestDesign:
     def test_css(self):
         css = (FQ / "casa" / "casa.css").read_text()
         for v in ("--raggio:20px", ".fqz.casa .oggi.grande .oggi-corpo{position:absolute",
-                  "@media(max-width:899px){.fqz.casa .cerca-inline{display:none}}",
+                  "@media(max-width:767px){.fqz.casa .cerca-inline{display:none}}",
                   "backdrop-filter:blur(18px) saturate(140%)", "@keyframes skel", "@media(prefers-reduced-motion:reduce)"):
             assert v in css, v

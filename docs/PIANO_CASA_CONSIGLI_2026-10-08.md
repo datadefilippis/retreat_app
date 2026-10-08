@@ -196,9 +196,33 @@ i minuti = il `secondo` più alto raggiunto in quella sessione.
   preferite, recenti, riprendi), cancellazione che toglie ascolti e
   preferiti, conservazione 24 mesi (`conserva()` all'avvio +
   `scripts/ascolti_conservazione.py`), gli anonimi solo nei totali.
-  **DA DECIDERE col founder**: la riga nell'informativa (7-quater, 24 mesi)
-  cambia la versione legale (`CURRENT_VERSION_HASH`, hash dei testi) e
-  chiede un nuovo consenso a chi ha già accettato: non si fa senza il suo ok.
+  **DECISO dal founder (8/10 sera)** e fatto:
+  - **Chi ascolta dal Cerchio senza account è una persona, con nome ed
+    email**: l'evento porta `subscriber_email` (dalla prova `X-Fqz-Unlock`),
+    la regia mostra la riga con l'etichetta «Cerchio» (nome da
+    `aurya_subscribers`), `persona_id = cerchio:<email>`; se la stessa
+    email apre poi un account, le sessioni si riconducono all'account
+    (`_sessioni_unite`). Alla disiscrizione (un clic, admin) e alla
+    cancellazione dell'iscritto l'email sparisce dagli eventi
+    (`scorda_iscritto`, resta il flag anonimo); export e cancellazione
+    dell'account portano via anche gli ascolti fatti dal Cerchio con la
+    stessa email.
+  - **Informativa v2.13**: riga 7-quater (ascolti: account 6.1.b, Cerchio
+    6.1.f con opposizione = disiscrizione; mai IP né dispositivo; 24 mesi;
+    nome ed email tolti subito) + riga in art. 8, in IT/EN/DE/FR; hash
+    ricalcolato (`b43390fa55356b29`). Il bump chiede la riaccettazione al
+    prossimo accesso a chi ha già accettato (meccanismo esistente).
+  - **Il passato per persona non si recupera**: prima dell'8/10 c'era solo
+    `plays_total` per traccia (dal 24/8), nessun evento per persona; la regia
+    lo mostra come «Di sempre». Nessun dato inventato.
+  - **Preferite senza account = la porta unica dentro l'invito** (PortaAurya
+    vista «crea», con la casella legale: l'accettazione), email già scritta
+    dalla prova del Cerchio; il cuore toccato resta in attesa
+    (`fqz_cuore_in_attesa`) e si salva da solo appena la persona è dentro,
+    anche dopo il clic di verifica nell'email. La prova del Cerchio da sola
+    NON apre un account: la emette `/public/newsletter/unlock` a chiunque
+    dichiari un'email iscritta, e l'account custodisce ordini e corsi.
+  - **Tablet a 768**: barra e ricerca in linea da 768px (prima 900).
 
 ## 5. Cosa NON cambia
 Il lettore in casa, le card, i cuori, le playlist, i percorsi, la soglia

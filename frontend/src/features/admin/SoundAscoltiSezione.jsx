@@ -116,7 +116,7 @@ export default function SoundAscoltiSezione() {
           <div className="grid grid-cols-2 gap-2 md:grid-cols-4 lg:grid-cols-7">
             <Numero etichetta="Ascolti" valore={pan.ascolti} nota={pan.ascolti_anonimi ? `${pan.ascolti_anonimi} senza account${pan.ascolti_cerchio ? `, di cui ${pan.ascolti_cerchio} dal Cerchio` : ''}` : undefined} />
             <Numero etichetta="Di sempre" valore={pan.ascolti_di_sempre} nota="il contatore del player, dal 24/8" />
-            <Numero etichetta="Persone attive" valore={pan.persone} />
+            <Numero etichetta="Persone attive" valore={pan.persone} nota={pan.persone_cerchio ? `${pan.persone_cerchio} dal Cerchio, senza account` : undefined} />
             <Numero etichetta="Nuovi ascoltatori" valore={pan.nuovi_ascoltatori} />
             <Numero etichetta="Minuti ascoltati" valore={Math.round(pan.minuti)} />
             <Numero etichetta="Completamento" valore={pct(pan.completamento)} nota="ascolti portati a fine" />
@@ -168,8 +168,8 @@ export default function SoundAscoltiSezione() {
               <thead className="bg-gray-50"><Testa chiave="per" campi={[['nome', 'Persona'], ['score', 'Seguito'], ['ascolti', 'Ascolti'], ['minuti', 'Minuti'], ['completati', 'Finite'], ['titoli_diversi', 'Titoli'], ['preferite', 'Preferite'], ['giorni_attivi_30', 'Giorni/30'], ['settimane_consecutive', 'Settimane'], ['fascia_abituale', 'Quando'], ['ultimo_ascolto', 'Ultimo']]} /></thead>
               <tbody className="divide-y">
                 {perOrd.map((p) => (
-                  <tr key={p.account_id} className="hover:bg-gray-50 cursor-pointer" onClick={() => apriPer(p.account_id)} data-testid={`admin-ascolti-per-${p.account_id}`}>
-                    <td className="py-2 pr-3"><div className="font-medium text-gray-900">{p.nome || '—'}</div><div className="text-[11px] text-gray-500">{p.email}</div></td>
+                  <tr key={p.persona_id} className="hover:bg-gray-50 cursor-pointer" onClick={() => apriPer(p.persona_id)} data-testid={`admin-ascolti-per-${p.persona_id}`}>
+                    <td className="py-2 pr-3"><div className="font-medium text-gray-900">{p.nome || '—'}{p.tipo === 'cerchio' && <span className="ml-1.5 rounded-full bg-[#faf6ec] px-1.5 py-[1px] text-[10px] font-medium text-[#8a6d1f]" title="Ascolta dal Cerchio, senza account Aurya">Cerchio</span>}</div><div className="text-[11px] text-gray-500">{p.email}</div></td>
                     <td className="py-2 pr-3"><span className="inline-block rounded-full bg-[#2f5749] px-2 py-[2px] text-xs font-semibold text-white" title={Object.entries(p.parti || {}).map(([k, v]) => `${PARTI[k]} ${Math.round(v * 100)}%`).join(' · ')}>{p.score}</span></td>
                     <td className="py-2 pr-3">{p.ascolti}</td>
                     <td className="py-2 pr-3">{p.minuti}</td>
@@ -182,7 +182,7 @@ export default function SoundAscoltiSezione() {
                     <td className="py-2 pr-3 whitespace-nowrap">{quando(p.ultimo_ascolto)}</td>
                   </tr>
                 ))}
-                {!perOrd.length && <tr><td className="py-3 text-gray-500" colSpan={11}>Nessuna persona con l'account ha ascoltato nel periodo.</td></tr>}
+                {!perOrd.length && <tr><td className="py-3 text-gray-500" colSpan={11}>Nessuna persona riconoscibile (account o Cerchio) ha ascoltato nel periodo.</td></tr>}
               </tbody>
             </table>
           </div>
@@ -194,7 +194,7 @@ export default function SoundAscoltiSezione() {
           <div className="h-full w-full max-w-xl overflow-y-auto bg-white p-5 shadow-xl" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-start justify-between gap-3">
               <div>
-                <h3 className="text-lg font-semibold text-gray-900">{aperto.tipo === 'med' ? aperto.dati.titolo : (aperto.dati.nome || aperto.dati.email || 'Persona')}</h3>
+                <h3 className="text-lg font-semibold text-gray-900">{aperto.tipo === 'med' ? aperto.dati.titolo : (aperto.dati.nome || aperto.dati.email || 'Persona')}{aperto.tipo === 'per' && aperto.dati.tipo === 'cerchio' && <span className="ml-2 align-middle rounded-full bg-[#faf6ec] px-2 py-[2px] text-[11px] font-medium text-[#8a6d1f]">dal Cerchio, senza account</span>}</h3>
                 <p className="text-xs text-gray-500">{aperto.tipo === 'med' ? `${aperto.dati.slug} · ${PERIODI.find(([v]) => v === periodo)?.[1]}` : `${aperto.dati.email || ''}${aperto.dati.iscritto_il ? ` · iscritta/o il ${giorno(aperto.dati.iscritto_il)}` : ''}`}</p>
               </div>
               <button type="button" className="rounded-full border px-3 py-1 text-sm" onClick={() => setAperto(null)}>Chiudi</button>
@@ -220,11 +220,11 @@ export default function SoundAscoltiSezione() {
                   <div className="text-xs text-gray-500 mb-1">Le persone</div>
                   <div className="rounded-lg border divide-y">
                     {(aperto.dati.persone_elenco || []).map((p) => (
-                      <button key={p.account_id} type="button" className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50" onClick={() => apriPer(p.account_id)}>
-                        <span className="font-medium">{p.nome || p.email}</span> <span className="text-xs text-gray-500">· {p.ascolti} ascolti · {p.minuti} min · {p.completati} finite · ultimo {quando(p.ultimo)}</span>
+                      <button key={p.persona_id} type="button" className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50" onClick={() => apriPer(p.persona_id)}>
+                        <span className="font-medium">{p.nome || p.email}</span>{p.tipo === 'cerchio' && <span className="ml-1 text-[10px] text-[#8a6d1f]">Cerchio</span>} <span className="text-xs text-gray-500">· {p.ascolti} ascolti · {p.minuti} min · {p.completati} finite · ultimo {quando(p.ultimo)}</span>
                       </button>
                     ))}
-                    {!(aperto.dati.persone_elenco || []).length && <div className="px-3 py-2 text-xs text-gray-500">Solo ascolti senza account.</div>}
+                    {!(aperto.dati.persone_elenco || []).length && <div className="px-3 py-2 text-xs text-gray-500">Solo ascolti anonimi (senza account e senza Cerchio).</div>}
                   </div>
                 </div>
               </div>

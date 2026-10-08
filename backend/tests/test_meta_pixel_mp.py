@@ -150,7 +150,7 @@ class TestMP1Consenso:
 
     def test_informativa_v211(self):
         from core.legal_versions import CURRENT_VERSION_TAG
-        assert CURRENT_VERSION_TAG == "v2.12"  # P1 prodotti 6/10: Termini, commissione solo sui prodotti
+        assert CURRENT_VERSION_TAG == "v2.13"  # P1 prodotti 6/10: Termini, commissione solo sui prodotti
         for lang, (meta, cat) in {"it": ("Meta Pixel e Meta Conversions API", "Marketing"),
                                   "en": ("Meta Pixel and Meta Conversions API", "Marketing"),
                                   "de": ("Meta Pixel und Meta Conversions API", "Marketing"),

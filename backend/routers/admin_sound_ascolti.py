@@ -5,7 +5,7 @@ Solo system admin. Legge e riassume `sound_ascolti` (services/ascolti_regia):
   GET /admin/sound/ascolti/meditazioni?periodo=
   GET /admin/sound/ascolti/meditazioni/{slug}?periodo=
   GET /admin/sound/ascolti/persone?periodo=
-  GET /admin/sound/ascolti/persone/{account_id}
+  GET /admin/sound/ascolti/persone/{persona_id}   (account, o cerchio:<email>)
   GET /admin/sound/ascolti/export.csv?vista=meditazioni|persone&periodo=
 Lo score «seguito» (0–100) e le sue cinque parti sono nel servizio, pinzati.
 """
@@ -45,9 +45,11 @@ async def persone(periodo: str = Query("30"), _: dict = Depends(require_system_a
     return {"periodo": _periodo(periodo), "pesi": R.PESI_SEGUITO, "items": await R.per_persona(_periodo(periodo))}
 
 
-@router.get("/persone/{account_id}")
-async def persona(account_id: str, _: dict = Depends(require_system_admin)) -> dict:
-    d = await R.dettaglio_persona(account_id)
+@router.get("/persone/{persona_id}")
+async def persona(persona_id: str, _: dict = Depends(require_system_admin)) -> dict:
+    """`persona_id` = id dell'account, oppure `cerchio:<email>` per chi
+    ascolta dal Cerchio senza account (8/10 sera)."""
+    d = await R.dettaglio_persona(persona_id)
     if not d.get("linea") and not d.get("email"):
         raise HTTPException(status_code=404, detail="Nessun ascolto per questa persona.")
     return d
@@ -58,7 +60,7 @@ async def export_csv(vista: str = Query("meditazioni"), periodo: str = Query("30
     p = _periodo(periodo)
     if vista == "persone":
         righe = await R.per_persona(p)
-        campi = ["nome", "email", "primo_ascolto", "ultimo_ascolto", "ascolti", "minuti", "completati", "titoli_diversi",
+        campi = ["nome", "email", "tipo", "primo_ascolto", "ultimo_ascolto", "ascolti", "minuti", "completati", "titoli_diversi",
                  "preferite", "fascia_abituale", "giorni_attivi_30", "settimane_consecutive", "score"]
     else:
         righe = await R.per_meditazione(p)

@@ -601,7 +601,7 @@ function MeditazioniCasaDentro() {
       </nav>
 
       {safety && <SafetyCurtain mode="review" onClose={() => setSafety(false)} />}
-      <InvitoAccount aperto={heartAsk} onChiudi={() => setHeartAsk(false)} ritorno="/meditazioni" />
+      <InvitoAccount aperto={heartAsk} onChiudi={() => setHeartAsk(false)} onDentro={pref.dopoAccount} />
       {/* MR3 — la barra, il foglio e il sipario vivono DENTRO il .fqz (gli stili sono scoped) */}
       <LettoreBarra />
       <SchedaMeditazione />

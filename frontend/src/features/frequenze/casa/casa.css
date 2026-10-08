@@ -69,9 +69,9 @@
 .fqz.casa .casa-barra button:hover{border:0;color:var(--lamp)}
 .fqz.casa .casa-barra .on{color:var(--lamp)}
 .fqz.casa .casa-barra svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.6}
-@media(min-width:900px){.fqz.casa .casa-barra{display:none}}
+@media(min-width:768px){.fqz.casa .casa-barra{display:none}}   /* 8/10 sera (founder): il tablet ha la ricerca in linea */
 .fqz.casa{padding-bottom:110px}
-@media(min-width:900px){.fqz.casa{padding-bottom:90px}}
+@media(min-width:768px){.fqz.casa{padding-bottom:90px}}
 
 /* ── la pagina della playlist ── */
 .fqz.casa .pl-testa{display:grid;grid-template-columns:1fr;gap:18px;align-items:end}
@@ -106,7 +106,7 @@
 
 /* ── MR3: il lettore in casa (barra fissa in basso) ── */
 .fqz .lettore{position:fixed;left:0;right:0;bottom:0;z-index:40;display:flex;align-items:center;gap:12px;padding:10px 12px calc(10px + env(safe-area-inset-bottom));background:rgba(12,22,24,.97);backdrop-filter:blur(14px);border-top:1px solid var(--line);box-shadow:0 -10px 30px rgba(0,0,0,.35)}
-@media(max-width:899px){.fqz.casa .lettore{bottom:58px;padding-bottom:10px}}
+@media(max-width:767px){.fqz.casa .lettore{bottom:58px;padding-bottom:10px}}
 .fqz .lettore-cover{width:52px;height:52px;border-radius:10px;overflow:hidden;flex:none;background:var(--line)}
 .fqz .lettore-cover img{width:100%;height:100%;object-fit:cover;display:block}
 .fqz .lettore-testo{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
@@ -188,7 +188,7 @@
 .fqz.casa .filtro{padding:8px 14px;font-size:12px}
 
 /* la ricerca: inline da desktop, nel foglio su telefono */
-@media(max-width:899px){.fqz.casa .cerca-inline{display:none}}
+@media(max-width:767px){.fqz.casa .cerca-inline{display:none}}
 .fqz.casa .cerca-foglio{align-items:flex-end}
 .fqz.casa .cerca-foglio .gatebox{width:100%;max-width:none;border-radius:var(--raggio) var(--raggio) 0 0;text-align:left;padding:18px 18px calc(18px + env(safe-area-inset-bottom))}
 .fqz.casa .cerca-foglio .filtri{flex-wrap:wrap}
@@ -216,3 +216,18 @@
 .fqz.casa .filtri-durata .filtro.on{color:var(--bone);border-color:var(--dimmer)}
 .fqz.casa .casa-mappa{display:flex;justify-content:center;margin:26px 0 8px}
 .fqz.casa .casa-tutte.grande{font-size:12px;padding:12px 20px;border:1px solid var(--line);border-radius:999px}
+
+/* 8/10 sera — la porta dell'account DENTRO l'invito del cuore: PortaAurya veste
+   chiaro (Tailwind gray), il foglio Sound e' scuro: una carta bianca la ospita */
+.fqz .invito-porta{margin:14px 0 4px;padding:14px;border-radius:14px;background:#fff;color:#111;text-align:left;font-family:inherit}
+.fqz .invito-porta input[type=text],.fqz .invito-porta input[type=email],.fqz .invito-porta input[type=password]{display:block;width:100%;background:#fff;color:#111;border:1px solid #d1d5db;border-radius:10px;padding:9px 11px;font-family:inherit;font-size:14px;letter-spacing:0}
+.fqz .invito-porta input::placeholder{color:#9ca3af}
+.fqz .invito-porta input[type=checkbox]{width:16px;height:16px;accent-color:#2f5749}
+.fqz .invito-porta button{font-family:inherit;font-size:14px;letter-spacing:0;text-transform:none;border-radius:10px;transition:opacity .16s}
+.fqz .invito-porta button.w-full{background:#2f5749;color:#fff;border-color:#2f5749;padding:10px 14px;font-weight:600}
+.fqz .invito-porta button.w-full:hover:not(:disabled){background:#2f5749;color:#fff;border-color:#2f5749;opacity:.92}
+.fqz .invito-porta button.underline{border:0;padding:4px 0;background:transparent;color:#6b7280;font-size:12px;text-decoration:underline}
+.fqz .invito-porta button.underline:hover:not(:disabled){color:#111;border-color:transparent}
+.fqz .invito-porta a{color:#2f5749}
+.fqz .invito-porta p,.fqz .invito-porta li{color:#374151;font-size:13px;line-height:1.5}
+.fqz .invito-porta label{color:#374151}

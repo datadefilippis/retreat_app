@@ -1084,6 +1084,7 @@ async def disiscrivi_da_admin(payload: DisiscriviPayload,
     from services.verifica_email import registra_consenso_audit
     await registra_consenso_audit(email, "newsletter_unsubscribe", r)
     await _audit_iscritto(current_user, "SUBSCRIBER_UNSUBSCRIBED", email, {})
+    await _scorda_ascolti(email)          # 8/10 sera: via l'email dagli ascolti
     return _riga_iscritto(r)
 
 
@@ -1344,6 +1345,7 @@ async def elimina_iscritto(email: str, payload: MotivoPayload,
     res = await db.aurya_subscribers.delete_one({"email": email})
     from services.subscriber_brevo_sync import blacklist_subscriber_background
     blacklist_subscriber_background(email)
+    await _scorda_ascolti(email)          # 8/10 sera: via l'email dagli ascolti
     creato = d.get("created_at")
     await _audit_iscritto(current_user, "SUBSCRIBER_DELETED", email,
                           {"motivo": payload.motivo, "stato": d.get("status"),
@@ -1433,4 +1435,15 @@ async def unsubscribe(request: Request, payload: TokenPayload):
     # B2 — la revoca lascia la sua riga nel registro, come l'accettazione
     from services.verifica_email import registra_consenso_audit
     await registra_consenso_audit(email, "newsletter_unsubscribe")
+    await _scorda_ascolti(email)          # 8/10 sera: via l'email dagli ascolti
     return {"ok": True, "status": "unsubscribed"}
+
+
+async def _scorda_ascolti(email: str) -> None:
+    """Informativa v2.13, riga 7-quater: chi lascia il Cerchio non resta
+    col nome negli ascolti delle meditazioni. Mai bloccante."""
+    try:
+        from services.ascolti_regia import scorda_iscritto
+        await scorda_iscritto(email)
+    except Exception:  # noqa: BLE001
+        logger.warning("ascolti: anonimizzazione dopo la disiscrizione fallita", exc_info=True)

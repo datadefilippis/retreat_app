@@ -1009,8 +1009,11 @@ async def export_account_data(account: Dict[str, Any]) -> Dict[str, Any]:
 
     # CS5 (8/10/2026) — gli ASCOLTI delle meditazioni e le preferenze sono
     # dati di comportamento della persona: escono con l'export, interi.
+    # 8/10 sera: anche gli ascolti fatti dal Cerchio con la stessa email
+    # prima dell'account (informativa v2.13, riga 7-quater).
     ascolti = await _db.sound_ascolti.find(
-        {"account_id": account["id"]},
+        {"$or": [{"account_id": account["id"]},
+                 {"subscriber_email": (account.get("email") or "").lower()}]},
         {"_id": 0, "at": 1, "slug": 1, "evento": 1, "secondo": 1, "provenienza": 1, "playlist": 1},
     ).sort("at", -1).to_list(5000)
     preferite = [f.get("slug") async for f in _db.frequency_favorites.find(
@@ -1075,6 +1078,9 @@ async def delete_account(account: Dict[str, Any]) -> Dict[str, int]:
     # CS5 — con l'account se ne vanno anche gli ascolti e i preferiti delle
     # meditazioni (titolarita' Aurya, dati di comportamento della persona).
     r_asc = await _db.sound_ascolti.delete_many({"account_id": aid})
+    # 8/10 sera: e gli ascolti dal Cerchio con la stessa email (v2.13, 7-quater)
+    await _db.sound_ascolti.delete_many(
+        {"subscriber_email": (account.get("email") or "").lower()})
     r_pref = await _db.frequency_favorites.delete_many({"platform_account_id": aid})
 
     result = {"orders_unlinked": getattr(r_ord, "modified_count", 0),

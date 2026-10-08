@@ -115,6 +115,24 @@ async def _eventi(filtro: dict, da) -> list:
     return out
 
 
+PREFISSO_CERCHIO = "cerchio:"
+
+
+def _persona(e: dict):
+    """L'identita' di un evento: l'account, oppure l'iscrizione al Cerchio
+    (`cerchio:<email>`, 8/10 sera: il founder vuole nome ed email anche di
+    chi ascolta senza account), oppure nessuna (anonimo)."""
+    if e.get("account_id"):
+        return e["account_id"]
+    if e.get("subscriber_email"):
+        return PREFISSO_CERCHIO + e["subscriber_email"]
+    return None
+
+
+def e_cerchio(persona_id) -> bool:
+    return bool(persona_id) and str(persona_id).startswith(PREFISSO_CERCHIO)
+
+
 def _sessioni(eventi: list) -> list:
     """Una SESSIONE = un avvio; i quartili e la fine che seguono (stessa
     persona, stesso titolo, stesso giorno locale) le appartengono."""
@@ -122,9 +140,10 @@ def _sessioni(eventi: list) -> list:
     ordine = []
     for e in eventi:
         loc = _locale(e["at"])
-        k = (e.get("account_id") or "anon", e.get("slug") or "", loc.date().isoformat())
+        pid = _persona(e)
+        k = (pid or "anon", e.get("slug") or "", loc.date().isoformat())
         if k not in per:
-            per[k] = {"account_id": e.get("account_id"), "slug": e.get("slug") or "", "track_id": e.get("track_id"),
+            per[k] = {"persona": pid, "account_id": e.get("account_id"), "slug": e.get("slug") or "", "track_id": e.get("track_id"),
                       "giorno": loc.date().isoformat(), "at": e["at"], "fascia": fascia_ora(loc.hour),
                       "provenienza": e.get("provenienza") or "altro", "playlist": e.get("playlist"),
                       "cerchio": bool(e.get("cerchio")),
@@ -141,6 +160,36 @@ def _sessioni(eventi: list) -> list:
         if ev == "fine":
             s["fine"] = True
     return [per[k] for k in ordine if per[k]["avvii"] > 0 or per[k]["quartile"] > 0]
+
+
+async def _sessioni_unite(eventi: list) -> list:
+    """Le sessioni, con l'iscrizione al Cerchio RICONDOTTA all'account quando
+    la stessa email ha poi aperto un account: una persona, una riga."""
+    sess = _sessioni(eventi)
+    email_cerchio = {s["persona"][len(PREFISSO_CERCHIO):] for s in sess if e_cerchio(s["persona"])}
+    if not email_cerchio:
+        return sess
+    per_email = {}
+    async for a in db.platform_accounts.find({"email": {"$in": sorted(email_cerchio)}}, {"_id": 0, "id": 1, "email": 1}):
+        per_email[a["email"]] = a["id"]
+    if not per_email:
+        return sess
+    for s in sess:
+        if e_cerchio(s["persona"]):
+            aid = per_email.get(s["persona"][len(PREFISSO_CERCHIO):])
+            if aid:
+                s["persona"] = aid
+    return sess
+
+
+async def scorda_iscritto(email: str) -> int:
+    """Disiscrizione o cancellazione dal Cerchio: l'email sparisce dagli
+    eventi di ascolto (resta il flag «dal Cerchio», anonimo). Idempotente."""
+    email = (email or "").strip().lower()
+    if not email:
+        return 0
+    r = await db.sound_ascolti.update_many({"subscriber_email": email}, {"$unset": {"subscriber_email": ""}})
+    return r.modified_count
 
 
 async def _titoli() -> dict:
@@ -160,9 +209,10 @@ async def _conti_preferiti() -> dict:
 
 async def panoramica(periodo: str = "30") -> dict:
     da = _da_periodo(periodo)
-    sess = _sessioni(await _eventi({}, da))
-    con_account = [s for s in sess if s["account_id"]]
-    persone = {s["account_id"] for s in con_account}
+    sess = await _sessioni_unite(await _eventi({}, da))
+    con_persona = [s for s in sess if s["persona"]]
+    persone = {s["persona"] for s in con_persona}
+    persone_cerchio = {p for p in persone if e_cerchio(p)}
     minuti = sum(s["secondo"] for s in sess) / 60
     completate = sum(1 for s in sess if s["fine"])
     per_giorno = Counter(s["giorno"] for s in sess)
@@ -170,9 +220,11 @@ async def panoramica(periodo: str = "30") -> dict:
     # nuovi ascoltatori: il PRIMO avvio di sempre cade nel periodo
     nuovi = 0
     if da is not None and persone:
+        account = [p for p in persone if not e_cerchio(p)]
+        email = [p[len(PREFISSO_CERCHIO):] for p in persone_cerchio]
         primi = db.sound_ascolti.aggregate([
-            {"$match": {"account_id": {"$in": list(persone)}, "evento": "avvio"}},
-            {"$group": {"_id": "$account_id", "primo": {"$min": "$at"}}},
+            {"$match": {"$or": [{"account_id": {"$in": account}}, {"subscriber_email": {"$in": email}}], "evento": "avvio"}},
+            {"$group": {"_id": {"$ifNull": ["$account_id", "$subscriber_email"]}, "primo": {"$min": "$at"}}},
         ])
         async for p in primi:
             primo = p["primo"] if p["primo"].tzinfo else p["primo"].replace(tzinfo=timezone.utc)
@@ -183,11 +235,13 @@ async def panoramica(periodo: str = "30") -> dict:
     pref_q = {} if da is None else {"created_at": {"$gte": da}}
     preferiti = await db.frequency_favorites.count_documents(pref_q)
     return {
-        "periodo": periodo, "ascolti": len(sess), "ascolti_anonimi": len(sess) - len(con_account),
+        "periodo": periodo, "ascolti": len(sess), "ascolti_anonimi": sum(1 for s in sess if not s["account_id"]),
         "ascolti_cerchio": sum(1 for s in sess if not s["account_id"] and s["cerchio"]),
         # il contatore storico del player (plays_total, dal 24/8/2026): gli eventi partono dall'8/10
         "ascolti_di_sempre": sum((t.get("plays_total") or 0) for t in (await _titoli()).values()),
-        "persone": len(persone), "nuovi_ascoltatori": nuovi, "minuti": round(minuti, 1),
+        # persone = account + iscrizioni al Cerchio con nome ed email (8/10 sera)
+        "persone": len(persone), "persone_cerchio": len(persone_cerchio),
+        "nuovi_ascoltatori": nuovi, "minuti": round(minuti, 1),
         "completamento": round(completate / len(sess), 3) if sess else 0.0,
         "preferiti_aggiunti": preferiti,
         "per_giorno": [{"giorno": g, "ascolti": n} for g, n in sorted(per_giorno.items())],
@@ -197,7 +251,7 @@ async def panoramica(periodo: str = "30") -> dict:
 
 def _riassunto_titolo(slug: str, sess: list, titoli: dict, preferiti: Counter) -> dict:
     t = titoli.get(slug) or {}
-    persone = {s["account_id"] for s in sess if s["account_id"]}
+    persone = {s["persona"] for s in sess if s["persona"]}
     fine = sum(1 for s in sess if s["fine"])
     quart = [s["quartile"] for s in sess]
     fasce = Counter(s["fascia"] for s in sess)
@@ -219,7 +273,7 @@ def _riassunto_titolo(slug: str, sess: list, titoli: dict, preferiti: Counter) -
 
 async def per_meditazione(periodo: str = "30") -> list:
     da = _da_periodo(periodo)
-    sess = _sessioni(await _eventi({}, da))
+    sess = await _sessioni_unite(await _eventi({}, da))
     titoli = await _titoli()
     preferiti = await _conti_preferiti()
     per = defaultdict(list)
@@ -236,7 +290,7 @@ async def per_meditazione(periodo: str = "30") -> list:
 
 async def dettaglio_meditazione(slug: str, periodo: str = "30") -> dict:
     da = _da_periodo(periodo)
-    sess = _sessioni(await _eventi({"slug": slug}, da))
+    sess = await _sessioni_unite(await _eventi({"slug": slug}, da))
     titoli = await _titoli()
     preferiti = await _conti_preferiti()
     base = _riassunto_titolo(slug, sess, titoli, preferiti)
@@ -244,22 +298,37 @@ async def dettaglio_meditazione(slug: str, periodo: str = "30") -> dict:
     base["curva"] = {k: round(sum(1 for s in sess if s["quartile"] >= v) / n, 3) for k, v in (("q25", 25), ("q50", 50), ("q75", 75), ("fine", 100))}
     per_persona = defaultdict(list)
     for s in sess:
-        if s["account_id"]:
-            per_persona[s["account_id"]].append(s)
+        if s["persona"]:
+            per_persona[s["persona"]].append(s)
     conti = await _anagrafiche(list(per_persona))
     base["persone_elenco"] = sorted([{
-        "account_id": aid, **conti.get(aid, {}), "ascolti": len(ss), "minuti": round(sum(s["secondo"] for s in ss) / 60, 1),
+        "persona_id": pid, "account_id": None if e_cerchio(pid) else pid, **conti.get(pid, _SCONOSCIUTA),
+        "ascolti": len(ss), "minuti": round(sum(s["secondo"] for s in ss) / 60, 1),
         "completati": sum(1 for s in ss if s["fine"]), "ultimo": max(s["at"] for s in ss).isoformat(),
-    } for aid, ss in per_persona.items()], key=lambda r: -r["ascolti"])
+    } for pid, ss in per_persona.items()], key=lambda r: -r["ascolti"])
     return base
 
 
+_SCONOSCIUTA = {"nome": "", "email": "", "iscritto_il": None, "tipo": "account"}
+
+
 async def _anagrafiche(ids: list) -> dict:
+    """Nome, email e data per ogni identita': dall'account, oppure
+    dall'iscrizione al Cerchio (tipo «cerchio», 8/10 sera)."""
     out = {}
     if not ids:
         return out
-    async for a in db.platform_accounts.find({"id": {"$in": ids}}, {"_id": 0, "id": 1, "name": 1, "email": 1, "created_at": 1}):
-        out[a["id"]] = {"nome": a.get("name") or "", "email": a.get("email") or "", "iscritto_il": a.get("created_at")}
+    account = [i for i in ids if not e_cerchio(i)]
+    email = [i[len(PREFISSO_CERCHIO):] for i in ids if e_cerchio(i)]
+    if account:
+        async for a in db.platform_accounts.find({"id": {"$in": account}}, {"_id": 0, "id": 1, "name": 1, "email": 1, "created_at": 1}):
+            out[a["id"]] = {"nome": a.get("name") or "", "email": a.get("email") or "", "iscritto_il": a.get("created_at"), "tipo": "account"}
+    if email:
+        async for d in db.aurya_subscribers.find({"email": {"$in": email}}, {"_id": 0, "email": 1, "name": 1, "created_at": 1, "confirmed_at": 1}):
+            out[PREFISSO_CERCHIO + d["email"]] = {"nome": d.get("name") or "", "email": d.get("email") or "",
+                                                  "iscritto_il": d.get("confirmed_at") or d.get("created_at"), "tipo": "cerchio"}
+        for e in email:   # disiscritta nel frattempo: resta l'email dell'evento, senza nome
+            out.setdefault(PREFISSO_CERCHIO + e, {"nome": "", "email": e, "iscritto_il": None, "tipo": "cerchio"})
     return out
 
 
@@ -288,30 +357,36 @@ def _settimane_consecutive(giorni: set, oggi) -> int:
     return n
 
 
+# chi ha un'identita': l'account, oppure l'iscrizione al Cerchio (email sull'evento)
+FILTRO_PERSONE = {"$or": [{"account_id": {"$ne": None}}, {"subscriber_email": {"$ne": None}}]}
+
+
 async def per_persona(periodo: str = "30") -> list:
     da = _da_periodo(periodo)
-    sess = [s for s in _sessioni(await _eventi({"account_id": {"$ne": None}}, da)) if s["account_id"]]
+    sess = [s for s in await _sessioni_unite(await _eventi(FILTRO_PERSONE, da)) if s["persona"]]
     per = defaultdict(list)
     for s in sess:
-        per[s["account_id"]].append(s)
+        per[s["persona"]].append(s)
     conti = await _anagrafiche(list(per))
     titoli = await _titoli()
     pubblicati = sum(1 for t in titoli.values() if t.get("status") == "published") or 1
     pref = Counter()
-    async for f in db.frequency_favorites.find({"platform_account_id": {"$in": list(per)}}, {"_id": 0, "platform_account_id": 1}):
-        pref[f["platform_account_id"]] += 1
+    account = [p for p in per if not e_cerchio(p)]
+    if account:
+        async for f in db.frequency_favorites.find({"platform_account_id": {"$in": account}}, {"_id": 0, "platform_account_id": 1}):
+            pref[f["platform_account_id"]] += 1
     oggi = datetime.now(ROMA).date()
     soglia30 = oggi - timedelta(days=30)
     out = []
-    for aid, ss in per.items():
+    for pid, ss in per.items():
         giorni = {s["giorno"] for s in ss}
         giorni30 = {g for g in giorni if datetime.fromisoformat(g).date() >= soglia30}
         fasce = Counter(s["fascia"] for s in ss)
         stat = {"giorni_attivi_30": len(giorni30), "settimane_consecutive": _settimane_consecutive(giorni, oggi),
                 "completati": sum(1 for s in ss if s["fine"]), "ascolti": len(ss),
-                "titoli_diversi": len({s["slug"] for s in ss}), "preferite": pref.get(aid, 0)}
+                "titoli_diversi": len({s["slug"] for s in ss}), "preferite": pref.get(pid, 0)}
         out.append({
-            "account_id": aid, **conti.get(aid, {"nome": "", "email": "", "iscritto_il": None}),
+            "persona_id": pid, "account_id": None if e_cerchio(pid) else pid, **conti.get(pid, _SCONOSCIUTA),
             "primo_ascolto": min(s["at"] for s in ss).isoformat(), "ultimo_ascolto": max(s["at"] for s in ss).isoformat(),
             "ascolti": len(ss), "minuti": round(sum(s["secondo"] for s in ss) / 60, 1),
             "completati": stat["completati"], "titoli_diversi": stat["titoli_diversi"], "preferite": stat["preferite"],
@@ -323,21 +398,31 @@ async def per_persona(periodo: str = "30") -> list:
     return out
 
 
-async def dettaglio_persona(account_id: str) -> dict:
-    sess = _sessioni(await _eventi({"account_id": account_id}, None))
+async def dettaglio_persona(persona_id: str) -> dict:
+    """Una persona: l'account (con gli ascolti fatti dal Cerchio prima
+    dell'account, stessa email) oppure l'iscrizione al Cerchio."""
+    account_id = None if e_cerchio(persona_id) else persona_id
+    if account_id:
+        acc = await db.platform_accounts.find_one({"id": account_id}, {"_id": 0, "email": 1, "sound_riprendi": 1, "sound_recenti": 1})
+        filtro = {"account_id": account_id}
+        if acc and acc.get("email"):
+            filtro = {"$or": [{"account_id": account_id}, {"subscriber_email": acc["email"]}]}
+        pref = [f["slug"] async for f in db.frequency_favorites.find({"platform_account_id": account_id}, {"_id": 0, "slug": 1})]
+    else:
+        acc, pref = None, []
+        filtro = {"subscriber_email": persona_id[len(PREFISSO_CERCHIO):]}
+    sess = _sessioni(await _eventi(filtro, None))
     titoli = await _titoli()
-    conti = await _anagrafiche([account_id])
-    acc = await db.platform_accounts.find_one({"id": account_id}, {"_id": 0, "sound_riprendi": 1, "sound_recenti": 1})
-    pref = [f["slug"] async for f in db.frequency_favorites.find({"platform_account_id": account_id}, {"_id": 0, "slug": 1})]
+    conti = await _anagrafiche([persona_id])
     linea = sorted([{
         "at": s["at"].isoformat(), "slug": s["slug"], "titolo": (titoli.get(s["slug"]) or {}).get("title") or s["slug"],
         "provenienza": s["provenienza"], "playlist": s["playlist"], "minuti": round(s["secondo"] / 60, 1),
         "quartile": s["quartile"], "completata": s["fine"], "fascia": s["fascia"],
     } for s in sess], key=lambda r: r["at"], reverse=True)
     persone = await per_persona("tutto")
-    mio = next((p for p in persone if p["account_id"] == account_id), None)
+    mio = next((p for p in persone if p["persona_id"] == persona_id), None)
     return {
-        "account_id": account_id, **conti.get(account_id, {"nome": "", "email": "", "iscritto_il": None}),
+        "persona_id": persona_id, "account_id": account_id, **conti.get(persona_id, _SCONOSCIUTA),
         "riepilogo": mio, "linea": linea,
         "preferite": [{"slug": s, "titolo": (titoli.get(s) or {}).get("title") or s} for s in pref],
         "riprendi": (acc or {}).get("sound_riprendi"), "recenti": (acc or {}).get("sound_recenti") or [],

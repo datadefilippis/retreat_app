@@ -754,7 +754,7 @@ export default function PublicFrequencyPage() {
         <a href="/blog">Magazine</a>
       </footer>
       {curtain}
-      <InvitoAccount aperto={pref.chiediAccount} onChiudi={() => pref.setChiediAccount(false)} ritorno={`/frequenze/${slug}`} />
+      <InvitoAccount aperto={pref.chiediAccount} onChiudi={() => pref.setChiediAccount(false)} onDentro={pref.dopoAccount} />
       {gateOpen && !unlocked && (
         <div className="gate">
           <div className="gatebox" style={{ maxWidth: 520 }}>

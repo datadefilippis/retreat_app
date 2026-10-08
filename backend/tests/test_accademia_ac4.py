@@ -81,7 +81,7 @@ class TestCostiESblocco:
         assert "sui prodotti e sui corsi venduti dal profilo il 15%, zero col Pro" in src
         # i numeri restano SOLO su /costi: i Termini non cambiano prima dello sblocco
         from core.legal_versions import CURRENT_VERSION_TAG
-        assert CURRENT_VERSION_TAG == "v2.12"
+        assert CURRENT_VERSION_TAG == "v2.13"
 
     def test_sblocco_v213_pronto_ma_non_applicato(self):
         """Lo script di sblocco deve trovare TUTTE le sue ancore (altrimenti
@@ -99,6 +99,6 @@ class TestCostiESblocco:
                            capture_output=True, text=True, cwd=str(BACKEND))
         assert r.returncode == 0 and "PROVA A SECCO" in r.stdout, r.stdout + r.stderr
         from core.legal_versions import CURRENT_VERSION_TAG
-        assert CURRENT_VERSION_TAG == "v2.12"
+        assert CURRENT_VERSION_TAG == "v2.13"
         st = (FRONTEND / "features" / "accademia" / "stato.js").read_text()
         assert "export const ACCADEMIA_UI_PRONTA = false;" in st

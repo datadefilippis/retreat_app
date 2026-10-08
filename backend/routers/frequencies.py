@@ -944,25 +944,30 @@ async def registra_ascolto(request: Request, slug: str, payload: AscoltoPayload)
                 account_id = p.get("sub")
         except Exception:  # noqa: BLE001
             account_id = None
-    # CS (8/10/2026 sera, founder): chi ascolta col Cerchio SENZA account resta
-    # anonimo (nessuna email salvata), ma l'evento sa che e' un iscritto: la
-    # regia distingue «Cerchio senza account» da «anonimo».
+    # CS (8/10/2026 sera, founder): chi ascolta col Cerchio SENZA account e'
+    # una persona con nome ed email (informativa v2.13, riga 7-quater):
+    # l'evento porta l'email dell'iscrizione, il nome lo legge la regia da
+    # aurya_subscribers. Alla disiscrizione o alla cancellazione l'email si
+    # toglie dagli eventi (ascolti_regia.scorda_iscritto): resta solo il flag.
     cerchio = False
+    subscriber_email = None
     if not account_id:
         unlock = request.headers.get("X-Fqz-Unlock", "")
         if unlock:
             try:
                 from core.subscriber_token import decode_subscriber_token
-                cerchio = bool(decode_subscriber_token(unlock).get("email"))
+                subscriber_email = decode_subscriber_token(unlock).get("email") or None
+                cerchio = bool(subscriber_email)
             except Exception:  # noqa: BLE001
-                cerchio = False
+                cerchio, subscriber_email = False, None
     await sound_ascolti_collection.insert_one({
         "track_id": t["id"], "organization_id": t["organization_id"], "slug": slug,
         "evento": payload.evento,
         "provenienza": payload.provenienza if payload.provenienza in PROVENIENZE else "altro",
         "playlist": (payload.playlist or "")[:120] or None,
         "secondo": max(0, int(payload.secondo or 0)),
-        "account_id": account_id, "cerchio": cerchio, "at": utc_now(),
+        "account_id": account_id, "cerchio": cerchio, "subscriber_email": subscriber_email,
+        "at": utc_now(),
     })
 
 

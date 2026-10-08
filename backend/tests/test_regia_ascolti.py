@@ -43,7 +43,7 @@ class TestRotte:
         assert 'app.include_router(admin_sound_ascolti_router.router, prefix="/api")' in srv
         r = (BACKEND / "routers" / "admin_sound_ascolti.py").read_text()
         assert r.count("Depends(require_system_admin)") == 6
-        for via in ('"/panoramica"', '"/meditazioni"', '"/meditazioni/{slug}"', '"/persone"', '"/persone/{account_id}"', '"/export.csv"'):
+        for via in ('"/panoramica"', '"/meditazioni"', '"/meditazioni/{slug}"', '"/persone"', '"/persone/{persona_id}"', '"/export.csv"'):
             assert via in r, via
 
     def test_la_sezione_e_in_regia(self):
@@ -77,11 +77,11 @@ class TestRotte:
         d = r.json()
         assert set(d) >= {"ascolti", "persone", "minuti", "completamento", "preferiti_aggiunti", "per_giorno", "per_fascia"}
         p = requests.get(f"{BASE_URL}/api/admin/sound/ascolti/persone", params={"periodo": "tutto"}, headers=h, timeout=8).json()
-        assert "pesi" in p and all({"account_id", "score", "parti", "ascolti", "minuti", "completati"} <= set(x) for x in p["items"])
+        assert "pesi" in p and all({"persona_id", "account_id", "tipo", "score", "parti", "ascolti", "minuti", "completati"} <= set(x) for x in p["items"])
         m = requests.get(f"{BASE_URL}/api/admin/sound/ascolti/meditazioni", params={"periodo": "tutto"}, headers=h, timeout=8).json()
         assert all({"slug", "titolo", "ascolti", "completamento", "abbandono_medio", "preferiti"} <= set(x) for x in m["items"])
         c = requests.get(f"{BASE_URL}/api/admin/sound/ascolti/export.csv", params={"vista": "persone", "periodo": "tutto"}, headers=h, timeout=8)
-        assert c.status_code == 200 and c.text.startswith("nome,email,")
+        assert c.status_code == 200 and c.text.startswith("nome,email,tipo,")
         if demo.exists():
             r2 = requests.get(f"{BASE_URL}/api/admin/sound/ascolti/panoramica", headers={"Authorization": f"Bearer {demo.read_text().strip()}"}, timeout=8)
             assert r2.status_code in (401, 403)
@@ -103,10 +103,50 @@ class TestPrivacyCs5:
         assert "from services.ascolti_regia import conserva as _conserva_ascolti" in (BACKEND / "server.py").read_text()
         assert "--applica" in (BACKEND / "scripts" / "ascolti_conservazione.py").read_text()
 
-    def test_chi_ascolta_senza_account_resta_anonimo(self):
-        # chi ascolta col Cerchio senza account non entra in «Persone»
+    def test_chi_ascolta_dal_cerchio_e_una_persona(self):
+        # 8/10 sera (founder): chi ascolta col Cerchio senza account entra in
+        # «Persone» con nome ed email dell'iscrizione; l'evento porta l'email,
+        # la regia la riconduce all'account se la stessa email ne apre uno
         serv = (BACKEND / "services" / "ascolti_regia.py").read_text()
-        assert '{"account_id": {"$ne": None}}' in serv
-    # L'informativa (riga sugli ascolti, conservazione 24 mesi) cambia la VERSIONE
-    # legale (CURRENT_VERSION_HASH) e chiede un nuovo consenso: si fa con una
-    # decisione del founder, non in questo lotto (docs/PIANO_CASA_CONSIGLI §4b).
+        assert 'FILTRO_PERSONE = {"$or": [{"account_id": {"$ne": None}}, {"subscriber_email": {"$ne": None}}]}' in serv
+        assert 'PREFISSO_CERCHIO = "cerchio:"' in serv and "async def _sessioni_unite" in serv
+        assert '"tipo": "cerchio"' in serv and "async def scorda_iscritto" in serv
+        fq = (BACKEND / "routers" / "frequencies.py").read_text()
+        assert '"account_id": account_id, "cerchio": cerchio, "subscriber_email": subscriber_email,' in fq
+        # chi lascia il Cerchio (un clic, l'admin, la cancellazione) non resta col nome
+        sub = (BACKEND / "routers" / "subscribers.py").read_text()
+        assert sub.count("await _scorda_ascolti(email)") == 3
+        assert "from services.ascolti_regia import scorda_iscritto" in sub
+
+    def test_il_cuore_senza_account_passa_dalla_porta(self):
+        # 8/10 sera (founder): «per i preferiti senza account aggiungiamo
+        # l'accettazione» — la porta unica (casella legale) DENTRO l'invito,
+        # il cuore toccato resta in attesa e si salva da solo appena dentro
+        hook = (FRONTEND / "features" / "frequenze" / "casa" / "preferite.js").read_text()
+        assert "const IN_ATTESA_KEY = 'fqz_cuore_in_attesa';" in hook
+        assert "async function applicaInAttesa()" in hook and "return applicaInAttesa();" in hook
+        assert "const dopoAccount = useCallback(async () => {" in hook
+        cuore = (FRONTEND / "features" / "frequenze" / "casa" / "Cuore.jsx").read_text()
+        assert "import PortaAurya from '../../account/PortaAurya';" in cuore
+        assert '<PortaAurya vista="crea" emailIniziale={emailDellaProva() || \'\'} contesto="preferite"' in cuore
+        assert "onDentro={(me) => { onDentro?.(me); onChiudi?.(); }}" in cuore
+        assert "window.location.href" not in cuore        # niente uscita dalla pagina
+        for rel in ("casa/MeditazioniCasa.jsx", "casa/PlaylistPage.jsx", "PublicFrequencyPage.js"):
+            src = (FRONTEND / "features" / "frequenze" / rel).read_text()
+            assert "onDentro={pref.dopoAccount} />" in src, rel
+        css = (FRONTEND / "features" / "frequenze" / "casa" / "casa.css").read_text()
+        assert ".fqz .invito-porta{" in css
+
+    def test_informativa_v213_con_la_riga_degli_ascolti(self):
+        import hashlib
+        from core.legal_versions import CURRENT_VERSION_HASH, CURRENT_VERSION_TAG
+        assert CURRENT_VERSION_TAG == "v2.13"
+        priv = (BACKEND / "legal" / "privacy_it.md").read_text("utf-8")
+        terms = (BACKEND / "legal" / "terms_it.md").read_text("utf-8")
+        assert CURRENT_VERSION_HASH == hashlib.sha256((priv + "\n\n--- TERMS BUNDLE ---\n\n" + terms).encode()).hexdigest()[:16]
+        assert "| 7-quater | Ascolto delle meditazioni di Aurya Sound" in priv
+        assert "nome ed email dell'iscrizione" in priv and "Mai l'indirizzo IP" in priv
+        assert "| Ascolti delle meditazioni (art. 4, riga 7-quater) | 24 mesi |" in priv
+        for lang in ("en", "de", "fr"):
+            t = (BACKEND / "legal" / f"privacy_{lang}.md").read_text("utf-8")
+            assert t.count("7-quater") == 2, lang

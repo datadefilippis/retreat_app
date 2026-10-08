@@ -114,7 +114,7 @@ function PlaylistPageDentro() {
         <a href="/">← Torna su Aurya</a><a href="/meditazioni">Le meditazioni</a><a href="/sound">Il suono</a><a href="/newsletter">Il Cerchio</a>
       </footer>
       {safety && <SafetyCurtain mode="review" onClose={() => setSafety(false)} />}
-      <InvitoAccount aperto={pref.chiediAccount} onChiudi={() => pref.setChiediAccount(false)} ritorno={`/meditazioni/playlist/${slug}`} />
+      <InvitoAccount aperto={pref.chiediAccount} onChiudi={() => pref.setChiediAccount(false)} onDentro={pref.dopoAccount} />
       <LettoreBarra />
       <SchedaMeditazione />
       {L?.curtain}

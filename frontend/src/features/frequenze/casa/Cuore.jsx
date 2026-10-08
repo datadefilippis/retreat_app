@@ -4,8 +4,8 @@
  * 'riga' (in una lista). Il colore acceso e' l'oro di casa.
  */
 import React from 'react';
-import { creaAccount } from '../../../utils/authLinks';
 import { emailDellaProva } from '../../../lib/cerchio';
+import PortaAurya from '../../account/PortaAurya';   // 8/10 sera: la porta unica, qui dentro
 
 const Forma = () => (
   <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -23,16 +23,27 @@ export default function Cuore({ on = false, onClick, variante = 'card', titolo =
   );
 }
 
-/** l'invito all'account, lo stesso ovunque il cuore lo chieda */
-export function InvitoAccount({ aperto, onChiudi, ritorno = '/meditazioni' }) {
+/**
+ * L'invito all'account, lo stesso ovunque il cuore lo chieda.
+ * 8/10 sera (founder): senza uscire dalla pagina. Dentro c'e' la porta unica
+ * dell'account (nome, email gia' scritta se sei nel Cerchio, password, la
+ * casella legale obbligatoria = l'accettazione): quando sei dentro,
+ * `onDentro` chiude e il cuore in attesa si salva da solo. La prova del
+ * Cerchio da sola NON basta ad aprire un account: chiunque dichiari un'email
+ * iscritta la riceve (unlock), e l'account custodisce ordini e corsi.
+ */
+export function InvitoAccount({ aperto, onChiudi, onDentro }) {
   if (!aperto) return null;
   return (
     <div className="gate" onClick={onChiudi}>
-      <div className="gatebox" style={{ maxWidth: 460 }} onClick={(e) => e.stopPropagation()}>
+      <div className="gatebox" style={{ maxWidth: 460 }} onClick={(e) => e.stopPropagation()} data-testid="invito-account">
         <h2>Il tuo spazio vive nel tuo account</h2>
-        <p>Preferite, ascolti recenti e «riprendi da dove eri» si ritrovano su ogni telefono con un account Aurya, gratuito: lo stesso di corsi e prenotazioni.</p>
+        <p>Preferite, ascolti recenti e «riprendi da dove eri» si ritrovano su ogni telefono con un account Aurya, gratuito: lo stesso di corsi e prenotazioni. Lo crei qui, e il cuore che hai toccato si salva da solo.</p>
+        <div className="invito-porta">
+          <PortaAurya vista="crea" emailIniziale={emailDellaProva() || ''} contesto="preferite"
+            onDentro={(me) => { onDentro?.(me); onChiudi?.(); }} />
+        </div>
         <div className="gatefoot" style={{ gap: 8 }}>
-          <button type="button" className="primary" onClick={() => { window.location.href = creaAccount(emailDellaProva() || '', ritorno); }}>Crea il tuo account</button>
           <button type="button" onClick={onChiudi}>Non ora</button>
         </div>
       </div>

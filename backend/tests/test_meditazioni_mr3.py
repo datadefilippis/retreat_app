@@ -64,7 +64,7 @@ class TestLettore:
         assert 'data-testid="playlist-riga-ascolta"' in pl and "suona(prima, p)" in pl
         css = (FQ / "casa" / "casa.css").read_text()
         assert ".fqz .lettore{position:fixed;left:0;right:0;bottom:0;" in css
-        assert "@media(max-width:899px){.fqz.casa .lettore{bottom:58px" in css   # sopra la barra di navigazione
+        assert "@media(max-width:767px){.fqz.casa .lettore{bottom:58px" in css   # sopra la barra di navigazione
 
     def test_la_pagina_pubblica_resta_com_era(self):
         """Il motore e la pagina del link condiviso non cambiano: il lettore e' in piu'."""

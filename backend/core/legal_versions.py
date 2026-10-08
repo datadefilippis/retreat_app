@@ -38,10 +38,22 @@ from typing import Final
 # IMPORTANT: bump CURRENT_VERSION_TAG whenever the LEGAL CONTENT changes.
 # The hash is recomputed manually from the IT bundle (see procedure below).
 
-CURRENT_VERSION_TAG: Final[str] = "v2.12"
+CURRENT_VERSION_TAG: Final[str] = "v2.13"
 """Human-readable tag of the documents the user is currently shown.
 
 History:
+  - v2.13 (ascolti, 2026-10-08 sera) — Privacy art. 4, nuova riga
+    7-quater: l'ascolto delle meditazioni di Aurya Sound viene misurato
+    (avvio, avanzamento, completamento, momento, provenienza) per
+    «riprendi da dove eri», per i consigli della casa e per la regia
+    editoriale; identificato dall'account (art. 6.1.b) oppure, per chi
+    ascolta come iscritto al Cerchio senza account, da nome ed email
+    dell'iscrizione (legittimo interesse 6.1.f, opposizione = disiscrizione);
+    mai IP ne' dispositivo; 24 mesi e poi via, nome ed email tolti subito
+    alla disiscrizione o alla cancellazione dell'account. Nuova riga in
+    art. 8 (conservazione). Decisione del founder dell'8/10 sera (prima
+    gli ascolti dal Cerchio erano anonimi). Termini invariati. Il bump
+    innesca il re-consent esistente. Stesse modifiche in EN/DE/FR.
   - v2.12 (P1 prodotti, 2026-10-06) — Termini 6.4 e 7.1-7.2: la
     Commissione di piattaforma riguarda SOLO i Prodotti (digitali e
     fisici) venduti dalla pagina pubblica dell'Operatore, nella misura
@@ -195,7 +207,7 @@ History:
     CERCHIO_SINGOLO_OPTIN. Stesse modifiche in EN/DE/FR.
 """
 
-CURRENT_VERSION_HASH: Final[str] = "69137d1e3f451f81"
+CURRENT_VERSION_HASH: Final[str] = "b43390fa55356b29"
 """SHA256-hex16 of the rendered IT privacy + terms text bundle.
 
 Computed from the concatenation:
