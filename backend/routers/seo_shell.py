@@ -759,11 +759,12 @@ def _scheda_content_html(slug: str, scheda: dict) -> str:
 
 _SOUND_PAGES = {
     None: {
-        "title": "Aurya Sound: onde cerebrali, frequenze e metodi | Aurya",
-        # SEO-A: 169 caratteri → sotto i 160
-        "description": ("Una biblioteca educativa sul suono: bande cerebrali, "
-                        "frequenze e metodi di stimolazione sonora, con il "
-                        "livello di evidenza dichiarato per ogni scheda."),
+        # 8/10 sera (founder): le meditazioni, il valore principale, prima;
+        # il suono spiegato e' cio' che c'e' dietro.
+        "title": "Aurya Sound: meditazioni con un suono composto apposta | Aurya",
+        "description": ("Le meditazioni di Aurya: una voce che accompagna, musica "
+                        "e paesaggi sonori composti apposta. E dietro, il suono "
+                        "spiegato: bande cerebrali, frequenze, metodi."),
     },
     "esplora": {
         "title": "Esplora le frequenze: bande, frequenze e metodi | Aurya Sound",

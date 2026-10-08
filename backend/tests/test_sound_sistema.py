@@ -98,7 +98,10 @@ class TestL3PortaDiSistema:
         porte = src.find("sh-porte")
         esperienze = src.find("sh-porta-esperienze")
         pro = src.find('data-testid="sld-crea"')
-        assert -1 < fenomeni < porte < esperienze < pro, \
+        # 8/10 sera (founder): le Meditazioni, il valore principale, subito
+        # dopo l'apertura; i fenomeni e le porte raccontano cosa c'e' dietro;
+        # la vendita (Crea) resta in fondo al racconto
+        assert -1 < esperienze < fenomeni < porte < pro, \
             "la vendita prima del racconto"
         # le stanze, tutte
         for porta in ("sh-porta-esplora", "sh-porta-impara",

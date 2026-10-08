@@ -52,7 +52,9 @@ class TestNonPerdersi:
         assert 'data-testid="fqz-nav-suono"' in src and 'data-testid="fqz-foglio-suono"' in src
         for porta in ("'/sound/esplora'", "'/sound/impara'", "'/sound/lab'"):
             assert porta in src, porta
-        assert "La pagina di Aurya Sound →" in src
+        # 8/10 sera (founder): dal foglio non si esce verso la landing: solo le meditazioni
+        assert "La pagina di Aurya Sound" not in src
+        assert 'data-testid="fqz-foglio-meditazioni"' in src and "href=\"/meditazioni\" className=\"porta-landing\"" in src
 
     def test_il_corso_torna_da_dove_si_viene(self):
         casa = (FQ / "casa" / "MeditazioniCasa.jsx").read_text()

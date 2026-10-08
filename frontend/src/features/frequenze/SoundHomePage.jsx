@@ -8,14 +8,15 @@
  * Professional (biofeedback di sessione, «portalo nel tuo lavoro»
  * senza dire come) che abbiamo tolto dalla vetrina.
  *
- * L'ARCO ADESSO E' UNO, e ogni sezione prepara la successiva:
- *   1. il suono come strumento          (apertura)
- *   2. non tutto il suono e' musica     (i fenomeni)
- *   3. studialo                          (le tre porte)
- *   4. poi il linguaggio cambia: LE MEDITAZIONI — e ne ascolti una
- *      ADESSO (anteprima 90s, patto della Lettera; la materia prima
- *      CALM/GROUND in coda come radice, non come doppione)
- *   5. chi le compone? l'atelier: CREA — ed e' qui che il racconto
+ * L'ARCO ADESSO E' UNO, e ogni sezione prepara la successiva
+ * (8/10 sera, founder: le Meditazioni, il valore principale, in
+ * evidenza sin dall'inizio; il suono racconta cosa c'e' dietro):
+ *   1. meditazioni con un suono composto apposta   (apertura, CTA alla casa)
+ *   2. LE MEDITAZIONI — e ne ascolti una ADESSO (anteprima 90s,
+ *      patto della Lettera, il rimando alla casa)
+ *   3. dietro ogni meditazione: non tutto il suono e' musica (i fenomeni)
+ *   4. studialo                          (le tre porte)
+   5. chi le compone? l'atelier: CREA — ed e' qui che il racconto
  *      diventa il trigger per i professionisti (/sound/studio)
  *   6. chiunque componga, le regole non cambiano (l'onesta')
  *   7. il metodo (i cinque passi)
@@ -195,7 +196,7 @@ export default function SoundHomePage() {
 
 function SoundHomePageVecchia() {
   useEffect(() => {
-    document.title = 'Aurya Sound: il suono può diventare uno strumento | Aurya';
+    document.title = 'Aurya Sound: meditazioni con un suono composto apposta | Aurya';
   }, []);
   /* il campione in vetrina: se la traccia non c'e' (altro ambiente),
      la sezione si piega con grazia — mai una scatola rotta */
@@ -232,36 +233,76 @@ function SoundHomePageVecchia() {
         {/* ── 1 · APERTURA ───────────────────────────────────────── */}
         <PhotoOpener image={ONDA} focus="50% 50%" height="tall" align="left"
           width="max-w-4xl" labelledBy="sh-title" data-testid="sh-open">
-          <Occhiello tono="chiaro">Aurya Sound</Occhiello>
+          <Occhiello tono="chiaro">Aurya Sound · Le meditazioni</Occhiello>
           <DisplayTitle as="h1" id="sh-title" size="hero" measure="wide"
             className="text-hero-shadow">
-            Il suono può diventare uno strumento.
+            Meditazioni con un suono composto apposta.
           </DisplayTitle>
           <Lede className="mt-8 max-w-2xl text-white/90 text-hero-shadow" tone="inherit">
-            Frequenze, ritmo, respiro, spazio e musica. Aurya Sound è uno
-            spazio per esplorare il suono, comprenderne i meccanismi e
-            trasformarlo in esperienze da ascoltare.
+            Una voce che accompagna, la musica e il paesaggio sonoro che
+            tengono lo spazio. Le meditazioni di Aurya si ascoltano subito,
+            dal telefono, senza scaricare nulla.
           </Lede>
           <p className="mt-6 max-w-2xl text-base sm:text-lg leading-relaxed text-white/80 text-hero-shadow">
-            Puoi studiarlo, sperimentarlo, o semplicemente ascoltarlo.
-            E se accompagni persone, puoi comporlo per loro.
+            Dietro ognuna c’è il suono: frequenze, ritmo, respiro, spazio.
+            Puoi capirlo, provarlo, o semplicemente ascoltarlo.
           </p>
-          {/* FN4 (30/8), l'hero vende il gancio piu' caldo: la
-              meditazione che ascolti ADESSO. Il richiamo professionale
-              esce dall'hero: ha la sua band (sezione Crea), un
-              pubblico, una porta. */}
+          {/* 8/10 sera (founder): le Meditazioni sono il valore principale
+              e vanno in evidenza SIN DALL'INIZIO: il bottone pieno porta
+              nella casa; il suono (esplora) e' il richiamo secondario. */}
           <div className="mt-10 flex flex-wrap items-center gap-6">
-            <Bottone href="#sh-esperienze" tono="chiaro" testid="sh-cta-ascolta">
-              Ascolta una meditazione, 90 secondi
+            <Bottone to="/meditazioni" tono="chiaro" testid="sh-cta-ascolta">
+              Ascolta una meditazione adesso
             </Bottone>
             <Richiamo to="/sound/esplora" tono="chiaro" testid="sh-cta-esplora">
-              Esplora Aurya Sound →
+              Il suono dietro: esplora le frequenze →
             </Richiamo>
           </div>
         </PhotoOpener>
 
-        {/* ── 2 · NON TUTTO IL SUONO È MUSICA ─────────────────────── */}
+        {/* ── 2 · LE MEDITAZIONI, e ne ascolti una ADESSO ─────────
+            8/10 sera (founder): il valore principale si vede per primo.
+            La sezione E' la presentazione delle Meditazioni, e la prova
+            e' immediata: il player. */}
+        <Section tone="paper" labelledBy="sh-esperienze"
+          data-testid="sh-porta-esperienze">
+          <Occhiello>Il cuore di Aurya Sound</Occhiello>
+          <DisplayTitle id="sh-esperienze" size="section">
+            Le Meditazioni: il suono che ti accompagna.
+          </DisplayTitle>
+          <Lede size="small" className="mt-5 max-w-3xl">
+            Una voce apre lo spazio, la musica e il paesaggio sonoro lo
+            tengono, e il suono smette di essere un fenomeno da capire.
+            Ogni meditazione nasce da un suono composto apposta per lei.
+            La prova migliore è farla, adesso.
+          </Lede>
+          {vetrina && (
+            <div className="mt-10 max-w-3xl">
+              <AnteprimaMeditazione track={vetrina} ctaMeditazioni={ctaMeditazioni} />
+            </div>
+          )}
+          <div className="mt-8">
+            <Bottone to="/meditazioni" testid="sh-porta-meditazioni">
+              {ctaMeditazioni}
+            </Bottone>
+          </div>
+          <div className="mt-10 max-w-3xl border-t pt-7"
+            style={{ borderColor: '#e8e0ce' }} data-testid="sh-casa-rimando">
+            <p className="text-base text-muted-foreground">
+              Nella casa delle meditazioni trovi tutte le meditazioni
+              composte per il Cerchio, le playlist da ascoltare in fila,
+              le tue preferite e il punto dove eri rimasta o rimasto.
+              Si ascolta lì, senza cambiare pagina.
+            </p>
+            <div className="mt-4 flex flex-wrap gap-x-8 gap-y-3">
+              <Richiamo to="/meditazioni">Entra nella casa delle meditazioni</Richiamo>
+            </div>
+          </div>
+        </Section>
+
+        {/* ── 3 · NON TUTTO IL SUONO È MUSICA (cosa c'e' dietro) ──── */}
         <Section tone="cream" labelledBy="sh-fenomeni">
+          <Occhiello>Dietro ogni meditazione</Occhiello>
           <DisplayTitle id="sh-fenomeni" size="section">
             Non tutto il suono è musica.
           </DisplayTitle>
@@ -286,7 +327,7 @@ function SoundHomePageVecchia() {
           </Rilievo>
         </Section>
 
-        {/* ── 3 · LE TRE PORTE (studia) ───────────────────────────── */}
+        {/* ── 4 · LE TRE PORTE (studia) ───────────────────────────── */}
         <Section tone="sand" labelledBy="sh-porte">
           <DisplayTitle id="sh-porte" size="section">
             Parti da ciò che ti incuriosisce.
@@ -319,46 +360,6 @@ function SoundHomePageVecchia() {
                 </span>
               </Link>
             ))}
-          </div>
-        </Section>
-
-        {/* ── 4 · LE MEDITAZIONI, e ne ascolti una ADESSO ─────────
-            Il punto in cui il linguaggio cambia: dal laboratorio
-            all'esperienza. La sezione E' la presentazione delle
-            Meditazioni, e la prova e' immediata: il player. */}
-        <Section tone="paper" labelledBy="sh-esperienze"
-          data-testid="sh-porta-esperienze">
-          <Occhiello>Poi il linguaggio cambia</Occhiello>
-          <DisplayTitle id="sh-esperienze" size="section">
-            Dallo studio all’esperienza: le Meditazioni.
-          </DisplayTitle>
-          <Lede size="small" className="mt-5 max-w-3xl">
-            Fin qui il suono si spiega. Nelle Meditazioni ti accompagna:
-            una voce apre lo spazio, la musica e il paesaggio sonoro lo
-            tengono, e il suono smette di essere un fenomeno da capire.
-            La prova migliore è farla, adesso.
-          </Lede>
-          {vetrina && (
-            <div className="mt-10 max-w-3xl">
-              <AnteprimaMeditazione track={vetrina} ctaMeditazioni={ctaMeditazioni} />
-            </div>
-          )}
-          <div className="mt-8">
-            <Bottone to="/meditazioni" testid="sh-porta-meditazioni">
-              {ctaMeditazioni}
-            </Bottone>
-          </div>
-          <div className="mt-10 max-w-3xl border-t pt-7"
-            style={{ borderColor: '#e8e0ce' }} data-testid="sh-casa-rimando">
-            <p className="text-base text-muted-foreground">
-              Nella casa delle meditazioni trovi tutte le meditazioni
-              composte per il Cerchio, le playlist da ascoltare in fila,
-              le tue preferite e il punto dove eri rimasta o rimasto.
-              Si ascolta lì, senza cambiare pagina.
-            </p>
-            <div className="mt-4 flex flex-wrap gap-x-8 gap-y-3">
-              <Richiamo to="/meditazioni">Entra nella casa delle meditazioni</Richiamo>
-            </div>
           </div>
         </Section>
 

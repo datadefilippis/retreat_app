@@ -252,8 +252,9 @@ class TestRitmiDelCorpoOnda3:
         cuore = blocco.split("Passo del cuore")[1][:2500]
         assert "Il cuore non insegue" in cuore, \
             "manca la smentita esplicita dell'entrainment cardiaco"
-        page = PAGE.read_text()
-        intro = page.split("'Ritmi del corpo': {")[1][:600]
+        # ES0 (8/10): le intro delle famiglie vivono in content/biblioteca_testi.js (una fonte)
+        testi = (FQ_DIR / "content" / "biblioteca_testi.js").read_text()
+        intro = testi.split("'Ritmi del corpo': {")[1][:600]
         assert "riguarda la pratica" in intro
 
 

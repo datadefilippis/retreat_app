@@ -68,7 +68,7 @@ export default function SoundTopbar({ firma = 'Sound', qui = null,
     ? (puoComporre ? [...CASA_PASSERELLA, CASA_VOCE_CREA] : CASA_PASSERELLA)
     : PASSERELLA;
   /* MR7 — dalla casa «Il suono» non porta fuori: apre un foglio con le tre
-     porte (schede, fondamenta, Lab) e, in fondo, la pagina di Aurya Sound. */
+     porte (schede, fondamenta, Lab) e, in fondo, il rimando alle meditazioni. */
   const [foglioSuono, setFoglioSuono] = useState(false);
   /* ES0 (8/10 sera, founder): il foglio si apre da OGNI pagina scura (casa,
      esplora, fondamenta, Lab, scheda): «Il suono» non porta mai fuori. */
@@ -108,8 +108,13 @@ export default function SoundTopbar({ firma = 'Sound', qui = null,
                 </a>
               ))}
             </div>
+            {/* 8/10 sera (founder): dal foglio non si esce verso la landing;
+                l'unico rimando e' alle meditazioni, il valore principale
+                (nascosto quando si e' gia' nella casa). */}
             <div className="gatefoot" style={{ justifyContent: 'space-between', marginTop: 14 }}>
-              <a href="/sound" className="porta-landing" onClick={(e) => guardia(e, '/sound')}>La pagina di Aurya Sound →</a>
+              {dove.startsWith('/meditazioni')
+                ? <span />
+                : <a href="/meditazioni" className="porta-landing" onClick={(e) => guardia(e, '/meditazioni')} data-testid="fqz-foglio-meditazioni">Le meditazioni →</a>}
               <button type="button" onClick={() => setFoglioSuono(false)}>Chiudi</button>
             </div>
           </div>
