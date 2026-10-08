@@ -147,8 +147,23 @@ deploy senza «go».
   /sound/lab e dalle schede, con la porta corrente evidenziata. La
   passerella segna «Il suono» come pagina corrente in tutte e tre.
 
-## 6. Domande per il founder
-1. **Un suono alla volta** per il pubblico (il «combinare» resta in Crea): va bene?
-2. **Famiglie prima, schede dopo** (due tocchi per arrivare a una scheda) oppure tutte le 36 schede in una griglia filtrabile (un tocco, pagina più lunga)?
-3. **Fondamenta a capitoli**: sì?
-4. Le «meditazioni che usano questa frequenza» nella scheda (ES3): ti interessa come ponte verso la casa?
+## 6. Decisioni del founder (8/10 sera)
+1. Un suono alla volta per il pubblico: **sì** (il «combinare» resta in Crea).
+2. **Famiglie prima, schede dopo.**
+3. Fondamenta a capitoli: **sì**.
+4. «Meditazioni che usano questa frequenza»: **no**.
+
+## 7. Stato: LOTTO ES FATTO in locale (8/10 sera)
+- **ES0**: `esplora/BibliotecaPage.jsx` (/sound/esplora) e `esplora/FondamentaPage.jsx` (/sound/impara, /sound/impara/glossario) dietro `SOUND_ESPLORA_NUOVA`; il compositore (`FrequenzePage`, rotta /sound/*) resta intatto per Crea e per i test. `esplora/SelettoreTre.jsx` (Frequenze · Fondamenta · Lab) in ogni pagina del suono, anche nella scheda e nel Lab (`LabSala` lo mostra al posto delle stanze, la stringa `StanzeSound` resta per i pin).
+- **ES1/ES2**: quattro famiglie come card col tono (`content/biblioteca_testi.js`: FAMIGLIE, CAT_INTRO, GRADI, HOWTO_BODY, METODI_CHIAVE, usati anche dal compositore), griglia di schede compatte, ▶ una alla volta nella `BarraAnteprima` (hook `esplora/anteprima.js` su `startCardLive`, sipario, 60 s), cerca su tutte le 36, foglio ⓘ per legenda e «come leggere», chiave dei metodi solo in Metodi; via avvisi doppi, basi, stanze, «Le mie tracce», «+ Sessione», TriggerStudio dal pubblico.
+- **ES3**: la scheda con selettore, briciole «Le frequenze › Famiglia › Scheda» (`?famiglia=`), ▶ che suona qui, «← Tutte le schede di …», sorelle che portano la famiglia.
+- **ES4**: fondamenta a capitoli (indice sticky, capitolo corrente via IntersectionObserver, ancore `#gd-…`, «capitolo successivo»), glossario; `GuidaView` intatta (l'indice suo è nascosto via CSS).
+- **ES5/ES6**: Lab col selettore; `esplora/esplora.css` sulla grammatica della casa.
+- Verificato a 375 px e desktop: famiglie → schede → ▶ (una sola suona, la barra cambia scheda) → scheda → «←»; capitoli; Lab. Guardie: `tests/test_esplora_es.py`.
+- Rimandi: la ricerca del glossario (oggi la lista intera); le stanze del Lab interne mostrano ancora `StanzeSound` (`lab/Stanza.jsx`, pin): si allineano al selettore quando si potano le stanze.
+
+## 8. Le meditazioni prima di tutto (8/10 sera, dopo il lotto)
+Richiesta del founder: dal foglio «Il suono» non si esce verso la landing (al massimo un link alle meditazioni); nella landing il suono era più in evidenza delle meditazioni, che sono il valore principale.
+- Foglio «Il suono»: via «La pagina di Aurya Sound →», in fondo solo «Le meditazioni →» (nascosto nella casa).
+- Landing /sound: apertura «Meditazioni con un suono composto apposta», bottone pieno «Ascolta una meditazione adesso» → /meditazioni, richiamo secondario «Il suono dietro: esplora le frequenze»; la sezione Meditazioni (anteprima 90 s, «Le N Meditazioni», rimando alla casa) subito dopo l'apertura; fenomeni e tre porte come «Dietro ogni meditazione»; Crea in fondo. Titolo e meta SEO allineati (`seo_shell._SOUND_PAGES[None]`).
+- Pin aggiornati: `test_meditazioni_mr7`, `test_sound_sistema` (ordine meditazioni < fenomeni < porte < Crea), `test_frequenze_movimento` (intro famiglie in `biblioteca_testi.js`).
