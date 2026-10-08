@@ -10,6 +10,14 @@
 import React, { useEffect, useMemo } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import SoundTopbar from './SoundTopbar';
+import { useSearchParams } from 'react-router-dom';
+import SelettoreTre from './esplora/SelettoreTre';
+import BarraAnteprima from './esplora/BarraAnteprima';
+import { useAnteprimaFrequenza } from './esplora/anteprima';
+import { famigliaDaSlug, famigliaDaChiave, GRADI as GRADI_TESTI } from './content/biblioteca_testi';
+import { SOUND_ESPLORA_NUOVA } from './stato';
+import './casa/casa.css';
+import './esplora/esplora.css';
 import { BIB } from './content/biblioteca';
 import { sluggifica } from './content/slugScheda';
 import InvitoSound from './InvitoSound';
@@ -31,6 +39,10 @@ function trova(slug) {
 export default function SchedaBibliotecaPage() {
   const { slug } = useParams();
   const scheda = useMemo(() => trova(slug), [slug]);
+  /* ES3 — da dove si viene (?famiglia=): il «←» torna alla griglia della famiglia */
+  const [cercaParams] = useSearchParams();
+  const famiglia = famigliaDaSlug(cercaParams.get('famiglia')) || (scheda ? famigliaDaChiave(scheda.categoria) : null);
+  const anteprima = useAnteprimaFrequenza();
 
   useEffect(() => {
     if (scheda) {
@@ -57,12 +69,13 @@ export default function SchedaBibliotecaPage() {
   const labNome = labRisonanze ? 'Le Risonanze' : 'Il Banco del Lab';
 
   return (
-    <div className="fqz" data-testid="scheda-biblioteca">
+    <div className={`fqz esplora${anteprima.scheda ? ' con-anteprima' : ''}`} data-testid="scheda-biblioteca">
       <SoundTopbar firma="Sound" qui="/sound/esplora" />
       <main className="fqz-scheda-pagina">
+        {SOUND_ESPLORA_NUOVA && <SelettoreTre attiva="frequenze" />}
         <p className="fqz-briciole" data-testid="scheda-briciole">
-          <Link to="/sound">Aurya Sound</Link> ›{' '}
-          <Link to="/sound/esplora">Esplora</Link> › {scheda.t}
+          <Link to="/sound/esplora">Le frequenze</Link> ›{' '}
+          {famiglia ? <><Link to={`/sound/esplora?famiglia=${famiglia.slug}`} data-testid="scheda-famiglia">{famiglia.chiave}</Link> › </> : null}{scheda.t}
         </p>
         <header>
           <h1>{scheda.t}</h1>
@@ -79,10 +92,11 @@ export default function SchedaBibliotecaPage() {
         <article className="fqz-scheda-testo" data-testid="scheda-testo"
           dangerouslySetInnerHTML={{ __html: scheda.full || `<p>${scheda.body}</p>` }} />
         <div className="fqz-scheda-gesti">
-          <Link to="/sound/esplora" className="primo"
+          {/* ES3 — si ascolta QUI, nella barra, una alla volta (prima si tornava in biblioteca) */}
+          <button type="button" className="primo" onClick={() => anteprima.toggle(scheda)}
             data-testid="scheda-ascolta">
-            ▶ Ascoltala nella biblioteca
-          </Link>
+            {anteprima.inAscolto(scheda) ? '■ Ferma' : '▶ Ascoltala'}
+          </button>
           <Link to={labUrl} data-testid="scheda-lab">
             Provala dal vivo: {labNome} →
           </Link>
@@ -95,17 +109,20 @@ export default function SchedaBibliotecaPage() {
             {sorelle.map((s, i) => (
               <React.Fragment key={s.t}>
                 {i > 0 && ' · '}
-                <Link to={`/sound/esplora/${sluggifica(s.t)}`}>{s.t}</Link>
+                <Link to={`/sound/esplora/${sluggifica(s.t)}${famiglia ? `?famiglia=${famiglia.slug}` : ''}`}>{s.t}</Link>
               </React.Fragment>
             ))}
           </p>
         )}
+        {famiglia && <p style={{ marginTop: 14 }}><Link to={`/sound/esplora?famiglia=${famiglia.slug}`} className="esp-torna" data-testid="scheda-torna-famiglia">← Tutte le schede di {famiglia.chiave}</Link></p>}
       </main>
       <footer className="fqzfoot">
         <Link to="/sound/esplora">← La biblioteca</Link>
         <Link to="/sound/impara">Le fondamenta</Link>
         <Link to="/sound/lab">Il Lab</Link>
       </footer>
+      <BarraAnteprima anteprima={anteprima} famigliaSlug={famiglia?.slug || ''} />
+      {anteprima.curtain}
     </div>
   );
 }

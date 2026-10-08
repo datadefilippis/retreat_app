@@ -46,6 +46,7 @@ import AuryaMode from './visual/AuryaMode';
 import StudioScena from './visual/StudioScena';
 import { PROTOCOLLI } from './content/protocolli';
 import { BIB, SOUND_KEYS, LEARN_KEYS, CAT_SLUG, SLUG_CAT } from './content/biblioteca';
+import { CAT_HINT, CAT_INTRO, HOWTO_BODY } from './content/biblioteca_testi';   // ES0
 import { sluggifica } from './content/slugScheda';
 
 /* FA7 — l'insieme degli slug con pagina propria: le card della
@@ -184,14 +185,7 @@ const SOUND_CATS = ['Ambient', 'Melodie', 'Natura', 'Droni', 'Corpo', 'Campane',
 /* Orientamento della biblioteca: una riga sotto le tab (che cosa sto
    guardando) e tre righe sopra le card (perché è diverso dagli altri).
    Acculturare senza appesantire: nessun tutorial, nessun onboarding. */
-const CAT_HINT = {
-  'Bande cerebrali': "Ritmi dell'attività elettrica del cervello.",
-  'Altre frequenze': 'Frequenze sonore, fenomeni fisici, accordature e tradizioni.',
-  'Ritmi del corpo': 'Respiro, cuore, passo: ritmi da seguire, non frequenze da subire.',
-  'Metodi': 'Tecniche per costruire e modulare uno stimolo sonoro.',
-};
-/* Una riga per tab anche nel mondo dei suoni: chi arriva capisce a
-   cosa serve quella famiglia senza aprire tutte le card. */
+/* ES0 — i testi della biblioteca vivono in content/biblioteca_testi.js (una fonte, due pagine) */
 const SOUND_HINT = {
   Ambient: 'Atmosfere lunghe: il tappeto su cui appoggiare tutto il resto.',
   Melodie: 'Brani con un tema: archi, piano, flauto, orchestra. Portano un’emozione.',
@@ -205,30 +199,6 @@ const SOUND_HINT = {
   Respiro: 'Le guide del respiro: conteggi, respiro vero, campane di svolta.',
   Transizioni: 'Passaggi brevi per cambiare momento dentro la sessione.',
 };
-const CAT_INTRO = {
-  'Bande cerebrali': {
-    t: 'Cosa sono le bande cerebrali?',
-    p: "Il cervello presenta attività elettrica ritmica che possiamo osservare, per esempio, attraverso l'EEG. Delta, Theta, Alpha, Beta e Gamma descrivono diverse gamme di queste oscillazioni. Non sono semplicemente frequenze sonore: qui esploriamo il fenomeno cerebrale e, separatamente, come alcuni stimoli sonori cercano di interagire con esso.",
-  },
-  'Ritmi del corpo': {
-    t: 'Qui il ritmo lo dai tu.',
-    p: "Nelle altre sezioni il suono è l'oggetto dell'ascolto. Qui è un metronomo: un'onda che sale e scende per darti il passo del respiro, o una pulsazione per il cammino. La differenza conta anche per l'onestà di quello che possiamo dire, ciò che la ricerca documenta riguarda la pratica (respirare lentamente, muoversi a tempo), non il suono che la accompagna.",
-  },
-  'Altre frequenze': {
-    t: 'Frequenze diverse, origini diverse.',
-    p: "Qui incontrerai frequenze con origini molto diverse: ricerca neuroscientifica, fenomeni fisici, accordature musicali e tradizioni sonore. Il livello di evidenza ti aiuta a distinguere ciò che è documentato da ciò che appartiene soprattutto alla tradizione.",
-  },
-  'Metodi': {
-    t: 'Una frequenza dice «cosa». Un metodo dice «come».',
-    p: "I metodi descrivono modi diversi di costruire o modulare uno stimolo sonoro: dal battito binaurale al tono isocronico, fino alla modulazione di un paesaggio sonoro.",
-  },
-};
-const HOWTO_BODY = '<h4>Frequenza</h4><p>La proprietà fisica di un suono, espressa in Hertz.</p>'
-  + '<h4>Banda cerebrale</h4><p>Una gamma di oscillazioni dell\'attività elettrica cerebrale osservabile, per esempio, attraverso l\'EEG.</p>'
-  + '<h4>Metodo</h4><p>Il modo in cui uno stimolo sonoro viene costruito o modulato.</p>'
-  + '<h4>Badge A/B/C</h4><p>Indica il livello di evidenza relativo alle affermazioni presentate, non quanto una frequenza sia «potente».</p>'
-  + '<h4>Ascolta</h4><p>Permette di fare esperienza diretta dello stimolo.</p>';
-
 export default function FrequenzePage() {
   const navigate = useNavigate();
   const { user, isAuthenticated, loading: authLoading } = useAuth();

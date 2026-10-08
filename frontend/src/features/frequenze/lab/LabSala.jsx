@@ -13,6 +13,9 @@ import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import SoundTopbar from '../SoundTopbar';
 import StanzeSound from '../StanzeSound';
+import SelettoreTre from '../esplora/SelettoreTre';   // ES5
+import { SOUND_ESPLORA_NUOVA } from '../stato';
+import '../esplora/esplora.css';
 import TriggerStudio from '../TriggerStudio';
 import Percorsi from './Percorsi';
 import '../frequenze.css';
@@ -76,7 +79,7 @@ export default function LabSala() {
             ascolti, e ogni affermazione si misura con gli strumenti.
           </p>
         </div>
-        <StanzeSound attiva="lab" />
+        {SOUND_ESPLORA_NUOVA ? <SelettoreTre attiva="lab" /> : <StanzeSound attiva="lab" />}
       </header>
       <main>
         {/* LE STANZE: ognuna risponde a una domanda, ognuna ha il suo

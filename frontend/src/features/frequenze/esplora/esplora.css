@@ -1,0 +1,97 @@
+/* ESPLORA (lotto ES, 8/10/2026) — la stessa grammatica della casa
+   (casa.css: card, pastiglie, barra, foglio), applicata alle tre porte del
+   suono: Frequenze · Fondamenta · Lab. */
+
+/* ── il selettore a tre: sticky sotto la testata, uguale ovunque ── */
+.fqz .sel-tre{position:sticky;top:0;z-index:20;display:flex;gap:4px;padding:8px 0 10px;margin:0 0 6px;background:linear-gradient(to bottom,rgba(12,22,24,.98),rgba(12,22,24,.85) 80%,rgba(12,22,24,0))}
+.fqz .sel-tre-voce{flex:1;text-align:center;font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--dimmer);text-decoration:none;padding:11px 8px;border-radius:999px;border:1px solid transparent;transition:.15s}
+.fqz .sel-tre-voce:hover{color:var(--bone)}
+.fqz .sel-tre-voce.on{color:#14211B;background:linear-gradient(180deg,#D9C08A,#C9B37E);border-color:#D9C08A}
+@media(min-width:760px){.fqz .sel-tre{max-width:520px;margin:0 auto 10px}}
+
+/* ── la testata corta ── */
+.fqz.esplora header{margin-bottom:10px}
+.fqz.esplora .esp-sub{color:var(--dim);font-size:15px;margin:4px 0 0;max-width:620px}
+.fqz.esplora main{max-width:1180px}
+
+/* ── le famiglie: quattro card grandi col loro tono ── */
+.fqz.esplora .famiglie{display:grid;gap:12px;grid-template-columns:1fr;margin-top:16px}
+@media(min-width:620px){.fqz.esplora .famiglie{grid-template-columns:1fr 1fr}}
+.fqz.esplora .famiglia{position:relative;display:flex;flex-direction:column;gap:6px;min-height:150px;padding:20px 20px 18px;border-radius:20px;border:1px solid transparent;text-decoration:none;color:inherit;background:linear-gradient(135deg,var(--tono-velo,rgba(201,179,126,.3)),rgba(12,22,24,.75));box-shadow:0 10px 30px -18px rgba(0,0,0,.6);transition:transform .2s,box-shadow .2s}
+.fqz.esplora .famiglia:hover{transform:translateY(-2px);box-shadow:0 18px 40px -16px rgba(0,0,0,.7)}
+.fqz.esplora .famiglia .etichetta{color:var(--lamp)}
+.fqz.esplora .famiglia h2{font-family:var(--serif);font-weight:400;font-size:26px;line-height:1.1;margin:0;color:var(--bone)}
+.fqz.esplora .famiglia p{margin:0;color:var(--dim);font-size:14px;line-height:1.45}
+.fqz.esplora .famiglia .conta{margin-top:auto;font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--lamp)}
+.fqz.esplora .tono-salvia{--tono-velo:rgba(127,201,176,.32)}
+.fqz.esplora .tono-viola{--tono-velo:rgba(181,166,222,.34)}
+.fqz.esplora .tono-acqua{--tono-velo:rgba(126,193,199,.32)}
+.fqz.esplora .tono-oro{--tono-velo:rgba(201,179,126,.32)}
+
+/* ── dentro una famiglia: griglia di schede compatte ── */
+.fqz.esplora .esp-torna{all:unset;cursor:pointer;display:inline-block;margin:6px 0 10px;font-size:13px;color:var(--dimmer);text-decoration:none}
+.fqz.esplora .esp-torna:hover{color:var(--bone)}
+.fqz.esplora .esp-famiglia-testa{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:8px}
+.fqz.esplora .esp-famiglia-testa h2{font-family:var(--serif);font-weight:400;font-size:28px;margin:0;color:var(--bone)}
+.fqz.esplora .esp-famiglia-testa p{margin:2px 0 0;color:var(--dim);font-size:14px;max-width:620px}
+.fqz.esplora .esp-info{all:unset;cursor:pointer;flex:none;width:34px;height:34px;border-radius:50%;border:1px solid var(--line);color:var(--lamp);display:inline-flex;align-items:center;justify-content:center;font-family:var(--serif);font-size:17px}
+.fqz.esplora .schede{display:grid;gap:12px;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));margin-top:14px}
+@media(min-width:620px){.fqz.esplora .schede{grid-template-columns:repeat(auto-fill,minmax(210px,1fr))}}
+.fqz.esplora .scheda-card{position:relative;display:flex;flex-direction:column;gap:4px;padding:16px 16px 14px;border-radius:20px;border:1px solid transparent;background:linear-gradient(160deg,var(--tono-velo,rgba(201,179,126,.3)),rgba(12,22,24,.82));box-shadow:0 10px 30px -18px rgba(0,0,0,.6);color:inherit;text-decoration:none;transition:transform .2s,box-shadow .2s;min-height:150px}
+.fqz.esplora .scheda-card:hover{transform:translateY(-2px);box-shadow:0 18px 40px -16px rgba(0,0,0,.7)}
+.fqz.esplora .scheda-card.suona{border-color:var(--lamp)}
+.fqz.esplora .scheda-card h3{font-family:var(--serif);font-weight:400;font-size:20px;line-height:1.15;margin:0;color:var(--bone)}
+.fqz.esplora .scheda-card .hz{font-family:var(--mono);font-size:11px;letter-spacing:.06em;color:var(--lamp)}
+.fqz.esplora .scheda-card .uso{font-size:13px;color:var(--dim);line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.fqz.esplora .scheda-card .grado-punto{position:absolute;top:12px;right:12px;width:22px;height:22px;border-radius:50%;border:1px solid var(--line);font-family:var(--mono);font-size:10px;display:flex;align-items:center;justify-content:center;color:var(--bone);background:rgba(12,22,24,.5);cursor:help}
+.fqz.esplora .scheda-card .grado-punto.A{border-color:#7FC9B0;color:#7FC9B0}
+.fqz.esplora .scheda-card .grado-punto.B{border-color:#D9C08A;color:#D9C08A}
+.fqz.esplora .scheda-card .grado-punto.C{border-color:#B5A6DE;color:#B5A6DE}
+.fqz.esplora .scheda-card .gesti{display:flex;align-items:center;gap:8px;margin-top:auto;padding-top:10px}
+.fqz.esplora .scheda-card .play{all:unset;cursor:pointer;width:40px;height:40px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;background:linear-gradient(180deg,#D9C08A,#C9B37E);color:#14211B}
+.fqz.esplora .scheda-card .play svg{width:18px;height:18px;fill:currentColor}
+.fqz.esplora .scheda-card .apri{font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--dimmer);text-decoration:none}
+.fqz.esplora .scheda-card .apri:hover{color:var(--lamp)}
+.fqz.esplora .gruppo{margin-top:22px}
+.fqz.esplora .gruppo h3{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--dimmer);margin:0 0 8px}
+
+/* ── la chiave dei metodi: righe, non un pannello ── */
+.fqz.esplora .chiave{display:grid;gap:4px;margin:10px 0 0;padding:0;list-style:none;font-size:13px;color:var(--dim)}
+.fqz.esplora .chiave b{color:var(--bone);font-weight:500}
+
+/* ── cerca ── */
+.fqz.esplora .cerca{display:flex;gap:8px;align-items:center;margin-top:14px}
+.fqz.esplora .cerca input[type=search]{flex:1;background:var(--stone);border:1px solid var(--line);color:var(--bone);border-radius:999px;padding:11px 16px;font-size:14px;outline:none}
+.fqz.esplora .cerca input[type=search]:focus{border-color:var(--lamp)}
+
+/* ── il foglio ⓘ ── */
+.fqz .foglio-info .gatebox{max-width:520px;text-align:left}
+.fqz .foglio-info .legenda{display:grid;gap:8px;margin:12px 0}
+.fqz .foglio-info .legenda div{display:flex;gap:10px;align-items:flex-start;font-size:14px;color:var(--dim)}
+.fqz .foglio-info .legenda b{flex:none;width:24px;height:24px;border-radius:50%;border:1px solid var(--line);display:inline-flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:11px;color:var(--bone)}
+.fqz .foglio-info .howto h4{font-family:var(--serif);font-weight:400;font-size:16px;color:var(--lamp);margin:12px 0 2px}
+.fqz .foglio-info .howto p{margin:0;font-size:14px;color:var(--dim)}
+
+/* ── la barra dell'anteprima (riusa .lettore) ── */
+.fqz .barra-anteprima{bottom:0}
+.fqz .anteprima-onda{display:flex;align-items:flex-end;justify-content:center;gap:3px;background:linear-gradient(135deg,rgba(201,179,126,.35),rgba(12,22,24,.8))}
+.fqz .anteprima-onda span{width:4px;border-radius:2px;background:var(--lamp);animation:onda .9s ease-in-out infinite;height:40%}
+.fqz .anteprima-onda span:nth-child(2){animation-delay:.15s;height:70%}
+.fqz .anteprima-onda span:nth-child(3){animation-delay:.3s;height:50%}
+@keyframes onda{0%,100%{transform:scaleY(.5)}50%{transform:scaleY(1.2)}}
+.fqz .anteprima-barra{height:3px;border-radius:2px;background:var(--line);margin-top:6px;overflow:hidden}
+.fqz .anteprima-barra span{display:block;height:100%;background:var(--lamp);transition:width .25s linear}
+.fqz.esplora.con-anteprima{padding-bottom:120px}
+
+/* ── le fondamenta a capitoli ── */
+.fqz.fondamenta .capitoli{position:sticky;top:58px;z-index:19;display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding:8px 0 10px;margin-bottom:8px;background:rgba(12,22,24,.92);backdrop-filter:blur(10px)}
+.fqz.fondamenta .capitoli::-webkit-scrollbar{display:none}
+.fqz.fondamenta .capitolo{flex:none;font-family:var(--mono);font-size:11px;letter-spacing:.06em;padding:7px 12px;border-radius:999px;border:1px solid var(--line);color:var(--dim);text-decoration:none;background:transparent;cursor:pointer}
+.fqz.fondamenta .capitolo.on{border-color:var(--lamp);color:var(--lamp)}
+.fqz.fondamenta .gd{max-width:760px;margin:0 auto}
+.fqz.fondamenta .gd-nav,.fqz.fondamenta .gd-path{display:none}   /* l'indice e' il nostro, i capitoli sono i suoi */
+.fqz.fondamenta .gd-sec{scroll-margin-top:120px;padding-top:10px}
+.fqz.fondamenta .prossimo{display:flex;justify-content:flex-end;margin:28px 0 10px}
+
+/* ── movimento, con rispetto ── */
+@media(prefers-reduced-motion:reduce){.fqz.esplora *,.fqz.fondamenta *{transition:none!important;animation:none!important}}

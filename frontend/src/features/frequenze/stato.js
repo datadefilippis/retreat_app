@@ -29,3 +29,7 @@ export const PIU_PREZZO = '39 € l\'anno';
 /* SOUND_HUB_SEMPLICE (MR6): a true /sound e' l'hub di pulsanti di SN1; a false
    (founder 8/10 sera) la landing esplicativa, ottimizzata. */
 export const SOUND_HUB_SEMPLICE = false;
+/* SOUND_ESPLORA_NUOVA (lotto ES, 8/10/2026): /sound/esplora e /sound/impara
+   diventano pagine proprie (esplora/BibliotecaPage, esplora/FondamentaPage)
+   con il selettore a tre; a false si torna alle viste dentro il compositore. */
+export const SOUND_ESPLORA_NUOVA = true;

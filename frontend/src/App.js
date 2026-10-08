@@ -171,7 +171,10 @@ const PublicFrequencyPage = lazy(() => import("./features/frequenze/PublicFreque
 const MeditazioniPage = lazy(() => import("./features/frequenze/MeditazioniPage"));
 const PlaylistPage = lazy(() => import("./features/frequenze/casa/PlaylistPage"));   // SN1 — la playlist
 const PiuPage = lazy(() => import("./features/frequenze/casa/PiuPage"));             // SN4 — Aurya Più (rimanda finché è spento)
+import { SOUND_ESPLORA_NUOVA } from "./features/frequenze/stato";   // ES0
 const SoundHomePage = lazy(() => import("./features/frequenze/SoundHomePage"));
+const BibliotecaPage = lazy(() => import("./features/frequenze/esplora/BibliotecaPage"));   // ES0 — le frequenze
+const FondamentaPage = lazy(() => import("./features/frequenze/esplora/FondamentaPage"));   // ES0 — le fondamenta
 const VisualPage = lazy(() => import("./features/frequenze/visual/VisualPage"));
 /* LU (28/8) — il Lab e' una casa con le stanze: la Sala accoglie,
    ogni stanza ha il suo indirizzo (condivisibile, con la sua SEO). */
@@ -1107,6 +1110,10 @@ function AppRoutes() {
       <Route path="/sound" element={<SoundHomePage />} />
       {/* FA7 (FARO) — la pagina-scheda della biblioteca: PRIMA del
           catch-all /sound/* o la vista esplora se la mangia */}
+      {/* ES0 (8/10/2026): esplora e fondamenta sono pagine proprie; dietro il flag restano le viste del compositore (/sound/*) */}
+      {SOUND_ESPLORA_NUOVA && <Route path="/sound/esplora" element={<BibliotecaPage />} />}
+      {SOUND_ESPLORA_NUOVA && <Route path="/sound/impara" element={<FondamentaPage />} />}
+      {SOUND_ESPLORA_NUOVA && <Route path="/sound/impara/glossario" element={<FondamentaPage />} />}
       <Route path="/sound/esplora/:slug" element={<SchedaBibliotecaPage />} />
       <Route path="/sound/visual" element={<VisualPage />} />
       {/* LAB — PRIMA del catch-all, o FrequenzePage se lo mangia */}
