@@ -1,0 +1,145 @@
+/* IL VESTITO NUOVO DEL LAB (lotto LA, 8/10/2026 sera) — si posa SOPRA
+   lab.css, che resta com'e' (coi suoi pin). Scoped su .fqz.lab.vestito:
+   ?vestito=vecchio non vede nulla di questo. La grammatica e' quella della
+   casa, di Esplora e di Crea: card raggio 20, pastiglie, oro pieno sul gesto
+   primario, serif per i titoli, mono solo per i numeri. */
+
+/* ── la testata: compatta ── */
+.fqz.lab.vestito header{margin-bottom:8px;align-items:flex-start}
+.fqz.lab.vestito header h1{font-size:30px;margin:6px 0 2px}
+.fqz.lab.vestito header .sub{font-family:var(--serif);font-style:italic;font-size:16px;letter-spacing:0;text-transform:none;color:var(--lamp);margin:0}
+.fqz.lab.vestito .lab-ritorno{margin-bottom:6px}
+.fqz.lab.vestito .lab-ritorno a{padding:8px 14px;font-size:11px;background:rgba(12,22,24,.85);border-color:var(--line)}
+.fqz.lab.vestito main{max-width:1240px;margin:0 auto}
+.fqz.lab.vestito .sel-tre{position:static}   /* nelle stanze e' la striscia delle letture a restare in alto */
+
+/* ── la riga delle stanze: cinque pastiglie e il «?» ── */
+.fqz.lab.vestito .lab-riga-stanze{display:flex;align-items:center;gap:8px;padding:2px 0 10px;margin:0 0 10px}
+.fqz.lab.vestito .lab-riga-scroll{flex:1;min-width:0;display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;padding-right:6px;mask-image:linear-gradient(90deg,#000 92%,transparent)}
+.fqz.lab.vestito .lab-riga-scroll::-webkit-scrollbar{display:none}
+.fqz.lab.vestito .lab-stanza-pill{flex:none;font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);padding:9px 13px;border-radius:999px;border:1px solid var(--line);text-decoration:none;white-space:nowrap;transition:.15s;min-height:36px;display:inline-flex;align-items:center}
+.fqz.lab.vestito .lab-stanza-pill:hover{color:var(--bone);border-color:var(--dimmer)}
+.fqz.lab.vestito .lab-stanza-pill.on{color:#14211B;background:linear-gradient(180deg,#D9C08A,#C9B37E);border-color:#D9C08A}
+.fqz.lab.vestito .lab-spiega-apri{all:unset;cursor:pointer;flex:none;width:36px;height:36px;border-radius:50%;border:1px solid var(--lamp);color:var(--lamp);display:inline-flex;align-items:center;justify-content:center;font-family:var(--serif);font-size:18px}
+.fqz.lab.vestito .lab-spiega-apri:hover{background:var(--lamp);color:#14211B}
+
+/* ── il foglio «?»: perche' e cosa fare ── */
+.fqz.lab.vestito .lab-foglio .gatebox{border-radius:20px;padding:20px 20px 18px;max-width:600px;width:calc(100vw - 24px)}
+.fqz.lab.vestito .lab-foglio-testa{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:12px}
+.fqz.lab.vestito .lab-foglio-testa h2{margin:0;font-family:var(--serif);font-weight:400;font-size:24px;color:var(--bone)}
+.fqz.lab.vestito .lab-foglio-domanda{margin:2px 0 0;font-family:var(--serif);font-style:italic;font-size:15px;color:var(--lamp)}
+.fqz.lab.vestito .lab-x{all:unset;cursor:pointer;flex:none;width:34px;height:34px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:20px;color:var(--dimmer);border:1px solid transparent}
+.fqz.lab.vestito .lab-x:hover{color:var(--bone);border-color:var(--line)}
+.fqz.lab.vestito .lab-foglio .lab-testata{margin:0;flex-direction:column;gap:10px}
+.fqz.lab.vestito .lab-foglio .lab-testata>div{min-width:0;border-radius:14px;border-left-width:3px}
+.fqz.lab.vestito .lab-foglio .lab-testata p,.fqz.lab.vestito .lab-foglio .lab-testata li{font-size:14.5px;color:var(--bone)}
+.fqz.lab.vestito .lab-foglio .gatefoot button.primary{border-radius:999px;padding:11px 18px}
+
+/* ── le card e i gesti: la grammatica di oggi ── */
+.fqz.lab.vestito .lab-card{border-radius:20px;border:1px solid var(--line-soft);background:rgba(255,255,255,.035);padding:16px 16px 14px;margin:0 0 12px;max-width:none}
+.fqz.lab.vestito .lab-chead{display:flex;flex-direction:column;gap:2px;margin-bottom:10px}
+.fqz.lab.vestito .lab-chead h2{font-family:var(--serif);font-weight:400;font-size:21px;letter-spacing:0;text-transform:none;color:var(--bone);margin:0}
+.fqz.lab.vestito .lab-cnote{font-family:var(--sans);font-size:13px;letter-spacing:0;text-transform:none;color:var(--dimmer)}
+.fqz.lab.vestito .lab-card h3{font-family:var(--serif);font-weight:400;font-size:17px;letter-spacing:0;text-transform:none;color:var(--bone)}
+.fqz.lab.vestito .lab-play,.fqz.lab.vestito .lab-azione button{border-radius:999px;background:linear-gradient(180deg,#D9C08A,#C9B37E);border-color:#D9C08A;color:#14211B;font-weight:700;padding:12px 22px;min-height:46px;letter-spacing:.08em}
+.fqz.lab.vestito .lab-play.fermo,.fqz.lab.vestito .lab-azione button.fermo{background:linear-gradient(180deg,#8FD2CA,#6FB3AC);border-color:#8FD2CA;color:#08201D}
+.fqz.lab.vestito .lab-freeze{border-radius:999px;padding:8px 14px;min-height:36px;font-size:10.5px}
+.fqz.lab.vestito .chip{border-radius:999px}
+.fqz.lab.vestito .lab-forme{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.fqz.lab.vestito .lab-forme button{border-radius:14px;padding:10px 6px;min-height:58px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-size:9.5px}
+.fqz.lab.vestito .lab-forme button.on{background:linear-gradient(180deg,#D9C08A,#C9B37E);color:#14211B;border-color:#D9C08A}
+.fqz.lab.vestito .lab-slider::-webkit-slider-thumb{background:var(--lamp)}
+.fqz.lab.vestito input[type="number"],.fqz.lab.vestito input[type="text"],.fqz.lab.vestito select{border-radius:12px}
+.fqz.lab.vestito .lab-banco{border-radius:14px;padding:8px 12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:12.5px;color:var(--dimmer)}
+
+/* ── le didascalie: a un tocco (titolo in grassetto a vista, il resto si apre) ── */
+.fqz.lab.vestito .lab-didascalia{position:relative;cursor:pointer;border-radius:12px;padding:10px 12px;border-left:3px solid var(--lamp-dim);background:rgba(201,179,126,.06);max-height:4.2em;overflow:hidden;line-height:1.5;transition:max-height .2s}
+.fqz.lab.vestito .lab-didascalia::after{content:'leggi ▾';position:absolute;left:0;right:0;bottom:0;height:2em;display:flex;align-items:flex-end;justify-content:flex-end;padding:0 10px 4px;font-family:var(--mono);font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--lamp);background:linear-gradient(180deg,rgba(20,36,40,0),rgba(20,36,40,.96) 55%)}
+.fqz.lab.vestito .lab-didascalia.aperta{max-height:none;cursor:default}
+.fqz.lab.vestito .lab-didascalia.aperta{padding-bottom:26px}
+.fqz.lab.vestito .lab-didascalia.aperta::after{content:'chiudi ▴';cursor:pointer;background:none}
+@media(min-width:1024px){.fqz.lab.vestito .lab-didascalia{max-height:none}.fqz.lab.vestito .lab-didascalia::after{display:none}}
+
+/* ── le due colonne: comandi e letture ── */
+.fqz.lab.vestito .lab-due-colonne{display:flex;flex-direction:column;gap:0}
+@media(max-width:1023px){
+  /* sul telefono le letture stanno SOPRA, sticky, come striscia che scorre
+     (oscilloscopio · spettro · spettrogramma): giri la manopola e vedi l'onda */
+  .fqz.lab.vestito .lab-col-letture{order:-1;position:sticky;top:0;z-index:30;margin:0 -12px 12px;padding:6px 12px 8px;background:rgba(12,22,24,.96);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);display:grid;grid-template-columns:repeat(3,100%);grid-template-rows:auto auto;grid-auto-flow:column;column-gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+  .fqz.lab.vestito .lab-col-letture::-webkit-scrollbar{display:none}
+  .fqz.lab.vestito .lab-col-letture .lab-banco{grid-column:1 / -1;grid-row:1;position:sticky;left:0;margin:0 0 6px;padding:4px 0;background:transparent;border:none;font-size:11px}
+  .fqz.lab.vestito .lab-col-letture .lab-banco span{display:none}
+  .fqz.lab.vestito .lab-col-letture .lab-card{grid-row:2;scroll-snap-align:start;margin:0;padding:8px 10px 6px;min-width:0}
+  .fqz.lab.vestito .lab-col-letture .lab-card canvas{height:110px!important;max-height:110px}
+  .fqz.lab.vestito .lab-col-letture .lab-chead{flex-direction:row;align-items:baseline;gap:8px;margin-bottom:4px}
+  .fqz.lab.vestito .lab-col-letture .lab-chead h2{font-size:14px}
+  .fqz.lab.vestito .lab-col-letture .lab-chead h2::after{content:'  ‹ scorri ›';font-family:var(--mono);font-size:9px;letter-spacing:.08em;color:var(--dimmer)}
+  .fqz.lab.vestito .lab-col-letture .lab-cnote,.fqz.lab.vestito .lab-col-letture .lab-didascalia,.fqz.lab.vestito .lab-col-letture .lab-xy-didascalia{display:none}
+  .fqz.lab.vestito .lab-col-letture .lab-card p,.fqz.lab.vestito .lab-col-letture .lab-card .lab-volume{font-size:10px;margin:2px 0 0}
+}
+@media(min-width:1024px){
+  .fqz.lab.vestito .lab-due-colonne{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:start}
+  .fqz.lab.vestito .lab-col-letture{position:sticky;top:70px}
+  .fqz.lab.vestito .lab-col-letture .lab-card canvas{max-height:200px}
+}
+
+/* ── le Meraviglie (e i percorsi) come card ── */
+.fqz.lab.vestito .lab-mer-famiglia{display:grid;grid-template-columns:1fr;gap:8px;margin-bottom:14px}
+@media(min-width:620px){.fqz.lab.vestito .lab-meraviglie .lab-mer-famiglia{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(min-width:1024px){.fqz.lab.vestito .lab-meraviglie .lab-mer-famiglia{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.fqz.lab.vestito .lab-mer-famiglia h3{grid-column:1 / -1;margin:6px 0 0;font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--dimmer)}
+.fqz.lab.vestito .lab-mer{border-radius:16px;border:1px solid var(--line-soft);background:rgba(255,255,255,.03);padding:10px 12px;margin:0;transition:.15s}
+.fqz.lab.vestito .lab-mer.viva{border-color:var(--water);background:rgba(102,183,156,.08)}
+.fqz.lab.vestito .lab-mer-riga{display:flex;align-items:center;gap:10px}
+.fqz.lab.vestito .lab-mer .lab-freeze{flex:none;width:40px;height:40px;padding:0;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:14px;background:linear-gradient(180deg,#D9C08A,#C9B37E);border-color:#D9C08A;color:#14211B}
+.fqz.lab.vestito .lab-mer .lab-freeze.fermo{background:linear-gradient(180deg,#8FD2CA,#6FB3AC);border-color:#8FD2CA;color:#08201D}
+.fqz.lab.vestito .lab-mer-testo{flex:1;min-width:0}
+.fqz.lab.vestito .lab-mer-testo b{font-family:var(--serif);font-weight:400;font-size:16px;color:var(--bone)}
+.fqz.lab.vestito .lab-mer-testo span,.fqz.lab.vestito .lab-mer-testo small{font-size:12.5px;color:var(--dimmer)}
+.fqz.lab.vestito .lab-cartellino{flex:none;width:22px;height:22px;border-radius:50%;border:1px solid var(--line);display:inline-flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:10px;font-style:normal}
+.fqz.lab.vestito .lab-mer .lab-didascalia{margin-top:8px;max-height:none;cursor:default}
+.fqz.lab.vestito .lab-mer .lab-didascalia::after{display:none}
+.fqz.lab.vestito .lab-percorsi .lab-mer-famiglia{grid-template-columns:1fr}
+
+/* ── il Ritratto a passi, le Risonanze, l'Orecchio ── */
+.fqz.lab.vestito .lab-ritratto>.lab-chead h2::before,.fqz.lab.vestito .lab-fonderia>h3::before,.fqz.lab.vestito .lab-ritratto-quaderno>h3::before{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;margin-right:8px;border-radius:50%;background:linear-gradient(180deg,#D9C08A,#C9B37E);color:#14211B;font-family:var(--mono);font-size:11px;font-weight:700;vertical-align:middle}
+.fqz.lab.vestito .lab-ritratto>.lab-chead h2::before{content:'1'}
+.fqz.lab.vestito .lab-fonderia>h3::before{content:'2'}
+.fqz.lab.vestito .lab-ritratto-quaderno>h3::before{content:'3'}
+.fqz.lab.vestito .lab-fonderia,.fqz.lab.vestito .lab-quaderno{border-radius:16px;border:1px solid var(--line-soft);background:rgba(255,255,255,.025);padding:12px 14px;margin-top:12px}
+.fqz.lab.vestito .lab-rz-tono{border-radius:14px}
+.fqz.lab.vestito .lab-accordatore{border-radius:16px}
+
+/* ── la coda: una riga, non tre ── */
+.fqz.lab.vestito .lab-coda{display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px;margin:14px 0 0}
+.fqz.lab.vestito .lab-coda .safetyline,.fqz.lab.vestito .lab-coda [data-testid="fqz-safety-line"]{margin:0;padding:8px 12px;border-radius:12px;font-size:12px;line-height:1.4;flex:1 1 260px;max-width:none}
+.fqz.lab.vestito .lab-coda .safetyline p,.fqz.lab.vestito .lab-coda .safetyline span{margin:0;display:inline;font-size:12px}
+.fqz.lab.vestito .lab-coda .safetyline br{display:none}
+.fqz.lab.vestito .lab-coda .lab-glossario-ponte{margin:0;flex:1 1 220px}
+.fqz.lab.vestito .lab-invito-fondo{max-width:1240px;margin:16px auto 0;opacity:.9}
+
+/* ── la Sala: carte col tono della stanza ── */
+.fqz.lab.vestito .lab-sala-stanze{grid-template-columns:1fr;gap:12px}
+@media(min-width:620px){.fqz.lab.vestito .lab-sala-stanze{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(min-width:1024px){.fqz.lab.vestito .lab-sala-stanze{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.fqz.lab.vestito .lab-sala-carta{position:relative;border-radius:20px;padding:20px 20px 18px;min-height:170px;border:1px solid transparent;background:linear-gradient(135deg,var(--tono-velo,rgba(201,179,126,.3)),rgba(12,22,24,.78));box-shadow:0 10px 30px -18px rgba(0,0,0,.6);transition:transform .2s,box-shadow .2s}
+.fqz.lab.vestito .lab-sala-carta:hover{transform:translateY(-2px);box-shadow:0 18px 40px -16px rgba(0,0,0,.7);border-color:transparent}
+.fqz.lab.vestito .lab-sala-carta .lab-sala-sagoma{position:absolute;top:14px;right:16px;font-size:22px;opacity:.85}
+.fqz.lab.vestito .lab-sala-carta h2{font-family:var(--serif);font-weight:400;font-size:24px}
+.fqz.lab.vestito .lab-sala-domanda{font-size:15px}
+.fqz.lab.vestito .lab-sala-cosa{font-size:13px;color:var(--dim)}
+.fqz.lab.vestito .lab-sala-entra{color:var(--lamp);margin-top:6px}
+.fqz.lab.vestito .tono-salvia{--tono-velo:rgba(127,201,176,.32)}
+.fqz.lab.vestito .tono-acqua{--tono-velo:rgba(126,193,199,.32)}
+.fqz.lab.vestito .tono-oro{--tono-velo:rgba(201,179,126,.32)}
+.fqz.lab.vestito .tono-viola{--tono-velo:rgba(181,166,222,.34)}
+.fqz.lab.vestito .tono-sabbia{--tono-velo:rgba(217,160,110,.3)}
+.fqz.lab.vestito .lab-sala-profili{border-radius:20px}
+.fqz.lab.vestito .lab-sala-profili .lab-sala-profilo{flex-direction:column;gap:4px;padding:12px 0}
+.fqz.lab.vestito .lab-sala-profilo b{font-family:var(--serif);font-weight:400;font-size:17px;min-width:0}
+.fqz.lab.vestito .lab-sala-profilo span{min-width:0;font-size:13.5px}
+.fqz.lab.vestito .lab-sala-profilo a{display:inline-block;margin-left:6px;padding:4px 10px;border-radius:999px;border:1px solid var(--lamp);font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase}
+.fqz.lab.vestito .lab-arrivo{font-size:13.5px;color:var(--dimmer)}
+.fqz.lab.vestito .sld-parentela{font-size:14.5px;color:var(--dim);max-width:640px}
+
+@media(prefers-reduced-motion:reduce){.fqz.lab.vestito *{transition:none!important}}

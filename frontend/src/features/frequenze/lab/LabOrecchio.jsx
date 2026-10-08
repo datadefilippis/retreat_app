@@ -11,7 +11,7 @@ import { useLab } from './usaLab';
 export default function LabOrecchio() {
   const { ottieniLab, ottieniAnalisi, ottieniVivo, fermo, suonaDavvero } = useLab();
   return (
-    <Stanza slug="orecchio" titolo="L’Orecchio"
+    <Stanza slug="orecchio" titolo="L’Orecchio" lettureUltime
       domanda="Che nota è? Che suono fa il mondo?"
       perche={<>Il banco può ascoltare, oltre che generare: apri il
         microfono e le letture ti mostrano il suono <b>vero</b>, la tua

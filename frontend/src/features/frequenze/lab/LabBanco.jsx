@@ -13,7 +13,7 @@ export default function LabBanco() {
   const { ottieniLab, ottieniAnalisi, ottieniXY,
           fermo, setSuona, suonaDavvero } = useLab();
   return (
-    <Stanza slug="banco" titolo="Il Banco"
+    <Stanza slug="banco" titolo="Il Banco" lettureUltime
       domanda="Com’è fatto un suono?"
       perche={<>Ogni suono che senti (una voce, una campana, il mare)
         è fatto di onde. Qui ne generi una <b>tu</b>, e la guardi mentre
@@ -28,6 +28,8 @@ export default function LabBanco() {
       <Generatore ottieniLab={ottieniLab} onSuono={setSuona} />
       <SecondaVoce ottieniLab={ottieniLab}
         onSuono={() => setSuona((v) => !v)} />
+      {/* LA2 — l'ultimo figlio sono le LETTURE: il telaio le mette accanto ai
+          comandi (due colonne su desktop, striscia sticky sul telefono) */}
       <LettureBanco ottieniAnalisi={ottieniAnalisi} ottieniXY={ottieniXY}
         fermo={fermo} suonaDavvero={suonaDavvero} />
     </Stanza>

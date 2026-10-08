@@ -37,3 +37,7 @@ export const SOUND_ESPLORA_NUOVA = true;
    barra a una riga, sessione al centro coi livelli ripiegabili, banco del
    mix, salva/pubblica in basso. ?vestito=vecchio mostra la vista di prima. */
 export const SOUND_CREA_NUOVO = true;
+/* LA (8/10/2026 sera) — il vestito nuovo del Lab (lab/lab-vestito.css +
+   telaio Stanza): foglio «?», riga delle stanze, letture accanto ai comandi.
+   ?vestito=vecchio mostra il Lab di prima. */
+export const LAB_VESTITO_NUOVO = true;

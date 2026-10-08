@@ -12,7 +12,7 @@ export default function LabMeraviglie() {
   const { ottieniLab, ottieniAnalisi, ottieniXY,
           fermo, suonaDavvero } = useLab();
   return (
-    <Stanza slug="meraviglie" titolo="Le Meraviglie"
+    <Stanza slug="meraviglie" titolo="Le Meraviglie" lettureUltime
       domanda="Cosa sa fare davvero il suono, senza trucchi?"
       perche={<>Vortici che ti girano attorno alla testa, suoni che il
         tuo orecchio <b>inventa</b>, scale che scendono per sempre,

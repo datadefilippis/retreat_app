@@ -15,6 +15,8 @@ import SoundTopbar from '../SoundTopbar';
 import StanzeSound from '../StanzeSound';
 import SelettoreTre from '../esplora/SelettoreTre';   // ES5
 import { SOUND_ESPLORA_NUOVA } from '../stato';
+import { vestitoNuovo } from './Stanza';   // LA4
+import './lab-vestito.css';
 import '../esplora/esplora.css';
 import TriggerStudio from '../TriggerStudio';
 import Percorsi from './Percorsi';
@@ -23,27 +25,27 @@ import './lab.css';
 
 const STANZE = [
   {
-    via: '/sound/lab/banco', nome: 'Il Banco',
+    via: '/sound/lab/banco', tono: 'salvia', sagoma: '〰', nome: 'Il Banco',
     domanda: 'Com’è fatto un suono?',
     cosa: 'Generi un’onda e la guardi mentre suona: due voci, interferenza, la geometria degli intervalli in XY.',
   },
   {
-    via: '/sound/lab/orecchio', nome: 'L’Orecchio',
+    via: '/sound/lab/orecchio', tono: 'acqua', sagoma: '◉', nome: 'L’Orecchio',
     domanda: 'Che nota è? Che suono fa il mondo?',
     cosa: 'Il microfono entra nel banco: accordatore di precisione, e le letture mostrano la tua voce, un bicchiere, la stanza.',
   },
   {
-    via: '/sound/lab/ritratto', nome: 'Il Ritratto',
+    via: '/sound/lab/ritratto', tono: 'oro', sagoma: '◈', nome: 'Il Ritratto',
     domanda: 'Di cosa è fatto il suono del mio oggetto?',
     cosa: 'Sei secondi di registrazione e ne esce la carta d’identità acustica, poi il banco la rifonde e la confronti con l’originale.',
   },
   {
-    via: '/sound/lab/meraviglie', nome: 'Le Meraviglie',
+    via: '/sound/lab/meraviglie', tono: 'viola', sagoma: '✦', nome: 'Le Meraviglie',
     domanda: 'Cosa sa fare davvero il suono?',
     cosa: 'Tredici fenomeni veri col cartellino: vortici attorno alla testa, suoni che l’orecchio inventa, scale infinite, rumori colorati.',
   },
   {
-    via: '/sound/lab/risonanze', nome: 'Le Risonanze',
+    via: '/sound/lab/risonanze', tono: 'sabbia', sagoma: '◎', nome: 'Le Risonanze',
     domanda: 'A quale frequenza canta il mio oggetto?',
     cosa: 'Lo sweep interroga, il microfono ascolta, la curva mostra i picchi: il primo passo della cimatica, col quaderno di banco.',
   },
@@ -62,11 +64,12 @@ const PROFILI = [
 ];
 
 export default function LabSala() {
+  const nuovo = vestitoNuovo();   // LA4: le carte col tono della stanza
   useEffect(() => {
     document.title = 'Aurya Sound Lab: il laboratorio del suono';
   }, []);
   return (
-    <div className="fqz lab" data-testid="lab-page">
+    <div className={`fqz lab${nuovo ? ' vestito' : ''}`} data-testid="lab-page">
       <SoundTopbar firma="Lab" qui="/sound/lab" />
       <header>
         <div>
@@ -86,8 +89,9 @@ export default function LabSala() {
             indirizzo, si entra dove porta la propria curiosita' */}
         <div className="lab-sala-stanze" data-testid="lab-sala-stanze">
           {STANZE.map((s) => (
-            <Link key={s.via} to={s.via} className="lab-sala-carta"
+            <Link key={s.via} to={s.via} className={`lab-sala-carta tono-${s.tono}`}
               data-testid={`lab-carta-${s.via.split('/').pop()}`}>
+              {nuovo && <span className="lab-sala-sagoma" aria-hidden="true">{s.sagoma}</span>}
               <h2>{s.nome}</h2>
               <p className="lab-sala-domanda">{s.domanda}</p>
               <p className="lab-sala-cosa">{s.cosa}</p>
