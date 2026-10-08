@@ -15,6 +15,8 @@ import { Link, useParams, useNavigate } from 'react-router-dom';
 import { frequenciesAPI } from '../../api/frequencies';
 import platformApi from '../../api/platformClient';
 import { SOUND_PIU_ATTIVO } from './stato';
+import Cuore, { InvitoAccount } from './casa/Cuore';   // MR2 — il cuore anche qui
+import { usePreferite } from './casa/preferite';
 import { startPreview } from './engine/synth';
 import { resolveAudioLayers, resolveVoiceLayers, resolveGuidaLayers } from './engine/assets';
 import { avvisoCuffieScore } from './engine/altoparlante';
@@ -269,6 +271,7 @@ export default function PublicFrequencyPage() {
      si chiede con la stessa prova del catalogo: chi non e' nel Cerchio
      non la vede e il player resta quello di sempre. */
   const navigate = useNavigate();
+  const pref = usePreferite();   // MR2
   const [playlist, setPlaylist] = useState(null);
   useEffect(() => {
     const ps = provenienzaRef.current?.playlist;
@@ -596,7 +599,10 @@ export default function PublicFrequencyPage() {
         )}
         <section className="bib">
           {track.intent && <div className="learn-kicker">{INTENTS[track.intent] || track.intent}</div>}
-          <h2 style={{ fontSize: 27 }}>{track.title}</h2>
+          <h2 style={{ fontSize: 27, display: 'flex', alignItems: 'center', gap: 4 }}>
+            <span>{track.title}</span>
+            <Cuore variante="inline" on={pref.isFav(slug)} onClick={() => pref.toggle(slug)} titolo={track.title} testid="fqp-cuore" />
+          </h2>
           {/* SN4 — il badge del Più: finché l'abbonamento è spento è un'etichetta
               («Presto nel Più», si ascolta col Cerchio); acceso, rimanda alla
               pagina del Più. Nessun cancello qui: lo decide l'accensione. */}
@@ -744,6 +750,7 @@ export default function PublicFrequencyPage() {
         <a href="/blog">Magazine</a>
       </footer>
       {curtain}
+      <InvitoAccount aperto={pref.chiediAccount} onChiudi={() => pref.setChiediAccount(false)} ritorno={`/frequenze/${slug}`} />
       {gateOpen && !unlocked && (
         <div className="gate">
           <div className="gatebox" style={{ maxWidth: 520 }}>

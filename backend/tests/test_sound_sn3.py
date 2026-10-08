@@ -42,7 +42,7 @@ class TestCasa:
         assert 'id="tuo-spazio"' in src and 'data-testid="casa-riprendi"' in src and 'data-testid="casa-recenti"' in src
         assert "?da=riprendi&t=${riprendi.secondo}" in src
         # la sezione vive solo con l'account e solo se ha qualcosa da dire
-        assert "hasAccount && (riprendi || recenti.length > 0 || preferite.length > 0)" in src
+        assert "hasAccount && (riprendi || recenti.length > 0 || preferite.length > 0 || playlistSalvate.length > 0)" in src
         assert "vaiA('tuo-spazio') : setHeartAsk(true)" in src and ">I tuoi</button>" in src
         # i recenti sono solo quelli ancora in catalogo
         assert "(spazio.recenti || []).map((s) => perSlug[s]).filter(Boolean)" in src

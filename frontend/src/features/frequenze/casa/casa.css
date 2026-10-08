@@ -93,3 +93,13 @@
 .fqz .parte-di a{color:var(--lamp);text-decoration:none;font-family:var(--mono);font-size:11px;letter-spacing:.06em;padding:5px 10px;border:1px solid var(--line);border-radius:999px}
 .fqz .parte-di a[aria-disabled=true]{opacity:.35;pointer-events:none}
 .fqz .parte-di .spazio{flex:1}
+
+/* ── MR2: il cuore, uno solo per tutte le viste ── */
+.fqz .cuore{display:inline-flex;align-items:center;justify-content:center;padding:0;min-height:0;border-radius:50%;cursor:pointer;color:var(--bone);background:rgba(12,22,24,.55);border:1px solid rgba(233,228,217,.25);box-shadow:none;transition:transform .15s,color .15s}
+.fqz .cuore svg{width:15px;height:15px;flex:none;fill:transparent;stroke:currentColor;stroke-width:1.6;transition:fill .15s}
+.fqz .cuore:hover{color:var(--lamp);border-color:var(--lamp);transform:scale(1.06)}
+.fqz .cuore.on svg{fill:var(--lamp);stroke:var(--lamp)}
+.fqz .cuore-card{position:absolute;top:10px;right:10px;width:34px;height:34px}
+.fqz .cuore-inline{width:38px;height:38px;vertical-align:middle;margin-left:10px}
+.fqz .cuore-inline svg{width:17px;height:17px}
+.fqz .cuore-riga{width:34px;height:34px;flex:none}

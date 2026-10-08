@@ -15,6 +15,8 @@ import SoundTopbar from '../SoundTopbar';
 import { SafetyLine, SafetyCurtain } from '../SafetyCurtain';
 import { SogliaCerchio } from '../MeditazioniPage';
 import { INTENTI, fmtMin } from './MeditazioniCasa';
+import Cuore, { InvitoAccount } from './Cuore';
+import { usePreferite } from './preferite';
 import '../frequenze.css';
 import '../meditazioni.css';
 import './casa.css';
@@ -25,6 +27,7 @@ export default function PlaylistPage() {
   const [p, setP] = useState(null);
   const [stato, setStato] = useState('loading');   // loading | ok | locked | notfound
   const [safety, setSafety] = useState(false);
+  const pref = usePreferite();   // MR2 — il cuore sulla playlist e su ogni riga
 
   const carica = async () => {
     try {
@@ -61,7 +64,9 @@ export default function PlaylistPage() {
       <main>
         <p style={{ margin: '6px 0 14px' }}><Link to="/meditazioni" style={{ color: 'var(--dimmer)', textDecoration: 'none', fontSize: 13 }}>← Le meditazioni</Link></p>
         <div className="pl-testa">
-          <div className="pl-cover">{p.cover_url && <img src={p.cover_url} alt="" />}</div>
+          <div className="pl-cover" style={{ position: 'relative' }}>{p.cover_url && <img src={p.cover_url} alt="" />}
+            <Cuore on={pref.isFavPlaylist(p.slug)} onClick={() => pref.togglePlaylist(p.slug)} titolo={p.title} testid="playlist-cuore" />
+          </div>
           <div>
             <span className="etichetta">Playlist{p.accesso === 'piu' ? ' · Più' : ''}</span>
             <h1 style={{ marginTop: 6 }}>{p.title}</h1>
@@ -80,6 +85,7 @@ export default function PlaylistPage() {
               <span className="n">{String(i + 1).padStart(2, '0')}</span>
               <span className="pl-mini">{t.cover_url && <img src={t.cover_url} alt="" loading="lazy" />}</span>
               <span className="t"><b>{t.title}</b><span>{t.intent ? `${INTENTI[t.intent] || t.intent} · ` : ''}{fmtMin(t.duration_sec)}{t.has_voce ? ' · con la voce' : ''}{t.accesso === 'piu' ? ' · Più' : ''}</span></span>
+              <Cuore variante="riga" on={pref.isFav(t.slug)} onClick={() => pref.toggle(t.slug)} titolo={t.title} testid="playlist-riga-cuore" />
               <Link to={`/frequenze/${t.slug}?da=playlist&playlist=${encodeURIComponent(p.slug)}`} className="med-ascolta">Ascolta</Link>
             </li>
           ))}
@@ -90,6 +96,7 @@ export default function PlaylistPage() {
         <a href="/">← Torna su Aurya</a><a href="/meditazioni">Le meditazioni</a><a href="/sound">Il suono</a><a href="/newsletter">Il Cerchio</a>
       </footer>
       {safety && <SafetyCurtain mode="review" onClose={() => setSafety(false)} />}
+      <InvitoAccount aperto={pref.chiediAccount} onChiudi={() => pref.setChiediAccount(false)} ritorno={`/meditazioni/playlist/${slug}`} />
     </div>
   );
 }

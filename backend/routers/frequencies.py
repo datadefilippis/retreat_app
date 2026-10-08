@@ -969,7 +969,10 @@ async def list_favorites(account: dict = Depends(get_current_platform_account)):
     favs = await db.frequency_favorites.find(
         {"platform_account_id": account["id"]},
         {"_id": 0, "slug": 1}).to_list(500)
-    slugs = [f["slug"] for f in favs]
+    # MR2 (8/10/2026) — le PLAYLIST salvate vivono nella stessa collezione con
+    # lo slug «playlist:{slug}» (stesso indice unico, nessuna migrazione)
+    playlists = [f["slug"][len(_PL_PREFISSO):] for f in favs if f["slug"].startswith(_PL_PREFISSO)]
+    slugs = [f["slug"] for f in favs if not f["slug"].startswith(_PL_PREFISSO)]
     tracks = await frequency_tracks_collection.find(
         solo_pubbliche({"slug": {"$in": slugs}, "status": "published"}),
         {"_id": 0, "slug": 1, "title": 1, "intent": 1,
@@ -982,7 +985,15 @@ async def list_favorites(account: dict = Depends(get_current_platform_account)):
             score = t.pop("score", None) or {}
             t["duration_sec"] = score.get("duration_sec")
             items.append(t)
-    return {"items": items, "slugs": slugs}
+    playlist_items = []
+    if playlists:
+        from database import sound_playlists_collection
+        async for pl in sound_playlists_collection.find(
+                {"slug": {"$in": playlists}, "status": "published"},
+                {"_id": 0, "slug": 1, "title": 1, "cover_url": 1, "tracce": 1}):
+            playlist_items.append({"slug": pl["slug"], "title": pl.get("title"), "cover_url": pl.get("cover_url"),
+                                   "tracce_count": len(pl.get("tracce") or [])})
+    return {"items": items, "slugs": slugs, "playlists": playlists, "playlist_items": playlist_items}
 
 
 # ── FA4 (piano FARO, 30/8/2026) — IL QUADERNO CHE TI SEGUE ─────────
@@ -1052,6 +1063,26 @@ async def scrivi_quaderno(
          "$setOnInsert": {"created_at": utc_now()}},
         upsert=True)
     return {"registri": {k: len(v) for k, v in puliti.items()}}
+
+
+_PL_PREFISSO = "playlist:"
+
+
+@router.put("/favorites/playlist/{slug}", status_code=status.HTTP_204_NO_CONTENT)
+async def add_favorite_playlist(slug: str, account: dict = Depends(get_current_platform_account)):
+    """MR2 — il cuore sulla playlist (pubblicata)."""
+    from database import db, sound_playlists_collection
+    if not await sound_playlists_collection.find_one({"slug": slug, "status": "published"}, {"_id": 1}):
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Playlist non trovata.")
+    await db.frequency_favorites.update_one(
+        {"platform_account_id": account["id"], "slug": _PL_PREFISSO + slug},
+        {"$setOnInsert": {"created_at": utc_now()}}, upsert=True)
+
+
+@router.delete("/favorites/playlist/{slug}", status_code=status.HTTP_204_NO_CONTENT)
+async def remove_favorite_playlist(slug: str, account: dict = Depends(get_current_platform_account)):
+    from database import db
+    await db.frequency_favorites.delete_one({"platform_account_id": account["id"], "slug": _PL_PREFISSO + slug})
 
 
 @router.put("/favorites/{slug}", status_code=status.HTTP_204_NO_CONTENT)

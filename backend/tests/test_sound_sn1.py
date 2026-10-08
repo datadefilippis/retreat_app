@@ -60,8 +60,8 @@ class TestLaCasa:
         assert "const href = `/frequenze/${t.slug}?da=${da}${playlist ? `&playlist=${encodeURIComponent(playlist)}` : ''}`;" in src
         # la vetrina: a rotazione fra le in_vetrina (SN2), altrimenti la piu' recente
         assert "inVetrina[giorno % inVetrina.length]" in src and "tutte[0]" in src
-        # le preferite chiedono l'account, mai l'email (stessa regola di prima)
-        assert "if (!hasAccount) { setHeartAsk(true); return; }" in src
+        # le preferite chiedono l'account, mai l'email (MR2: la regola vive nell'hook condiviso)
+        assert "if (!conto) { setChiediAccount(true); return; }" in (FQ / "casa" / "preferite.js").read_text()
         # la barra in basso: cinque gesti
         barra = src.split('data-testid="casa-barra"')[1].split("</nav>")[0]
         for voce in ("Esplora", "Playlist", "Cerca", "I tuoi", "Impara"):   # SN3: «Preferite» → «I tuoi»

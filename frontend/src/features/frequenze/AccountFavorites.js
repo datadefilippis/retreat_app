@@ -17,17 +17,18 @@ const INTENTS = {
 
 export default function AccountFavorites() {
   const [items, setItems] = useState([]);
+  const [playlists, setPlaylists] = useState([]);
 
   useEffect(() => {
     platformApi.get('/frequencies/favorites')
-      .then((r) => setItems(r.data.items || []))
+      .then((r) => { setItems(r.data.items || []); setPlaylists(r.data.playlist_items || []); })
       .catch(() => { /* sezione silenziosa se l'endpoint non risponde */ });
   }, []);
 
   // RF (8/10/2026, founder): nell'hub ogni cosa ha la sua sezione anche
   // quando e' vuota, con l'invito — prima qui non c'era nulla e la tessera
   // «Meditazioni» atterrava sulla sezione dopo
-  if (!items.length) {
+  if (!items.length && !playlists.length) {
     return (
       <section data-testid="account-meditations">
         <h2 className="text-sm font-semibold text-gray-900 mb-2">Le mie meditazioni</h2>
@@ -56,6 +57,17 @@ export default function AccountFavorites() {
               </p>
             </div>
             <span className="text-xs text-primary font-medium">Ascolta →</span>
+          </Link>
+        ))}
+        {/* MR2 — le playlist salvate, sotto le meditazioni */}
+        {playlists.map((p) => (
+          <Link key={`pl-${p.slug}`} to={`/meditazioni/playlist/${p.slug}`}
+            className="flex items-center justify-between rounded-xl border border-gray-200 bg-white px-4 py-3 hover:bg-gray-50 transition-colors" data-testid="account-playlist-salvata">
+            <div className="text-sm">
+              <p className="font-semibold text-gray-900">♥ {p.title}</p>
+              <p className="text-xs text-gray-600">Playlist · {p.tracce_count} meditazioni</p>
+            </div>
+            <span className="text-xs text-primary font-medium">Apri →</span>
           </Link>
         ))}
       </div>
