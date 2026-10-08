@@ -85,7 +85,7 @@ export function CardPlaylist({ p, fav = false, onCuore = null }) {
 export function CardPercorso({ c }) {
   const prezzo = c.price != null ? `${Number(c.price).toFixed(0)} €` : '';
   return (
-    <a href={c.url} className="mcard tono-oro" data-testid="casa-percorso-card">
+    <Link to={`${c.url}?da=meditazioni`} className="mcard tono-oro" data-testid="casa-percorso-card">
       <span className="mcover">
         {c.image_url && <img src={c.image_url} alt="" loading="lazy" />}
         <span className="mpiu" style={{ background: 'rgba(47,87,73,.92)', color: '#fff' }}>PERCORSO</span>
@@ -95,7 +95,7 @@ export function CardPercorso({ c }) {
         <h3>{c.name}</h3>
         <span className="mmeta">{c.suono_count} {c.suono_count === 1 ? 'meditazione' : 'meditazioni'} · {c.lezioni_count} lezioni · {c.org?.name}</span>
       </span>
-    </a>
+    </Link>
   );
 }
 
@@ -196,26 +196,55 @@ function MeditazioniCasaDentro() {
   const [cercaAperta, setCercaAperta] = useState(false);
   const cercaRef = useRef(null);
 
+  /* MR7 (8/10 sera, founder: «ero dentro, sono uscito e tornato, e mi chiedeva
+     di iscrivermi») — la soglia si mostra SOLO se il server dice «locked».
+     Prima qualunque errore (un token dell'account scaduto → 401, la rete)
+     chiudeva la casa a chi era gia' nel Cerchio. Ora: con l'account si prova
+     l'account; se risponde 401 si riprova con la prova del Cerchio; se cade
+     la rete si dice «riprova», senza chiedere nulla. */
+  const [errore, setErrore] = useState('');
   const carica = async () => {
+    setErrore('');
+    /* con l'account si manda ANCHE la prova del Cerchio, se c'e': il server la
+       legge per prima, cosi' un token scaduto (401 o 403 da anonimo) non chiude
+       la casa a chi e' nel Cerchio; e se cade lo stesso, si riprova solo con la prova */
+    const conAccount = (before) => platformApi.get('/frequencies/catalog', {
+      ...(before ? { params: { before } } : {}),
+      ...(prova() ? { headers: { 'X-Fqz-Unlock': prova() } } : {}),
+    });
+    const conProva = (before) => frequenciesAPI.getCatalog(prova(), before || null);
+    let via = hasAccount ? conAccount : conProva;
+    const pagina = async (before) => {
+      try { return await via(before); }
+      catch (e) {
+        const st = e?.response?.status;
+        if (via === conAccount && (st === 401 || st === 403) && prova()) { via = conProva; return via(before); }   // token scaduto: la prova basta
+        throw e;
+      }
+    };
     try {
-      let r;
-      const prima = async (url) => (hasAccount ? platformApi.get(url) : frequenciesAPI.getCatalog(prova(), null));
-      r = await prima('/frequencies/catalog');
+      const r = await pagina(null);
       let tutte = r.data.items || [];
       let before = r.data.next_before;
       // la casa vuole tutto il catalogo in mano (le righe si calcolano qui): si pagina fino in fondo
       for (let giri = 0; before && giri < 10; giri += 1) {
-        const rr = hasAccount ? await platformApi.get('/frequencies/catalog', { params: { before } }) : await frequenciesAPI.getCatalog(prova(), before);
+        const rr = await pagina(before);
         tutte = [...tutte, ...(rr.data.items || [])]; before = rr.data.next_before;
       }
       setItems(tutte); setLocked(false);
       try {
-        const pr = hasAccount ? await platformApi.get('/frequencies/playlists') : await frequenciesAPI.playlists.pubbliche(prova());
+        const pr = via === conAccount ? await platformApi.get('/frequencies/playlists') : await frequenciesAPI.playlists.pubbliche(prova());
         setPlaylists(pr.data.items || []);
       } catch { setPlaylists([]); }
     } catch (e) {
+      const st = e?.response?.status;
       const detail = e?.response?.data?.detail;
-      setLocked(true); setItems([]); setTeaserCount(detail?.tracks_count ?? 0);
+      if (st === 403 || st === 401) {
+        setLocked(true); setItems([]); setTeaserCount(detail?.tracks_count ?? 0);
+      } else {
+        setItems([]); setLocked(false);
+        setErrore('Non riesco a raggiungere le meditazioni in questo momento.');
+      }
     }
   };
   /* SN3 — il tuo spazio: «riprendi da dove eri» e gli ascolti recenti vivono
@@ -292,7 +321,9 @@ function MeditazioniCasaDentro() {
         )}
       </header>
       <main id="esplora">
-        {items === null ? <Scheletro /> : tutte.length === 0 ? (
+        {items === null ? <Scheletro /> : errore ? (
+          <div className="casa-vuoto" data-testid="casa-errore"><p>{errore}</p><button type="button" className="casa-tutte" onClick={carica}>Riprova</button></div>
+        ) : tutte.length === 0 ? (
           <div className="emptycreate"><p>Ancora nessuna meditazione pubblicata: le prime stanno arrivando. Intanto puoi conoscere <Link to="/sound" style={{ color: 'var(--water)' }}>il suono</Link>.</p></div>
         ) : (
           <>

@@ -208,3 +208,16 @@
 
 /* il movimento, con rispetto */
 @media(prefers-reduced-motion:reduce){.fqz.casa *,.fqz .lettore,.fqz .cuore{transition:none!important;animation:none!important}.fqz.casa .riga{scroll-behavior:auto}}
+
+
+/* ── MR7: il foglio «Il suono» dalla casa (tre porte, senza uscire) ── */
+.fqz .tb-nav .tb-voce{all:unset;cursor:pointer;font-family:var(--mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--dimmer);padding:7px 9px;border-radius:8px;transition:.14s}
+.fqz .tb-nav .tb-voce:hover{color:var(--lamp);background:rgba(255,255,255,.04)}
+@media (max-width:640px){.fqz .tb-nav .tb-voce{padding:9px 10px;letter-spacing:.06em}}
+.fqz .foglio-suono .gatebox{max-width:520px;text-align:left}
+.fqz .porte-suono{display:grid;gap:10px;margin-top:14px}
+.fqz .porta-suono{display:flex;flex-direction:column;gap:3px;padding:14px 16px;border:1px solid var(--line);border-radius:14px;text-decoration:none;color:inherit;background:var(--panel);transition:border-color .15s,transform .15s}
+.fqz .porta-suono:hover{border-color:var(--lamp);transform:translateY(-1px)}
+.fqz .porta-suono b{font-family:var(--serif);font-weight:400;font-size:18px;color:var(--bone)}
+.fqz .porta-suono span{font-size:13px;color:var(--dimmer)}
+.fqz .porta-landing{font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--lamp);text-decoration:none;align-self:center}

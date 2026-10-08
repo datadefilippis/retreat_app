@@ -49,7 +49,7 @@ class TestLaCasa:
         assert "if (locked) return <SogliaCerchio teaserCount={teaserCount} onSbloccato={() => carica()} />;" in src
         assert "from '../MeditazioniPage'" in src
         # i due modi di chiedere il catalogo, come prima (account → platformApi, altrimenti la prova)
-        assert "platformApi.get('/frequencies/catalog')" in src.replace("prima('/frequencies/catalog')", "platformApi.get('/frequencies/catalog')") or "frequenciesAPI.getCatalog(prova(), null)" in src
+        assert "platformApi.get('/frequencies/catalog'" in src and "frequenciesAPI.getCatalog(prova(), before || null)" in src   # MR7: account + prova
         assert "frequenciesAPI.playlists.pubbliche(prova())" in src and "platformApi.get('/frequencies/playlists')" in src
         # le righe della casa
         for riga in ("casa-oggi", "casa-cerca", "casa-filtri", "casa-barra", "casa-card", "casa-playlist-card"):
@@ -98,7 +98,7 @@ class TestPasserellaEPlayer:
         src = (FQ / "SoundTopbar.jsx").read_text()
         assert "{ to: '/meditazioni', label: 'Meditazioni' },\n  { to: '/sound', label: 'Il suono' },\n];" in src
         assert "const CASA_VOCE_CREA = { to: '/sound/crea', label: 'Crea' };" in src
-        assert "cappelliAddosso().operatore ? [...CASA_PASSERELLA, CASA_VOCE_CREA] : CASA_PASSERELLA" in src
+        assert "(puoComporre ? [...CASA_PASSERELLA, CASA_VOCE_CREA] : CASA_PASSERELLA)" in src   # MR7: solo chi puo' comporre
         # la vecchia resta, letterale, per i pin degli altri test
         assert "label: 'Aurya Lab'" in src and "{ to: '/sound/esplora', label: 'Aurya Sound' }" in src
 

@@ -14,7 +14,7 @@
  * POST /public/corso/{org}/{slug}/anteprima/{lezione|trailer}/play-url.
  */
 import React, { useEffect, useRef, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { ArrowLeft, Check, Share2, ShieldCheck, Play, FileText, Film, Music, Waves, Paperclip, Clock, Infinity as InfinityIcon, SearchX, GraduationCap } from 'lucide-react';
 import AudioPlayer from '../accademia/player/AudioPlayer';
 import SuonoPlayer from '../accademia/player/SuonoPlayer';
@@ -80,6 +80,8 @@ function Anteprima({ orgSlug, slug, lessonId, thumbnail, titolo, etichetta }) {
 
 export default function CorsoLandingPage() {
   const { org_slug: orgSlug, slug } = useParams();
+  const [cercaParams] = useSearchParams();
+  const daMeditazioni = cercaParams.get('da') === 'meditazioni';   // MR7
   const [data, setData] = useState(null);
   const [stato, setStato] = useState('loading');
   const [compra, setCompra] = useState(false);
@@ -159,8 +161,10 @@ export default function CorsoLandingPage() {
   return (
     <div className="bg-[#faf8f3]" data-testid="corso-landing">
       <div className="mx-auto max-w-5xl px-4 pb-28 pt-5 sm:px-6 sm:pb-16 sm:pt-8">
-        <Link to={`/o/${orgSlug}`} className="inline-flex items-center gap-1.5 text-sm text-gray-600 hover:text-gray-900" data-testid="corso-landing-back">
-          <ArrowLeft className="h-4 w-4" aria-hidden /> {org?.name || 'Il profilo'}
+        {/* MR7 (8/10/2026): «torna» a dove si era — dalle meditazioni (?da=meditazioni)
+            si torna alle meditazioni, non al profilo: l'utente non si perde */}
+        <Link to={daMeditazioni ? '/meditazioni' : `/o/${orgSlug}`} className="inline-flex items-center gap-1.5 text-sm text-gray-600 hover:text-gray-900" data-testid="corso-landing-back">
+          <ArrowLeft className="h-4 w-4" aria-hidden /> {daMeditazioni ? 'Le meditazioni' : (org?.name || 'Il profilo')}
         </Link>
 
         <div className="mt-5 grid gap-6 lg:grid-cols-[1.15fr_1fr] lg:gap-10">
