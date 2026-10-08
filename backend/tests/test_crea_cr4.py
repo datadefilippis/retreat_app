@@ -41,3 +41,14 @@ class TestTracce:
             assert f"['{f}'," in src, f
         for vietato in ("frequenciesAPI", "useAuth", "setDrafts"):
             assert vietato not in src, vietato
+
+
+class TestPotaturaCr6:
+    def test_la_libreria_del_compositore_veste_il_nuovo(self):
+        page = (FQ / "FrequenzePage.js").read_text()
+        assert "&& (view === 'create' || view === 'mine' || (view === 'explore' && canCompose));" in page
+        assert '<SelettoreCrea attiva="fonti" badge={layers.length} navigate={navigate} onFonti={() => {}} />' in page
+        # la libreria tiene i suoi gesti da compositore (il pubblico non li vede)
+        assert "view === 'explore' && canCompose && (" in page
+        # il trigger di Studio non compare a chi ha le chiavi (TriggerStudio si nasconde da solo)
+        assert "if (user?.sound_crea) return null;" in (FQ / "TriggerStudio.jsx").read_text()

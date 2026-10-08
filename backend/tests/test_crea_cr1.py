@@ -19,7 +19,7 @@ class TestVestito:
     def test_flag_e_vestito_vecchio(self):
         assert "export const SOUND_CREA_NUOVO = true;" in (FQ / "stato.js").read_text()
         page = (FQ / "FrequenzePage.js").read_text()
-        assert "const nuovo = SOUND_CREA_NUOVO && qs.get('vestito') !== 'vecchio' && (view === 'create' || view === 'mine');" in page
+        assert "const nuovo = SOUND_CREA_NUOVO && qs.get('vestito') !== 'vecchio'\n    && (view === 'create' || view === 'mine' || (view === 'explore' && canCompose));" in page   # CR6: anche la libreria
         assert 'data-vestito={nuovo ? \'nuovo\' : undefined}' in page
         assert "{view === 'create' && nuovo && <CreaVista kit={kit} />}" in page
         assert "{view === 'create' && !nuovo && (" in page               # la vista vecchia resta, intera

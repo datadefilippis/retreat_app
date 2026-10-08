@@ -275,7 +275,14 @@ Totale **≈ 6,5 giorni**, CR5 dentro gli altri.
   - Rimandi: l'upload delle basi della Regia resta nella libreria
     (`/sound/libreria?mondo=suoni`), non nel banco; il «?» della linea del
     tempo (helpstrip) è nascosto, tornerà come foglio in CR5.
-- **CR4** (Le mie tracce) e **CR6** (potatura): da fare.
+- **CR4 FATTO** in locale (`crea/TracceVista.jsx`): card compatte in griglia
+  (1/2/3 colonne; 190 px sul telefono contro 570), copertina quadrata che
+  apre in Crea, stato come pastiglia, un gesto primario per stato con gli
+  stessi handler e testid di TM1/TM2, «Modifica» che apre i campi della casa
+  (`CampiCasa`, intatto) in un foglio con «Elimina», filtri coi conteggi e
+  cerca, le playlist e i link riservati com'erano. Pagina da 9.700 a 4.463 px
+  sul telefono. Guardia `tests/test_crea_cr4.py`.
+- **CR6** (potatura): da fare.
 
 ## 6. Domande per il founder
 1. **CR0 subito**? È il buco lasciato da ES (solo in locale): mezz'ora.

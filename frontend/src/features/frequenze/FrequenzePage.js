@@ -59,7 +59,7 @@ import './frequenze.css';
 import SoundTopbar from './SoundTopbar';
 import StanzeSound from './StanzeSound';
 import { SOUND_CREA_NUOVO } from './stato';
-import CreaVista from './crea/CreaVista';   // CR1-CR3: il vestito nuovo
+import CreaVista, { SelettoreCrea } from './crea/CreaVista';   // CR1-CR3: il vestito nuovo
 import TracceVista from './crea/TracceVista';   // CR4
 
 /* CR0 — la biblioteca del compositore (vista explore di questa pagina) */
@@ -273,7 +273,11 @@ export default function FrequenzePage() {
      crea/CreaVista.jsx e riceve da qui l'oggetto dei gesti (`kit`): stato,
      funzioni e contratto delle ricette restano QUI. ?vestito=vecchio
      mostra la vista di prima finche' il founder non da' l'ok. */
-  const nuovo = SOUND_CREA_NUOVO && qs.get('vestito') !== 'vecchio' && (view === 'create' || view === 'mine');
+  /* CR6 — anche la libreria del compositore (/sound/libreria) veste il
+     nuovo: niente testata doppia, il selettore Crea · Fonti · Le mie tracce
+     con «Fonti» segnato. Per chi non compone la libreria resta com'era. */
+  const nuovo = SOUND_CREA_NUOVO && qs.get('vestito') !== 'vecchio'
+    && (view === 'create' || view === 'mine' || (view === 'explore' && canCompose));
   /* NV4 — il timbro e' un filtro come il momento: null = Tutti.
      L'upload resta ancorato a una categoria vera (la prima, se il
      filtro e' su Tutti): una base senza categoria non esiste. */
@@ -2456,6 +2460,9 @@ export default function FrequenzePage() {
         {/* SF, dove si ascolta, la riga sta a vista; nella Guida no:
             lì il tema è trattato per esteso, e un cartello sopra un
             testo che spiega la stessa cosa è solo rumore. */}
+        {nuovo && view === 'explore' && (
+          <SelettoreCrea attiva="fonti" badge={layers.length} navigate={navigate} onFonti={() => {}} />
+        )}
         {view !== 'impara' && <SafetyLine onOpen={openReview} />}
         {(view === 'explore' || view === 'impara') && (
           <section className="bib">
