@@ -214,6 +214,13 @@ async def build_core() -> str:
                     {"_id": 0, "slug": 1, "updated_at": 1}).limit(500):
                 urls.append(_url(f"{base}/frequenze/{t['slug']}",
                                  priority="0.6", lastmod=t.get("updated_at")))
+            # SN1 (8/10) — le PLAYLIST pubblicate hanno la loro pagina
+            from database import sound_playlists_collection
+            async for p in sound_playlists_collection.find(
+                    {"status": "published", "slug": {"$nin": [None, ""]}},
+                    {"_id": 0, "slug": 1, "updated_at": 1}).limit(200):
+                urls.append(_url(f"{base}/meditazioni/playlist/{p['slug']}",
+                                 priority="0.6", lastmod=p.get("updated_at")))
         except Exception:   # noqa: BLE001 — mai una sitemap rotta
             pass
         return _wrap(urls, "core")

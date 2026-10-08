@@ -169,6 +169,7 @@ const SchedaBibliotecaPage = lazy(() => import("./features/frequenze/SchedaBibli
 const FrequenzePage = lazy(() => import("./features/frequenze/FrequenzePage"));
 const PublicFrequencyPage = lazy(() => import("./features/frequenze/PublicFrequencyPage"));
 const MeditazioniPage = lazy(() => import("./features/frequenze/MeditazioniPage"));
+const PlaylistPage = lazy(() => import("./features/frequenze/casa/PlaylistPage"));   // SN1 — la playlist
 const SoundHomePage = lazy(() => import("./features/frequenze/SoundHomePage"));
 const VisualPage = lazy(() => import("./features/frequenze/visual/VisualPage"));
 /* LU (28/8) — il Lab e' una casa con le stanze: la Sala accoglie,
@@ -1085,6 +1086,7 @@ function AppRoutes() {
       />
       {/* FQ3 — vetrina meditazioni (schermo d'invito senza sblocco) */}
       <Route path="/meditazioni" element={<MeditazioniPage />} />
+      <Route path="/meditazioni/playlist/:slug" element={<PlaylistPage />} />
       {/* FQ1 — ascolto pubblico di una traccia pubblicata. Il namespace
           /frequenze/* appartiene PER SEMPRE ai link condivisi in giro:
           il workspace vive altrove (/sound) proprio per non collidere. */}

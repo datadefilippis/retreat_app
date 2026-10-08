@@ -39,6 +39,8 @@ import { frequenciesAPI } from '../../api/frequencies';
 import CancelloLettera from './CancelloLettera';
 import { prova } from '../../lib/cerchio';
 import MarketplaceShell from '../storefront/components/MarketplaceShell';
+import { SOUND_CASA_NUOVA } from './stato';
+import SoundHubPage from './casa/SoundHubPage';
 import {
   DisplayTitle, Lede, PhotoBand, PhotoOpener, Section,
 } from '../../components/editorial';
@@ -185,7 +187,14 @@ function AnteprimaMeditazione({ track, ctaMeditazioni }) {
   );
 }
 
+/* SN1 (8/10, piano Aurya Sound §4.0) — /sound diventa l'HUB del suono
+   (casa/SoundHubPage): la landing vecchia resta qui sotto dietro il
+   flag, intatta, finche' la casa nuova non e' in prod. */
 export default function SoundHomePage() {
+  return SOUND_CASA_NUOVA ? <SoundHubPage /> : <SoundHomePageVecchia />;
+}
+
+function SoundHomePageVecchia() {
   useEffect(() => {
     document.title = 'Aurya Sound: il suono può diventare uno strumento | Aurya';
   }, []);

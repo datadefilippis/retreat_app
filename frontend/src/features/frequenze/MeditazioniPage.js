@@ -24,7 +24,11 @@ import { ValoreCerchio, FiduciaCerchio, PorteCerchio, CTA_ISCRIVITI } from './Co
 import './frequenze.css';
 import './meditazioni.css';
 import SoundTopbar from './SoundTopbar';
+import { SOUND_CASA_NUOVA } from './stato';
 import TriggerStudio from './TriggerStudio';
+/* lazy: la casa importa SogliaCerchio da qui, e un ciclo di import
+   risolto al volo e' la sola via sicura per non avere undefined */
+const MeditazioniCasa = React.lazy(() => import('./casa/MeditazioniCasa'));
 
 /* il cuore disegnato (founder 26/8): un gesto, non un carattere */
 const Cuore = () => (
@@ -58,63 +62,18 @@ const fmt = (s) => {
   s = Math.max(0, Math.round(s || 0));
   return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
 };
-export default function MeditazioniPage() {
-  const navigate = useNavigate();
-  const hasAccount = !!localStorage.getItem(PLATFORM_TOKEN_KEY);
-  const [items, setItems] = useState(null);      // null = non caricato
-  const [locked, setLocked] = useState(false);
-  const [teaserCount, setTeaserCount] = useState(0);
-  const [intent, setIntent] = useState('');
-  const [favorites, setFavorites] = useState([]); // slugs
-  const [heartAsk, setHeartAsk] = useState(false);
-  const [safety, setSafety] = useState(false);      // SF — lettura su richiesta
+
+/* ── SN1 (8/10/2026) — LA SOGLIA DEL CERCHIO: lo schermo d'invito del
+   catalogo bloccato, in un componente solo (lo usano la vetrina vecchia e
+   la casa nuova). Stato e gesti del form vivono qui. ── */
+export function SogliaCerchio({ teaserCount = 0, onSbloccato }) {
+  const loadCatalog = async () => { await onSbloccato?.(); };
   // FL2 — chi e' gia' del Cerchio su questo browser trova l'email pronta (mai vuota se la sappiamo)
   const [email, setEmail] = useState(() => emailDellaProva() || '');
   const [nome, setNome] = useState('');
   const [consent, setConsent] = useState(false);
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState('');
-  const [ponteVia, setPonteVia] = useState(() => {
-    try { return sessionStorage.getItem('aurya_ponte_via') === '1'; }
-    catch { return false; }
-  });
-
-  /* ES4 — la vetrina e' paginata: il server manda al massimo 100
-     tracce e un cursore (`next_before`). Prima era to_list(500): alla
-     501esima le piu' vecchie sarebbero SPARITE in silenzio. */
-  const [nextBefore, setNextBefore] = useState(null);
-  const loadCatalog = async (before = null) => {
-    try {
-      let r;
-      if (hasAccount) {
-        // il Bearer platform sblocca da solo (verificato dal server)
-        r = await platformApi.get('/frequencies/catalog',
-          before ? { params: { before } } : {});
-      } else {
-        r = await frequenciesAPI.getCatalog(prova(), before);
-      }
-      setItems((prev) => before ? [...(prev || []), ...(r.data.items || [])]
-                               : (r.data.items || []));
-      setNextBefore(r.data.next_before || null);
-      setLocked(false);
-    } catch (e) {
-      const detail = e?.response?.data?.detail;
-      setLocked(true);
-      setItems([]);
-      setTeaserCount(detail?.tracks_count ?? 0);
-      if (detail?.error !== 'locked') setMsg('');
-    }
-  };
-  const loadFavorites = async () => {
-    if (!hasAccount) return;
-    try { setFavorites((await platformApi.get('/frequencies/favorites')).data.slugs || []); }
-    catch { /* preferiti non bloccanti */ }
-  };
-  useEffect(() => {
-    // SB1 — i browser con la vecchia coppia HMAC migrano alla prova unica
-    migraVecchieChiavi().finally(() => { loadCatalog(); loadFavorites(); });
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
-
   /* NL-septies (20/8) — una regola sola per tutti i contenuti
      riservati: la prima iscrizione si conferma dall'email (il clic
      prova che la casella e' tua), chi e' gia' confermato sblocca
@@ -156,23 +115,7 @@ export default function MeditazioniPage() {
       setMsg(err?.response?.data?.detail || 'Iscrizione non riuscita, riprova');
     } finally { setBusy(false); }
   };
-
-  const toggleFavorite = async (slug) => {
-    if (!hasAccount) { setHeartAsk(true); return; }
-    const isFav = favorites.includes(slug);
-    setFavorites((f) => (isFav ? f.filter((s) => s !== slug) : [...f, slug]));
-    try {
-      if (isFav) await platformApi.delete(`/frequencies/favorites/${slug}`);
-      else await platformApi.put(`/frequencies/favorites/${slug}`);
-    } catch { loadFavorites(); }
-  };
-
-  const shown = (items || []).filter((t) => !intent || t.intent === intent);
-  const intentsPresent = [...new Set((items || []).map((t) => t.intent).filter(Boolean))];
-
-  /* ── schermo d'invito (catalogo bloccato) ── */
-  if (locked) {
-    return (
+  return (
       <div className="fqz med" data-testid="fqz-meditazioni-locked">
         {/* MD (20/8), le uscite: senza menu del sito, da qui non si
             tornava piu' indietro. Stesso rimedio di Aurya Sound. */}
@@ -273,8 +216,78 @@ export default function MeditazioniPage() {
           <a href="/newsletter">Il Cerchio</a>
         </footer>
       </div>
-    );
-  }
+  );
+}
+
+function MeditazioniPageVecchia() {
+  const navigate = useNavigate();
+  const hasAccount = !!localStorage.getItem(PLATFORM_TOKEN_KEY);
+  const [items, setItems] = useState(null);      // null = non caricato
+  const [locked, setLocked] = useState(false);
+  const [teaserCount, setTeaserCount] = useState(0);
+  const [intent, setIntent] = useState('');
+  const [favorites, setFavorites] = useState([]); // slugs
+  const [heartAsk, setHeartAsk] = useState(false);
+  const [safety, setSafety] = useState(false);      // SF — lettura su richiesta
+  const [ponteVia, setPonteVia] = useState(() => {
+    try { return sessionStorage.getItem('aurya_ponte_via') === '1'; }
+    catch { return false; }
+  });
+
+  /* ES4 — la vetrina e' paginata: il server manda al massimo 100
+     tracce e un cursore (`next_before`). Prima era to_list(500): alla
+     501esima le piu' vecchie sarebbero SPARITE in silenzio. */
+  const [nextBefore, setNextBefore] = useState(null);
+  const loadCatalog = async (before = null) => {
+    try {
+      let r;
+      if (hasAccount) {
+        // il Bearer platform sblocca da solo (verificato dal server)
+        r = await platformApi.get('/frequencies/catalog',
+          before ? { params: { before } } : {});
+      } else {
+        r = await frequenciesAPI.getCatalog(prova(), before);
+      }
+      setItems((prev) => before ? [...(prev || []), ...(r.data.items || [])]
+                               : (r.data.items || []));
+      setNextBefore(r.data.next_before || null);
+      setLocked(false);
+    } catch (e) {
+      const detail = e?.response?.data?.detail;
+      setLocked(true);
+      setItems([]);
+      setTeaserCount(detail?.tracks_count ?? 0);
+      if (detail?.error !== 'locked') setMsg('');
+    }
+  };
+  const loadFavorites = async () => {
+    if (!hasAccount) return;
+    try { setFavorites((await platformApi.get('/frequencies/favorites')).data.slugs || []); }
+    catch { /* preferiti non bloccanti */ }
+  };
+  useEffect(() => {
+    // SB1 — i browser con la vecchia coppia HMAC migrano alla prova unica
+    migraVecchieChiavi().finally(() => { loadCatalog(); loadFavorites(); });
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+
+  const toggleFavorite = async (slug) => {
+    if (!hasAccount) { setHeartAsk(true); return; }
+    const isFav = favorites.includes(slug);
+    setFavorites((f) => (isFav ? f.filter((s) => s !== slug) : [...f, slug]));
+    try {
+      if (isFav) await platformApi.delete(`/frequencies/favorites/${slug}`);
+      else await platformApi.put(`/frequencies/favorites/${slug}`);
+    } catch { loadFavorites(); }
+  };
+
+  const shown = (items || []).filter((t) => !intent || t.intent === intent);
+  const intentsPresent = [...new Set((items || []).map((t) => t.intent).filter(Boolean))];
+
+  /* ── schermo d'invito (catalogo bloccato): SN1, un componente solo per
+     la vetrina vecchia e per la casa nuova (casa/MeditazioniCasa) ── */
+  if (locked) return <SogliaCerchio teaserCount={teaserCount} onSbloccato={() => loadCatalog()} />;
+
 
   /* ── catalogo sbloccato ── */
   return (
@@ -420,7 +433,7 @@ export default function MeditazioniPage() {
               e Passaporto.</p>
             <div className="gatefoot" style={{ gap: 8 }}>
               <button type="button" className="primary"
-                onClick={() => { window.location.href = creaAccount(email, '/meditazioni'); }}>
+                onClick={() => { window.location.href = creaAccount(emailDellaProva() || '', '/meditazioni'); }}>
                 Crea il tuo account
               </button>
               <button type="button" onClick={() => setHeartAsk(false)}>Non ora</button>
@@ -430,4 +443,13 @@ export default function MeditazioniPage() {
       )}
     </div>
   );
+}
+
+/* SN1 (8/10/2026, piano Aurya Sound) — la CASA delle meditazioni vive in
+   casa/MeditazioniCasa; questa vetrina resta accanto, dietro il flag, finche'
+   la prova dal vivo non e' chiusa. Stessa rotta, stesso cancello. */
+export default function MeditazioniPage() {
+  return SOUND_CASA_NUOVA
+    ? <React.Suspense fallback={<div className="fqz med" />}><MeditazioniCasa /></React.Suspense>
+    : <MeditazioniPageVecchia />;
 }

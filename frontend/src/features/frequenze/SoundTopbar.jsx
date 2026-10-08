@@ -14,6 +14,19 @@
  */
 import React from 'react';
 import SoundAccountMenu from './SoundAccountMenu';
+import { SOUND_CASA_NUOVA } from './stato';
+import { cappelliAddosso } from '../../lib/cappelli';
+
+/* SN1 (8/10, piano Aurya Sound §4.0) — LA PASSERELLA DELLA CASA: tre
+   porte al massimo. Meditazioni (ascoltare) · Il suono (capire) · Crea
+   (comporre, solo per chi porta il cappello del professionista: il
+   portiere della pagina decide poi se la stanza e' sua). Le vecchie
+   voci restano sotto, dietro il flag, finche' la casa non e' in prod. */
+const CASA_PASSERELLA = [
+  { to: '/meditazioni', label: 'Meditazioni' },
+  { to: '/sound', label: 'Il suono' },
+];
+const CASA_VOCE_CREA = { to: '/sound/crea', label: 'Crea' };
 
 const PASSERELLA = [
   { to: '/meditazioni', label: 'Meditazioni' },
@@ -44,7 +57,9 @@ export default function SoundTopbar({ firma = 'Sound', qui = null,
      resta vivo per URL (col suo portiere), substrato della futura
      fase-vibrazioni: un menu che lo nomina sarebbe una vetrina, e la
      vetrina l'abbiamo spenta. */
-  const voci = PASSERELLA;
+  const voci = SOUND_CASA_NUOVA
+    ? (cappelliAddosso().operatore ? [...CASA_PASSERELLA, CASA_VOCE_CREA] : CASA_PASSERELLA)
+    : PASSERELLA;
   return (
     <div className="topbar">
       <a className="fqzbrand" href="/" onClick={(e) => guardia(e, '/')} data-testid="fqz-brand" title="Torna su Aurya">

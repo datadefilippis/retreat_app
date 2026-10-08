@@ -11,8 +11,9 @@
  * Aurya (platform_token gia' in sessione sblocca da solo).
  */
 import React, { useEffect, useRef, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useParams, useNavigate } from 'react-router-dom';
 import { frequenciesAPI } from '../../api/frequencies';
+import platformApi from '../../api/platformClient';
 import { startPreview } from './engine/synth';
 import { resolveAudioLayers, resolveVoiceLayers, resolveGuidaLayers } from './engine/assets';
 import { avvisoCuffieScore } from './engine/altoparlante';
@@ -25,6 +26,7 @@ import { prova, migraVecchieChiavi } from '../../lib/cerchio';
 import CancelloLettera from './CancelloLettera';
 import './frequenze.css';
 import './meditazioni.css';
+import './casa/casa.css';   // SN1 — la striscia «parte di una playlist»
 import SoundTopbar from './SoundTopbar';
 import SeekBar from './SeekBar';
 import AuryaMode from './visual/AuryaMode';
@@ -235,6 +237,39 @@ export default function PublicFrequencyPage() {
     frequenciesAPI.registraAscolto(slug, { evento, secondo: Math.floor(secondo || 0), ...provenienzaRef.current })
       .catch(() => { /* la misura non deve mai fermare il suono */ });
   };
+
+  /* SN1 (8/10) — «PARTE DI UNA PLAYLIST»: se si arriva con ?playlist=slug
+     il player sa dov'e' (n di N), offre precedente/successiva e alla fine
+     della traccia passa da solo alla prossima (?auto=1: il tentativo di
+     partire da solo; se il browser lo nega, resta il tasto). La playlist
+     si chiede con la stessa prova del catalogo: chi non e' nel Cerchio
+     non la vede e il player resta quello di sempre. */
+  const navigate = useNavigate();
+  const [playlist, setPlaylist] = useState(null);
+  useEffect(() => {
+    const ps = provenienzaRef.current?.playlist;
+    if (!ps) return;
+    const haAccount = !!localStorage.getItem('platform_token');
+    (haAccount ? platformApi.get(`/frequencies/playlists/${ps}`) : frequenciesAPI.playlists.pubblica(ps, prova()))
+      .then((r) => setPlaylist(r.data)).catch(() => setPlaylist(null));
+  }, []);   // eslint-disable-line react-hooks/exhaustive-deps
+  const posizione = playlist ? (playlist.tracce || []).findIndex((t) => t.slug === slug) : -1;
+  const vicina = (delta) => {
+    if (posizione < 0) return null;
+    const t = (playlist.tracce || [])[posizione + delta];
+    return t ? `/frequenze/${t.slug}?da=playlist&playlist=${encodeURIComponent(playlist.slug)}` : null;
+  };
+  const fineTracciaRef = useRef(null);
+  fineTracciaRef.current = () => {
+    const prossima = vicina(1);
+    if (prossima && unlocked) navigate(`${prossima}&auto=1`);
+  };
+  /* dentro una playlist il cambio di traccia non smonta la pagina (stessa
+     rotta): si ricarica tutto dal nuovo slug, con la pagina intera */
+  const primoSlugRef = useRef(slug);
+  useEffect(() => {
+    if (primoSlugRef.current !== slug) window.location.replace(`${window.location.pathname}${window.location.search}`);
+  }, [slug]);
   const segnaAscolto = () => {
     if (playedRef.current) return;
     playedRef.current = true;
@@ -353,7 +388,7 @@ export default function PublicFrequencyPage() {
           { titolo: track.title, autore: track.operator?.name }, {
             onPlay: () => setPlaying(true),
             onPause: () => setPlaying(false),
-            onEnd: () => { setPlaying(false); setElapsed(0); },
+            onEnd: () => { setPlaying(false); setElapsed(0); fineTracciaRef.current?.(); },
             onTime: (t2) => setElapsed(t2),
           });
         contRef.current = h;
@@ -405,12 +440,23 @@ export default function PublicFrequencyPage() {
     setPlaying(true);
     timerRef.current = setInterval(() => {
       const cur = liveRef.current ? liveRef.current.elapsed() : 0;
-      if (cur >= track.score.duration_sec) { stop(); setElapsed(0); return; }
+      if (cur >= track.score.duration_sec) { stop(); setElapsed(0); fineTracciaRef.current?.(); return; }
       setElapsed(Math.max(0, cur));
       if (!unlocked && cur >= PREVIEW_SEC) { stop(); setGateOpen(true); }
     }, 200);
   };
   const playGuarded = guard(play);
+  /* SN1 — dentro una playlist la traccia successiva prova a partire da
+     sola (?auto=1): il gesto e' quello del primo «Ascolta», lo stesso
+     documento; se il browser lo nega, il tasto e' li'. Una volta sola. */
+  const autoRef = useRef(false);
+  useEffect(() => {
+    if (autoRef.current || !track || !unlocked || !provenienzaRef.current?.playlist) return;
+    if (!/[?&]auto=1/.test(window.location.search)) return;
+    autoRef.current = true;
+    const t = setTimeout(() => { try { playGuarded(0); } catch { /* resta il tasto */ } }, 300);
+    return () => clearTimeout(t);
+  }, [track, unlocked]);   // eslint-disable-line react-hooks/exhaustive-deps
 
   /* AT3 — la preparazione: renderizza la sessione in un file e
      accende il lettore. Passa dal sipario come ogni altra via al
@@ -432,7 +478,7 @@ export default function PublicFrequencyPage() {
       }, {
         onPlay: () => setPlaying(true),
         onPause: () => setPlaying(false),
-        onEnd: () => { setPlaying(false); setElapsed(0); },
+        onEnd: () => { setPlaying(false); setElapsed(0); fineTracciaRef.current?.(); },
         onTime: (t) => setElapsed(t),
       });
       contRef.current = h;
@@ -516,6 +562,14 @@ export default function PublicFrequencyPage() {
         </div>
       </header>
       <main style={{ maxWidth: 720 }}>
+        {playlist && posizione >= 0 && (
+          <div className="parte-di" data-testid="fqz-parte-di">
+            <span>Parte di <Link to={`/meditazioni/playlist/${playlist.slug}`} style={{ color: 'var(--bone)', textDecoration: 'none', fontWeight: 500 }}>{playlist.title}</Link> · {posizione + 1} di {playlist.tracce.length}</span>
+            <span className="spazio" />
+            <Link to={vicina(-1) || '#'} aria-disabled={!vicina(-1)} data-testid="fqz-pl-prev">← prec.</Link>
+            <Link to={vicina(1) || '#'} aria-disabled={!vicina(1)} data-testid="fqz-pl-next">succ. →</Link>
+          </div>
+        )}
         <section className="bib">
           {track.intent && <div className="learn-kicker">{INTENTS[track.intent] || track.intent}</div>}
           <h2 style={{ fontSize: 27 }}>{track.title}</h2>

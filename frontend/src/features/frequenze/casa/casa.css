@@ -1,0 +1,95 @@
+/* LA CASA DELLE MEDITAZIONI — SN1 (8/10/2026, piano Aurya Sound).
+   Vive nel mondo scuro di Sound (.fqz): copertine, righe che scorrono,
+   barra in basso su telefono. Nessun nuovo colore: i gettoni di
+   frequenze.css (--bone, --dim, --dimmer, --line, --lamp, --water, --violet). */
+
+.fqz.casa main{max-width:1180px}
+.fqz.casa .casa-sezione{margin-top:34px}
+.fqz.casa .casa-sezione h2{font-family:var(--serif);font-weight:400;font-size:22px;margin:0 0 4px;color:var(--bone)}
+.fqz.casa .casa-sezione .casa-sub{font-size:13px;color:var(--dimmer);margin:0 0 12px}
+
+/* ── di oggi: la card grande ── */
+.fqz.casa .oggi{position:relative;display:grid;grid-template-columns:1fr;border:1px solid var(--line);border-radius:16px;overflow:hidden;background:var(--panel)}
+@media(min-width:760px){.fqz.casa .oggi{grid-template-columns:5fr 4fr}}
+.fqz.casa .oggi-cover{position:relative;min-height:220px;background:linear-gradient(135deg,var(--tono-velo,rgba(127,201,176,.18)),rgba(12,22,24,.6))}
+.fqz.casa .oggi-cover img{width:100%;height:100%;object-fit:cover;display:block;position:absolute;inset:0}
+.fqz.casa .oggi-corpo{padding:22px 22px 20px;display:flex;flex-direction:column;gap:10px}
+.fqz.casa .oggi-corpo h3{font-family:var(--serif);font-weight:400;font-size:26px;line-height:1.15;margin:0;color:var(--bone)}
+.fqz.casa .oggi-corpo .body{color:var(--dim);font-size:14px}
+.fqz.casa .etichetta{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--lamp)}
+
+/* il pieno d'oro di marca, come i bottoni del mondo Sound, ma su un link */
+.fqz.casa a.casa-cta{display:inline-flex;align-items:center;gap:8px;min-height:42px;padding:10px 22px;border-radius:999px;
+  font-family:var(--sans);font-size:14px;font-weight:600;letter-spacing:.02em;text-decoration:none;color:#14211B;
+  background:linear-gradient(180deg,#D9C08A,#C9B37E);border:1px solid #D9C08A;box-shadow:0 4px 14px rgba(201,179,126,.25);
+  transition:background .18s,box-shadow .18s}
+.fqz.casa a.casa-cta:hover{background:linear-gradient(180deg,#E4CD9C,#D4BE8A);box-shadow:0 6px 20px rgba(201,179,126,.35)}
+
+/* ── le righe ── */
+.fqz.casa .riga{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;padding:4px 2px 10px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.fqz.casa .riga::-webkit-scrollbar{display:none}
+.fqz.casa .riga > *{flex:0 0 min(78vw,250px);scroll-snap-align:start}
+@media(min-width:760px){.fqz.casa .riga.griglia{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));overflow:visible}
+  .fqz.casa .riga.griglia > *{flex:none}}
+
+/* ── la card con la copertina ── */
+.fqz.casa .mcard{position:relative;display:flex;flex-direction:column;border:1px solid var(--line-soft);border-radius:14px;overflow:hidden;background:var(--panel);text-decoration:none;color:inherit;transition:transform .2s,border-color .2s}
+.fqz.casa .mcard:hover{transform:translateY(-2px);border-color:var(--line)}
+.fqz.casa .mcard .mcover{position:relative;aspect-ratio:4/3;background:linear-gradient(135deg,var(--tono-velo,rgba(127,201,176,.18)),rgba(12,22,24,.7))}
+.fqz.casa .mcard .mcover img{width:100%;height:100%;object-fit:cover;display:block}
+.fqz.casa .mcard .mcover .mdurata{position:absolute;right:10px;bottom:10px;font-family:var(--mono);font-size:11px;padding:3px 8px;border-radius:999px;background:rgba(12,22,24,.72);color:var(--bone)}
+.fqz.casa .mcard .mcover .mpiu{position:absolute;left:10px;top:10px;font-family:var(--mono);font-size:10px;letter-spacing:.1em;padding:3px 8px;border-radius:999px;background:rgba(201,179,126,.9);color:#0C1618}
+.fqz.casa .mcard .mcorpo{padding:12px 14px 14px;display:flex;flex-direction:column;gap:4px;flex:1}
+.fqz.casa .mcard .mcorpo h3{font-family:var(--serif);font-weight:400;font-size:17px;line-height:1.2;margin:0;color:var(--bone)}
+.fqz.casa .mcard .mcorpo .mmeta{font-size:12px;color:var(--dimmer)}
+.fqz.casa .mcard .mcuore{position:absolute;top:10px;right:10px;width:34px;height:34px;padding:0;min-height:0;border-radius:50%;border:1px solid rgba(233,228,217,.25);background:rgba(12,22,24,.55);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--bone)}
+.fqz.casa .mcard .mcuore svg{width:15px;height:15px;flex:none;fill:transparent;stroke:currentColor;stroke-width:1.6}
+.fqz.casa .mcard .mcuore.on svg{fill:var(--lamp);stroke:var(--lamp)}
+.fqz.casa .mcard.playlist .mcover::after{content:'';position:absolute;inset:auto 0 0 0;height:40%;background:linear-gradient(to top,rgba(12,22,24,.85),transparent)}
+.fqz.casa .mcard.playlist .mconta{position:absolute;left:10px;bottom:10px;font-family:var(--mono);font-size:11px;color:var(--bone)}
+
+/* toni per intento (gli stessi della vetrina) */
+.fqz.casa .tono-salvia{--tono-velo:rgba(127,201,176,.3)}
+.fqz.casa .tono-viola{--tono-velo:rgba(181,166,222,.32)}
+.fqz.casa .tono-acqua{--tono-velo:rgba(126,193,199,.3)}
+.fqz.casa .tono-oro{--tono-velo:rgba(201,179,126,.3)}
+
+/* ── cerca e filtri ── */
+.fqz.casa .cerca{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:18px}
+.fqz.casa .cerca input[type=search]{flex:1 1 220px;background:var(--stone);border:1px solid var(--line);color:var(--bone);border-radius:999px;padding:10px 16px;font-size:14px;outline:none}
+.fqz.casa .cerca input[type=search]:focus{border-color:var(--lamp)}
+.fqz.casa .filtri{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding:8px 0 2px}
+.fqz.casa .filtri::-webkit-scrollbar{display:none}
+.fqz.casa .filtro{flex:none;font-family:var(--mono);font-size:11px;letter-spacing:.06em;padding:6px 12px;border-radius:999px;border:1px solid var(--line);background:transparent;color:var(--dim);cursor:pointer}
+.fqz.casa .filtro.on{border-color:var(--lamp);color:var(--lamp)}
+
+/* ── la barra in basso, solo telefono ── */
+.fqz.casa .casa-barra{position:fixed;left:0;right:0;bottom:0;z-index:30;display:flex;justify-content:space-around;padding:6px 4px calc(6px + env(safe-area-inset-bottom));background:rgba(12,22,24,.96);backdrop-filter:blur(10px);border-top:1px solid var(--line)}
+.fqz.casa .casa-barra a,.fqz.casa .casa-barra button{display:flex;flex-direction:column;align-items:center;gap:3px;min-width:56px;padding:4px 6px;border:0;border-radius:0;background:transparent;color:var(--dimmer);font-family:var(--mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase;text-decoration:none;cursor:pointer;box-shadow:none}
+.fqz.casa .casa-barra button:hover{border:0;color:var(--lamp)}
+.fqz.casa .casa-barra .on{color:var(--lamp)}
+.fqz.casa .casa-barra svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.6}
+@media(min-width:900px){.fqz.casa .casa-barra{display:none}}
+.fqz.casa{padding-bottom:110px}
+@media(min-width:900px){.fqz.casa{padding-bottom:90px}}
+
+/* ── la pagina della playlist ── */
+.fqz.casa .pl-testa{display:grid;grid-template-columns:1fr;gap:18px;align-items:end}
+@media(min-width:760px){.fqz.casa .pl-testa{grid-template-columns:260px 1fr}}
+.fqz.casa .pl-cover{aspect-ratio:1;border-radius:16px;overflow:hidden;background:linear-gradient(135deg,rgba(201,179,126,.3),rgba(12,22,24,.7))}
+.fqz.casa .pl-cover img{width:100%;height:100%;object-fit:cover;display:block}
+.fqz.casa .pl-lista{list-style:none;padding:0;margin:18px 0 0;border-top:1px solid var(--line)}
+.fqz.casa .pl-lista li{display:flex;align-items:center;gap:12px;padding:12px 4px;border-bottom:1px solid var(--line-soft)}
+.fqz.casa .pl-lista .n{font-family:var(--mono);font-size:11px;color:var(--dimmer);width:22px}
+.fqz.casa .pl-lista .t{flex:1;min-width:0}
+.fqz.casa .pl-lista .t b{display:block;font-weight:500;color:var(--bone);font-size:15px}
+.fqz.casa .pl-lista .t span{font-size:12px;color:var(--dimmer)}
+.fqz.casa .pl-mini{width:46px;height:46px;border-radius:8px;overflow:hidden;flex:none;background:var(--line)}
+.fqz.casa .pl-mini img{width:100%;height:100%;object-fit:cover;display:block}
+
+/* ── nel player: «parte di» ── */
+.fqz .parte-di{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 14px;padding:10px 14px;border:1px solid var(--line);border-radius:12px;background:var(--panel);font-size:13px;color:var(--dim)}
+.fqz .parte-di b{color:var(--bone);font-weight:500}
+.fqz .parte-di a{color:var(--lamp);text-decoration:none;font-family:var(--mono);font-size:11px;letter-spacing:.06em;padding:5px 10px;border:1px solid var(--line);border-radius:999px}
+.fqz .parte-di a[aria-disabled=true]{opacity:.35;pointer-events:none}
+.fqz .parte-di .spazio{flex:1}

@@ -2351,6 +2351,67 @@ async def _meta_corsi(categoria: Optional[str] = None) -> dict:
     }
 
 
+async def _meta_playlist(slug: str) -> Optional[dict]:
+    """SN1 (8/10, piano Aurya Sound) — la PLAYLIST pubblica.
+
+    /meditazioni/playlist/{slug}: titolo, racconto, quante meditazioni e
+    i loro titoli per i crawler; l'ascolto resta dietro il Cerchio.
+    """
+    from database import sound_playlists_collection, frequency_tracks_collection
+    base = _base_url()
+    p = await sound_playlists_collection.find_one(
+        {"slug": slug, "status": "published"},
+        {"_id": 0, "title": 1, "description": 1, "tracce": 1,
+         "cover_url": 1, "updated_at": 1})
+    if not p:
+        return None
+    titoli = []
+    ids = [t for t in (p.get("tracce") or []) if isinstance(t, str)]
+    if ids:
+        async for t in frequency_tracks_collection.find(
+                {"id": {"$in": ids}, "status": "published",
+                 "visibility": {"$ne": "private"}},
+                {"_id": 0, "id": 1, "title": 1, "slug": 1}):
+            titoli.append(t)
+        ordine = {tid: i for i, tid in enumerate(ids)}
+        titoli.sort(key=lambda t: ordine.get(t.get("id"), 999))
+    titolo = p.get("title") or "Playlist"
+    desc = (p.get("description") or "").strip() or (
+        f"Una playlist di {len(titoli)} meditazioni di Aurya Sound, da ascoltare in fila.")
+    canonical = f"{base}/meditazioni/playlist/{slug}"
+    cover = p.get("cover_url") or ""
+    image = (cover if cover.startswith("http") else f"{base}{cover}") if cover else f"{base}/og-cover.jpg"
+    lista = "".join(
+        f'<li><a href="/frequenze/{_html.escape(t.get("slug") or "")}">{_html.escape(t.get("title") or "")}</a></li>'
+        for t in titoli)
+    return {
+        "title": f"{titolo} · Playlist | Aurya Sound",
+        "description": desc[:300],
+        "canonical": canonical,
+        "hreflang": {"it": canonical, "x-default": canonical},
+        "image": image,
+        "content_html": (f"<div><h1>{_html.escape(titolo)}</h1>"
+                         f"<p>{_html.escape(desc[:300])}</p>"
+                         f"<p>{len(titoli)} meditazioni</p>"
+                         + (f"<ol>{lista}</ol>" if lista else "")
+                         + '<p><a href="/meditazioni">Tutte le meditazioni</a>'
+                         ' · <a href="/sound">Aurya Sound</a></p></div>'),
+        "jsonld": [{
+            "@context": "https://schema.org",
+            "@type": "ItemList",
+            "name": titolo,
+            "description": desc[:300],
+            "url": canonical,
+            "numberOfItems": len(titoli),
+            "itemListElement": [
+                {"@type": "ListItem", "position": i + 1,
+                 "name": t.get("title") or "",
+                 "url": f"{base}/frequenze/{t.get('slug') or ''}"}
+                for i, t in enumerate(titoli)],
+        }],
+    }
+
+
 async def _meta_frequenza(slug: str) -> Optional[dict]:
     """RS (26/8) — LA MEDITAZIONE PUBBLICA parlava di ritiri.
 
@@ -2912,6 +2973,8 @@ async def resolve_meta(path: str) -> Optional[dict]:
         return await _meta_sound(parts[1:])
     if head == "frequenze" and len(parts) == 2:   # RS — meditazione pubblica
         return await _meta_frequenza(parts[1])
+    if head == "meditazioni" and len(parts) == 3 and parts[1] == "playlist":   # SN1 — la playlist
+        return await _meta_playlist(parts[2])
     # RS (26/8) — un segmento PUBBLICO senza un ramo qui sopra e' una
     # rotta che il registro conosce ma che nessuno ha ancora dotato di
     # meta: si serve la shell neutra (200), non un 404 — la pagina
