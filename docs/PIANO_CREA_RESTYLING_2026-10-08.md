@@ -282,7 +282,21 @@ Totale **≈ 6,5 giorni**, CR5 dentro gli altri.
   (`CampiCasa`, intatto) in un foglio con «Elimina», filtri coi conteggi e
   cerca, le playlist e i link riservati com'erano. Pagina da 9.700 a 4.463 px
   sul telefono. Guardia `tests/test_crea_cr4.py`.
-- **CR6** (potatura): da fare.
+- **CR6 FATTO** in locale: su `/sound/libreria` chi compone vede il selettore
+  Crea · Fonti · Le mie tracce («Fonti» segnato) al posto della testata
+  doppia; la libreria sotto è quella di sempre. Il trigger di Studio già si
+  nascondeva a chi ha le chiavi. Non si è cancellato codice che un test legge:
+  il vestito vecchio resta intero dietro `?vestito=vecchio` (si pota quando il
+  founder dà l'ok al nuovo, aggiornando i pin).
+
+## 8. Cosa resta da decidere
+- Quando il founder dà l'ok al vestito nuovo: togliere il flag e il vestito
+  vecchio (`createbar`, `fq-fonti`, la vista `mine` vecchia) e aggiornare i
+  pin che li leggono (`test_ascolto_telefono` su `cb-play`, `test_frequencies_fq`
+  su `cb-collapse`/`fqz-voicedesk`, `test_tracce_mie_tm` su `mine-del`,
+  `test_sound_sn0` su `CampiCasa traccia={d}`).
+- L'upload delle basi della Regia resta nella libreria, non nel banco.
+- Tutto il lotto è solo in locale: deploy su «go».
 
 ## 6. Domande per il founder
 1. **CR0 subito**? È il buco lasciato da ES (solo in locale): mezz'ora.
