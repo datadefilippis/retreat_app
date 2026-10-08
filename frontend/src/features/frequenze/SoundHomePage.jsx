@@ -11,7 +11,7 @@
  * L'ARCO ADESSO E' UNO, e ogni sezione prepara la successiva
  * (8/10 sera, founder: le Meditazioni, il valore principale, in
  * evidenza sin dall'inizio; il suono racconta cosa c'e' dietro):
- *   1. meditazioni con un suono composto apposta   (apertura, CTA alla casa)
+ *   1. il suono come strumento          (apertura, com'era: il founder la tiene)
  *   2. LE MEDITAZIONI — e ne ascolti una ADESSO (anteprima 90s,
  *      patto della Lettera, il rimando alla casa)
  *   3. dietro ogni meditazione: non tutto il suono e' musica (i fenomeni)
@@ -196,7 +196,7 @@ export default function SoundHomePage() {
 
 function SoundHomePageVecchia() {
   useEffect(() => {
-    document.title = 'Aurya Sound: meditazioni con un suono composto apposta | Aurya';
+    document.title = 'Aurya Sound: il suono può diventare uno strumento | Aurya';
   }, []);
   /* il campione in vetrina: se la traccia non c'e' (altro ambiente),
      la sezione si piega con grazia — mai una scatola rotta */
@@ -233,29 +233,31 @@ function SoundHomePageVecchia() {
         {/* ── 1 · APERTURA ───────────────────────────────────────── */}
         <PhotoOpener image={ONDA} focus="50% 50%" height="tall" align="left"
           width="max-w-4xl" labelledBy="sh-title" data-testid="sh-open">
-          <Occhiello tono="chiaro">Aurya Sound · Le meditazioni</Occhiello>
+          <Occhiello tono="chiaro">Aurya Sound</Occhiello>
           <DisplayTitle as="h1" id="sh-title" size="hero" measure="wide"
             className="text-hero-shadow">
-            Meditazioni con un suono composto apposta.
+            Il suono può diventare uno strumento.
           </DisplayTitle>
           <Lede className="mt-8 max-w-2xl text-white/90 text-hero-shadow" tone="inherit">
-            Una voce che accompagna, la musica e il paesaggio sonoro che
-            tengono lo spazio. Le meditazioni di Aurya si ascoltano subito,
-            dal telefono, senza scaricare nulla.
+            Frequenze, ritmo, respiro, spazio e musica. Aurya Sound è uno
+            spazio per esplorare il suono, comprenderne i meccanismi e
+            trasformarlo in esperienze da ascoltare.
           </Lede>
           <p className="mt-6 max-w-2xl text-base sm:text-lg leading-relaxed text-white/80 text-hero-shadow">
-            Dietro ognuna c’è il suono: frequenze, ritmo, respiro, spazio.
-            Puoi capirlo, provarlo, o semplicemente ascoltarlo.
+            Puoi studiarlo, sperimentarlo, o semplicemente ascoltarlo.
+            E se accompagni persone, puoi comporlo per loro.
           </p>
-          {/* 8/10 sera (founder): le Meditazioni sono il valore principale
-              e vanno in evidenza SIN DALL'INIZIO: il bottone pieno porta
-              nella casa; il suono (esplora) e' il richiamo secondario. */}
+          {/* FN4 (30/8), l'hero vende il gancio piu' caldo: la
+              meditazione che ascolti ADESSO. Il richiamo professionale
+              esce dall'hero: ha la sua band (sezione Crea), un
+              pubblico, una porta. 8/10 sera (founder): la testata resta
+              questa; le Meditazioni sono la sezione subito sotto. */}
           <div className="mt-10 flex flex-wrap items-center gap-6">
-            <Bottone to="/meditazioni" tono="chiaro" testid="sh-cta-ascolta">
-              Ascolta una meditazione adesso
+            <Bottone href="#sh-esperienze" tono="chiaro" testid="sh-cta-ascolta">
+              Ascolta una meditazione, 90 secondi
             </Bottone>
             <Richiamo to="/sound/esplora" tono="chiaro" testid="sh-cta-esplora">
-              Il suono dietro: esplora le frequenze →
+              Esplora Aurya Sound →
             </Richiamo>
           </div>
         </PhotoOpener>
