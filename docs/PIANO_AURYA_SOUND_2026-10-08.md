@@ -240,3 +240,18 @@ Totale fino a SN4: **~11 giorni**. L'accensione del Più, quando vorrai, è un g
 - Una sola prova per il Cerchio: `lib/cerchio.js`; il controllo server resta `_has_catalog_access`, che un giorno conoscerà anche «Più».
 - Il motore non cambia: le novità sono dati e vetrina.
 - Ogni onda ha i suoi test: modello, API, pin dei testi, rotte nel registro, meta nella shell.
+
+---
+
+## 11. Stato
+
+**SN0 Fondamenta IMPLEMENTATO in locale (8/10/2026).** Nessun campo obbligatorio, nessuna migrazione, motore e cancello intatti.
+- **Tracce**: `cover_url`, `accesso` (cerchio|piu, default cerchio), `momento`, `tags` (≤8), `in_vetrina`, `guida_nome`, `has_voce` (materializzato alla pubblicazione); `PATCH /frequencies/tracks/{id}` li accetta tutti facoltativi; `POST/DELETE /tracks/{id}/copertina` (jpg/png/webp ≤5 MB, storage pubblico `uploads/frequenze` come le copertine dei corsi). Lista, catalogo e payload pubblico portano i campi; gli scartati tornano al default (accesso ignoto → cerchio).
+- **Playlist** (`routers/sound_playlists.py`, collezione `sound_playlists`): crea/modifica/ordina/copertina/pubblica/ritira/togli sotto `require_sound_crea`; **solo tracce proprie, pubblicate, non riservate** (le bozze cadono in silenzio, provato: 2 su 3); **pubblicare è della chiave 1**; slug dal titolo con i precedenti; pubblico `GET /frequencies/playlists` e `/{slug}` dietro **lo stesso cancello del catalogo** (403 `locked` + conteggio); solo pubblicate con almeno una traccia viva; contatore `plays_total`.
+- **Eventi di ascolto** (`sound_ascolti`): `POST /public/{slug}/ascolto` {evento avvio|q25|q50|q75|fine, provenienza, playlist, secondo}, 120/min per IP, anonimo (account se Bearer piattaforma, mai IP/UA); `GET /tracks/{id}/ascolti` per il gestionale (eventi, provenienze, % completamento). Il player manda `avvio` al primo play e i quartili dal tempo mostrato; la provenienza viaggia in `?da=` e `?playlist=`.
+- **Account**: campi predisposti (`sound_preferenze`, `sound_riprendi`, `sound_recenti`, `stripe_customer_id`, `piu`), nessuna interfaccia.
+- **Crea → Le mie tracce**: su ogni traccia copertina (foto compressa in browser), momento, tag; sulle pubbliche il chip **Cerchio · gratis / Più** e «In vetrina» (chiave 1). Sotto, **Le mie playlist**: titolo → editor (racconto, copertina, accesso, vetrina, le meditazioni in ordine con frecce, «+ Aggiungi»), Pubblica/Ritira/Togli. Provato dal vivo: playlist «Sere di respiro» creata, traccia aggiunta, pubblicata → `/meditazioni/playlist/sere-di-respiro`.
+- guardie: `tests/test_sound_sn0.py`; pin del portiere aggiornato (+3 endpoint sotto `require_sound_crea`).
+
+**Prossimo: SN1 La casa e la passerella.**
+

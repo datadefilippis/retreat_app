@@ -872,6 +872,8 @@ from routers import sound_sessions as sound_sessions_router
 app.include_router(sound_sessions_router.router, prefix="/api")      # /api/sound/pro/sessioni/* (S2)
 from routers import sound_shares as sound_shares_router
 app.include_router(sound_shares_router.router, prefix="/api")        # /api/frequencies/condivisioni + /condivise (TR3)
+from routers import sound_playlists as sound_playlists_router        # noqa: E402
+app.include_router(sound_playlists_router.router, prefix="/api")     # /api/frequencies/playlists (SN0, piano Aurya Sound)
 
 
 @app.get("/sitemap.xml", include_in_schema=False)

@@ -31,8 +31,10 @@ from models.audio_asset import (
 )
 from models.audio_asset import TITLE_MAX as SOUND_TITLE_MAX
 from models.common import utc_now
+from routers.auth import limiter   # SN0: gli eventi di ascolto hanno un limite per IP
 from models.frequency_track import (
-    DESCRIPTION_MAX, TITLE_MAX, clean_intent, clean_score,
+    DESCRIPTION_MAX, GUIDA_NOME_MAX, TITLE_MAX, clean_accesso, clean_intent, clean_momento,
+    clean_score, clean_tags, has_voce,
 )
 
 # i byte delle basi vivono qui, serviti dallo static mount /uploads
@@ -137,6 +139,8 @@ _LIST_PROJECTION = {
     "created_at": 1, "updated_at": 1,
     # della ricetta, in lista, serve solo la durata
     "score.duration_sec": 1, "score.layers": 1,
+    # SN0 — i campi della casa: copertina, accesso, momento, tag, vetrina, voce
+    "cover_url": 1, "accesso": 1, "momento": 1, "tags": 1, "in_vetrina": 1, "has_voce": 1, "guida_nome": 1,
 }
 
 
@@ -152,6 +156,12 @@ class TrackUpdate(BaseModel):
     score: Optional[dict] = None
     description: Optional[str] = None
     intent: Optional[str] = None
+    # SN0 (8/10/2026): i campi della casa delle meditazioni, tutti facoltativi
+    accesso: Optional[str] = None          # "cerchio" | "piu"
+    momento: Optional[str] = None          # "" = via
+    tags: Optional[list] = None
+    in_vetrina: Optional[bool] = None
+    guida_nome: Optional[str] = None       # chi guida, "" = il nome del profilo
 
 
 def _doc(track: dict) -> dict:
@@ -190,6 +200,8 @@ async def list_tracks(current_user: dict = Depends(require_sound_crea)):
         it["duration_sec"] = score.get("duration_sec")
         it["layers_count"] = len(score.get("layers") or [])
         it["shares_attivi"] = conte.get(it["id"], 0)
+        it["accesso"] = it.get("accesso") or "cerchio"
+        it["has_voce"] = bool(it.get("has_voce")) if it.get("status") == "published" else has_voce(score)
     return {"items": items}
 
 
@@ -254,6 +266,17 @@ async def update_track(track_id: str, payload: TrackUpdate,
         updates["intent"] = clean_intent(payload.intent)
     if payload.score is not None:
         updates["score"] = _validated_score(payload.score)
+    # SN0 — i campi della casa
+    if payload.accesso is not None:
+        updates["accesso"] = clean_accesso(payload.accesso)
+    if payload.momento is not None:
+        updates["momento"] = clean_momento(payload.momento)
+    if payload.tags is not None:
+        updates["tags"] = clean_tags(payload.tags)
+    if payload.in_vetrina is not None:
+        updates["in_vetrina"] = bool(payload.in_vetrina)
+    if payload.guida_nome is not None:
+        updates["guida_nome"] = payload.guida_nome.strip()[:GUIDA_NOME_MAX] or None
     if not updates:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
                             detail="Nessuna modifica.")
@@ -290,7 +313,9 @@ _PUBLIC_PROJECTION = {"_id": 0, "id": 1, "slug": 1, "title": 1,
                       "description": 1, "intent": 1, "score": 1,
                       "plays_total": 1, "organization_id": 1,
                       "master_file": 1, "master_bytes": 1,
-                      "anteprima_url": 1}
+                      "anteprima_url": 1,
+                      # SN0 — copertina, accesso, momento, voce, chi guida
+                      "cover_url": 1, "accesso": 1, "momento": 1, "has_voce": 1, "guida_nome": 1}
 _SLUG_ATTEMPTS = 50
 
 
@@ -384,7 +409,10 @@ async def publish_track(track_id: str,
                   "visibility": visibility,
                   "published_at": utc_now(), "updated_at": utc_now(),
                   "layers_count": len(score.get("layers") or []),
-                  "duration_sec": score.get("duration_sec")}})
+                  "duration_sec": score.get("duration_sec"),
+                  # SN0 — «con la voce» si decide qui, una volta
+                  "has_voce": has_voce(score),
+                  "accesso": clean_accesso(track.get("accesso"))}})
     return {"id": track_id, "status": "published", "slug": slug,
             "visibility": visibility}
 
@@ -576,6 +604,8 @@ async def public_track(slug: str):
         "slug": (org or {}).get("public_slug"),
     }
     track["plays_total"] = track.get("plays_total") or 0
+    track["accesso"] = track.get("accesso") or "cerchio"
+    track["has_voce"] = bool(track.get("has_voce"))
     # IL MASTER: il player lo preferisce; senza, percorso synth di sempre
     track["master_pronto"] = bool(track.pop("master_file", None))
     # l'anteprima pubblica dei 90s viaggia nel payload (e' statica)
@@ -695,7 +725,9 @@ async def _has_catalog_access(request) -> bool:
 _CATALOG_PROJECTION = {"_id": 0, "slug": 1, "title": 1, "description": 1,
                        "intent": 1, "plays_total": 1, "organization_id": 1,
                        "score.duration_sec": 1, "layers_count": 1,
-                       "duration_sec": 1, "published_at": 1}
+                       "duration_sec": 1, "published_at": 1,
+                       # SN0 — la casa sceglie per copertina, accesso, momento, voce
+                       "cover_url": 1, "accesso": 1, "momento": 1, "tags": 1, "has_voce": 1, "in_vetrina": 1, "guida_nome": 1}
 
 CATALOG_PAGE_MAX = 100
 
@@ -757,10 +789,120 @@ async def catalog(request: Request):
             "slug": org.get("public_slug"),
         }
         it["plays_total"] = it.get("plays_total") or 0
+        it["accesso"] = it.get("accesso") or "cerchio"
+        it["has_voce"] = bool(it.get("has_voce"))
+        it["in_vetrina"] = bool(it.get("in_vetrina"))
         out.append(it)
     # il cursore per la pagina dopo: assente = la vetrina e' finita
     next_before = out[-1]["published_at"] if len(out) == limit else None
     return {"items": out, "next_before": next_before}
+
+
+# ── SN0 (8/10/2026) — la copertina della traccia ──────────────────────────
+COVER_MAX_BYTES = 5 * 1024 * 1024
+COVER_EXT = {"jpg": "image/jpeg", "jpeg": "image/jpeg", "png": "image/png", "webp": "image/webp"}
+
+
+@router.post("/tracks/{track_id}/copertina")
+async def copertina_traccia(track_id: str, file: UploadFile = File(...),
+                            current_user: dict = Depends(require_sound_crea)):
+    """La foto della meditazione (il founder le mette lui; il fallback
+    generato resta solo per chi non ce l'ha). Storage pubblico come le
+    copertine dei corsi."""
+    from database import frequency_tracks_collection
+    from services.object_storage import save_public_upload
+    org_id = current_user["organization_id"]
+    t = await frequency_tracks_collection.find_one({"id": track_id, "organization_id": org_id}, {"_id": 0, "id": 1})
+    if not t:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Traccia non trovata.")
+    ext = (file.filename or "").rsplit(".", 1)[-1].lower() if "." in (file.filename or "") else ""
+    if ext not in COVER_EXT:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Formato non ammesso: jpg, png o webp.")
+    data = await file.read()
+    if not data or len(data) > COVER_MAX_BYTES:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Immagine vuota o oltre 5 MB.")
+    url = save_public_upload("frequenze", f"{track_id}.{uuid.uuid4().hex[:8]}.{ext}", data, content_type=COVER_EXT[ext])
+    await frequency_tracks_collection.update_one({"id": track_id, "organization_id": org_id},
+                                                 {"$set": {"cover_url": url, "updated_at": utc_now()}})
+    return {"cover_url": url}
+
+
+@router.delete("/tracks/{track_id}/copertina", status_code=status.HTTP_204_NO_CONTENT)
+async def togli_copertina_traccia(track_id: str, current_user: dict = Depends(require_sound_crea)):
+    from database import frequency_tracks_collection
+    r = await frequency_tracks_collection.update_one(
+        {"id": track_id, "organization_id": current_user["organization_id"]},
+        {"$set": {"cover_url": None, "updated_at": utc_now()}})
+    if r.matched_count == 0:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Traccia non trovata.")
+
+
+# ── SN0 (8/10/2026) — GLI EVENTI DI ASCOLTO ───────────────────────────────
+# `plays_total` resta (il contatore di sempre). Qui si aggiunge la misura
+# che mancava: avvio, quartili, fine, con la PROVENIENZA (home, playlist,
+# condivisione, corso) e, se c'e', l'account. Anonimo per il resto: niente
+# IP, niente user agent. Una riga per evento, aggregata dal gestionale.
+EVENTI_ASCOLTO = ("avvio", "q25", "q50", "q75", "fine")
+PROVENIENZE = ("casa", "playlist", "condivisione", "corso", "vetrina", "cerca", "preferiti", "diretto", "altro")
+
+
+class AscoltoPayload(BaseModel):
+    evento: str
+    provenienza: Optional[str] = None
+    playlist: Optional[str] = None       # slug della playlist, se l'ascolto nasce da li'
+    secondo: Optional[int] = None
+
+
+@router.post("/public/{slug}/ascolto", status_code=status.HTTP_204_NO_CONTENT)
+@limiter.limit("120/minute")
+async def registra_ascolto(request: Request, slug: str, payload: AscoltoPayload):
+    from database import frequency_tracks_collection, sound_ascolti_collection
+    if payload.evento not in EVENTI_ASCOLTO:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Evento sconosciuto.")
+    t = await frequency_tracks_collection.find_one(
+        solo_pubbliche({"$or": [{"slug": slug}, {"slug_precedenti": slug}], "status": "published"}),
+        {"_id": 0, "id": 1, "organization_id": 1})
+    if not t:
+        return
+    account_id = None
+    auth_header = request.headers.get("Authorization", "")
+    if auth_header.startswith("Bearer "):
+        try:
+            from auth import decode_token
+            p = decode_token(auth_header[7:])
+            if p.get("type") == "platform":
+                account_id = p.get("sub")
+        except Exception:  # noqa: BLE001
+            account_id = None
+    await sound_ascolti_collection.insert_one({
+        "track_id": t["id"], "organization_id": t["organization_id"], "slug": slug,
+        "evento": payload.evento,
+        "provenienza": payload.provenienza if payload.provenienza in PROVENIENZE else "altro",
+        "playlist": (payload.playlist or "")[:120] or None,
+        "secondo": max(0, int(payload.secondo or 0)),
+        "account_id": account_id, "at": utc_now(),
+    })
+
+
+@router.get("/tracks/{track_id}/ascolti")
+async def ascolti_traccia(track_id: str, current_user: dict = Depends(require_sound_crea)):
+    """Per il gestionale: avvii, completamenti e provenienze della traccia."""
+    from database import frequency_tracks_collection, sound_ascolti_collection
+    org_id = current_user["organization_id"]
+    t = await frequency_tracks_collection.find_one({"id": track_id, "organization_id": org_id}, {"_id": 0, "id": 1, "plays_total": 1})
+    if not t:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Traccia non trovata.")
+    eventi = {}
+    async for r in sound_ascolti_collection.aggregate([
+            {"$match": {"track_id": track_id}}, {"$group": {"_id": "$evento", "n": {"$sum": 1}}}]):
+        eventi[r["_id"]] = r["n"]
+    provenienze = {}
+    async for r in sound_ascolti_collection.aggregate([
+            {"$match": {"track_id": track_id, "evento": "avvio"}}, {"$group": {"_id": "$provenienza", "n": {"$sum": 1}}}]):
+        provenienze[r["_id"] or "altro"] = r["n"]
+    avvii = eventi.get("avvio", 0)
+    return {"plays_total": t.get("plays_total") or 0, "eventi": eventi, "provenienze": provenienze,
+            "completamento": (round(100 * eventi.get("fine", 0) / avvii) if avvii else None)}
 
 
 @router.get("/favorites")

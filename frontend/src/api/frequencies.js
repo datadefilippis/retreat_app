@@ -39,6 +39,31 @@ export const frequenciesAPI = {
   condivisaMasterUrl: (token) => `${process.env.REACT_APP_BACKEND_URL || ''}`
     + `/api/frequencies/condivise/${token}/master`,
   registerPlay: (slug) => api.post(`/frequencies/public/${slug}/play`),
+  // SN0 (8/10/2026, piano Aurya Sound): gli eventi di ascolto (avvio, quartili, fine)
+  // con la provenienza; anonimi, un limite per IP lato server
+  registraAscolto: (slug, { evento, provenienza, playlist, secondo } = {}) =>
+    api.post(`/frequencies/public/${slug}/ascolto`, { evento, provenienza, playlist, secondo }),
+  ascolti: (trackId) => api.get(`/frequencies/tracks/${trackId}/ascolti`),
+  // SN0: la copertina della traccia
+  uploadCover: (trackId, file) => {
+    const fd = new FormData();
+    fd.append('file', file);
+    return api.post(`/frequencies/tracks/${trackId}/copertina`, fd, { headers: { 'Content-Type': 'multipart/form-data' } });
+  },
+  removeCover: (trackId) => api.delete(`/frequencies/tracks/${trackId}/copertina`),
+  // SN0: le playlist (gestionale + pubblico dietro lo stesso cancello del catalogo)
+  playlists: {
+    mine: () => api.get('/frequencies/playlists/mine'),
+    create: (data) => api.post('/frequencies/playlists', data),
+    update: (id, data) => api.patch(`/frequencies/playlists/${id}`, data),
+    cover: (id, file) => { const fd = new FormData(); fd.append('file', file); return api.post(`/frequencies/playlists/${id}/copertina`, fd, { headers: { 'Content-Type': 'multipart/form-data' } }); },
+    publish: (id) => api.post(`/frequencies/playlists/${id}/publish`),
+    unpublish: (id) => api.post(`/frequencies/playlists/${id}/unpublish`),
+    remove: (id) => api.delete(`/frequencies/playlists/${id}`),
+    pubbliche: (provaToken) => api.get('/frequencies/playlists', { headers: provaToken ? { 'X-Fqz-Unlock': provaToken } : {} }),
+    pubblica: (slug, provaToken) => api.get(`/frequencies/playlists/${slug}`, { headers: provaToken ? { 'X-Fqz-Unlock': provaToken } : {} }),
+    play: (slug) => api.post(`/frequencies/playlists/${slug}/play`),
+  },
 
   // FQ3 — vetrina /meditazioni: catalogo dietro sblocco server-side.
   // SB1 (20/8): lo sblocco viaggia con la PROVA UNICA del cerchio (il

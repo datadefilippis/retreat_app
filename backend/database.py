@@ -288,6 +288,9 @@ sound_sessions_collection = db.sound_sessions
 # persona. Il token e' opaco e vive qui (non un JWT): la revoca deve
 # essere immediata, non «aspetta la scadenza».
 sound_shares_collection = db.sound_shares
+# SN0 (8/10/2026, piano Aurya Sound) — le playlist e gli eventi di ascolto
+sound_playlists_collection = db.sound_playlists
+sound_ascolti_collection = db.sound_ascolti
 # FA4 (FARO, 30/8) — i quaderni del Lab che seguono l'account: un
 # documento per platform_account, solo numeri ed etichette (mai audio).
 sound_quaderni_collection = db.sound_quaderni
@@ -1604,6 +1607,14 @@ async def create_indexes():
     # sull'intera collezione, bozze comprese (misurato col planner).
     await frequency_tracks_collection.create_index(
         [("status", 1), ("published_at", -1)], name="es4_catalog")
+    # SN0 — playlist: per org, per slug (sparse: le bozze non ce l'hanno), le pubblicate per data
+    await sound_playlists_collection.create_index("id", unique=True, name="sn0_playlist_id")
+    await sound_playlists_collection.create_index([("organization_id", 1), ("updated_at", -1)], name="sn0_playlist_org")
+    await sound_playlists_collection.create_index("slug", unique=True, sparse=True, name="sn0_playlist_slug")
+    await sound_playlists_collection.create_index([("status", 1), ("published_at", -1)], name="sn0_playlist_pubblicate")
+    # SN0 — eventi di ascolto: per traccia e per data (aggregati dal gestionale)
+    await sound_ascolti_collection.create_index([("track_id", 1), ("at", -1)], name="sn0_ascolti_traccia")
+    await sound_ascolti_collection.create_index([("organization_id", 1), ("at", -1)], name="sn0_ascolti_org")
     # FQ3 — preferiti dell'account Aurya: un cuore per traccia
     await db.frequency_favorites.create_index(
         [("platform_account_id", 1), ("slug", 1)], unique=True,

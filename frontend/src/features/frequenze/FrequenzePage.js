@@ -20,6 +20,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Link as RouterLink, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { frequenciesAPI } from '../../api/frequencies';
+import { CampiCasa, PlaylistPannello } from './CasaCampi';   // SN0: i campi della casa e le playlist
 import {
   METHOD_LABELS, CURVE_LABELS, NOISE_COLORS, WAVE_PERIOD_SEC,
   startPreview, startCardLive,
@@ -2614,6 +2615,8 @@ export default function FrequenzePage() {
                     {pubblica && d.slug && (
                       <div className="listen">/frequenze/{d.slug}</div>
                     )}
+                    {/* SN0 — copertina, momento, tag; accesso e vetrina sulle pubbliche */}
+                    <CampiCasa traccia={d} onCambio={loadDrafts} composer={!!user?.sound_composer} />
                     <div className="foot mine-foot">
                       {d.status !== 'published' ? (
                         user?.sound_composer ? (
@@ -2661,6 +2664,8 @@ export default function FrequenzePage() {
                 })}
               </div>
             )}
+            {/* SN0 — le playlist, sotto le tracce */}
+            <PlaylistPannello tracce={drafts} composer={!!user?.sound_composer} />
             {condividi && (
               <CondivisioniTraccia trackId={condividi.id}
                 titolo={condividi.titolo} onCambio={loadDrafts}

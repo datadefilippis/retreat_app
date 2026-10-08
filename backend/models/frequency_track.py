@@ -433,3 +433,41 @@ def clean_score(raw):
 
 def clean_intent(raw):
     return raw if raw in INTENTS else None
+
+
+# ── SN0 (8/10/2026, piano Aurya Sound) — i campi della casa delle meditazioni ──
+# Tutti FACOLTATIVI con un default uguale a ieri: una traccia senza
+# `accesso` e' «cerchio», senza copertina ha il fallback, senza momento non
+# compare nelle righe per momento. Nessuna migrazione.
+ACCESSI = ("cerchio", "piu")          # gratis per chi e' nel Cerchio · per gli abbonati (quando il Piu' si accende)
+MOMENTI = ("mattina", "pausa", "sera", "notte")
+TAGS_MAX = 8
+TAG_MAX_LEN = 32
+GUIDA_NOME_MAX = 80
+
+
+def clean_accesso(raw) -> str:
+    return raw if raw in ACCESSI else "cerchio"
+
+
+def clean_momento(raw):
+    return raw if raw in MOMENTI else None
+
+
+def clean_tags(raw) -> list:
+    if not isinstance(raw, list):
+        return []
+    out = []
+    for t in raw:
+        s = str(t or "").strip().lower()[:TAG_MAX_LEN]
+        if s and s not in out:
+            out.append(s)
+        if len(out) >= TAGS_MAX:
+            break
+    return out
+
+
+def has_voce(score) -> bool:
+    """Vero se la ricetta porta una voce o una guida del respiro: si
+    materializza alla pubblicazione (le righe «Con la voce / Solo suono»)."""
+    return any((l or {}).get("kind") in ("voice", "guida") for l in ((score or {}).get("layers") or []))

@@ -1589,7 +1589,8 @@ class TestPrivilegioDelComporre:
         # le DUE occorrenze di get_current_user sono i due portieri:
         # nessun endpoint del comporre lo usa direttamente
         assert src.count("Depends(get_current_user))") == 2
-        assert src.count("Depends(require_sound_crea))") == 12
+        # SN0 (8/10/2026): +3 (copertina POST/DELETE, conteggi degli ascolti)
+        assert src.count("Depends(require_sound_crea))") == 15
         assert src.count("Depends(require_sound_composer))") == 0
         # la decisione vive in un posto solo
         assert "from services.studio_access import" in src

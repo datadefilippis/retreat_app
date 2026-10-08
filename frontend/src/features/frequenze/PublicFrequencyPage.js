@@ -221,11 +221,37 @@ export default function PublicFrequencyPage() {
     return undefined;
   }, [playing, continuo]);
 
+  /* SN0 (8/10/2026) — la PROVENIENZA dell'ascolto viaggia nell'URL
+     (?da=casa|playlist|condivisione|corso|vetrina|cerca|preferiti) e la
+     playlist in ?playlist=slug: la casa li mette, il player li riporta. */
+  const provenienzaRef = useRef(null);
+  if (provenienzaRef.current === null) {
+    try {
+      const q = new URLSearchParams(window.location.search);
+      provenienzaRef.current = { provenienza: q.get('da') || 'diretto', playlist: q.get('playlist') || null };
+    } catch { provenienzaRef.current = { provenienza: 'diretto', playlist: null }; }
+  }
+  const ascoltoEvento = (evento, secondo) => {
+    frequenciesAPI.registraAscolto(slug, { evento, secondo: Math.floor(secondo || 0), ...provenienzaRef.current })
+      .catch(() => { /* la misura non deve mai fermare il suono */ });
+  };
   const segnaAscolto = () => {
     if (playedRef.current) return;
     playedRef.current = true;
     frequenciesAPI.registerPlay(slug).catch(() => { /* solo un contatore */ });
+    ascoltoEvento('avvio', 0);
   };
+  /* i quartili e la fine: una volta per ascolto, dal tempo che la pagina
+     gia' mostra (vale per anteprima, master e synth allo stesso modo) */
+  const quartiliRef = useRef({});
+  useEffect(() => {
+    const d = track?.score?.duration_sec || 0;
+    if (!d || !playedRef.current) return;
+    const soglie = [['q25', 0.25], ['q50', 0.5], ['q75', 0.75], ['fine', 0.98]];
+    soglie.forEach(([k, f]) => {
+      if (!quartiliRef.current[k] && elapsed >= d * f) { quartiliRef.current[k] = true; ascoltoEvento(k, elapsed); }
+    });
+  }, [elapsed, track]);   // eslint-disable-line react-hooks/exhaustive-deps
 
   /* Basi e voce: le stesse per l'ascolto dal vivo e per il render
      continuo — un solo caricamento, non due percorsi che divergono. */

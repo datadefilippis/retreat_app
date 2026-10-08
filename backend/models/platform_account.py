@@ -75,6 +75,16 @@ class PlatformAccount(BaseModel):
     # sola claim email nelle 24h, anche con acquisti multipli ravvicinati.
     claim_last_sent_at: Optional[datetime] = None
 
+    # SN0 (8/10/2026, piano Aurya Sound) — PREDISPOSTI, non ancora usati:
+    # le preferenze (le tre domande, decisione 2: campi si', interfaccia dopo),
+    # «riprendi da dove eri», gli ascolti recenti, e il Piu' (abbonamento
+    # ascoltatore, decisione 5: 39 €/anno, si accende nel 2027).
+    sound_preferenze: Optional[dict] = None     # {obiettivo, durata, momento}
+    sound_riprendi: Optional[dict] = None       # {slug, secondo, at}
+    sound_recenti: Optional[list] = None        # ultimi 20 slug
+    stripe_customer_id: Optional[str] = None
+    piu: Optional[dict] = None                  # {status, stripe_subscription_id, current_period_end, cancel_at_period_end, omaggio_until}
+
 
 class MagicLinkToken(BaseModel):
     """Token magic-link: salvato SOLO l'hash sha256. One-shot + TTL."""
