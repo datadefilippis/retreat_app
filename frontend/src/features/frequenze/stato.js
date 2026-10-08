@@ -41,3 +41,7 @@ export const SOUND_CREA_NUOVO = true;
    telaio Stanza): foglio «?», riga delle stanze, letture accanto ai comandi.
    ?vestito=vecchio mostra il Lab di prima. */
 export const LAB_VESTITO_NUOVO = true;
+/* CS (8/10/2026 sera) — la casa COMPOSTA dal motore dei consigli
+   (casa/consigli.js): una carta una volta, sezioni col perche', filtri
+   categorie+durata, via «Con la voce»/«Solo suono». Spento = la casa di prima. */
+export const CASA_CONSIGLI = true;

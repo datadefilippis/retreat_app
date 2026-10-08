@@ -16,13 +16,14 @@ import { Link, useNavigate } from 'react-router-dom';
 import platformApi, { PLATFORM_TOKEN_KEY } from '../../../api/platformClient';
 import { frequenciesAPI } from '../../../api/frequencies';
 import { storefrontAPI } from '../../../api/storefront';
-import { SOUND_PIU_ATTIVO, SOUND_LETTORE_IN_CASA } from '../stato';
+import { CASA_CONSIGLI, SOUND_PIU_ATTIVO, SOUND_LETTORE_IN_CASA } from '../stato';
 import { LettoreProvider, useLettore } from './lettore';
 import { LettoreBarra, SchedaMeditazione } from './LettoreBarra';
 import { prova, migraVecchieChiavi } from '../../../lib/cerchio';
 import { SafetyCurtain, SafetyLine } from '../SafetyCurtain';
 import Cuore, { InvitoAccount } from './Cuore';
 import { usePreferite } from './preferite';
+import { componiCasa, persona as costruisciPersona, FASCE_DURATA, fasciaDurata } from './consigli';   // CS: il motore dei consigli
 import SoundTopbar from '../SoundTopbar';
 import { SogliaCerchio } from '../MeditazioniPage';
 import '../frequenze.css';
@@ -249,12 +250,12 @@ function MeditazioniCasaDentro() {
   };
   /* SN3 — il tuo spazio: «riprendi da dove eri» e gli ascolti recenti vivono
      sull'account (la persistenza e' dell'account, decisione del piano) */
-  const [spazio, setSpazio] = useState({ riprendi: null, recenti: [], nome: '' });
+  const [spazio, setSpazio] = useState({ riprendi: null, recenti: [], nome: '', abitudine: null });
   const caricaSpazio = async () => {
     if (!hasAccount) return;
     try {
       const me = (await platformApi.get('/platform/me')).data;
-      setSpazio({ riprendi: me.sound_riprendi || null, recenti: me.sound_recenti || [], nome: (me.name || '').trim().split(' ')[0] });
+      setSpazio({ riprendi: me.sound_riprendi || null, recenti: me.sound_recenti || [], nome: (me.name || '').trim().split(' ')[0], abitudine: me.sound_abitudine || null });
     } catch { /* non bloccante */ }
   };
   useEffect(() => { migraVecchieChiavi().finally(() => { carica(); caricaSpazio(); }); }, []); // eslint-disable-line react-hooks/exhaustive-deps
@@ -263,7 +264,7 @@ function MeditazioniCasaDentro() {
 
   // ── le righe, dal catalogo ──
   const tutte = useMemo(() => items || [], [items]);
-  const cercando = !!(q.trim() || intent || durata || voce);
+  const cercando = !!(q.trim() || intent || durata || (!CASA_CONSIGLI && voce));
   const filtrate = useMemo(() => {
     const qq = q.trim().toLowerCase();
     return tutte.filter((t) => {
@@ -301,7 +302,33 @@ function MeditazioniCasaDentro() {
   const recenti = (spazio.recenti || []).map((s) => perSlug[s]).filter(Boolean).slice(0, 12);
   const riprendi = spazio.riprendi && perSlug[spazio.riprendi.slug] && spazio.riprendi.secondo > 5
     ? { t: perSlug[spazio.riprendi.slug], secondo: spazio.riprendi.secondo } : null;
+  /* CS — la casa COMPOSTA: un bacino, una carta una volta, sezioni col perche'.
+     La persona esiste solo con l'account; senza, contano ora, popolarita', novita'. */
+  const casa = useMemo(() => {
+    if (!CASA_CONSIGLI) return null;
+    const pers = hasAccount
+      ? costruisciPersona({ recenti: spazio.recenti || [], riprendi: spazio.riprendi, preferite: favorites, abitudine: spazio.abitudine, perSlug })
+      : null;
+    return componiCasa({ tutte, vetrina, persona: pers, categorie: categoriePresenti });
+  }, [tutte, vetrina, hasAccount, spazio, favorites.join('|'), categoriePresenti]); // eslint-disable-line react-hooks/exhaustive-deps
+  const fasceDurataPresenti = casa ? casa.fasceDurata : new Set(tutte.map((t) => fasciaDurata(t.duration_sec)));
 
+  /* la carta «riprendi da dove eri», una per i due vestiti della casa */
+  const cardRiprendi = (r) => (
+    <Link to={`/frequenze/${r.t.slug}?da=riprendi&t=${r.secondo}`} className={`oggi tono-${TONI[r.t.intent] || 'oro'}`}
+      style={{ textDecoration: 'none', color: 'inherit', marginBottom: 18 }} data-testid="casa-riprendi"
+      onClick={(e) => { if (suona) { e.preventDefault(); suona(r.t, { da: 'riprendi', playlist: null, da_secondo: r.secondo }); } }}>
+      <div className="oggi-cover" style={{ minHeight: 120 }}>{r.t.cover_url && <img src={r.t.cover_url} alt="" />}
+        <Cuore on={favorites.includes(r.t.slug)} onClick={() => toggleFavorite(r.t.slug)} titolo={r.t.title} testid="casa-riprendi-cuore" />
+      </div>
+      <div className="oggi-corpo">
+        <span className="etichetta">Riprendi da dove eri</span>
+        <h3>{r.t.title}</h3>
+        <span className="body">{fmtMinSec(r.secondo)} di {fmtMin(r.t.duration_sec)}{r.t.guida_nome || r.t.operator?.name ? ` · ${r.t.guida_nome || r.t.operator?.name}` : ''}</span>
+        <div style={{ marginTop: 'auto', paddingTop: 10 }}><span className="casa-cta">▶ Riprendi</span></div>
+      </div>
+    </Link>
+  );
   const vaiA = (id) => { setAttiva(id); const el = document.getElementById(id); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); };
 
   if (locked) return <SogliaCerchio teaserCount={teaserCount} onSbloccato={() => carica()} />;
@@ -364,13 +391,26 @@ function MeditazioniCasaDentro() {
                   <div className="filtri" data-testid="casa-filtri">
                     <button type="button" className={`filtro${!intent ? ' on' : ''}`} onClick={() => setIntent('')}>Tutte</button>
                     {categoriePresenti.map((c) => <button key={c.slug} type="button" className={`filtro tono-${c.tono || 'oro'}${intent === c.slug ? ' on' : ''}`} data-testid={`casa-filtro-${c.slug}`} onClick={() => setIntent(intent === c.slug ? '' : c.slug)}>{c.label}</button>)}
-                    <span style={{ width: 8 }} />
-                    {[['breve', '≤ 10 min'], ['media', '10–20 min'], ['lunga', '20+ min']].map(([v, l]) => (
-                      <button key={v} type="button" className={`filtro${durata === v ? ' on' : ''}`} onClick={() => setDurata(durata === v ? '' : v)}>{l}</button>))}
-                    <span style={{ width: 8 }} />
-                    {[['con', 'Con la voce'], ['senza', 'Solo suono']].map(([v, l]) => (
-                      <button key={v} type="button" className={`filtro${voce === v ? ' on' : ''}`} onClick={() => setVoce(voce === v ? '' : v)}>{l}</button>))}
+                    {!CASA_CONSIGLI && (
+                      <>
+                        <span style={{ width: 8 }} />
+                        {[['breve', '≤ 10 min'], ['media', '10–20 min'], ['lunga', '20+ min']].map(([v, l]) => (
+                          <button key={v} type="button" className={`filtro${durata === v ? ' on' : ''}`} onClick={() => setDurata(durata === v ? '' : v)}>{l}</button>))}
+                        <span style={{ width: 8 }} />
+                        {[['con', 'Con la voce'], ['senza', 'Solo suono']].map(([v, l]) => (
+                          <button key={v} type="button" className={`filtro${voce === v ? ' on' : ''}`} onClick={() => setVoce(voce === v ? '' : v)}>{l}</button>))}
+                      </>
+                    )}
                   </div>
+                  {/* CS1 (founder): la durata un livello sotto, in grigio, solo se nel
+                      catalogo ci sono fasce diverse; via «Con la voce» e «Solo suono» */}
+                  {CASA_CONSIGLI && fasceDurataPresenti.size >= 2 && (
+                    <div className="filtri filtri-durata" data-testid="casa-filtri-durata">
+                      <span className="filtri-etichetta">Durata</span>
+                      {FASCE_DURATA.filter(([v]) => fasceDurataPresenti.has(v)).map(([v, l]) => (
+                        <button key={v} type="button" className={`filtro${durata === v ? ' on' : ''}`} data-testid={`casa-durata-${v}`} onClick={() => setDurata(durata === v ? '' : v)}>{l}</button>))}
+                    </div>
+                  )}
                 </>
               );
               return (
@@ -408,6 +448,63 @@ function MeditazioniCasaDentro() {
               <Riga id="vista" titolo={vista.titolo} griglia>
                 {vista.items.map((t) => <CardMeditazione key={t.slug} t={t} {...propsCard('vista')} fav={favorites.includes(t.slug)} onCuore={toggleFavorite} />)}
               </Riga>
+            ) : casa ? (
+              <>
+                <Riga id="percorsi" titolo="Percorsi" sub="Corsi con le meditazioni dentro: si comprano nell'Accademia, si ascoltano qui.">
+                  {percorsi.map((c) => <CardPercorso key={c.product_id} c={c} />)}
+                </Riga>
+                <Riga id="playlist" titolo="Playlist" sub="Raccolte curate, da ascoltare in fila.">
+                  {playlists.map((p) => <CardPlaylist key={p.id} p={p} fav={pref.isFavPlaylist(p.slug)} onCuore={pref.togglePlaylist} />)}
+                </Riga>
+                {/* CS — il tuo spazio: riprendi e le preferite (solo se non sono gia' uscite) */}
+                {hasAccount && (casa.riprendi || casa.preferite.length > 0 || playlistSalvate.length > 0) && (
+                  <section className="casa-sezione" id="tuo-spazio" data-testid="casa-tuo-spazio">
+                    <h2>Il tuo spazio</h2>
+                    <p className="casa-sub">Dove eri rimasta o rimasto, cosa hai salvato.</p>
+                    {casa.riprendi && cardRiprendi(casa.riprendi)}
+                    {casa.preferite.length > 0 && (
+                      <>
+                        <h2 style={{ fontSize: 18, marginTop: 10 }} id="preferite">Le tue preferite</h2>
+                        <div className="riga" data-testid="casa-preferite">
+                          {casa.preferite.map((t) => <CardMeditazione key={t.slug} t={t} {...propsCard('preferiti')} fav onCuore={toggleFavorite} />)}
+                        </div>
+                      </>
+                    )}
+                    {playlistSalvate.length > 0 && (
+                      <>
+                        <h2 style={{ fontSize: 18, marginTop: 10 }}>Playlist salvate</h2>
+                        <div className="riga" data-testid="casa-playlist-salvate">
+                          {playlistSalvate.map((p) => <CardPlaylist key={p.id} p={p} fav onCuore={pref.togglePlaylist} />)}
+                        </div>
+                      </>
+                    )}
+                  </section>
+                )}
+                {/* le sezioni composte: per questo momento, da scoprire — col perche' */}
+                {casa.sezioni.map((sz) => (
+                  <Riga key={sz.id} id={sz.id} titolo={sz.titolo} sub={sz.perche || undefined}
+                    tutteN={sz.tutte ? sz.tutte.length : 0} onTutte={sz.tutte ? () => setVista({ titolo: sz.titolo, items: sz.tutte }) : null}>
+                    {sz.items.map((t) => <CardMeditazione key={t.slug} t={t} {...propsCard('casa')} fav={favorites.includes(t.slug)} onCuore={toggleFavorite} />)}
+                  </Riga>
+                ))}
+                {casa.categorieRighe.map((c) => (
+                  <Riga key={c.id} id={c.id} titolo={c.titolo} sub={c.perche || undefined} tutteN={c.tutte.length} onTutte={() => setIntent(c.categoria)}>
+                    {c.items.map((t) => <CardMeditazione key={t.slug} t={t} {...propsCard('casa')} fav={favorites.includes(t.slug)} onCuore={toggleFavorite} />)}
+                  </Riga>
+                ))}
+                {/* 7. le altre: solo cio' che nessuna sezione ha gia' mostrato (niente
+                    doppioni); la mappa intera sta dietro «Tutte le meditazioni» */}
+                <Riga id="altre" titolo={casa.piccolo ? 'Le meditazioni' : 'Le altre meditazioni'} griglia>
+                  {casa.altre.map((t) => <CardMeditazione key={t.slug} t={t} {...propsCard('tutte')} fav={favorites.includes(t.slug)} onCuore={toggleFavorite} />)}
+                </Riga>
+                {tutte.length > 1 && (
+                  <div className="casa-mappa" data-testid="casa-mappa">
+                    <button type="button" className="casa-tutte grande" data-testid="casa-tutte-mappa" onClick={() => setVista({ titolo: 'Tutte le meditazioni', items: tutte })}>
+                      Tutte le meditazioni · {tutte.length}
+                    </button>
+                  </div>
+                )}
+              </>
             ) : (
               <>
                 <Riga id="percorsi" titolo="Percorsi" sub="Corsi con le meditazioni dentro: si comprano nell'Accademia, si ascoltano qui.">
@@ -421,7 +518,8 @@ function MeditazioniCasaDentro() {
                   <section className="casa-sezione" id="tuo-spazio" data-testid="casa-tuo-spazio">
                     <h2>Il tuo spazio</h2>
                     <p className="casa-sub">Dove eri rimasta o rimasto, cosa hai ascoltato, cosa hai salvato.</p>
-                    {riprendi && (
+                    {riprendi && cardRiprendi(riprendi)}
+                    {false && (
                       <Link to={`/frequenze/${riprendi.t.slug}?da=riprendi&t=${riprendi.secondo}`} className={`oggi tono-${TONI[riprendi.t.intent] || 'oro'}`}
                         style={{ textDecoration: 'none', color: 'inherit', marginBottom: 18 }} data-testid="casa-riprendi"
                         onClick={(e) => { if (suona) { e.preventDefault(); suona(riprendi.t, { da: 'riprendi', playlist: null, da_secondo: riprendi.secondo }); } }}>

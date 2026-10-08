@@ -1615,6 +1615,8 @@ async def create_indexes():
     # SN0 — eventi di ascolto: per traccia e per data (aggregati dal gestionale)
     await sound_ascolti_collection.create_index([("track_id", 1), ("at", -1)], name="sn0_ascolti_traccia")
     await sound_ascolti_collection.create_index([("organization_id", 1), ("at", -1)], name="sn0_ascolti_org")
+    # CS2 — per persona (l'abitudine del motore dei consigli, la regia degli ascolti)
+    await sound_ascolti_collection.create_index([("account_id", 1), ("at", -1)], name="cs2_ascolti_persona")
     # FQ3 — preferiti dell'account Aurya: un cuore per traccia
     await db.frequency_favorites.create_index(
         [("platform_account_id", 1), ("slug", 1)], unique=True,

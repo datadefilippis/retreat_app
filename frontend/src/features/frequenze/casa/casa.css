@@ -208,3 +208,11 @@
 
 /* il movimento, con rispetto */
 @media(prefers-reduced-motion:reduce){.fqz.casa *,.fqz .lettore,.fqz .cuore{transition:none!important;animation:none!important}.fqz.casa .riga{scroll-behavior:auto}}
+
+/* CS1 — la durata un livello sotto le categorie: piccola, grigia, solo se serve */
+.fqz.casa .filtri-durata{padding:2px 0 4px;align-items:center;gap:6px}
+.fqz.casa .filtri-etichetta{font-family:var(--mono);font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--dimmer);margin-right:4px;flex:none}
+.fqz.casa .filtri-durata .filtro{font-size:10px;padding:4px 10px;color:var(--dimmer);border-color:var(--line-soft)}
+.fqz.casa .filtri-durata .filtro.on{color:var(--bone);border-color:var(--dimmer)}
+.fqz.casa .casa-mappa{display:flex;justify-content:center;margin:26px 0 8px}
+.fqz.casa .casa-tutte.grande{font-size:12px;padding:12px 20px;border:1px solid var(--line);border-radius:999px}

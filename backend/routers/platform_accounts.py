@@ -439,6 +439,16 @@ async def get_me(account: dict = Depends(get_current_platform_account)):
     out["sound_preferenze"] = account.get("sound_preferenze") or None
     out["sound_riprendi"] = account.get("sound_riprendi") or None
     out["sound_recenti"] = account.get("sound_recenti") or []
+    # CS2 (8/10/2026) — l'abitudine dagli eventi di ascolto, per il motore dei
+    # consigli della casa: fascia d'ora, durata media, completamenti, oggi.
+    # Mai bloccante: se cade, il profilo esce lo stesso.
+    try:
+        from services.ascolti_regia import abitudine
+        out["sound_abitudine"] = await abitudine(account["id"])
+    except Exception as exc:   # noqa: BLE001
+        import logging
+        logging.getLogger("platform_accounts").warning("sound_abitudine non calcolata: %s", exc)
+        out["sound_abitudine"] = None
     return out
 
 
