@@ -42,7 +42,9 @@ class TestVestito:
     def test_i_livelli_si_ripiegano(self):
         page = (FQ / "FrequenzePage.js").read_text()
         assert "const [aperti, setAperti] = useState({});" in page
-        assert "${nuovo && !aperti[l.id] ? ' chiusa' : ''}" in page
+        # 8/10 sera (founder): i comandi partono APERTI, il ripiego e' una scelta
+        assert "${nuovo && aperti[l.id] === false ? ' chiusa' : ''}" in page
+        assert "onClick={() => setAperti((a) => ({ ...a, [l.id]: a[l.id] === false }))}" in page
         assert "data-testid={`cr-riga-apri-${l.id}`}" in page and "data-testid={`cr-riga-riassunto-${l.id}`}" in page
         css = (CR / "crea.css").read_text()
         assert ".row.chiusa .r4{display:none}" in css and ".row.chiusa .timerow" in css

@@ -100,7 +100,7 @@
 /* ── la sessione: la linea del tempo e i livelli come card ── */
 .fqz[data-vestito="nuovo"] .cr-sessione{min-width:0}
 .fqz[data-vestito="nuovo"] .cr-sessione .score{border-radius:18px;border:1px solid var(--line-soft);background:rgba(255,255,255,.03);overflow:hidden}
-.fqz[data-vestito="nuovo"] .cr-sessione .helpstrip{display:none}
+.fqz[data-vestito="nuovo"] .cr-sessione .helpstrip{margin-left:0;font-size:12px;color:var(--dimmer);padding:8px 14px}
 .fqz[data-vestito="nuovo"] .cr-sessione .row{border-bottom:1px solid var(--line-soft)}
 .fqz[data-vestito="nuovo"] .cr-sessione .row.chiusa .timerow,
 .fqz[data-vestito="nuovo"] .cr-sessione .row.chiusa .r3,

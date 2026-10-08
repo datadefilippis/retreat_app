@@ -1758,22 +1758,24 @@ export default function FrequenzePage() {
   };
 
   const renderRow = (l) => (
-    <div key={l.id} className={`row${l.mute ? ' muted' : ''}${nuovo && !aperti[l.id] ? ' chiusa' : ''}`}>
+    <div key={l.id} className={`row${l.mute ? ' muted' : ''}${nuovo && aperti[l.id] === false ? ' chiusa' : ''}`}>
       <div className="meta">
         <div className="top">
-          {/* CR2 — nel vestito nuovo il livello e' una card ripiegabile:
-              nome, volume e muto sempre a vista, il resto con un tocco.
-              Stessi comandi, stessi handler: cambia solo cosa si vede. */}
+          {/* CR2 — nel vestito nuovo il livello si puo' RIPIEGARE (nome,
+              volume, muto e la barra restano a vista). 8/10 sera, founder:
+              «non posso piu' dire da quando a quando»: i comandi partono
+              APERTI, il ripiego e' una scelta. Stessi comandi, stessi
+              handler: cambia solo cosa si vede. */}
           {nuovo && (
             <button type="button" className="ghost riga-apri" data-testid={`cr-riga-apri-${l.id}`}
-              aria-expanded={!!aperti[l.id]} title={aperti[l.id] ? 'Chiudi i comandi' : 'Apri i comandi'}
-              onClick={() => setAperti((a) => ({ ...a, [l.id]: !a[l.id] }))}>{aperti[l.id] ? '▾' : '▸'}</button>
+              aria-expanded={aperti[l.id] !== false} title={aperti[l.id] === false ? 'Mostra i comandi' : 'Ripiega i comandi'}
+              onClick={() => setAperti((a) => ({ ...a, [l.id]: a[l.id] === false }))}>{aperti[l.id] === false ? '▸' : '▾'}</button>
           )}
           <input className="name" type="text" value={l.name}
             onChange={(e) => patchLayer(l.id, { name: e.target.value })} />
           <button type="button" className="ghost" onClick={() => removeLayer(l.id)}>×</button>
         </div>
-        {nuovo && !aperti[l.id] && (
+        {nuovo && aperti[l.id] === false && (
           <div className="riga-riassunto" data-testid={`cr-riga-riassunto-${l.id}`}>
             {layerLabel(l)} · {fmt(l.start)} → {fmt(l.end)}
           </div>
