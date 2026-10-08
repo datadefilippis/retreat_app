@@ -51,7 +51,7 @@ export function SelettoreCrea({ attiva, badge = 0, onFonti, navigate }) {
 }
 
 /* ── un foglio: lo stesso «gate» del mondo, col corpo a scorrimento ── */
-function Foglio({ aperto, onChiudi, titolo, testid, children, largo = false }) {
+export function Foglio({ aperto, onChiudi, titolo, testid, children, largo = false }) {
   if (!aperto) return null;
   return (
     <div className="gate cr-foglio" onClick={onChiudi} data-testid={testid}>

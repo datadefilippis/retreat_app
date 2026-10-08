@@ -152,3 +152,35 @@
 @media(max-width:480px){.fqz[data-vestito="nuovo"] .cr-piede-gesti button{padding:11px 12px;font-size:10px}}
 
 @media(prefers-reduced-motion:reduce){.fqz[data-vestito="nuovo"] .cr-banco,.fqz[data-vestito="nuovo"] .cr-stato{transition:none}}
+
+/* ── CR4: Le mie tracce ── */
+.fqz[data-vestito="nuovo"] .cr.tracce{padding-bottom:20px}
+.fqz[data-vestito="nuovo"] .cr-tracce-testa{display:flex;flex-direction:column;gap:10px;margin:4px 0 12px}
+.fqz[data-vestito="nuovo"] .cr-tracce-testa .cr-cerca{margin:0}
+.fqz[data-vestito="nuovo"] .cr-conta{margin-left:6px;opacity:.7}
+.fqz[data-vestito="nuovo"] .cr-tracce-stato{padding:8px 12px;border-radius:12px;background:rgba(255,255,255,.04);border:1px solid var(--line-soft);color:var(--dim)}
+.fqz[data-vestito="nuovo"] .cr-griglia{display:grid;gap:12px;grid-template-columns:1fr}
+@media(min-width:700px){.fqz[data-vestito="nuovo"] .cr-griglia{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(min-width:1100px){.fqz[data-vestito="nuovo"] .cr-griglia{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.fqz[data-vestito="nuovo"] .cr-card{display:flex;gap:12px;padding:12px;border-radius:18px;border:1px solid var(--line-soft);background:rgba(255,255,255,.035);min-width:0}
+.fqz[data-vestito="nuovo"] .cr-card.stato-pubblica{border-color:rgba(102,183,156,.35)}
+.fqz[data-vestito="nuovo"] .cr-card.stato-riservata{border-color:rgba(155,139,196,.4)}
+.fqz[data-vestito="nuovo"] .cr-card-cover{all:unset;cursor:pointer;flex:none;width:84px;height:84px;border-radius:14px;overflow:hidden;background:linear-gradient(135deg,rgba(201,179,126,.35),rgba(12,22,24,.8));display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-size:30px;color:var(--bone)}
+.fqz[data-vestito="nuovo"] .cr-card-cover img{width:100%;height:100%;object-fit:cover;display:block}
+.fqz[data-vestito="nuovo"] .cr-card-corpo{flex:1;min-width:0;display:flex;flex-direction:column;gap:5px}
+.fqz[data-vestito="nuovo"] .cr-card-testa{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+.fqz[data-vestito="nuovo"] .cr-card-testa h3{margin:0;font-family:var(--serif);font-weight:400;font-size:18px;line-height:1.2;color:var(--bone);min-width:0;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.fqz[data-vestito="nuovo"] .cr-stato-pill{flex:none;font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;padding:4px 9px;border-radius:999px;border:1px solid var(--line);color:var(--dimmer)}
+.fqz[data-vestito="nuovo"] .cr-stato-pill.pubblica{border-color:var(--water);color:var(--water)}
+.fqz[data-vestito="nuovo"] .cr-stato-pill.riservata{border-color:var(--violet);color:var(--violet)}
+.fqz[data-vestito="nuovo"] .cr-card-meta{font-size:12px;color:var(--dimmer);line-height:1.4}
+.fqz[data-vestito="nuovo"] .cr-card-gesti{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:auto;padding-top:4px}
+.fqz[data-vestito="nuovo"] .cr-card-gesti button{min-height:0;padding:8px 12px;border-radius:999px;font-size:10px}
+.fqz[data-vestito="nuovo"] .cr-card-gesti button.primo{background:linear-gradient(180deg,#D9C08A,#C9B37E);border-color:#D9C08A;color:#14211B;font-weight:700}
+.fqz[data-vestito="nuovo"] .cr-card-gesti button.tenue{border-color:transparent;color:var(--dimmer);padding:8px 8px}
+.fqz[data-vestito="nuovo"] .cr-card-gesti button.tenue:hover{color:var(--bone)}
+.fqz[data-vestito="nuovo"] .cr-card-spazio{flex:1}
+.fqz[data-vestito="nuovo"] .cr-playlist{margin-top:22px}
+.fqz[data-vestito="nuovo"] .cr-modifica{max-height:60vh;overflow:auto;padding-right:4px}
+.fqz[data-vestito="nuovo"] .cr-link{align-self:center;font-size:13px;color:var(--water);text-decoration:none}
+.fqz[data-vestito="nuovo"] .cr-foglio .gatebox.largo{max-width:720px}

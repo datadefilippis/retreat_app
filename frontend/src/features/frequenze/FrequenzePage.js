@@ -59,7 +59,8 @@ import './frequenze.css';
 import SoundTopbar from './SoundTopbar';
 import StanzeSound from './StanzeSound';
 import { SOUND_CREA_NUOVO } from './stato';
-import CreaVista, { SelettoreCrea } from './crea/CreaVista';   // CR1-CR3: il vestito nuovo
+import CreaVista from './crea/CreaVista';   // CR1-CR3: il vestito nuovo
+import TracceVista from './crea/TracceVista';   // CR4
 
 /* CR0 — la biblioteca del compositore (vista explore di questa pagina) */
 const LIBRERIA = '/sound/libreria';
@@ -2416,6 +2417,9 @@ export default function FrequenzePage() {
     sounds, SOUND_MOMENTI, SOUND_CATS, toggleSoundPreview, previewingId, soundLoadingId, addSoundToSession, eClipBreve,
     guard, toggleCard, liveCardsRef, liveKeys, addCardToSession, composeAllLive, stopAllCards,
     drafts, openDraft, aggiungiLivelliDa,
+    /* CR4 — Le mie tracce */
+    composer: !!user?.sound_composer, removeDraft, confermaMeditazioni, pubblicaDaLista, unpublishById,
+    copyPublicLink, condividi, setCondividi, loadDrafts,
   };
 
   return (
@@ -2737,11 +2741,8 @@ export default function FrequenzePage() {
             lettura, invisibile a chi ha gia' le chiavi */}
         {(view === 'explore' || view === 'impara') && <TriggerStudio />}
 
-        {view === 'mine' && nuovo && (
-          <SelettoreCrea attiva="tracce" badge={layers.length} navigate={navigate}
-            onFonti={() => navigate('/sound/crea')} />
-        )}
-        {view === 'mine' && (
+        {view === 'mine' && nuovo && <TracceVista kit={kit} />}
+        {view === 'mine' && !nuovo && (
           <section className="bib" data-testid="fq-mine">
             <h2>Le mie tracce</h2>
             <p>Tutto quello che hai composto: le bozze restano tue, le pubblicate hanno un link d'ascolto da condividere ovunque.</p>
