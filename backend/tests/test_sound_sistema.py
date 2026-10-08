@@ -156,7 +156,11 @@ class TestL3PortaDiSistema:
         src = _senza_commenti((FQ / "CreaStudioLanding.jsx").read_text())
         assert "'/public/leads'" in src
         assert "type: 'operator'" in src and "'sound_crea'" in src
-        assert "<OndaViva" in src and "costruisci()" in src
+        # 8/10 sera (founder): la prova e' la MEDITAZIONE IN VETRINA (anteprima
+        # + la sua onda vera + pulsante verso le meditazioni), non piu' CALM/GROUND
+        assert "<OndaViva" in src and "costruisci()" not in src
+        assert "<AnteprimaMeditazione track={vetrina}" in src and "frequenciesAPI.vetrinaPubblica()" in src
+        assert 'testid="studio-cta-meditazioni"' in src and "studio-vetrina" in src
         basso = _testo(FQ / "CreaStudioLanding.jsx").lower()
         for vietato in ("creaascolto", "audiocontext", "startpreview"):
             assert vietato not in basso

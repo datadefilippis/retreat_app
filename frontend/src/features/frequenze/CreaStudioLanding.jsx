@@ -33,7 +33,8 @@ import {
   Bottone, Occhiello, ORO, Rilievo, Scheda, Testo, VERDE,
 } from './soundKit';
 import OndaViva from './pro/OndaViva';
-import { CATALOGO } from './pro/catalogo';
+import { frequenciesAPI } from '../../api/frequencies';
+import { AnteprimaMeditazione, VETRINA_SLUG } from './SoundHomePage';   // 8/10 sera: la prova e' una meditazione vera
 import { messaggio } from './pro/errori';
 
 const SPIRALE = '/media/sound/spirale.jpg';
@@ -73,11 +74,24 @@ export default function CreaStudioLanding() {
   const [racconto, setRacconto] = useState('');
   const [stato, setStato] = useState(null);   // null | 'invio' | 'fatto' | errore
 
-  /* gli score VERI del catalogo: la prova che lo strumento esiste */
-  const calm = useMemo(
-    () => CATALOGO.find((p) => p.id === 'calm')?.costruisci(), []);
-  const ground = useMemo(
-    () => CATALOGO.find((p) => p.id === 'ground')?.costruisci(), []);
+  /* 8/10 sera (founder): al posto delle onde di CALM e GROUND (ritirate),
+     la prova e' la MEDITAZIONE IN VETRINA: anteprima di 90 secondi, la
+     sua onda vera (lo score pubblicato) e il pulsante verso le meditazioni.
+     Se in un ambiente la vetrina non c'e', la sezione si piega con grazia. */
+  const [vetrina, setVetrina] = useState(null);
+  useEffect(() => {
+    let vivo = true;
+    frequenciesAPI.vetrinaPubblica()
+      .then((r) => frequenciesAPI.getPublic(r.data?.slug || VETRINA_SLUG))
+      .catch(() => frequenciesAPI.getPublic(VETRINA_SLUG))
+      .then((r) => { if (vivo && r?.data?.anteprima_url) setVetrina(r.data); })
+      .catch(() => { /* niente vetrina: resta il racconto */ });
+    return () => { vivo = false; };
+  }, []);
+  const durataVetrina = useMemo(() => {
+    const sec = vetrina?.score?.duration_sec || vetrina?.duration_sec || 0;
+    return sec ? `${Math.round(sec / 60)} minuti` : '';
+  }, [vetrina]);
 
   const chiedi = async (e) => {
     e.preventDefault();
@@ -191,21 +205,24 @@ export default function CreaStudioLanding() {
             Con Crea sono nate le meditazioni di Aurya.
           </DisplayTitle>
           <Lede size="small" className="mt-5 max-w-2xl">
-            Le esperienze e le meditazioni che ascolti su Aurya Sound
-            sono composte con questo strumento. Queste onde si muovono
-            con i loro numeri veri.
+            Le meditazioni che ascolti su Aurya Sound sono composte con
+            questo strumento. Eccone una: ascoltala, e guarda la sua onda
+            muoversi coi suoi numeri veri.
           </Lede>
-          <div className="mt-10 grid gap-7 lg:grid-cols-2 max-w-5xl">
-            {ground && (
-              <Finestra etichetta="GROUND" sotto="8 minuti · registro grave">
-                <OndaViva score={ground} altezza={200} />
-              </Finestra>
-            )}
-            {calm && (
-              <Finestra etichetta="CALM" sotto="6 minuti · battito lento">
-                <OndaViva score={calm} altezza={200} />
-              </Finestra>
-            )}
+          {vetrina && (
+            <div className="mt-10 grid gap-7 lg:grid-cols-2 max-w-5xl items-start" data-testid="studio-vetrina">
+              <AnteprimaMeditazione track={vetrina} ctaMeditazioni="Tutte le Meditazioni →" />
+              {(vetrina.score?.layers || []).length > 0 && (
+                <Finestra etichetta={vetrina.title} sotto={durataVetrina ? `${durataVetrina} · la sua onda` : 'la sua onda'}>
+                  <OndaViva score={vetrina.score} altezza={200} />
+                </Finestra>
+              )}
+            </div>
+          )}
+          <div className="mt-10 flex flex-wrap items-center gap-6">
+            <Bottone to="/meditazioni" testid="studio-cta-meditazioni">
+              Le meditazioni di Aurya →
+            </Bottone>
           </div>
         </Section>
 

@@ -84,7 +84,7 @@ const PORTE = [
    produzione. Se in un ambiente la traccia non esiste, la sezione si
    piega con grazia: niente player, resta il racconto. Quando ci
    saranno piu' meditazioni, qui nascera' il flag «in vetrina». */
-const VETRINA_SLUG = 'meditazione-mondo-nuovo-onde-delta';
+export const VETRINA_SLUG = 'meditazione-mondo-nuovo-onde-delta';
 
 /* MR6 (8/10/2026): CALM e GROUND si sono ritirate (decisione 7) — niente
    piu' assaggi «nudi»: dopo la meditazione in vetrina, la casa. */
@@ -94,7 +94,7 @@ const fmtMin = (s) => `${Math.round((s || 0) / 60)} minuti`;
 /* ── il player dell'anteprima: un patto, non una trappola ──────────
    Un <audio> puro sul file dei 90 secondi (M3): niente motore,
    niente WebAudio — la pagina resta leggera. A fine corsa l'invito. */
-function AnteprimaMeditazione({ track, ctaMeditazioni }) {
+export function AnteprimaMeditazione({ track, ctaMeditazioni }) {   // usata anche da /sound/studio (8/10 sera)
   const el = useRef(null);
   const [vivo, setVivo] = useState(false);
   const [cur, setCur] = useState(0);
