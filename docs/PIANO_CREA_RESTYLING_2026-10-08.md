@@ -61,6 +61,15 @@ portano alla pubblica. **Si chiude in CR0, mezz'ora.**
 3. **il cassetto «Aggiungi»**, un foglio con tutto ciò che entra in una
    sessione: frequenze, basi, la tua voce, guida del respiro, protocolli.
 
+**Il mix nasce dalle fonti** (founder, 8/10 sera): in Crea servono i
+suoni e le tracce **a un tocco, senza cambiare pagina**, altrimenti non
+si mixa. Quindi il cassetto non è un menu: è il **banco del mix**, sempre
+accanto alla sessione. Su desktop è una **colonna fissa a sinistra**
+(fonti) con la sessione a destra; su telefono un **foglio a mezza
+altezza** che lascia la sessione e la barra a vista. Si cerca, si
+ascolta in anteprima **mentre la sessione suona** (si combinano, come
+oggi) e «+ sessione» mette il suono al punto del cursore.
+
 Salva e Pubblica stanno in una **barra fissa in basso** (come il lettore
 della casa), con lo stato che parla lì (un toast, non una riga mono).
 Le Impostazioni (titolo, categoria, nasce/si spegne, stanza), la scena,
@@ -79,15 +88,19 @@ lo stesso contratto delle ricette.
   `FrequenzePage` com'è oggi. `PATH_VIEW` la riconosce esplicitamente.
 - I link del compositore puntano lì: la barra delle stanze (voce
   «Libreria» al posto di «Esplora»), il vuoto di Crea («Apri la
-  libreria»), il piede «Vai a Crea» resta.
+  libreria»), il piede «Vai a Crea» resta. In Crea, in attesa di CR3,
+  **due bottoni a vista** sopra la sessione: «Suoni» (`/sound/libreria?
+  mondo=suoni`) e «Frequenze» (`/sound/libreria`): la sessione in
+  costruzione sopravvive al cambio di pagina (stesso componente), quindi
+  si va, si aggiunge, si torna col piede «Vai a Crea».
 - La pubblica `/sound/esplora` non cambia. Guardia: `tests/test_crea_cr0.py`.
 
 ### CR1 Testata e barra (1 giornata)
 - Nella vista Crea spariscono h1 + sottotitolo + riquadro cuffie: resta la
-  passerella (`SoundTopbar`, «Crea» corrente) e un **selettore a due**
-  (Crea · Le mie tracce) con la stessa forma del selettore a tre; la
-  pastiglia Controindicazioni resta nella topbar. «Libreria» è un bottone
-  dentro Crea, non una stanza.
+  passerella (`SoundTopbar`, «Crea» corrente) e un **selettore a tre**
+  (Crea · Fonti · Le mie tracce) con la stessa forma di quello di
+  Esplora; «Fonti» apre il banco del mix (CR3; fino ad allora porta a
+  `/sound/libreria`); la pastiglia Controindicazioni resta nella topbar.
 - `createbar` diventa **una riga sticky ≤ 64 px**: ▶/⏸ (con «Preparo…»),
   tempo corrente / durata con la seekbar (`fq-crea-seekbar`), pill durata
   (`fq-durata`, apre il foglio durata com'è), «+ Aggiungi» (CR3), «⋯».
@@ -124,8 +137,14 @@ lo stesso contratto delle ricette.
 - Il vuoto: «La tua sessione è vuota» con tre bottoni veri (Protocollo,
   Libreria, Registra la voce).
 
-### CR3 Il cassetto «Aggiungi» (1,5 giorni)
-- «+ Aggiungi» apre un foglio a tutta altezza con cinque schede:
+### CR3 Il banco del mix (2 giorni)
+- «+ Aggiungi» (barra) e «Fonti» (selettore) aprono il **banco**: su
+  desktop (≥ 1024 px) una **colonna fissa a sinistra**, ~360 px, che
+  resta aperta mentre si lavora sulla sessione a destra; su telefono un
+  **foglio a mezza altezza** trascinabile (mezzo / tutto schermo) che
+  lascia barra e sessione a vista; l'audio non si ferma mai.
+- Cinque schede, con **un campo di ricerca comune** (nome, Hz, categoria,
+  momento, titolo delle tracce):
   **Frequenze** (famiglie → schede, le card compatte di `BibliotecaPage`
   con ▶ anteprima e «+ sessione»: `addLayer`), **Basi** (momento ×
   timbro, le card di oggi con ▶ e «+ sessione»: `addSoundToSession`,
@@ -133,8 +152,19 @@ lo stesso contratto delle ricette.
   pulizia/«+ sessione», spezzoni senza sessione), **Respiro** (guide:
   `fq-guida-add-`), **Protocolli** (le sei card con grado e durata:
   `loadProtocol`, con la conferma se la sessione non è vuota).
-- Il cassetto rende inutile uscire da Crea: `/sound/libreria` resta come
-  pagina (CR0) ma i link del compositore puntano al cassetto.
+- **Le mie tracce come fonte** (nuova): nella scheda **Tracce** le
+  proprie bozze e tracce pubblicate con «▶ anteprima» e «+ i suoi
+  livelli», che **aggiunge i livelli di quella traccia alla sessione
+  corrente** (dal `score` già salvato, spostati al punto del cursore,
+  con un suffisso nel nome). È solo client: nessun backend. Serve a
+  riusare una base già fatta (un'apertura, un tappeto) dentro un mix
+  nuovo. «Apri» invece la sostituisce (com'è oggi, con la campana).
+- Anteprima e sessione **insieme**: il ▶ di una scheda nel banco suona
+  sopra la sessione in corso (come oggi in Esplora), così si prova il
+  suono nel contesto prima di aggiungerlo; «+ sessione» lo mette al
+  punto del cursore, e la card del livello nuovo lampeggia una volta.
+- Il banco rende inutile uscire da Crea: `/sound/libreria` resta come
+  pagina (CR0) ma i link del compositore puntano al banco.
 - Il leggio voce esce dalla pagina: i clip usati si vedono nei livelli.
 
 ### CR4 Le mie tracce (1 giornata)
@@ -202,16 +232,20 @@ ricette salvate (le bozze di ieri si aprono e suonano uguali).
 | CR0 la via per aggiungere | ½ | nessuno (solo link) |
 | CR1 testata e barra | 1 | `SOUND_CREA_NUOVO` |
 | CR2 la sessione al centro | 1,5 | idem |
-| CR3 il cassetto «Aggiungi» | 1,5 | idem |
+| CR3 il banco del mix | 2 | idem |
 | CR4 le mie tracce | 1 | idem |
 | CR6 potatura | ½ | nessuno |
 
-Totale **≈ 6 giorni**, CR5 dentro gli altri.
+Totale **≈ 6,5 giorni**, CR5 dentro gli altri.
 
 ## 6. Domande per il founder
 1. **CR0 subito**? È il buco lasciato da ES (solo in locale): mezz'ora.
-2. **Il cassetto «Aggiungi» dentro Crea** (CR3) al posto di «vai in
-   libreria e torna»: va bene?
+2. **Il banco del mix** (CR3): colonna fissa su desktop, foglio a mezza
+   altezza su telefono, con Frequenze · Suoni · Voce · Respiro ·
+   Protocolli · **Tracce** e una ricerca sola: va bene?
+2b. **Le tue tracce come fonte**: «+ i suoi livelli» aggiunge i livelli di
+   una tua traccia alla sessione corrente (riuso di una base già fatta):
+   lo vuoi?
 3. **I livelli come card ripiegabili** (volume, tempo e muto sempre a
    vista; il resto si apre con un tocco), o tutto a vista come oggi?
 4. **Salva/Pubblica in una barra fissa in basso** (come il lettore della
