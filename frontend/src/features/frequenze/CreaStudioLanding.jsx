@@ -12,14 +12,15 @@
  *
  * Scheletro ereditato dalla ProfessionalLanding (che resta viva e non
  * linkata: asset SEO): apertura fotografica → il problema → come
- * funziona → la prova (le onde vive) → il privato → per chi + form.
+ * funziona → la prova (la meditazione in vetrina) → il privato → per chi + form.
  * Fotografie: spirale (struttura e precisione — l'atelier), caleido
  * (la ripetizione che diventa forma — il privato).
  *
- * LA PROVA E' VERA anche qui: le finestre OndaViva si muovono con gli
- * score del catalogo (costruisci()), e la pagina NON suona.
+ * LA PROVA E' VERA anche qui (8/10 sera, founder): la meditazione in
+ * vetrina in anteprima, 90 secondi, e il pulsante verso le meditazioni.
+ * Le onde di CALM e GROUND (ritirate) sono uscite dalla pagina.
  */
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Esito } from '../../lib/esito';   // FL1: il risultato si vede dove hai cliccato
 import { Link } from 'react-router-dom';
 import api from '../../api/client';
@@ -32,7 +33,6 @@ import {
 import {
   Bottone, Occhiello, ORO, Rilievo, Scheda, Testo, VERDE,
 } from './soundKit';
-import OndaViva from './pro/OndaViva';
 import { frequenciesAPI } from '../../api/frequencies';
 import { AnteprimaMeditazione, VETRINA_SLUG } from './SoundHomePage';   // 8/10 sera: la prova e' una meditazione vera
 import { messaggio } from './pro/errori';
@@ -48,22 +48,6 @@ const PASSI = [
 
 const PRATICHE = ['Meditazione', 'Breathwork', 'Yoga e pratiche corporee',
   'Sound healing', 'Percorsi di rilassamento', 'Accompagnamento olistico'];
-
-/* la FINESTRA sull'onda: di la' dal vetro c'e' Aurya Sound */
-function Finestra({ etichetta, sotto, children }) {
-  return (
-    <figure className="rounded-2xl overflow-hidden"
-      style={{ background: '#26454C', border: '1px solid #3A5F66' }}>
-      <div className="p-4 sm:p-5">{children}</div>
-      {etichetta && (
-        <figcaption className="flex items-baseline justify-between px-5 pb-4">
-          <span className="font-serif text-lg text-[#EAF2F0]">{etichetta}</span>
-          {sotto && <span className="text-sm text-[#7FC9B0]">{sotto}</span>}
-        </figcaption>
-      )}
-    </figure>
-  );
-}
 
 export default function CreaStudioLanding() {
   useEffect(() => {
@@ -88,10 +72,6 @@ export default function CreaStudioLanding() {
       .catch(() => { /* niente vetrina: resta il racconto */ });
     return () => { vivo = false; };
   }, []);
-  const durataVetrina = useMemo(() => {
-    const sec = vetrina?.score?.duration_sec || vetrina?.duration_sec || 0;
-    return sec ? `${Math.round(sec / 60)} minuti` : '';
-  }, [vetrina]);
 
   const chiedi = async (e) => {
     e.preventDefault();
@@ -206,17 +186,11 @@ export default function CreaStudioLanding() {
           </DisplayTitle>
           <Lede size="small" className="mt-5 max-w-2xl">
             Le meditazioni che ascolti su Aurya Sound sono composte con
-            questo strumento. Eccone una: ascoltala, e guarda la sua onda
-            muoversi coi suoi numeri veri.
+            questo strumento. Eccone una: ascoltala.
           </Lede>
           {vetrina && (
-            <div className="mt-10 grid gap-7 lg:grid-cols-2 max-w-5xl items-start" data-testid="studio-vetrina">
+            <div className="mt-10 max-w-3xl" data-testid="studio-vetrina">
               <AnteprimaMeditazione track={vetrina} ctaMeditazioni="Tutte le Meditazioni →" />
-              {(vetrina.score?.layers || []).length > 0 && (
-                <Finestra etichetta={vetrina.title} sotto={durataVetrina ? `${durataVetrina} · la sua onda` : 'la sua onda'}>
-                  <OndaViva score={vetrina.score} altezza={200} />
-                </Finestra>
-              )}
             </div>
           )}
           <div className="mt-10 flex flex-wrap items-center gap-6">
