@@ -47,6 +47,7 @@ class PlaylistCreate(BaseModel):
     title: str = Field(min_length=1, max_length=TITLE_MAX)
     description: Optional[str] = Field(default=None, max_length=DESCRIPTION_MAX)
     accesso: Optional[str] = None
+    categoria: Optional[str] = None       # MR4, facoltativa
     tracce: Optional[List[str]] = None       # id delle tracce, in ordine
 
 
@@ -55,6 +56,7 @@ class PlaylistUpdate(BaseModel):
     description: Optional[str] = Field(default=None, max_length=DESCRIPTION_MAX)
     accesso: Optional[str] = None
     in_vetrina: Optional[bool] = None
+    categoria: Optional[str] = None
     tracce: Optional[List[str]] = None
 
 
@@ -104,7 +106,7 @@ async def _riga(p: dict) -> dict:
                        "cover_url": t.get("cover_url"), "accesso": t.get("accesso") or "cerchio",
                        "has_voce": bool(t.get("has_voce")), "plays_total": t.get("plays_total") or 0})
     out = {k: p.get(k) for k in ("id", "slug", "title", "description", "cover_url", "accesso", "in_vetrina",
-                                 "status", "published_at", "plays_total", "created_at", "updated_at", "annuncio")}
+                                 "status", "published_at", "plays_total", "created_at", "updated_at", "annuncio", "categoria")}
     out["accesso"] = out.get("accesso") or "cerchio"
     out["tracce"] = tracce
     out["tracce_count"] = len(tracce)
@@ -134,6 +136,7 @@ async def crea(payload: PlaylistCreate, current_user: dict = Depends(require_sou
     p = {"id": str(uuid.uuid4()), "organization_id": org_id, "title": payload.title.strip(),
          "description": (payload.description or "").strip()[:DESCRIPTION_MAX],
          "accesso": clean_accesso(payload.accesso), "in_vetrina": False, "status": "draft",
+         "categoria": None,
          "slug": None, "slug_precedenti": [], "cover_url": None, "plays_total": 0,
          "tracce": await _tracce_mie_pubbliche(org_id, payload.tracce or []),
          "created_at": now, "updated_at": now}
@@ -160,6 +163,9 @@ async def modifica(playlist_id: str, payload: PlaylistUpdate, current_user: dict
         upd["accesso"] = clean_accesso(payload.accesso)
     if payload.in_vetrina is not None:
         upd["in_vetrina"] = bool(payload.in_vetrina)
+    if payload.categoria is not None:                      # MR4
+        from routers.frequencies import _categoria_valida
+        upd["categoria"] = await _categoria_valida(payload.categoria)
     if payload.tracce is not None:
         upd["tracce"] = await _tracce_mie_pubbliche(org_id, payload.tracce)
     if not upd:

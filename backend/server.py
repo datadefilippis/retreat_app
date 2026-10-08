@@ -777,6 +777,8 @@ app.include_router(export_router.router, prefix="/api")      # /api/export/*
 app.include_router(admin_router.router, prefix="/api")       # /api/admin/*
 app.include_router(admin_catalog_router.router, prefix="/api")  # /api/admin/catalog/*
 app.include_router(admin_feature_flags_router.router, prefix="/api")  # /api/admin/feature-flags/* (Phase 0 Step 9)
+from routers import admin_sound_categorie as admin_sound_categorie_router   # noqa: E402
+app.include_router(admin_sound_categorie_router.router, prefix="/api")  # /api/admin/sound/categorie (MR4)
 app.include_router(admin_sound_router.router, prefix="/api")  # /api/admin/sound/* (PC3: privilegio del comporre)
 app.include_router(admin_platform_router.router, prefix="/api")  # /api/admin/platform/* (SA2/SA3)
 app.include_router(admin_strutture_router.router, prefix="/api")  # /api/admin/strutture/* (SR, fase 0)

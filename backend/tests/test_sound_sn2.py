@@ -70,7 +70,7 @@ class TestAnnuncioAlCerchio:
         corpo = src.split('@router.post("/{playlist_id}/annuncia")')[1].split("\n@router")[0]
         assert 'if not current_user.get("_sound_composer"):' in corpo and "if a_secco:" in corpo
         assert "await annunci_sound.prenota(sound_playlists_collection, playlist_id, len(lista))" in corpo
-        assert '"annuncio")' in src.split("async def _riga")[1].split("out[\"accesso\"]")[0]
+        assert '"annuncio"' in src.split("async def _riga")[1].split("out[\"accesso\"]")[0]
 
     def test_servizio(self):
         src = (BACKEND / "services" / "annunci_sound.py").read_text()

@@ -14,6 +14,7 @@ import { AppLayout, Header } from '../../components/Layout';
 import { Switch } from '../../components/ui/switch';
 import { Input } from '../../components/ui/input';
 import api from '../../api/client';
+import SoundCategorieSezione from './SoundCategorieSezione';   // MR4
 
 const SoundAccessPage = () => {
   const [items, setItems] = useState(null);
@@ -144,6 +145,7 @@ const SoundAccessPage = () => {
           </div>
         )}
       </div>
+      <SoundCategorieSezione />
     </AppLayout>
   );
 };

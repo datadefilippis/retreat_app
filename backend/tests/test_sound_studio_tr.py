@@ -90,7 +90,7 @@ async def _bozza(banco, org_id, titolo="Prova TR"):
     utente = _user(org_id)
     utente["_sound_composer"] = False   # lo riscrive il portiere vero
     creato = await frequencies.create_track(
-        frequencies.TrackCreate(title=titolo, score=SCORE), utente)
+        frequencies.TrackCreate(title=titolo, score=SCORE, categoria="meditazioni-guidate"), utente)
     return creato["id"]
 
 

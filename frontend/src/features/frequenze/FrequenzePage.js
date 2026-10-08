@@ -342,6 +342,11 @@ export default function FrequenzePage() {
   const [phases, setPhases] = useState([]);
   const [title, setTitle] = useState('');
   const [intent, setIntent] = useState(null);
+  /* MR4 (8/10/2026, founder): la CATEGORIA si sceglie quando si crea, dal
+     registro della Regia; obbligatoria per pubblicare in pubblico */
+  const [categoria, setCategoria] = useState('');
+  const [categorie, setCategorie] = useState([]);
+  useEffect(() => { frequenciesAPI.categorie().then((r) => setCategorie(r.data.items || [])).catch(() => setCategorie([])); }, []);
   const [trackId, setTrackId] = useState(null);
   const [trackStatus, setTrackStatus] = useState('draft');
   /* la FIRMA della ricetta al momento della pubblicazione: se lo
@@ -1109,10 +1114,10 @@ export default function FrequenzePage() {
     try {
       let idFinale = trackId;
       if (trackId) {
-        await frequenciesAPI.update(trackId, { title: name, score: scorePayload(), intent });
+        await frequenciesAPI.update(trackId, { title: name, score: scorePayload(), intent, categoria });
         setStatus(`Bozza «${name}» aggiornata`);
       } else {
-        const r = await frequenciesAPI.create({ title: name, score: scorePayload(), intent });
+        const r = await frequenciesAPI.create({ title: name, score: scorePayload(), intent, categoria });
         idFinale = r.data.id;
         setTrackId(r.data.id);
         // timbra la bozza appena nata nell'URL (replace: niente history)
@@ -1139,7 +1144,7 @@ export default function FrequenzePage() {
     stopSession();
     try {
       const t = (await frequenciesAPI.get(id)).data, s = t.score || {};
-      setTrackId(t.id); setTitle(t.title || ''); setIntent(t.intent || null);
+      setTrackId(t.id); setTitle(t.title || ''); setIntent(t.intent || null); setCategoria(t.categoria || '');
       setTrackStatus(t.status || 'draft'); setTrackSlug(t.slug || null);
       /* TM8: il leggio diventa quello di QUESTA traccia */
       clipsSessioneRef.current = [];
@@ -2779,6 +2784,12 @@ export default function FrequenzePage() {
                     <input type="text" value={title} style={{ width: 130 }}
                       placeholder="La mia sessione"
                       onChange={(e) => setTitle(e.target.value)} />
+                  </label>
+                  <label title="La categoria della meditazione (dal registro della Regia): serve per pubblicare">categoria
+                    <select value={categoria} data-testid="fq-categoria" onChange={(e) => setCategoria(e.target.value)}>
+                      <option value="">—</option>
+                      {categorie.map((c) => <option key={c.slug} value={c.slug}>{c.label}</option>)}
+                    </select>
                   </label>
                   {/* DU, la durata non vive piu' qui: ha la sua pill,
                       sempre a vista, col foglio dei preset */}

@@ -75,8 +75,8 @@ class TestPlaylist:
     def test_modelli_e_account(self):
         from routers.sound_playlists import PlaylistCreate, PlaylistUpdate, TRACCE_MAX
         assert TRACCE_MAX == 60
-        assert set(PlaylistUpdate.model_fields) == {"title", "description", "accesso", "in_vetrina", "tracce"}
-        assert set(PlaylistCreate.model_fields) == {"title", "description", "accesso", "tracce"}
+        assert set(PlaylistUpdate.model_fields) == {"title", "description", "accesso", "in_vetrina", "tracce", "categoria"}   # MR4: +categoria
+        assert set(PlaylistCreate.model_fields) == {"title", "description", "accesso", "tracce", "categoria"}
         from models.platform_account import PlatformAccount
         for campo in ("sound_preferenze", "sound_riprendi", "sound_recenti", "stripe_customer_id", "piu"):
             assert campo in PlatformAccount.model_fields and PlatformAccount.model_fields[campo].default is None, campo

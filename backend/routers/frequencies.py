@@ -141,8 +141,32 @@ _LIST_PROJECTION = {
     # della ricetta, in lista, serve solo la durata
     "score.duration_sec": 1, "score.layers": 1,
     # SN0 — i campi della casa: copertina, accesso, momento, tag, vetrina, voce
-    "cover_url": 1, "accesso": 1, "momento": 1, "tags": 1, "in_vetrina": 1, "has_voce": 1, "guida_nome": 1,
+    "cover_url": 1, "accesso": 1, "categoria": 1, "momento": 1, "tags": 1, "in_vetrina": 1, "has_voce": 1, "guida_nome": 1,
 }
+
+
+async def _categoria_esiste(slug) -> bool:
+    from services import categorie_sound as C
+    return await C.esiste(slug, solo_attive=False)
+
+
+async def _categoria_valida(raw):
+    """MR4 — '' o None = nessuna; altrimenti deve stare nel registro (attiva)."""
+    if raw is None or str(raw).strip() == "":
+        return None
+    from services import categorie_sound as C
+    slug = str(raw).strip()
+    if not await C.esiste(slug, solo_attive=True):
+        raise HTTPException(status_code=422, detail="Categoria sconosciuta: scegline una dal registro.")
+    return slug
+
+
+@router.get("/categorie")
+async def categorie_pubbliche():
+    """MR4 — il registro delle categorie (attive), per la scelta in Crea e i
+    filtri della casa. Pubblico: non dice nulla di riservato."""
+    from services import categorie_sound as C
+    return {"items": [{k: c.get(k) for k in ("slug", "label", "descrizione", "tono", "ordine")} for c in await C.elenco()]}
 
 
 class TrackCreate(BaseModel):
@@ -150,6 +174,7 @@ class TrackCreate(BaseModel):
     score: dict
     description: Optional[str] = None
     intent: Optional[str] = None
+    categoria: Optional[str] = None        # MR4 — dal registro (Regia → Sound → Categorie)
 
 
 class TrackUpdate(BaseModel):
@@ -163,6 +188,7 @@ class TrackUpdate(BaseModel):
     tags: Optional[list] = None
     in_vetrina: Optional[bool] = None
     guida_nome: Optional[str] = None       # chi guida, "" = il nome del profilo
+    categoria: Optional[str] = None        # MR4 — dal registro; obbligatoria per pubblicare in pubblico
 
 
 def _doc(track: dict) -> dict:
@@ -228,6 +254,7 @@ async def create_track(payload: TrackCreate,
         "title": title,
         "description": (payload.description or "").strip()[:DESCRIPTION_MAX],
         "intent": clean_intent(payload.intent),
+        "categoria": await _categoria_valida(payload.categoria),   # MR4
         "status": "draft",   # publish arriva con FQ1
         "score": _validated_score(payload.score),
         "created_at": now,
@@ -265,6 +292,8 @@ async def update_track(track_id: str, payload: TrackUpdate,
         updates["description"] = payload.description.strip()[:DESCRIPTION_MAX]
     if payload.intent is not None:
         updates["intent"] = clean_intent(payload.intent)
+    if payload.categoria is not None:                              # MR4
+        updates["categoria"] = await _categoria_valida(payload.categoria)
     if payload.score is not None:
         updates["score"] = _validated_score(payload.score)
     # SN0 — i campi della casa
@@ -316,7 +345,7 @@ _PUBLIC_PROJECTION = {"_id": 0, "id": 1, "slug": 1, "title": 1,
                       "master_file": 1, "master_bytes": 1,
                       "anteprima_url": 1,
                       # SN0 — copertina, accesso, momento, voce, chi guida
-                      "cover_url": 1, "accesso": 1, "momento": 1, "has_voce": 1, "guida_nome": 1}
+                      "cover_url": 1, "accesso": 1, "categoria": 1, "momento": 1, "has_voce": 1, "guida_nome": 1}
 _SLUG_ATTEMPTS = 50
 
 
@@ -385,6 +414,11 @@ async def publish_track(track_id: str,
                        "su invito: le tue tracce si condividono in "
                        "privato, coi tuoi link.")
         visibility = "private"
+    # MR4 (8/10/2026, founder): in pubblico la CATEGORIA e' obbligatoria —
+    # la casa e i filtri vivono di categorie, una meditazione senza non ha casa.
+    if visibility == "public" and not await _categoria_esiste(track.get("categoria")):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail="Scegli una categoria prima di pubblicare nelle Meditazioni di Aurya.")
     # lo slug SEGUE IL TITOLO: se il titolo di oggi produce una radice
     # diversa (es. la traccia fu pubblicata da «Senza titolo»), se ne
     # genera uno nuovo e il vecchio scende in slug_precedenti — i link
@@ -736,7 +770,7 @@ _CATALOG_PROJECTION = {"_id": 0, "slug": 1, "title": 1, "description": 1,
                        "score.duration_sec": 1, "layers_count": 1,
                        "duration_sec": 1, "published_at": 1,
                        # SN0 — la casa sceglie per copertina, accesso, momento, voce
-                       "cover_url": 1, "accesso": 1, "momento": 1, "tags": 1, "has_voce": 1, "in_vetrina": 1, "guida_nome": 1}
+                       "cover_url": 1, "accesso": 1, "categoria": 1, "momento": 1, "tags": 1, "has_voce": 1, "in_vetrina": 1, "guida_nome": 1}
 
 CATALOG_PAGE_MAX = 100
 

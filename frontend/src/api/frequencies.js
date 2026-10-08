@@ -44,6 +44,7 @@ export const frequenciesAPI = {
   registraAscolto: (slug, { evento, provenienza, playlist, secondo } = {}) =>
     api.post(`/frequencies/public/${slug}/ascolto`, { evento, provenienza, playlist, secondo }),
   ascolti: (trackId) => api.get(`/frequencies/tracks/${trackId}/ascolti`),
+  categorie: () => api.get('/frequencies/categorie'),   // MR4 — il registro (attive)
   // SN2: l'annuncio al Cerchio («nuova meditazione»); a secco = conta e anteprima, senza spedire
   annuncia: (trackId, aSecco = false) => api.post(`/frequencies/tracks/${trackId}/annuncia${aSecco ? '?a_secco=1' : ''}`),
   // SN0: la copertina della traccia

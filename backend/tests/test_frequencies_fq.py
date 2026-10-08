@@ -439,7 +439,9 @@ class TestPubblicazioneFq1:
         hdr = _login()
         r = requests.post(f"{BASE_URL}/api/frequencies/tracks", headers=hdr,
                           json={"title": "Guardia FQ1 publish",
-                                "score": VALID_SCORE}, timeout=10)
+                                "score": VALID_SCORE,
+                                "categoria": "meditazioni-guidate"},   # MR4: in pubblico serve la categoria
+                          timeout=10)
         assert r.status_code == 201
         tid = r.json()["id"]
         try:

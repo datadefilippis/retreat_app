@@ -16,6 +16,17 @@ import { frequenciesAPI } from '../../api/frequencies';
 import { compressImage } from '../../lib/compressImage';
 import { SOUND_ANNUNCI_ATTIVI } from './stato';
 
+/* MR4 — il registro delle categorie, letto una volta per sessione */
+let _categoriePromessa = null;
+export function useCategorie() {
+  const [voci, setVoci] = useState([]);
+  useEffect(() => {
+    if (!_categoriePromessa) _categoriePromessa = frequenciesAPI.categorie().then((r) => r.data.items || []).catch(() => []);
+    _categoriePromessa.then(setVoci);
+  }, []);
+  return voci;
+}
+
 export const MOMENTI = [['mattina', 'Mattina'], ['pausa', 'Pausa'], ['sera', 'Sera'], ['notte', 'Notte']];
 const COPERTINA_ACCEPT = '.jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp';
 
@@ -69,6 +80,7 @@ export function AnnunciaCerchio({ annuncio, cosa = 'meditazione', aSecco, invia,
 export function CampiCasa({ traccia, onCambio, composer }) {
   const [occupato, setOccupato] = useState(false);
   const [tags, setTags] = useState((traccia.tags || []).join(', '));
+  const categorie = useCategorie();   // MR4
   useEffect(() => { setTags((traccia.tags || []).join(', ')); }, [traccia.tags]);
   const pubblica = traccia.status === 'published' && traccia.visibility !== 'private';
 
@@ -98,6 +110,13 @@ export function CampiCasa({ traccia, onCambio, composer }) {
             onClick={async () => { setOccupato(true); try { await frequenciesAPI.removeCover(traccia.id); await onCambio?.(); } finally { setOccupato(false); } }}>togli</button>
         )}
         {/* il momento */}
+        {/* MR4 — la categoria (dal registro della Regia): obbligatoria per pubblicare */}
+        <select style={{ ...campo, borderColor: traccia.categoria ? 'var(--line)' : 'var(--lamp)' }} value={traccia.categoria || ''} disabled={occupato}
+          data-testid="fq-categoria-campo" aria-label="Categoria" title="La categoria della meditazione: serve per pubblicare nelle Meditazioni di Aurya"
+          onChange={(e) => salva({ categoria: e.target.value })}>
+          <option value="">Categoria: scegli</option>
+          {categorie.map((c) => <option key={c.slug} value={c.slug}>{c.label}</option>)}
+        </select>
         <select style={campo} value={traccia.momento || ''} disabled={occupato} data-testid="fq-momento" aria-label="Momento della giornata"
           onChange={(e) => salva({ momento: e.target.value })}>
           <option value="">Momento: nessuno</option>

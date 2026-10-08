@@ -130,7 +130,18 @@ export default function MeditazioniCasa() {
   const setHeartAsk = pref.setChiediAccount;
   const [safety, setSafety] = useState(false);
   const [q, setQ] = useState('');
-  const [intent, setIntent] = useState('');
+  /* MR4 — i filtri e le righe seguono il REGISTRO delle categorie (Regia);
+     ?categoria=slug e' un indirizzo condivisibile */
+  const [categorie, setCategorie] = useState([]);
+  useEffect(() => { frequenciesAPI.categorie().then((r) => setCategorie(r.data.items || [])).catch(() => setCategorie([])); }, []);
+  const [intent, setIntent] = useState(() => { try { return new URLSearchParams(window.location.search).get('categoria') || ''; } catch { return ''; } });
+  useEffect(() => {
+    try {
+      const u = new URL(window.location.href);
+      if (intent) u.searchParams.set('categoria', intent); else u.searchParams.delete('categoria');
+      window.history.replaceState(window.history.state, '', u.pathname + (u.search || ''));
+    } catch { /* niente */ }
+  }, [intent]);
   const [durata, setDurata] = useState('');       // '' | 'breve' | 'media' | 'lunga'
   const [voce, setVoce] = useState('');           // '' | 'con' | 'senza'
   const [attiva, setAttiva] = useState('esplora');
@@ -178,7 +189,7 @@ export default function MeditazioniCasa() {
   const filtrate = useMemo(() => {
     const qq = q.trim().toLowerCase();
     return tutte.filter((t) => {
-      if (intent && t.intent !== intent) return false;
+      if (intent && (t.categoria || '') !== intent) return false;   // MR4: il filtro e' la categoria
       const d = t.duration_sec || 0;
       if (durata === 'breve' && d > 10 * 60) return false;
       if (durata === 'media' && (d <= 10 * 60 || d > 20 * 60)) return false;
@@ -205,7 +216,7 @@ export default function MeditazioniCasa() {
   const piuAscoltate = [...tutte].filter((t) => t.plays_total > 0).sort((a, b) => b.plays_total - a.plays_total).slice(0, 12);
   const conVoce = tutte.filter((t) => t.has_voce).slice(0, 12);
   const soloSuono = tutte.filter((t) => !t.has_voce).slice(0, 12);
-  const intentiPresenti = Object.keys(INTENTI).filter((i) => tutte.some((t) => t.intent === i));
+  const categoriePresenti = categorie.filter((c) => tutte.some((t) => t.categoria === c.slug));
   const preferite = tutte.filter((t) => favorites.includes(t.slug));
   const playlistSalvate = playlists.filter((p) => pref.playlists.has(p.slug));
   const perSlug = Object.fromEntries(tutte.map((t) => [t.slug, t]));
@@ -268,7 +279,7 @@ export default function MeditazioniCasa() {
             </div>
             <div className="filtri" data-testid="casa-filtri">
               <button type="button" className={`filtro${!intent ? ' on' : ''}`} onClick={() => setIntent('')}>Tutte</button>
-              {intentiPresenti.map((i) => <button key={i} type="button" className={`filtro${intent === i ? ' on' : ''}`} onClick={() => setIntent(intent === i ? '' : i)}>{INTENTI[i]}</button>)}
+              {categoriePresenti.map((c) => <button key={c.slug} type="button" className={`filtro${intent === c.slug ? ' on' : ''}`} data-testid={`casa-filtro-${c.slug}`} onClick={() => setIntent(intent === c.slug ? '' : c.slug)}>{c.label}</button>)}
               <span style={{ width: 8 }} />
               {[['breve', '≤ 10 min'], ['media', '10–20 min'], ['lunga', '20+ min']].map(([v, l]) => (
                 <button key={v} type="button" className={`filtro${durata === v ? ' on' : ''}`} onClick={() => setDurata(durata === v ? '' : v)}>{l}</button>))}
@@ -343,9 +354,9 @@ export default function MeditazioniCasa() {
                 <Riga id="piu-ascoltate" titolo="Le più ascoltate">
                   {piuAscoltate.map((t) => <CardMeditazione key={t.slug} t={t} fav={favorites.includes(t.slug)} onCuore={toggleFavorite} />)}
                 </Riga>
-                {intentiPresenti.map((i) => (
-                  <Riga key={i} id={`per-${i}`} titolo={`Per ${INTENTI[i].toLowerCase()}`}>
-                    {tutte.filter((t) => t.intent === i).slice(0, 12).map((t) => <CardMeditazione key={t.slug} t={t} fav={favorites.includes(t.slug)} onCuore={toggleFavorite} />)}
+                {categoriePresenti.map((c) => (
+                  <Riga key={c.slug} id={`cat-${c.slug}`} titolo={c.label} sub={c.descrizione || undefined}>
+                    {tutte.filter((t) => t.categoria === c.slug).slice(0, 12).map((t) => <CardMeditazione key={t.slug} t={t} fav={favorites.includes(t.slug)} onCuore={toggleFavorite} />)}
                   </Riga>
                 ))}
                 <Riga id="con-la-voce" titolo="Con la voce">
