@@ -89,7 +89,7 @@ class TestPercorsiEBadge:
         assert "storefrontAPI.getCorsiDirectory({ suono: 1 })" in casa
         assert 'id="percorsi"' in casa and "export function CardPercorso({ c })" in casa
         # il Percorso porta al corso: una sola cassa, mai una seconda in Sound
-        assert '<a href={c.url} className="mcard tono-oro"' in casa
+        assert "<Link to={`${c.url}?da=meditazioni`} className=\"mcard tono-oro\"" in casa   # MR7: Link della SPA, e il corso sa tornare qui
 
     def test_badge_presto_nel_piu(self):
         flag = (FQ / "stato.js").read_text()
